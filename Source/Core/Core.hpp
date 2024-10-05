@@ -1,0 +1,4 @@
+#ifndef TOY_LANG_CORE_HPP
+#define TOY_LANG_CORE_HPP
+
+#endif // TOY_LANG_CORE_HPP
