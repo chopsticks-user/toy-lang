@@ -14,5 +14,6 @@ target_link_libraries(
     Builder
     PRIVATE
     spdlog::spdlog_header_only
+    nlohmann_json
     INTERFACE ${ToyLang_PROJECT_NAME}::CFlags
 )

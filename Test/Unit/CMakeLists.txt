@@ -15,6 +15,7 @@ target_link_libraries(
     PRIVATE
     spdlog::spdlog_header_only
     Catch2::Catch2WithMain
+    nlohmann_json
     INTERFACE ${ToyLang_PROJECT_NAME}::CFlags
 )
 
