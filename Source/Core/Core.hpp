@@ -8,5 +8,6 @@
 #include "Concepts.hpp"
 #include "FileReader.hpp"
 #include "Utility.hpp"
+#include "Visitor.hpp"
 
 #endif // TOY_LANG_CORE_HPP

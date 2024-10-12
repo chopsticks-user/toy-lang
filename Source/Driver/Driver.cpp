@@ -14,7 +14,7 @@ int protected_main(int argc, char **argv) {
   //   std::cout << token.string() << '\n';
   // }
 
-  auto binaryExpr = tl::parser::ast::BinaryExpr{
+  tl::parser::ast::VNode binaryExpr = tl::parser::ast::BinaryExpr{
     std::make_unique<tl::parser::ast::VNode>(
       tl::parser::ast::Number("9.9")
     ),
@@ -27,7 +27,7 @@ int protected_main(int argc, char **argv) {
     "*"
   };
 
-  binaryExpr.childAt(0);
+  std::cout << std::visit(tl::parser::PrettyPrinter{}, binaryExpr) << '\n';
 
   return EXIT_SUCCESS;
 }

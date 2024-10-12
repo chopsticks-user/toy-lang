@@ -1,5 +1,5 @@
-add_executable(ToyLang_Parser)
-add_executable(
+add_library(ToyLang_Parser SHARED)
+add_library(
     ${ToyLang_PROJECT_NAME}::Parser
     ALIAS ToyLang_Parser
 )
@@ -11,6 +11,8 @@ target_sources(
     ${CMAKE_CURRENT_SOURCE_DIR}/AST.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PrettyPrinter.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PrettyPrinter.cpp
 )
 target_link_libraries(
     ToyLang_Parser

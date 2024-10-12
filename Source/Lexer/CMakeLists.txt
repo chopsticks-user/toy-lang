@@ -1,4 +1,4 @@
-add_library(ToyLang_Lexer)
+add_library(ToyLang_Lexer SHARED)
 add_library(
     ${ToyLang_PROJECT_NAME}::Lexer
     ALIAS ToyLang_Lexer

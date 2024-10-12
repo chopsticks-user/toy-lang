@@ -1,4 +1,4 @@
-add_library(ToyLang_Core STATIC)
+add_library(ToyLang_Core SHARED)
 add_library(
     ${ToyLang_PROJECT_NAME}::Core
     ALIAS ToyLang_Core
@@ -16,6 +16,7 @@ target_sources(
     ${CMAKE_CURRENT_SOURCE_DIR}/Concepts.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Visitor.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Utility.hpp
 )
 target_include_directories(ToyLang_Core INTERFACE ${PROJECT_SOURCE_DIR}/Source)

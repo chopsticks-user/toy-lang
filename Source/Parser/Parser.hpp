@@ -2,6 +2,7 @@
 #define  TOYLANG_PARSER_HPP
 
 #include "AST.hpp"
+#include "PrettyPrinter.hpp"
 
 namespace tl::parser {
 }
