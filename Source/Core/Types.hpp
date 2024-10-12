@@ -10,6 +10,7 @@
 #include <variant>
 #include <functional>
 #include <numeric>
+#include <array>
 
 namespace tl {
   using i64 = std::int64_t;
