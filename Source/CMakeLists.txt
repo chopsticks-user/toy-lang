@@ -1,6 +1,7 @@
 # LLVM
 find_package(LLVM ${LLVM_VERSION} REQUIRED CONFIG)
 include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
 
 # SpdLog
 FetchContent_Declare(
@@ -25,4 +26,4 @@ add_subdirectory(Syntax)
 add_subdirectory(Semantic)
 add_subdirectory(CodeGen)
 add_subdirectory(Optimization)
-add_subdirectory(Builder)
+add_subdirectory(Driver)

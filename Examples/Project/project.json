@@ -1,0 +1,19 @@
+{
+  "type": "application",
+  "executables": [
+    {
+      "name": "main",
+      "entry": "main.toy"
+    }
+  ],
+  "modules": [
+    {
+      "name": "lib1",
+      "entry": "lib1.toy"
+    },
+    {
+      "name": "lib2",
+      "entry": "lib2.toy"
+    }
+  ]
+}
