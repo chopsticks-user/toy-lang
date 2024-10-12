@@ -25,6 +25,7 @@ target_link_libraries(
     ${ToyLang_PROJECT_NAME}::Core
     ${ToyLang_PROJECT_NAME}::Lexer
     ${ToyLang_PROJECT_NAME}::Parser
+    ${ToyLang_PROJECT_NAME}::Syntax
     nlohmann_json
 )
 set_target_properties(

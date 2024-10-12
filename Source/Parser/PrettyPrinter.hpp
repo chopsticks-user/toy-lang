@@ -1,25 +1,25 @@
 #ifndef  TOYLANG_PARSER_PRETTY_PRINTER_HPP
 #define  TOYLANG_PARSER_PRETTY_PRINTER_HPP
 
-#include "AST.hpp"
+#include "Syntax/Syntax.hpp"
 
 #include "Core/Core.hpp"
 
 namespace tl::parser {
   class PrettyPrinter : public Visitor<
-        PrettyPrinter, ast::BinaryExpr, ast::UnaryExpr, ast::Number, ast::Identifier,
-        ast::StringLiteral
+        PrettyPrinter, syntax::BinaryExpr, syntax::UnaryExpr, syntax::Number, syntax::Identifier,
+        syntax::StringLiteral
       > {
   public:
-    auto operator()(const ast::BinaryExpr &node) -> std::string;
+    auto operator()(const syntax::BinaryExpr &node) -> std::string;
 
-    auto operator()(const ast::UnaryExpr &node) -> std::string;
+    auto operator()(const syntax::UnaryExpr &node) -> std::string;
 
-    auto operator()(const ast::Number &node) -> std::string;
+    auto operator()(const syntax::Number &node) -> std::string;
 
-    auto operator()(const ast::Identifier &node) -> std::string;
+    auto operator()(const syntax::Identifier &node) -> std::string;
 
-    auto operator()(const ast::StringLiteral &node) -> std::string;
+    auto operator()(const syntax::StringLiteral &node) -> std::string;
 
   private:
     std::string result;

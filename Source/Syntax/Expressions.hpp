@@ -1,40 +1,14 @@
-#ifndef TOYLANG_SYNTAX_AST_HPP
-#define TOYLANG_SYNTAX_AST_HPP
+#ifndef  TOYLANG_SYNTAX_EXPRESSIONS_HPP
+#define  TOYLANG_SYNTAX_EXPRESSIONS_HPP
+
+#include "Base.hpp"
 
 #include "Core/Core.hpp"
 
-namespace tl::parser::ast {
-  class Program;
-  class Function;
-  class BinaryExpr;
-  class UnaryExpr;
-  class BlockScope;
-  class Number;
-  class Identifier;
-  class StringLiteral;
-
-  using VNode = std::variant<BinaryExpr, Number, Identifier, UnaryExpr, StringLiteral>;
-
-  // using VExpr = std::variant<BinaryExpr, UnaryExpr, Number, Identifier, StringLiteral>;
-
-  class Node {
-  public:
-    auto children() const noexcept -> const std::vector<VNode> &;
-
-    auto childAt(sz index) const -> const VNode &;
-
-  protected:
-    explicit Node(std::vector<VNode> children) noexcept;
-
-    auto childAt(sz index) -> VNode &;
-
-  private:
-    std::vector<VNode> m_children;
-  };
-
+namespace tl::parser::syntax {
   class BinaryExpr final : public Node {
   public:
-    BinaryExpr(VNode l, VNode r, std::string op);
+    BinaryExpr(VNode lhs, VNode rhs, std::string op);
 
     auto left() const noexcept -> const VNode & {
       return childAt(0);
@@ -114,5 +88,4 @@ namespace tl::parser::ast {
   };
 }
 
-
-#endif // TOYLANG_SYNTAX_AST_HPP
+#endif // TOYLANG_SYNTAX_EXPRESSIONS_HPP

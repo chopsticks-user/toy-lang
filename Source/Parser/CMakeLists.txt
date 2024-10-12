@@ -7,8 +7,6 @@ add_library(
 target_sources(
     ToyLang_Parser
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/AST.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/AST.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PrettyPrinter.hpp

@@ -3,16 +3,18 @@
 
 #include "Lexer/Lexer.hpp"
 #include "Parser/Parser.hpp"
+#include "Syntax/Syntax.hpp"
 
 int protected_main(int argc, char **argv) {
-  using namespace tl::parser::ast;
+  using namespace tl::parser::syntax;
 
   [[maybe_unused]] auto commandParser = tl::builder::CommandParser{};
   [[maybe_unused]] auto configParser = tl::builder::ConfigParser{};
 
-  tl::lexer::Tokens tokens = tl::util::apply<tl::lexer::Lexer>(std::string(argv[1]));
-
-  for (const auto &token: tokens) {
+  for (
+    const tl::lexer::Tokens tokens = tl::util::apply<tl::lexer::Lexer>(std::string(argv[1]));
+    const auto &token: tokens
+  ) {
     std::cout << token.string() << '\n';
   }
 
