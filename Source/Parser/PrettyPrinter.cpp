@@ -20,4 +20,9 @@ namespace tl::parser {
     visitChildren(node);
     return result += "Visiting Identifier\n";
   }
+
+  auto PrettyPrinter::operator()(const ast::StringLiteral &node) -> std::string {
+    visitChildren(node);
+    return result += "Visiting StringLiteral\n";
+  }
 }

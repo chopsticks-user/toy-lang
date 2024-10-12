@@ -7,7 +7,8 @@
 
 namespace tl::parser {
   class PrettyPrinter : public Visitor<
-        PrettyPrinter, ast::BinaryExpr, ast::UnaryExpr, ast::Number, ast::Identifier
+        PrettyPrinter, ast::BinaryExpr, ast::UnaryExpr, ast::Number, ast::Identifier,
+        ast::StringLiteral
       > {
   public:
     auto operator()(const ast::BinaryExpr &node) -> std::string;
@@ -17,6 +18,8 @@ namespace tl::parser {
     auto operator()(const ast::Number &node) -> std::string;
 
     auto operator()(const ast::Identifier &node) -> std::string;
+
+    auto operator()(const ast::StringLiteral &node) -> std::string;
 
   private:
     std::string result;

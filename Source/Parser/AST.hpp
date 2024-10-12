@@ -11,45 +11,36 @@ namespace tl::parser::ast {
   class BlockScope;
   class Number;
   class Identifier;
+  class StringLiteral;
 
-  // using VNode = std::variant<Program, Function, BinaryExpr, UnaryExpr, BlockScope>;
-  using VNode = std::variant<BinaryExpr, UnaryExpr, Number, Identifier>;
+  using VNode = std::variant<BinaryExpr, Number, Identifier, UnaryExpr, StringLiteral>;
 
-  template<sz NChildren>
+  // using VExpr = std::variant<BinaryExpr, UnaryExpr, Number, Identifier, StringLiteral>;
+
   class Node {
   public:
-    auto children() const noexcept -> const std::array<std::unique_ptr<VNode>, NChildren> & {
-      return m_children;
-    }
+    auto children() const noexcept -> const std::vector<VNode> &;
+
+    auto childAt(sz index) const -> const VNode &;
 
   protected:
-    auto childAt(sz index) noexcept -> VNode & {
-      return *m_children[index];
-    }
+    explicit Node(std::vector<VNode> children) noexcept;
 
-    auto childAt(sz index) const noexcept -> VNode & {
-      return *m_children[index];
-    }
-
-    explicit Node(std::array<std::unique_ptr<VNode>, NChildren> children) noexcept
-      : m_children(std::move(children)) {
-    }
+    auto childAt(sz index) -> VNode &;
 
   private:
-    std::array<std::unique_ptr<VNode>, NChildren> m_children;
+    std::vector<VNode> m_children;
   };
 
-  class BinaryExpr final : public Node<2> {
+  class BinaryExpr final : public Node {
   public:
-    BinaryExpr(std::unique_ptr<VNode> left, std::unique_ptr<VNode> right, std::string op)
-      : Node({std::move(left), std::move(right)}), m_op(std::move(op)) {
-    }
+    BinaryExpr(VNode l, VNode r, std::string op);
 
-    auto left() const noexcept -> VNode & {
+    auto left() const noexcept -> const VNode & {
       return childAt(0);
     }
 
-    auto right() const noexcept -> VNode & {
+    auto right() const noexcept -> const VNode & {
       return childAt(1);
     }
 
@@ -61,13 +52,11 @@ namespace tl::parser::ast {
     std::string m_op;
   };
 
-  class UnaryExpr final : public Node<1> {
+  class UnaryExpr final : public Node {
   public:
-    UnaryExpr(std::unique_ptr<VNode> operand, std::string op)
-      : Node({std::move(operand)}), m_op(std::move(op)) {
-    }
+    UnaryExpr(VNode operand, std::string op);
 
-    auto operand() const noexcept -> VNode & {
+    auto operand() const noexcept -> const VNode & {
       return childAt(0);
     }
 
@@ -79,11 +68,9 @@ namespace tl::parser::ast {
     std::string m_op;
   };
 
-  class Number final : public Node<0> {
+  class Number final : public Node {
   public:
-    explicit Number(const std::string &value)
-      : Node({}), m_value(std::stod(value)) {
-    }
+    explicit Number(const std::string &value);
 
     auto value() const noexcept -> double {
       return m_value;
@@ -91,13 +78,12 @@ namespace tl::parser::ast {
 
   private:
     f64 m_value;
+    std::vector<VNode> m_children;
   };
 
-  class Identifier final : public Node<0> {
+  class Identifier final : public Node {
   public:
-    explicit Identifier(std::string name)
-      : Node({}), m_name(std::move(name)) {
-    }
+    explicit Identifier(std::string name);
 
     auto name() const noexcept -> const std::string & {
       return m_name;
@@ -105,6 +91,26 @@ namespace tl::parser::ast {
 
   private:
     std::string m_name;
+  };
+
+
+  class StringLiteral final : public Node {
+  public:
+    explicit StringLiteral(
+      std::string value,
+      std::vector<VNode> placeholders = {}
+    );
+
+    auto value() const noexcept -> const std::string & {
+      return m_value;
+    }
+
+    auto placeholder(sz index) const noexcept -> const VNode & {
+      return childAt(index);
+    }
+
+  private:
+    std::string m_value;
   };
 }
 
