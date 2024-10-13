@@ -78,3 +78,6 @@ bin/
 # Resources:
 Resources/Antlr/*
 !Resources/Antlr/*.g4
+
+# Antlr4
+gen
