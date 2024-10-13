@@ -76,6 +76,5 @@ bin/
 [Bb]uilds/
 
 # Resources:
-Resources/*.interp
-Resources/*.java
-Resources/*.tokens
+Resources/Antlr/*
+!Resources/Antlr/*.g4

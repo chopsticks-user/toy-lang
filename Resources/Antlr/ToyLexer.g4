@@ -10,6 +10,7 @@ ExclaimEqual   : '!=';
 StarEqual      : '*=';
 AmpersandEqual : '&=';
 BarEqual       : '|=';
+HatEqual       : '^=';
 FwdSlashEqual  : '/=';
 PercentEqual   : '%=';
 GreaterEqual   : '>=';
@@ -57,6 +58,9 @@ Less           : '<';
 SQuote         : '\'';
 DQuote         : '"';
 QMark          : '?';
+Tilde          : '~';
+Dollar         : '$';
+Hat            : '^';
 
 // Reserved keywords
 
@@ -79,28 +83,38 @@ Private     : 'private';
 Protected   : 'protected';
 Return      : 'return';
 For         : 'for';
-//While       : 'while';
 If          : 'if';
-Switch      : 'switch';
-Case        : 'case';
-Default     : 'default';
+Else        : 'else';
+By          : 'by';
 Import      : 'import';
 Module      : 'module';
 Pure        : 'pure';
 Var         : 'var';
 Const       : 'const';
+Let         : 'let';
 Print       : 'print';
 Extern      : 'extern';
 Abstract    : 'abstract';
 Interface   : 'interface';
+True        : 'true';
+False       : 'false';
 
 // Basic
+
+NonNegativeDecimal : NonNegativeInteger? '.' NonNegativeInteger;
+
+NonNegativeInteger : [0-9]+;
+
+StringLiteral : '"' StringLiteralContent? '"';
+
+StringLiteralContent : ( EscapeSequence | ~[\\"{}] )+;
+
+EscapeSequence : '\\' ( '"' | '\'' | '\\' | 'n' | 'r' | 't' | 'b' | 'f' | 'u' | '{' | '}' ) ;
 
 TypeIdentifier : [A-Z][a-zA-Z0-9]*;
 
 Identifier : [a-z][a-zA-Z0-9]*;
 
-// Ignore whitespace
 Whitespace : [ \t\n\r]+ -> skip;
 
 Newline: ('\r' '\n'? | '\n') -> skip;
