@@ -5,7 +5,7 @@
 
 #include "Core/Core.hpp"
 
-namespace tl::parser::syntax {
+namespace tl::syntax {
   class Program {
   };
 

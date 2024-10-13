@@ -6,3 +6,76 @@
 Build
 build
 cmake-build-debug
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.log
+
+# Ignore compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+
+# Ignore dependency directories
+/node_modules/
+/vendor/
+/packages/
+*.egg-info/
+*.egg
+
+# Ignore environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore test results
+/coverage/
+/test-results/
+/out/
+
+# Ignore documentation files
+*.pdf
+*.doc
+*.docx
+*.odt
+*.rtf
+
+# Ignore specific programming language files
+# For example, Python:
+__pycache__/
+*.py[cod]
+
+# For Java:
+*.jar
+*.war
+
+# For C/C++:
+*.out
+*.gch
+
+# For Rust:
+/target/
+
+# For Go:
+bin/
+
+# For Unity:
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+
+# Resources:
+Resources/*.interp
+Resources/*.java
+Resources/*.tokens

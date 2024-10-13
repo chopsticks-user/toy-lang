@@ -18,6 +18,7 @@ target_sources(
     ${CMAKE_CURRENT_SOURCE_DIR}/Declarations.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Concrete.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Concrete.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SyntaxTreeVisitor.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Syntax.hpp
 )
 target_link_libraries(

@@ -1,4 +1,4 @@
 #include "Concrete.hpp"
 
-namespace tl::parser::syntax {
+namespace tl::syntax {
 }

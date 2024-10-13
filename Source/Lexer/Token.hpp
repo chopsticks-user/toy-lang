@@ -14,10 +14,10 @@ namespace tl::lexer {
     Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, FwdSlash2, Exclaim2, Equal2,
     Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
     FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
-    MinusGreater, LessMinus, Greater2Equal, Less2Equal,
+    MinusGreater, LessMinus, Dot2,
 
     // Triple
-    Dot3,
+    Dot3, Greater2Equal, Less2Equal,
 
     // Multiple
     Identifier, Number,

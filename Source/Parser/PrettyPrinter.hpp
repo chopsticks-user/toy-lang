@@ -6,20 +6,23 @@
 #include "Core/Core.hpp"
 
 namespace tl::parser {
-  class PrettyPrinter : public Visitor<
-        PrettyPrinter, syntax::BinaryExpr, syntax::UnaryExpr, syntax::Number, syntax::Identifier,
-        syntax::StringLiteral
-      > {
+  class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
   public:
+    using Super::operator();
+
+    auto operator()(const syntax::Identifier &node) -> std::string;
+
     auto operator()(const syntax::BinaryExpr &node) -> std::string;
 
     auto operator()(const syntax::UnaryExpr &node) -> std::string;
 
-    auto operator()(const syntax::Number &node) -> std::string;
+    auto operator()(const syntax::IntegerLiteral &node) -> std::string;
 
-    auto operator()(const syntax::Identifier &node) -> std::string;
+    auto operator()(const syntax::FloatLiteral &node) -> std::string;
 
     auto operator()(const syntax::StringLiteral &node) -> std::string;
+
+    auto operator()(const syntax::BooleanLiteral &node) -> std::string;
 
   private:
     std::string result;

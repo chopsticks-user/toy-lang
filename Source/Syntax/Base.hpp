@@ -5,7 +5,7 @@
 
 #include "Core/Core.hpp"
 
-namespace tl::parser::syntax {
+namespace tl::syntax {
   class Node {
   public:
     auto children() const noexcept -> const std::vector<VNode> &;

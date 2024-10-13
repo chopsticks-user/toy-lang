@@ -16,7 +16,10 @@ target_link_libraries(
     spdlog::spdlog_header_only
     Catch2::Catch2WithMain
     nlohmann_json
-    INTERFACE ${ToyLang_PROJECT_NAME}::CFlags
+    ${ToyLang_PROJECT_NAME}::Core
+    ${ToyLang_PROJECT_NAME}::Lexer
+    ${ToyLang_PROJECT_NAME}::Syntax
+    ${ToyLang_PROJECT_NAME}::Parser
 )
 
 add_test(UnitTest UnitTest)

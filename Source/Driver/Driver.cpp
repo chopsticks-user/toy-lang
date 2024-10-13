@@ -6,7 +6,7 @@
 #include "Syntax/Syntax.hpp"
 
 int protected_main(int argc, char **argv) {
-  using namespace tl::parser::syntax;
+  using namespace tl::syntax;
 
   [[maybe_unused]] auto commandParser = tl::builder::CommandParser{};
   [[maybe_unused]] auto configParser = tl::builder::ConfigParser{};
@@ -19,14 +19,19 @@ int protected_main(int argc, char **argv) {
   }
 
   auto binaryExpr = BinaryExpr(
-    Number("9.8"),
+    FloatLiteral("9.8"),
     UnaryExpr{Identifier("x"), "!"},
     "*"
   );
 
   auto stringLiteral = StringLiteral(
-    "Gravitational constant: {val} {unit}",
-    {binaryExpr.left(), StringLiteral{"m/s^2"}}
+    "{index}. {bool} statement: the gravitational constant is {val} {unit}",
+    {
+      IntegerLiteral{"1"},
+      BooleanLiteral{"true"},
+      binaryExpr.left(),
+      StringLiteral{"m/s^2"}
+    }
   );
 
   std::cout << tl::visit<tl::parser::PrettyPrinter>(binaryExpr) << '\n';

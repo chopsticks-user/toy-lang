@@ -5,7 +5,19 @@
 
 #include "Core/Core.hpp"
 
-namespace tl::parser::syntax {
+namespace tl::syntax {
+  class Identifier final : public Node {
+  public:
+    explicit Identifier(std::string name);
+
+    auto name() const noexcept -> const std::string & {
+      return m_name;
+    }
+
+  private:
+    std::string m_name;
+  };
+
   class BinaryExpr final : public Node {
   public:
     BinaryExpr(VNode lhs, VNode rhs, std::string op);
@@ -42,9 +54,24 @@ namespace tl::parser::syntax {
     std::string m_op;
   };
 
-  class Number final : public Node {
+  // Literals belong here to avoid circular dependencies
+  // between Expression and Literals
+
+  class IntegerLiteral final : public Node {
   public:
-    explicit Number(const std::string &value);
+    explicit IntegerLiteral(const std::string &value);
+
+    auto value() const noexcept -> i64 {
+      return m_value;
+    }
+
+  private:
+    i64 m_value;
+  };
+
+  class FloatLiteral final : public Node {
+  public:
+    explicit FloatLiteral(const std::string &value);
 
     auto value() const noexcept -> double {
       return m_value;
@@ -52,21 +79,7 @@ namespace tl::parser::syntax {
 
   private:
     f64 m_value;
-    std::vector<VNode> m_children;
   };
-
-  class Identifier final : public Node {
-  public:
-    explicit Identifier(std::string name);
-
-    auto name() const noexcept -> const std::string & {
-      return m_name;
-    }
-
-  private:
-    std::string m_name;
-  };
-
 
   class StringLiteral final : public Node {
   public:
@@ -85,6 +98,18 @@ namespace tl::parser::syntax {
 
   private:
     std::string m_value;
+  };
+
+  class BooleanLiteral final : public Node {
+  public:
+    explicit BooleanLiteral(const std::string &value);
+
+    auto value() const noexcept -> bool {
+      return m_value;
+    }
+
+  private:
+    bool m_value;
   };
 }
 

@@ -4,12 +4,18 @@
 #include "Types.hpp"
 
 namespace tl {
-  template<typename Derived, typename... TVisitable>
+  template<typename Derived, typename TReturn, typename TVisitable>
   class Visitor {
   public:
-    using Visitable = std::variant<TVisitable...>;
+    using Visitable = TVisitable;
+
+    auto operator()(std::convertible_to<Visitable> auto const &) -> TReturn {
+      return {};
+    }
 
   protected:
+    using Super = Visitor;
+
     Visitor() = default;
 
     void visitChildren(std::convertible_to<Visitable> auto const &node) {

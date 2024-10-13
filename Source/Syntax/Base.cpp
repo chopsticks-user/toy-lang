@@ -1,7 +1,7 @@
 #include "Base.hpp"
 #include "Expressions.hpp"
 
-namespace tl::parser::syntax {
+namespace tl::syntax {
   Node::Node(std::vector<VNode> children) noexcept
     : m_children(std::move(children)) {
   }

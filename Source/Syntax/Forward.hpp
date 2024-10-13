@@ -3,18 +3,23 @@
 
 #include "Core/Core.hpp"
 
-namespace tl::parser::syntax {
-  class Program;
-  class Function;
+namespace tl::syntax {
   class BinaryExpr;
   class UnaryExpr;
-  class Block;
-  class Number;
   class Identifier;
-  class StringLiteral;
 
-  using VNode = std::variant<BinaryExpr, Number, Identifier, UnaryExpr, StringLiteral>;
-  using VExpr = std::variant<BinaryExpr, Number, Identifier, UnaryExpr, StringLiteral>;
+  class IntegerLiteral;
+  class FloatLiteral;
+  class StringLiteral;
+  class BooleanLiteral;
+
+  class Program;
+  class Function;
+  class Block;
+
+  using VNode = std::variant<
+    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral
+  >;
 }
 
 #endif // TOYLANG_SYNTAX_FORWARD_HPP
