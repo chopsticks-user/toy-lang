@@ -1,6 +1,6 @@
 #include "PrettyPrinter.hpp"
 
-namespace tl::parser {
+namespace tl::fe {
   auto PrettyPrinter::operator()(const syntax::Identifier &node) -> std::string {
     visitChildren(node);
     return result += "Visiting Identifier\n";

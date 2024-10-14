@@ -11,6 +11,8 @@
 #include <functional>
 #include <numeric>
 #include <array>
+#include <unordered_set>
+#include <regex>
 
 namespace tl {
   using i64 = std::int64_t;

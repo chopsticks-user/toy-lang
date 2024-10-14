@@ -20,9 +20,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nlohmann_json)
 
 add_subdirectory(Core)
-add_subdirectory(Lexer)
+add_subdirectory(FrontEnd)
 add_subdirectory(Syntax)
-add_subdirectory(Parser)
 add_subdirectory(Semantic)
 add_subdirectory(CodeGen)
 add_subdirectory(Optimization)

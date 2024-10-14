@@ -23,8 +23,7 @@ target_link_libraries(
     PRIVATE
     ${llvm_libs}
     ${ToyLang_PROJECT_NAME}::Core
-    ${ToyLang_PROJECT_NAME}::Lexer
-    ${ToyLang_PROJECT_NAME}::Parser
+    ${ToyLang_PROJECT_NAME}::FrontEnd
     ${ToyLang_PROJECT_NAME}::Syntax
     nlohmann_json
 )

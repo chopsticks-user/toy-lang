@@ -1,11 +1,11 @@
-#ifndef  TOYLANG_PARSER_PRETTY_PRINTER_HPP
-#define  TOYLANG_PARSER_PRETTY_PRINTER_HPP
+#ifndef  TOYLANG_FRONTEND_PRETTY_PRINTER_HPP
+#define  TOYLANG_FRONTEND_PRETTY_PRINTER_HPP
 
 #include "Syntax/Syntax.hpp"
 
 #include "Core/Core.hpp"
 
-namespace tl::parser {
+namespace tl::fe {
   class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
   public:
     using Super::operator();
@@ -29,4 +29,4 @@ namespace tl::parser {
   };
 }
 
-#endif // TOYLANG_PARSER_PRETTY_PRINTER_HPP
+#endif // TOYLANG_FRONTEND_PRETTY_PRINTER_HPP
