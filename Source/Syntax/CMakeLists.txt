@@ -14,8 +14,6 @@ target_sources(
     ${CMAKE_CURRENT_SOURCE_DIR}/Expressions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Statements.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Statements.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Declarations.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Declarations.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Concrete.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Concrete.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SyntaxTreeVisitor.hpp

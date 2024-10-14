@@ -5,15 +5,34 @@ options {
 }
 
 translationUnit
-    : (definition | identifierDeclStatement)* EOF
+    : definition* EOF
     ;
 
 definition
     : functionDefinition
+    | identifierDeclStatement
+    | classDefinition
+    ;
+
+classDefinition
+    : specifier? (Class | Interface) (Colon classParentList) classDefinitionBody
+    ;
+
+classParentList
+    : typeExpression (Comma typeExpression)*
+    ;
+
+classDefinitionBody
+    : blockStatement
     ;
 
 functionDefinition
-    : specifier functionPrototype qualifier blockStatement
+    : specifier? functionPrototype qualifier? functionDefinitionBody
+    ;
+
+functionDefinitionBody
+    : blockStatement
+    | expression Semicolon
     ;
 
 specifier
@@ -27,6 +46,7 @@ functionPrototype
 
 functionPrototypePostfix
     : LeftParen (parameterDeclFragment)* RightParen MinusGreater typeExpression
+    | parameterDeclFragment MinusGreater typeExpression
     ;
 
 statement
@@ -36,7 +56,12 @@ statement
     | returnStatement
     | expressionStatement
     | blockStatement
+//    | builtinStatement
     ;
+
+//builtinStatement
+//    : Print expression
+//    ;
 
 blockStatement
     : LeftBrace (statement)* RightBrace
@@ -71,7 +96,7 @@ parameterDeclFragment
     ;
 
 identifierDeclStatement
-    : Let identifierDeclFragmentList Semicolon
+    : mutibilitySpecifier identifierDeclFragmentList Semicolon
     ;
 
 identifierDeclFragmentList
@@ -79,7 +104,7 @@ identifierDeclFragmentList
     ;
 
 identifierDeclFragment
-    : mutibilitySpecifier? Identifier Colon typeExpression
+    : Identifier Colon typeExpression
     ;
 
 ifStatement
@@ -105,7 +130,7 @@ primaryExpression
     ;
 
 lambdaExpression
-    : functionPrototypePostfix blockStatement
+    : functionPrototypePostfix qualifier blockStatement
     ;
 
 stringExpression
@@ -253,13 +278,21 @@ qualifier
     ;
 
 visibilitySpecifier
-    : Export | Internal | Local
+    : Export
+    | Internal
+    | Local
     ;
 
 mutibilitySpecifier
-    : Var | Const
+    : Var
+    | Const
     ;
 
 typeExpression
-    : Int | Float | Bool | String | Void | TypeIdentifier
+    : Int
+    | Float
+    | Bool
+    | String
+    | Void
+    | TypeIdentifier
     ;

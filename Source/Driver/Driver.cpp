@@ -1,8 +1,7 @@
 #include "CommandParser.hpp"
 #include "ConfigParser.hpp"
 
-#include "Lexer/Lexer.hpp"
-#include "Parser/Parser.hpp"
+#include "FrontEnd/FrontEnd.hpp"
 #include "Syntax/Syntax.hpp"
 
 int protected_main(int argc, char **argv) {
@@ -12,7 +11,7 @@ int protected_main(int argc, char **argv) {
   [[maybe_unused]] auto configParser = tl::builder::ConfigParser{};
 
   for (
-    const tl::lexer::Tokens tokens = tl::util::apply<tl::lexer::Lexer>(std::string(argv[1]));
+    const tl::fe::Tokens tokens = tl::util::apply<tl::fe::Lexer>(std::string(argv[1]));
     const auto &token: tokens
   ) {
     std::cout << token.string() << '\n';
@@ -34,8 +33,8 @@ int protected_main(int argc, char **argv) {
     }
   );
 
-  std::cout << tl::visit<tl::parser::PrettyPrinter>(binaryExpr) << '\n';
-  std::cout << tl::visit<tl::parser::PrettyPrinter>(stringLiteral) << '\n';
+  std::cout << tl::visit<tl::fe::PrettyPrinter>(binaryExpr) << '\n';
+  std::cout << tl::visit<tl::fe::PrettyPrinter>(stringLiteral) << '\n';
 
   return EXIT_SUCCESS;
 }

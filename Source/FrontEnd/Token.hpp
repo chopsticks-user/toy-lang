@@ -1,51 +1,46 @@
-#ifndef TOYLANG_LEXER_TOKEN_HPP
-#define TOYLANG_LEXER_TOKEN_HPP
+#ifndef TOYLANG_FRONTEND_TOKEN_HPP
+#define TOYLANG_FRONTEND_TOKEN_HPP
 
 #include "Core/Core.hpp"
 
-namespace tl::lexer {
+namespace tl::fe {
   enum class EToken {
     // Single
     LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace,
     Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
-    Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark,
+    Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar,
+
+    AnnonymousIdentifier,
 
     // Double
-    Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, FwdSlash2, Exclaim2, Equal2,
+    Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2, Equal2,
     Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
     FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
-    MinusGreater, LessMinus, Dot2,
+    MinusGreater, LessMinus, Dot2, HatEqual,
 
     // Triple
     Dot3, Greater2Equal, Less2Equal,
 
     // Multiple
-    Identifier, Number,
+    Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
-    // Reserved keywords
+    // Non-type reserved keywords
     Fn, Main, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
     Default, Export, Import, Module, Internal, Local, Pure, Var, Const, Print, Extern, Abstract,
     Interface,
 
     // Misc
-    Empty
+    Empty, MaybeOperator, Reserved, Invalid,
+  };
+
+  enum class EKeyword {
   };
 
   class Token final {
   public:
-    static auto isDigit(char c) noexcept -> bool {
-      return c >= '0' && c <= '9';
-    }
+    Token(EToken type, std::string str, sz line, sz column);
 
-    static auto isIdentifierSymbol(char c) noexcept -> bool {
-      return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-    }
-
-    static auto identifierType(const std::string &idStr) noexcept -> EToken;
-
-    Token(EToken type, std::string str, sz line, sz column)
-      : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
-    }
+    static auto isValidOperator(const std::string &symbol) -> bool;
 
     auto type() const noexcept -> EToken {
       return m_type;
@@ -56,11 +51,11 @@ namespace tl::lexer {
     }
 
     auto line() const noexcept -> sz {
-      return m_line;
+      return m_line + 1;
     }
 
     auto column() const noexcept -> sz {
-      return m_column;
+      return m_column + 1;
     }
 
   private:
@@ -71,4 +66,4 @@ namespace tl::lexer {
   };
 }
 
-#endif // TOYLANG_LEXER_TOKEN_HPP
+#endif // TOYLANG_FRONTEND_TOKEN_HPP
