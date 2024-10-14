@@ -62,7 +62,6 @@ namespace tl::fe {
     {"||", EToken::Bar2},
     {"++", EToken::Plus2},
     {"--", EToken::Minus2},
-    {"//", EToken::FwdSlash2},
     {"!!", EToken::Exclaim2},
     {"==", EToken::Equal2},
     {">>", EToken::Greater2},
@@ -134,5 +133,9 @@ namespace tl::fe {
     if (it != reservedTokens.end()) {
       m_type = EToken::Reserved;
     }
+  }
+
+  auto Token::isValidOperator(const std::string &symbol) -> bool {
+    return operatorType(symbol) != EToken::Invalid;
   }
 }

@@ -1,4 +1,10 @@
+module foo;
+
+import std::println;
+
 local product: (const x: float, const y: float) -> float pure {
+    const z: float;
+    z <<= x; z >>= y;
     return x * y;
 }
 

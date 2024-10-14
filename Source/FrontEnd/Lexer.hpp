@@ -13,14 +13,16 @@ namespace tl::fe {
    */
   class Lexer {
   public:
-    auto operator()(const std::string &filepath) -> Tokens;
+    auto operator()(const std::filesystem::path &filepath) -> Tokens;
 
   private:
     auto advance() -> bool;
 
-    auto peek() -> char {
-      return static_cast<char>(m_fs.peek());
-    }
+    auto revertInline() -> bool;
+
+    auto peek() -> char;
+
+    auto peek2() -> std::string;
 
     auto match(char expected) -> bool;
 
@@ -42,7 +44,7 @@ namespace tl::fe {
 
     auto appendError(std::runtime_error error) -> void;
 
-    auto reset(const std::string &filepath) -> void;
+    auto reset(const std::filesystem::path &filepath) -> void;
 
   private:
     static auto isDigit(char c) -> bool {
@@ -82,7 +84,7 @@ namespace tl::fe {
     }
 
     static auto isSpacingCharacter(char c) -> bool {
-      return c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\0';
+      return c == ' ' || c == '\n' || c == '\t' || c == '\r';
     }
 
   private:
@@ -93,8 +95,6 @@ namespace tl::fe {
     auto lexIdentifier() -> bool;
 
     auto lexOperator() -> bool;
-
-    auto handleEndOfFile() const -> bool;
 
     auto handleWhiteSpace() -> bool;
 
@@ -114,7 +114,6 @@ namespace tl::fe {
     sz m_currentColumn = 0;
     sz m_lastNonEmptyColumn = 0;
     bool m_stringState = false;
-    bool m_finished = false;
     std::vector<std::runtime_error> m_collectedErrors;
   };
 }

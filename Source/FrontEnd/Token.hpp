@@ -13,7 +13,7 @@ namespace tl::fe {
     AnnonymousIdentifier,
 
     // Double
-    Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, FwdSlash2, Exclaim2, Equal2,
+    Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2, Equal2,
     Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
     FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
     MinusGreater, LessMinus, Dot2, HatEqual,
@@ -39,6 +39,8 @@ namespace tl::fe {
   class Token final {
   public:
     Token(EToken type, std::string str, sz line, sz column);
+
+    static auto isValidOperator(const std::string &symbol) -> bool;
 
     auto type() const noexcept -> EToken {
       return m_type;

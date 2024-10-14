@@ -2,7 +2,7 @@
 
 namespace tl::fe {
   auto Lexer::advance() -> bool {
-    if (m_finished) {
+    if (m_fs.eof()) {
       return false;
     };
 
@@ -15,6 +15,17 @@ namespace tl::fe {
     ++m_currentColumn;
     return true;
   }
+
+  auto Lexer::revertInline() -> bool {
+    if (m_currentColumn == 0) {
+      return false;
+    }
+
+    m_fs.unget();
+    --m_currentColumn;
+    return true;
+  }
+
 
   auto Lexer::trySkip() -> bool {
     return handleWhiteSpace() || handleNewLine() || handleComment();
@@ -30,11 +41,23 @@ namespace tl::fe {
     return true;
   }
 
-  auto Lexer::reset(const std::string &filepath) -> void {
+  auto Lexer::peek() -> char {
+    return static_cast<char>(m_fs.peek());
+  }
+
+  auto Lexer::peek2() -> std::string {
+    std::string str;
+    str += peek();
+    str += static_cast<char>(m_fs.get());
+    m_fs.unget();
+    return str;
+  }
+
+  auto Lexer::reset(const std::filesystem::path &filepath) -> void {
     m_fs = {};
     m_fs.open(filepath);
     if (!m_fs.is_open()) {
-      throw std::runtime_error("Failed to open " + filepath);
+      throw std::runtime_error("Failed to open " + filepath.string());
     }
 
     m_lastTokenType = EToken::Empty;
@@ -43,7 +66,6 @@ namespace tl::fe {
     m_collectedTokens = {};
     m_currentLine = 0;
     m_currentColumn = 0;
-    m_finished = false;
     m_collectedErrors = {};
   }
 
@@ -55,6 +77,10 @@ namespace tl::fe {
     }
     column -= m_currentToken.length() + 1;
 
+    if (tokenType == EToken::StringLiteral) {
+      column++;
+    }
+
     m_collectedTokens.emplace_back(
       tokenType, m_currentToken, m_currentLine, column
     );
@@ -62,6 +88,7 @@ namespace tl::fe {
   }
 
   auto Lexer::appendError(std::runtime_error error) -> void {
+    std::cout << error.what() << std::endl;
     m_collectedErrors.push_back(std::move(error));
   }
 
@@ -107,24 +134,20 @@ namespace tl::fe {
     return false;
   }
 
-  auto Lexer::handleEndOfFile() const -> bool {
-    if (m_currentChar == std::char_traits<char>::eof()) {
-      return m_finished;
-    }
-
-    return m_finished;
-  }
-
   auto Lexer::handleEscapeSequence() -> bool {
     return false;
   }
 
-  auto Lexer::operator()(const std::string &filepath) -> Tokens {
+  auto Lexer::operator()(const std::filesystem::path &filepath) -> Tokens {
     reset(filepath);
 
-    while (!m_finished) {
+    advance();
+    while (true) {
       while (isSpacingCharacter(m_currentChar)) {
         advance();
+      }
+      if (m_fs.eof()) {
+        break;
       }
       m_currentToken = m_currentChar;
 
@@ -147,6 +170,8 @@ namespace tl::fe {
       throw std::runtime_error("Lexer error");
     }
 
+    // in case the lexer will be used for more than once
+    m_fs.close();
     return m_collectedTokens;
   }
 
@@ -156,6 +181,7 @@ namespace tl::fe {
     }
 
     m_stringState = true;
+    bool closed = false;
 
     while (advance()) {
       if (m_currentChar == '\\') {
@@ -165,8 +191,16 @@ namespace tl::fe {
       consume();
 
       if (m_currentChar == '"') {
+        closed = true;
+        advance();
+        consume();
         break;
       }
+    }
+
+    if (!closed) {
+      // todo: handle unclosed string literal
+      appendError(std::runtime_error("Un-closed string literal"));
     }
 
     addToken(EToken::StringLiteral);
@@ -241,13 +275,28 @@ namespace tl::fe {
   }
 
   auto Lexer::lexOperator() -> bool {
-    while (advance() && maybeOperatorCharacter(m_currentChar)) {
+    advance();
+
+    // Maximum number of chracters is 3
+    if (Token::isValidOperator(m_currentToken + m_currentChar + peek())) {
       consume();
+      advance();
+      consume();
+      advance();
+      addToken(EToken::MaybeOperator); // valid 3-char operator
+      return true;
+    }
+
+    if (Token::isValidOperator(m_currentToken + m_currentChar)) {
+      consume();
+      advance();
+      addToken(EToken::MaybeOperator); // valid 2-char operator
+      return true;
     }
 
     addToken(EToken::MaybeOperator);
     if (m_lastTokenType == EToken::Invalid) {
-      appendError(std::runtime_error("Unrecognizable token"));
+      appendError(std::runtime_error("Unrecognizable token 0"));
     }
 
     return true;
