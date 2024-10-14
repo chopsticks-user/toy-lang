@@ -54,7 +54,7 @@ namespace tl::fe {
     }
 
     static auto isLowerCaseLetter(char c) -> bool {
-      return !(c < 'A' || c > 'Z');
+      return !(c < 'a' || c > 'z');
     }
 
     static auto isLetter(char c) -> bool {
@@ -75,6 +75,14 @@ namespace tl::fe {
 
     static auto isStartOfDecimalPart(char c) {
       return c == '.';
+    }
+
+    static auto maybeOperatorCharacter(char c) -> bool {
+      return !isDigitOrLetter(c) && !isUnnamedIdentifier(c);
+    }
+
+    static auto isSpacingCharacter(char c) -> bool {
+      return c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\0';
     }
 
   private:
@@ -104,6 +112,7 @@ namespace tl::fe {
     Tokens m_collectedTokens;
     sz m_currentLine = 0;
     sz m_currentColumn = 0;
+    sz m_lastNonEmptyColumn = 0;
     bool m_stringState = false;
     bool m_finished = false;
     std::vector<std::runtime_error> m_collectedErrors;

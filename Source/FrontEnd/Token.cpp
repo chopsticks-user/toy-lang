@@ -122,7 +122,7 @@ namespace tl::fe {
   }
 
   Token::Token(EToken type, std::string str, sz line, sz column)
-    : m_type(identifierType(str)), m_str(std::move(str)), m_line(line), m_column(column) {
+    : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
     if (m_type == EToken::Identifier) {
       m_type = identifierType(m_str);
     }
@@ -131,7 +131,7 @@ namespace tl::fe {
     }
 
     const auto it = reservedTokens.find(m_type);
-    if (it == reservedTokens.end()) {
+    if (it != reservedTokens.end()) {
       m_type = EToken::Reserved;
     }
   }

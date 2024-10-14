@@ -1,0 +1,13 @@
+local product: (const x: float, const y: float) -> float pure {
+    return x * y;
+}
+
+export double: (const x: float) -> float pure {
+    return x -> x |> product(2);
+}
+
+main: () -> void {
+    for(var i: int = 0; i < 5; i++) {
+        println("{i |> double}");
+    }
+}

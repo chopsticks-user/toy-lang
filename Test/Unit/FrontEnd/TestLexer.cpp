@@ -4,5 +4,15 @@
 
 #include <iostream>
 
-TEST_CASE("Test", "[Test]") {
+using tl::util::apply;
+using tl::fe::Lexer;
+
+std::filesystem::path resourceDir = RESOURCE_DIR;
+
+TEST_CASE("Test lexer", "[Lexer]") {
+  // todo: fix operator lexing
+  auto tokens = apply<Lexer>(resourceDir / "test1.toy");
+  for (const auto &token: tokens) {
+    std::cout << token.string() << '\n';
+  }
 }

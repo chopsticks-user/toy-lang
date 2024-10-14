@@ -49,11 +49,11 @@ namespace tl::fe {
     }
 
     auto line() const noexcept -> sz {
-      return m_line;
+      return m_line + 1;
     }
 
     auto column() const noexcept -> sz {
-      return m_column;
+      return m_column + 1;
     }
 
   private:

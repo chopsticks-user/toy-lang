@@ -7,6 +7,7 @@ namespace tl::fe {
     };
 
     readNext();
+    m_lastNonEmptyColumn = m_currentColumn;
     if (!m_stringState && trySkip()) {
       return false;
     }
@@ -47,8 +48,15 @@ namespace tl::fe {
   }
 
   auto Lexer::addToken(EToken tokenType) -> void {
+    sz column = m_currentColumn, line = m_currentLine;
+    if (m_currentColumn < m_currentToken.length() + 1) {
+      column = m_lastNonEmptyColumn + 1;
+      --line;
+    }
+    column -= m_currentToken.length() + 1;
+
     m_collectedTokens.emplace_back(
-      tokenType, m_currentToken, m_currentColumn, m_currentLine
+      tokenType, m_currentToken, m_currentLine, column
     );
     m_lastTokenType = m_collectedTokens.back().type();
   }
@@ -64,7 +72,7 @@ namespace tl::fe {
     }
 
     if (m_currentChar == '\t') {
-      m_currentColumn += 4;
+      m_currentColumn += 2;
       return true;
     }
 
@@ -115,6 +123,9 @@ namespace tl::fe {
     reset(filepath);
 
     while (!m_finished) {
+      while (isSpacingCharacter(m_currentChar)) {
+        advance();
+      }
       m_currentToken = m_currentChar;
 
       if (lexStringLiteral()) {
@@ -211,7 +222,7 @@ namespace tl::fe {
     }
 
     bool containsUnderscore = false;
-    while (advance() && isDigitOrLetter(m_currentChar) && isUnnamedIdentifier(m_currentChar)) {
+    while (advance() && (isDigitOrLetter(m_currentChar) || isUnnamedIdentifier(m_currentChar))) {
       // one exception thrown per token
       if (!containsUnderscore && isUnnamedIdentifier(m_currentChar)) {
         containsUnderscore = true;
@@ -230,7 +241,7 @@ namespace tl::fe {
   }
 
   auto Lexer::lexOperator() -> bool {
-    while (advance()) {
+    while (advance() && maybeOperatorCharacter(m_currentChar)) {
       consume();
     }
 

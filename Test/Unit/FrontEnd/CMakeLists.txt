@@ -15,6 +15,11 @@ target_link_libraries(
     Catch2::Catch2WithMain
     ${ToyLang_PROJECT_NAME}::Core
     ${ToyLang_PROJECT_NAME}::FrontEnd
+    ${ToyLang_PROJECT_NAME}::Syntax
 )
+add_compile_definitions(RESOURCE_DIR="${PROJECT_SOURCE_DIR}/Test/Unit/Resources")
 
-add_test(ToyLang_UnitTestFrontEnd ToyLang_UnitTestFrontEnd)
+add_test(
+    ToyLang_UnitTestFrontEnd
+    COMMAND ToyLang_UnitTestFrontEnd
+)
