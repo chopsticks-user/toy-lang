@@ -21,8 +21,8 @@ namespace tl::syntax {
   class Function final : public Node {
   public:
     Function(
-      std::optional<VNode> fIdentifier, std::optional<VNode> fPrototype,
-      std::optional<VNode> fBody,
+      VNode fIdentifier, VNode fPrototype,
+      VNode fBody,
       std::string storageSpecifier, bool pure
     );
 
@@ -38,6 +38,10 @@ namespace tl::syntax {
       return m_pure;
     }
 
+    auto body() const -> const VNode & {
+      return childAt(2);
+    }
+
     auto storage() const -> const std::string & {
       return m_storage;
     }
@@ -49,7 +53,7 @@ namespace tl::syntax {
 
   class Clazz final : public Node {
   public:
-    Clazz(std::string visibility, std::vector<VNode> parents, std::optional<VNode> body);
+    Clazz(std::string visibility, std::vector<VNode> parents, VNode body);
 
     auto visibility() -> const std::string & {
       return m_visibility;
@@ -62,7 +66,7 @@ namespace tl::syntax {
   class FunctionPrototype final : public Node {
   public:
     FunctionPrototype(
-      std::optional<VNode> returnTypeExpr,
+      VNode returnTypeExpr,
       std::vector<VNode> parameterDecls
     );
 

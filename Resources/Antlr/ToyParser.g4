@@ -42,7 +42,6 @@ functionDefinition
 
 functionDefinitionBody
     : blockStatement
-    | expression Semicolon
     ;
 
 specifier
@@ -123,16 +122,16 @@ ifPrototype
     ;
 
 returnStatement
-    : Return expression Semicolon
+    : Return expression? Semicolon
     ;
 
 primaryExpression
-    : Identifier
+    : lambdaExpression
+    | LeftParen expression RightParen
     | typeExpression
     | numberExpression
     | stringExpression
-    | lambdaExpression
-    | LeftParen expression RightParen
+    | Identifier
     | Self
     ;
 

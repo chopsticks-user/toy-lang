@@ -21,6 +21,6 @@ target_link_libraries(
 add_compile_definitions(RESOURCE_DIR="${PROJECT_SOURCE_DIR}/Test/Unit/Resources")
 
 add_test(
-    ToyLang_UnitTestFrontEnd
+    NAME ToyLang_UnitTestFrontEnd
     COMMAND ToyLang_UnitTestFrontEnd
 )

@@ -25,7 +25,7 @@ namespace tl::fe {
     Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
     // Non-type reserved keywords
-    Fn, Main, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
+    Fn, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
     Default, Export, Import, Module, Internal, Local, Pure, Var, Const, Print, Extern, Abstract,
     Interface, By, Else,
 

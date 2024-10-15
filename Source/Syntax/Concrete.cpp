@@ -10,19 +10,19 @@ namespace tl::syntax {
   }
 
   Function::Function(
-    std::optional<VNode> fIdentifier, std::optional<VNode> fPrototype,
-    std::optional<VNode> fBody,
+    VNode fIdentifier, VNode fPrototype,
+    VNode fBody,
     std::string storageSpecifier, bool pure
   )
-    : Node({fIdentifier.value(), fPrototype.value(), fBody.value()}),
+    : Node({fIdentifier, fPrototype, fBody}),
       m_pure(pure), m_storage(std::move(storageSpecifier)) {
   }
 
-  Clazz::Clazz(std::string visibility, std::vector<VNode> parents, std::optional<VNode> body)
+  Clazz::Clazz(std::string visibility, std::vector<VNode> parents, VNode body)
     : Node({
         [&]() {
           // todo: move args
-          auto v = std::vector{body.value()};
+          auto v = std::vector{body};
           v.insert(v.end(), parents.begin(), parents.end());
           return v;
         }()
@@ -30,12 +30,12 @@ namespace tl::syntax {
   }
 
   FunctionPrototype::FunctionPrototype(
-    std::optional<VNode> returnTypeExpr,
+    VNode returnTypeExpr,
     std::vector<VNode> parameterDecls
   ) : Node({
     [&]() {
       // todo: move args
-      auto v = std::vector{returnTypeExpr.value()};
+      auto v = std::vector{returnTypeExpr};
       v.insert(v.end(), parameterDecls.begin(), parameterDecls.end());
       return v;
     }()

@@ -7,9 +7,9 @@
 using tl::util::apply;
 using tl::fe::Lexer;
 
-std::filesystem::path resourceDir = RESOURCE_DIR;
+static std::filesystem::path resourceDir = RESOURCE_DIR;
 
-TEST_CASE("Simple program", "[Lexer]") {
+TEST_CASE("Lexer: Simple program", "[Lexer]") {
   auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
   for (const auto &token: tokens) {
     std::cout << token.string() << '\n';

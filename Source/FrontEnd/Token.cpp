@@ -3,7 +3,6 @@
 namespace tl::fe {
   static const std::unordered_map<std::string, EToken> nonTypeKeywordTable = {
     {"fn", EToken::Fn},
-    {"main", EToken::Main},
     {"class", EToken::Class},
     {"super", EToken::Super},
     {"self", EToken::Self},
@@ -34,7 +33,7 @@ namespace tl::fe {
   };
 
   static const std::unordered_set<std::string> fundamentalTypes{
-    "int", "float", "bool", "char", "string"
+    "int", "float", "bool", "char", "string", "void"
   };
 
   static const std::unordered_set<EToken> reservedTokens{

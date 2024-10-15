@@ -12,6 +12,8 @@ namespace tl::syntax {
 
     auto childAt(sz index) const -> const VNode &;
 
+    auto nChildren() const noexcept -> sz;
+
   protected:
     explicit Node(std::vector<VNode> children) noexcept;
 
@@ -21,11 +23,11 @@ namespace tl::syntax {
 
     auto lastChild() -> VNode &;
 
-    auto nChildren() -> sz;
-
   private:
     std::vector<VNode> m_children;
   };
+
+  auto isEmpty(const VNode &node) -> bool;
 }
 
 #endif // TOYLANG_SYNTAX_BASE_HPP
