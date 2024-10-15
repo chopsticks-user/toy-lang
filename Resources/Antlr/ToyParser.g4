@@ -5,19 +5,27 @@ options {
 }
 
 translationUnit
-    : definition* EOF
+    : definition*
     ;
 
 definition
     : functionDefinition
     | identifierDeclStatement
     | classDefinition
-//    | moduleDeclStatement
-//    | importDeclStatement
+    | moduleDeclStatement
+    | importDeclStatement
+    ;
+
+moduleDeclStatement
+    : Module Identifier (Colon2 Identifier)* Semicolon
+    ;
+
+importDeclStatement
+    : Import Identifier (Colon2 Identifier)* Semicolon
     ;
 
 classDefinition
-    : specifier? (Class | Interface) (Colon classParentList) classDefinitionBody
+    : visibilitySpecifier? (Class | Interface) (Colon classParentList) classDefinitionBody
     ;
 
 classParentList
@@ -79,7 +87,7 @@ controlStatement
     ;
 
 forStatement
-    : For LeftParen (forRangePrototype | forRegularPrototype) RightParen blockStatement
+    : For LeftParen? (forRangePrototype | forRegularPrototype) RightParen? blockStatement
     ;
 
 forRangePrototype
@@ -107,7 +115,7 @@ identifierDeclFragment
     ;
 
 ifStatement
-    : If LeftParen ifPrototype RightParen blockStatement (Else (blockStatement | ifStatement))?
+    : If LeftParen? ifPrototype RightParen? blockStatement (Else (blockStatement | ifStatement))?
     ;
 
 ifPrototype

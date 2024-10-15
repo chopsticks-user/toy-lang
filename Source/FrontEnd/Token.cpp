@@ -30,6 +30,7 @@ namespace tl::fe {
     {"abstract", EToken::Abstract},
     {"interface", EToken::Interface},
     {"by", EToken::By},
+    {"else", EToken::Else},
   };
 
   static const std::unordered_set<std::string> fundamentalTypes{

@@ -6,7 +6,16 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class TranslationUnit {
+  class TranslationUnit final : public Node {
+  public:
+    // todo
+    explicit TranslationUnit(std::vector<VNode> definitions);
+
+    auto definition(sz index) -> const VNode & {
+      return childAt(index);
+    }
+
+  private:
   };
 
   class Function final : public Node {
@@ -38,7 +47,16 @@ namespace tl::syntax {
     std::string m_storage;
   };
 
-  class Clazz {
+  class Clazz final : public Node {
+  public:
+    Clazz(std::string visibility, std::vector<VNode> parents, std::optional<VNode> body);
+
+    auto visibility() -> const std::string & {
+      return m_visibility;
+    }
+
+  private:
+    std::string m_visibility;
   };
 
   class FunctionPrototype final : public Node {

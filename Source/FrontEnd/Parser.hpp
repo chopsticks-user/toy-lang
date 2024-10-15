@@ -17,7 +17,6 @@ namespace tl::fe {
   private:
     auto current() const -> Token;
 
-    template<typename... T>
     auto match(std::same_as<EToken> auto... expected) -> bool;
 
     auto peekNext() -> Token;
@@ -25,7 +24,7 @@ namespace tl::fe {
     auto peekPrev() -> Token;
 
   private:
-    auto parseTranslationUnit() -> NodeOrEmpty;
+    auto parseTranslationUnit() -> syntax::TranslationUnit;
 
     auto parseClassDefinition() -> NodeOrEmpty;
 
@@ -88,6 +87,16 @@ namespace tl::fe {
     auto parseParameterDeclFragment() -> NodeOrEmpty;
 
     auto parseLambdaExpression() -> NodeOrEmpty;
+
+    auto parseStatement() -> NodeOrEmpty;
+
+    auto parseControlStatement() -> NodeOrEmpty;
+
+    auto parseIfStatement() -> NodeOrEmpty;
+
+    auto parseForStatement() -> NodeOrEmpty;
+
+    auto parseReturnStatement() -> NodeOrEmpty;
 
   private:
     TokenIterator m_tokenIt;
