@@ -162,13 +162,9 @@ namespace tl::fe {
 
     auto body = parseBlockStatement();
 
-    auto parentView = parents
-                      | rv::filter([](const syntax::VNode &node) {
-                        return !isEmpty(node);
-                      })
-                      | rv::transform([](const syntax::VNode &node) {
-                        return node;
-                      });
+    auto parentView = parents | rv::filter([](const syntax::VNode &node) {
+      return !isEmpty(node);
+    });
     return syntax::Clazz(visibility, {parentView.begin(), parentView.end()}, body);
   }
 
@@ -237,14 +233,9 @@ namespace tl::fe {
         throw std::runtime_error("Missing ; required in parseModuleStatement");
       }
 
-      auto fragmentView = fragments
-                          | rv::filter(
+      auto fragmentView = fragments | rv::filter(
                             [](const syntax::VNode &node) {
                               return !isEmpty(node);
-                            })
-                          | rv::transform(
-                            [](const syntax::VNode &node) {
-                              return node;
                             });
       return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
     }
@@ -273,14 +264,9 @@ namespace tl::fe {
       throw std::runtime_error("Missing ; required in parseImportStatement");
     }
 
-    auto fragmentView = fragments
-                        | rv::filter(
+    auto fragmentView = fragments | rv::filter(
                           [](const syntax::VNode &node) {
                             return !isEmpty(node);
-                          })
-                        | rv::transform(
-                          [](const syntax::VNode &node) {
-                            return node;
                           });
     return syntax::ImportExpr({fragmentView.begin(), fragmentView.end()});
   }

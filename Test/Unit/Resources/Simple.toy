@@ -11,8 +11,19 @@ export double: (const x: float) -> float pure {
 }
 
 main: () -> void {
-    for(var i: int = 0; i < 5; i++) {
+    var x: Int = 5;
+
+    if x > 4 {
+        println(x);
+    } else if (x > 8) {
+        println(x * 2);
+    } else {
+        println(":(");
+    }
+
+    for var i: int = 0; i < 5; i++ {
         println("{i |> double}");
     }
+
     return;
 }

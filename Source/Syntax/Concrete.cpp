@@ -15,7 +15,7 @@ namespace tl::syntax {
     std::string storageSpecifier, bool pure
   )
     : Node({fIdentifier, fPrototype, fBody}),
-      m_pure(pure), m_storage(std::move(storageSpecifier)) {
+      m_pure(pure), m_storage(storageSpecifier.empty() ? "export" : std::move(storageSpecifier)) {
   }
 
   Clazz::Clazz(std::string visibility, std::vector<VNode> parents, VNode body)
@@ -33,7 +33,7 @@ namespace tl::syntax {
     VNode returnTypeExpr,
     std::vector<VNode> parameterDecls
   ) : Node({
-    [&]() {
+    [&] {
       // todo: move args
       auto v = std::vector{returnTypeExpr};
       v.insert(v.end(), parameterDecls.begin(), parameterDecls.end());
