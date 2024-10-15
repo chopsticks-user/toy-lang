@@ -225,6 +225,17 @@ namespace tl::syntax {
 
     auto subscript() const noexcept -> VNode;
   };
+
+  class ModuleExpr final : public Node {
+  public:
+    explicit ModuleExpr(std::vector<VNode> fragments);
+
+    auto fragment(sz index) -> const VNode & {
+      return childAt(index);
+    }
+
+  private:
+  };
 }
 
 #endif // TOYLANG_SYNTAX_EXPRESSIONS_HPP

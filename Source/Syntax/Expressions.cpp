@@ -91,4 +91,8 @@ namespace tl::syntax {
   auto SubScriptingExpr::subscript() const noexcept -> VNode {
     return childAt(1);
   }
+
+  ModuleExpr::ModuleExpr(std::vector<VNode> fragments)
+    : Node(std::move(fragments)) {
+  }
 }

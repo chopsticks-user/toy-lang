@@ -5,7 +5,6 @@ namespace tl::fe {
     return *m_tokenIt;
   }
 
-  template<typename... T>
   auto Parser::match(std::same_as<EToken> auto... expected) -> bool {
     ++m_tokenIt;
 
@@ -29,10 +28,48 @@ namespace tl::fe {
 
   auto Parser::operator()(Tokens tokens) -> syntax::VNode {
     m_tokenIt = tokens.begin();
-    return parseTranslationUnit().value();
+    return parseTranslationUnit();
   }
 
-  auto Parser::parseTranslationUnit() -> NodeOrEmpty {
+  auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
+    bool allEmpty = false;
+    std::vector<syntax::VNode> definitions;
+
+    while (!allEmpty) {
+      allEmpty = true;
+
+      auto moduleStmt = parseModuleStatement();
+      if (moduleStmt.has_value()) {
+        allEmpty = false;
+        definitions.push_back(moduleStmt.value());
+      }
+
+      auto importStmt = parseImportStatement();
+      if (importStmt.has_value()) {
+        allEmpty = false;
+        definitions.push_back(importStmt.value());
+      }
+
+      auto idDecl = parseIdentifierDeclStatement();
+      if (idDecl.has_value()) {
+        allEmpty = false;
+        definitions.push_back(idDecl.value());
+      }
+
+      auto classDef = parseClassDefinition();
+      if (classDef.has_value()) {
+        allEmpty = false;
+        definitions.push_back(classDef.value());
+      }
+
+      auto functionDef = parseFunctionDefinition();
+      if (functionDef.has_value()) {
+        allEmpty = false;
+        definitions.push_back(functionDef.value());
+      }
+    }
+
+    return syntax::TranslationUnit(definitions);
   }
 
   auto Parser::parseFunctionDefinition() -> NodeOrEmpty {
@@ -49,6 +86,8 @@ namespace tl::fe {
         // todo: throw
         return {};
       }
+    } else {
+      return {};
     }
 
     prototype = parseFunctionPrototype();
@@ -105,6 +144,33 @@ namespace tl::fe {
   }
 
   auto Parser::parseClassDefinition() -> NodeOrEmpty {
+    namespace rv = std::ranges::views;
+
+    auto visibility = parseVisibilitySpecifier();
+
+    if (!match(EToken::Class, EToken::Interface)) {
+      return {};
+    }
+
+    std::vector<NodeOrEmpty> parents;
+    if (match(EToken::Colon)) {
+      parents.push_back(parseTypeExpression());
+
+      while (match(EToken::Comma)) {
+        parents.push_back(parseTypeExpression());
+      }
+    }
+
+    auto body = parseBlockStatement();
+
+    auto parentView = parents
+                      | rv::filter([](const NodeOrEmpty &node) {
+                        return node.has_value();
+                      })
+                      | rv::transform([](const NodeOrEmpty &node) {
+                        return node.value();
+                      });
+    return syntax::Clazz(visibility, {parentView.begin(), parentView.end()}, body);
   }
 
   auto Parser::parseIdentifierDeclStatement() -> NodeOrEmpty {
@@ -152,9 +218,71 @@ namespace tl::fe {
   }
 
   auto Parser::parseModuleStatement() -> NodeOrEmpty {
+    namespace rv = std::ranges::views;
+
+    if (match(EToken::Module)) {
+      auto fragments = std::vector<NodeOrEmpty>{};
+
+      if (match(EToken::Identifier)) {
+        fragments.push_back(syntax::Identifier(peekPrev().string()));
+      }
+
+      while (match(EToken::Colon2)) {
+        if (match(EToken::Identifier)) {
+          fragments.push_back(syntax::Identifier(peekPrev().string()));
+        }
+      }
+
+      if (!match(EToken::Semicolon)) {
+        throw std::runtime_error("Missing ; required in parseModuleStatement");
+      }
+
+      auto fragmentView = fragments
+                          | rv::filter(
+                            [](const NodeOrEmpty &node) {
+                              return node.has_value();
+                            })
+                          | rv::transform(
+                            [](const NodeOrEmpty &node) {
+                              return node.value();
+                            });
+      return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
+    }
+
+    return {};
   }
 
   auto Parser::parseImportStatement() -> NodeOrEmpty {
+    namespace rv = std::ranges::views;
+
+    if (!match(EToken::Import)) {
+      return {};
+    }
+
+    auto fragments = std::vector<NodeOrEmpty>{};
+
+    if (match(EToken::Identifier)) {
+      fragments.push_back(syntax::Identifier(peekPrev().string()));
+    }
+
+    while (match(EToken::Colon2) && match(EToken::Identifier)) {
+      fragments.push_back(syntax::Identifier(peekPrev().string()));
+    }
+
+    if (!match(EToken::Semicolon)) {
+      throw std::runtime_error("Missing ; required in parseImportStatement");
+    }
+
+    auto fragmentView = fragments
+                        | rv::filter(
+                          [](const NodeOrEmpty &node) {
+                            return node.has_value();
+                          })
+                        | rv::transform(
+                          [](const NodeOrEmpty &node) {
+                            return node.value();
+                          });
+    return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
   }
 
   auto Parser::parseSpecifier() -> std::string {
@@ -356,6 +484,8 @@ namespace tl::fe {
 
       return syntax::BinaryExpr(operand, expr, op);
     }
+
+    return {};
   }
 
   auto Parser::parsePrimaryExpression() -> NodeOrEmpty {

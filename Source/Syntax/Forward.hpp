@@ -13,6 +13,7 @@ namespace tl::syntax {
   class SubScriptingExpr;
   class IdentifierDeclFragment;
   class ParameterDeclFragment;
+  class ModuleExpr;
 
   class IntegerLiteral;
   class FloatLiteral;
@@ -25,11 +26,14 @@ namespace tl::syntax {
   class FunctionPrototype;
   class Program;
   class Function;
+  class Clazz;
+  class TranslationUnit;
 
   using VNode = std::variant<
-    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
-    TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr, BlockStatement, IdentifierDeclFragment,
-    IdentifierDeclStatement, ParameterDeclFragment, FunctionPrototype, Function
+    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
+    BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
+    BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
+    FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit
   >;
 }
 

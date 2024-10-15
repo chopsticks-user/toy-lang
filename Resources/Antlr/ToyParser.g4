@@ -5,19 +5,27 @@ options {
 }
 
 translationUnit
-    : definition* EOF
+    : definition*
     ;
 
 definition
     : functionDefinition
     | identifierDeclStatement
     | classDefinition
-//    | moduleDeclStatement
-//    | importDeclStatement
+    | moduleDeclStatement
+    | importDeclStatement
+    ;
+
+moduleDeclStatement
+    : Module Identifier (Colon2 Identifier)* Semicolon
+    ;
+
+importDeclStatement
+    : Import Identifier (Colon2 Identifier)* Semicolon
     ;
 
 classDefinition
-    : specifier? (Class | Interface) (Colon classParentList) classDefinitionBody
+    : visibilitySpecifier? (Class | Interface) (Colon classParentList) classDefinitionBody
     ;
 
 classParentList
