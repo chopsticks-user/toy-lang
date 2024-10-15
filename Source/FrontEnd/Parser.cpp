@@ -37,12 +37,118 @@ namespace tl::fe {
 
   auto Parser::parseFunctionDefinition() -> NodeOrEmpty {
     auto specifier = parseSpecifier();
+    NodeOrEmpty prototype, identifier, body;
+    bool pure = false;
+
+    if (match(EToken::Fn) && match(EToken::Identifier)) {
+      identifier = syntax::Identifier{peekPrev().string()};
+    } else if (match(EToken::Identifier)) {
+      identifier = syntax::Identifier{peekPrev().string()};
+
+      if (!match(EToken::Colon)) {
+        // todo: throw
+        return {};
+      }
+    }
+
+    prototype = parseFunctionPrototype();
+
+    // qualifier
+    if (match(EToken::Pure)) {
+      pure = true;
+    }
+
+    body = parseBlockStatement();
+    if (!body.has_value()) {
+      body = parseExpression();
+
+      if (!match(EToken::Semicolon)) {
+        return {};
+      }
+    }
+
+    return syntax::Function{identifier, prototype, body, specifier, pure};
+  }
+
+  auto Parser::parseFunctionPrototype() -> NodeOrEmpty {
+    namespace rv = std::ranges::views;
+
+    if (match(EToken::LeftParen)) {
+      std::vector paramFragments{parseParameterDeclFragment()};
+      while (match(EToken::Comma)) {
+        paramFragments.push_back(parseParameterDeclFragment());
+      }
+
+      auto paramView = paramFragments
+                       | rv::filter([](const NodeOrEmpty &node) {
+                         return node.has_value();
+                       })
+                       | rv::transform([](const NodeOrEmpty &node) {
+                         return node.value();
+                       });
+
+      if (match(EToken::RightParen) && match(EToken::MinusGreater)) {
+        auto typeExpr = parseTypeExpression();
+        return syntax::FunctionPrototype(
+          typeExpr, {paramView.begin(), paramView.end()}
+        );
+      }
+    }
+
+    auto singleParam = parseParameterDeclFragment().value();
+    if (match(EToken::MinusGreater)) {
+      auto typeExpr = parseTypeExpression();
+      return syntax::FunctionPrototype(typeExpr, {singleParam});
+    }
+
+    return {};
   }
 
   auto Parser::parseClassDefinition() -> NodeOrEmpty {
   }
 
   auto Parser::parseIdentifierDeclStatement() -> NodeOrEmpty {
+    namespace rv = std::ranges::views;
+
+    std::string mutibilitySpecifier = "const";
+    if (match(EToken::Var, EToken::Const)) {
+      mutibilitySpecifier = peekPrev().string();
+    }
+
+    std::vector decls{parseIdentifierDeclFragment()};
+    while (match(EToken::Comma)) {
+      decls.push_back(parseIdentifierDeclFragment());
+    }
+
+    auto declView = decls
+                    | rv::filter([](const NodeOrEmpty &node) {
+                      return node.has_value();
+                    })
+                    | rv::transform([](const NodeOrEmpty &node) {
+                      return node.value();
+                    });
+    return syntax::IdentifierDeclStatement(
+      {declView.begin(), declView.end()},
+      mutibilitySpecifier
+    );
+  }
+
+  auto Parser::parseIdentifierDeclFragment() -> NodeOrEmpty {
+    if (match(EToken::Identifier)) {
+      auto identifier = syntax::Identifier(peekPrev().string());
+      if (match(EToken::Colon)) {
+        auto typeExpr = parseTypeExpression();
+        NodeOrEmpty rhsExpr;
+
+        if (match(EToken::Equal)) {
+          rhsExpr = parseExpression();
+        }
+
+        return syntax::IdentifierDeclFragment(identifier, typeExpr, rhsExpr);
+      }
+    }
+
+    return {};
   }
 
   auto Parser::parseModuleStatement() -> NodeOrEmpty {
@@ -56,7 +162,10 @@ namespace tl::fe {
   }
 
   auto Parser::parseVisibilitySpecifier() -> std::string {
-    return current().string();
+    if (match(EToken::Export, EToken::Internal, EToken::Local)) {
+      return peekPrev().string();
+    }
+    return "";
   }
 
   auto Parser::parseExpression() -> NodeOrEmpty {
@@ -250,6 +359,35 @@ namespace tl::fe {
   }
 
   auto Parser::parsePrimaryExpression() -> NodeOrEmpty {
+    if (match(EToken::Identifier, EToken::Self)) {
+      return syntax::Identifier(peekPrev().string());
+    }
+
+    if (match(EToken::FundamentalType, EToken::UserDefinedType)) {
+      return syntax::TypeExpr(peekPrev().string());
+    }
+
+    if (match(EToken::IntegerLiteral)) {
+      return syntax::IntegerLiteral(peekPrev().string());
+    }
+
+    if (match(EToken::FloatLiteral)) {
+      return syntax::FloatLiteral(peekPrev().string());
+    }
+
+    if (match(EToken::StringLiteral)) {
+      return syntax::StringLiteral(peekPrev().string());
+    }
+
+    if (match(EToken::LeftParen)) {
+      if (match(EToken::RightParen)) {
+        return parseExpression();
+      }
+
+      throw std::runtime_error("parenthesis expression");
+    }
+
+    throw std::runtime_error("unknown primary expression");
   }
 
   auto Parser::parseArgumentList() -> std::vector<syntax::VNode> {
@@ -269,5 +407,40 @@ namespace tl::fe {
                           return node.value();
                         });
     return {argumentView.begin(), argumentView.end()};
+  }
+
+  auto Parser::parseBlockStatement() -> NodeOrEmpty {
+    return {};
+  }
+
+  auto Parser::parseTypeExpression() -> NodeOrEmpty {
+    if (match(EToken::FundamentalType, EToken::UserDefinedType)) {
+      return syntax::TypeExpr(peekPrev().string());
+    }
+
+    return {};
+  }
+
+  auto Parser::parseParameterDeclFragment() -> NodeOrEmpty {
+    std::string mutibility = "const";
+    if (match(EToken::Var, EToken::Const)) {
+      mutibility = peekPrev().string();
+    }
+
+    return syntax::ParameterDeclFragment{parseIdentifierDeclFragment(), mutibility};
+  }
+
+  auto Parser::parseLambdaExpression() -> NodeOrEmpty {
+    auto prototype = parseFunctionPrototype();
+    bool pure = false;
+    auto identifier = syntax::Identifier("lambda"); // todo:
+
+    if (match(EToken::Pure)) {
+      pure = true;
+    }
+
+    return syntax::Function(
+      identifier, prototype, parseBlockStatement(), "", pure
+    );
   }
 }

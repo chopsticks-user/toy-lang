@@ -1,7 +1,26 @@
 #include "Expressions.hpp"
+#include "Statements.hpp"
+#include "Concrete.hpp"
 
 namespace tl::syntax {
+  ParameterDeclFragment::ParameterDeclFragment(
+    std::optional<VNode> identifierDeclFragment,
+    std::string mut
+  ) : Node({identifierDeclFragment.value()}), m_mutibility(std::move(mut)) {
+  }
+
+  IdentifierDeclFragment::IdentifierDeclFragment(
+    std::optional<VNode> identifier,
+    std::optional<VNode> typeExpr,
+    std::optional<VNode> rhsExpr
+  ) : Node({identifier.value(), typeExpr.value(), rhsExpr.value()}) {
+  }
+
   Identifier::Identifier(std::string name)
+    : Node({}), m_name(std::move(name)) {
+  }
+
+  TypeExpr::TypeExpr(std::string name)
     : Node({}), m_name(std::move(name)) {
   }
 
@@ -63,5 +82,13 @@ namespace tl::syntax {
     std::optional<VNode> collection,
     std::optional<VNode> subscript
   ): Node({collection.value(), subscript.value()}) {
+  }
+
+  auto SubScriptingExpr::collection() const noexcept -> VNode {
+    return childAt(0);
+  }
+
+  auto SubScriptingExpr::subscript() const noexcept -> VNode {
+    return childAt(1);
   }
 }

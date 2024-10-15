@@ -6,9 +6,67 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
+  class ParameterDeclFragment final : public Node {
+  public:
+    ParameterDeclFragment(
+      std::optional<VNode> identifierDeclFragment,
+      std::string mut
+    );
+
+    auto identifier() -> const VNode & {
+      return childAt(0);
+    }
+
+    auto typeExpr() -> const VNode & {
+      return childAt(1);
+    }
+
+    auto mutibility() -> const std::string & {
+      return m_mutibility;
+    }
+
+  private:
+    std::string m_mutibility;
+  };
+
+  class IdentifierDeclFragment final : public Node {
+  public:
+    IdentifierDeclFragment(
+      std::optional<VNode> identifier,
+      std::optional<VNode> typeExpr,
+      std::optional<VNode> rhsExpr
+    );
+
+    auto identifier() -> const VNode & {
+      return childAt(0);
+    }
+
+    auto typeExpr() -> const VNode & {
+      return childAt(1);
+    }
+
+    auto rhsExpr() -> const VNode & {
+      return childAt(2);
+    }
+
+  private:
+  };
+
   class Identifier final : public Node {
   public:
     explicit Identifier(std::string name);
+
+    auto name() const noexcept -> const std::string & {
+      return m_name;
+    }
+
+  private:
+    std::string m_name;
+  };
+
+  class TypeExpr final : public Node {
+  public:
+    explicit TypeExpr(std::string name);
 
     auto name() const noexcept -> const std::string & {
       return m_name;
@@ -117,7 +175,7 @@ namespace tl::syntax {
 
   class StringLiteral final : public Node {
   public:
-    StringLiteral(
+    explicit StringLiteral(
       std::string value,
       std::vector<VNode> placeholders = {}
     );
@@ -163,13 +221,9 @@ namespace tl::syntax {
       std::optional<VNode> subscript
     );
 
-    auto collection() const noexcept -> VNode {
-      return childAt(0);
-    }
+    auto collection() const noexcept -> VNode;
 
-    auto subscript() const noexcept -> VNode {
-      return childAt(1);
-    }
+    auto subscript() const noexcept -> VNode;
   };
 }
 
