@@ -22,6 +22,10 @@ namespace tl::syntax {
 
   class BlockStatement;
   class IdentifierDeclStatement;
+  class ReturnStatement;
+  class AssignmentStatement;
+  class IfStatement;
+  class ForStatement;
 
   class FunctionPrototype;
   class Program;
@@ -33,7 +37,8 @@ namespace tl::syntax {
     BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
     BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
     BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
-    FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit
+    FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit, ReturnStatement,
+    AssignmentStatement, IfStatement, ForStatement
   >;
 }
 

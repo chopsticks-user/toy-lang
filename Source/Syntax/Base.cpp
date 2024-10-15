@@ -19,4 +19,16 @@ namespace tl::syntax {
   auto Node::childAt(sz index) -> VNode & {
     return m_children.at(index);
   }
+
+  auto Node::firstChild() -> VNode & {
+    return m_children.front();
+  }
+
+  auto Node::lastChild() -> VNode & {
+    return m_children.back();
+  }
+
+  auto Node::nChildren() -> sz {
+    return m_children.size();
+  }
 }

@@ -87,7 +87,7 @@ controlStatement
     ;
 
 forStatement
-    : For LeftParen (forRangePrototype | forRegularPrototype) RightParen blockStatement
+    : For LeftParen? (forRangePrototype | forRegularPrototype) RightParen? blockStatement
     ;
 
 forRangePrototype
@@ -115,7 +115,7 @@ identifierDeclFragment
     ;
 
 ifStatement
-    : If LeftParen ifPrototype RightParen blockStatement (Else (blockStatement | ifStatement))?
+    : If LeftParen? ifPrototype RightParen? blockStatement (Else (blockStatement | ifStatement))?
     ;
 
 ifPrototype

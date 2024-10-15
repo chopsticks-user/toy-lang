@@ -88,6 +88,16 @@ namespace tl::fe {
 
     auto parseLambdaExpression() -> NodeOrEmpty;
 
+    auto parseStatement() -> NodeOrEmpty;
+
+    auto parseControlStatement() -> NodeOrEmpty;
+
+    auto parseIfStatement() -> NodeOrEmpty;
+
+    auto parseForStatement() -> NodeOrEmpty;
+
+    auto parseReturnStatement() -> NodeOrEmpty;
+
   private:
     TokenIterator m_tokenIt;
   };

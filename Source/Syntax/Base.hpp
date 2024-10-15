@@ -17,6 +17,12 @@ namespace tl::syntax {
 
     auto childAt(sz index) -> VNode &;
 
+    auto firstChild() -> VNode &;
+
+    auto lastChild() -> VNode &;
+
+    auto nChildren() -> sz;
+
   private:
     std::vector<VNode> m_children;
   };

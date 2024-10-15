@@ -540,7 +540,20 @@ namespace tl::fe {
   }
 
   auto Parser::parseBlockStatement() -> NodeOrEmpty {
-    return {};
+    if (!match(EToken::LeftBrace)) {
+      return {};
+    }
+
+    std::vector<syntax::VNode> statements;
+    for (auto stmt = parseStatement(); stmt.has_value(); stmt = parseStatement()) {
+      statements.push_back(stmt.value());
+    }
+
+    if (!match(EToken::RightBrace)) {
+      throw std::runtime_error("Missing } required for parseBlockStatement");
+    }
+
+    return syntax::BlockStatement(statements);
   }
 
   auto Parser::parseTypeExpression() -> NodeOrEmpty {
@@ -572,5 +585,147 @@ namespace tl::fe {
     return syntax::Function(
       identifier, prototype, parseBlockStatement(), "", pure
     );
+  }
+
+  auto Parser::parseStatement() -> NodeOrEmpty {
+    if (auto control = parseIdentifierDeclStatement(); control.has_value()) {
+      return control;
+    }
+
+    if (auto idDecl = parseIdentifierDeclStatement(); idDecl.has_value()) {
+      return idDecl;
+    }
+
+    if (auto block = parseBlockStatement(); block.has_value()) {
+      return block;
+    }
+
+    if (auto returnStmt = parseIfStatement(); returnStmt.has_value()) {
+      return returnStmt;
+    }
+
+    auto expr = parseExpression();
+
+    // empty statement
+    if (!expr.has_value()) {
+      if (!match(EToken::Semicolon)) {
+        throw std::runtime_error("Missing ; required in parseStatement");
+      }
+
+      return {};
+    }
+
+    // assignment statement
+    if (match(EToken::StarEqual, EToken::FwdSlashEqual, EToken::PercentEqual, EToken::PlusEqual,
+              EToken::MinusEqual, EToken::Greater2Equal, EToken::Less2Equal, EToken::AmpersandEqual,
+              EToken::HatEqual, EToken::BarEqual, EToken::Equal)) {
+      auto lhs = parseExpression();
+      auto assignmentStmt = syntax::AssignmentStatement(expr, lhs, peekPrev().string());
+
+      if (!match(EToken::Semicolon)) {
+        throw std::runtime_error("Missing ; required in parseStatement");
+      }
+
+      return assignmentStmt;
+    }
+
+    if (!match(EToken::Semicolon)) {
+      throw std::runtime_error("Missing ; required in parseStatement");
+    }
+
+    // expression statement
+    return expr;
+  }
+
+  auto Parser::parseControlStatement() -> NodeOrEmpty {
+    if (auto ifStmt = parseIfStatement(); ifStmt.has_value()) {
+      return ifStmt;
+    }
+
+    if (auto forStmt = parseIfStatement(); forStmt.has_value()) {
+      return forStmt;
+    }
+
+    return {};
+  }
+
+  auto Parser::parseIfStatement() -> NodeOrEmpty {
+    if (!match(EToken::If)) {
+      return {};
+    }
+
+    // optional parenthesis, marked volatile to avoid being optimized away (maybe)
+    [[maybe_unused]] volatile bool mlp = match(EToken::LeftParen);
+
+    auto idDecl = parseIdentifierDeclStatement();
+    auto cond = parseExpression();
+
+    // optional parenthesis, marked volatile to avoid being optimized away (maybe)
+    [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
+
+    auto body = parseBlockStatement();
+    NodeOrEmpty elseBody;
+
+    if (match(EToken::Else)) {
+      elseBody = parseBlockStatement();
+      if (!elseBody.has_value()) {
+        elseBody = parseIfStatement();
+      }
+    }
+
+    return syntax::IfStatement(idDecl, cond, body, elseBody);
+  }
+
+  auto Parser::parseForStatement() -> NodeOrEmpty {
+    if (!match(EToken::For)) {
+      return {};
+    }
+
+    // optional parenthesis, marked volatile to avoid being optimized away (maybe)
+    [[maybe_unused]] volatile bool mlp = match(EToken::LeftParen);
+
+    auto idDecl = parseIdentifierDeclStatement();
+
+    // regular for loop
+    if (!idDecl.has_value()) {
+      if (!match(EToken::Semicolon)) {
+        throw std::runtime_error("missing ; required in parseForStatement");
+      }
+
+      auto cond = parseExpression();
+
+      if (!match(EToken::Semicolon)) {
+        throw std::runtime_error("missing ; required in parseForStatement");
+      }
+
+      auto postExpr = parseExpression();
+      return syntax::ForStatement(idDecl, cond, postExpr, parseBlockStatement());
+    }
+
+    // range-for loop
+    if (!match(EToken::Colon)) {
+      throw std::runtime_error("missing : required in parseForStatement");
+    }
+
+    auto collection = parseExpression();
+
+    // optional parenthesis, marked volatile to avoid being optimized away (maybe)
+    [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
+
+    return syntax::ForStatement(idDecl, collection, parseBlockStatement());
+  }
+
+  auto Parser::parseReturnStatement() -> NodeOrEmpty {
+    if (!match(EToken::Return)) {
+      return {};
+    }
+
+    auto expr = parseExpression();
+
+    if (!match(EToken::Semicolon)) {
+      throw std::runtime_error("Missing ; required in parseReturnStatement");
+    }
+
+    return syntax::ReturnStatement(expr, {});
   }
 }
