@@ -27,7 +27,7 @@ namespace tl::fe {
     // Non-type reserved keywords
     Fn, Main, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
     Default, Export, Import, Module, Internal, Local, Pure, Var, Const, Print, Extern, Abstract,
-    Interface,
+    Interface, By,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,
@@ -64,6 +64,8 @@ namespace tl::fe {
     sz m_line;
     sz m_column;
   };
+
+  using Tokens = std::vector<Token>;
 }
 
 #endif // TOYLANG_FRONTEND_TOKEN_HPP

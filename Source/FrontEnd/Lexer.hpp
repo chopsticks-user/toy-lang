@@ -6,8 +6,6 @@
 #include "Core/Core.hpp"
 
 namespace tl::fe {
-  using Tokens = std::vector<Token>;
-
   /**
    * @brief
    */

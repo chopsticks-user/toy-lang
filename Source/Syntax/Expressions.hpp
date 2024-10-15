@@ -20,7 +20,7 @@ namespace tl::syntax {
 
   class BinaryExpr final : public Node {
   public:
-    BinaryExpr(VNode lhs, VNode rhs, std::string op);
+    BinaryExpr(std::optional<VNode> lhs, std::optional<VNode> rhs, std::string op);
 
     auto left() const noexcept -> const VNode & {
       return childAt(0);
@@ -38,9 +38,43 @@ namespace tl::syntax {
     std::string m_op;
   };
 
+  class TernaryExpr final : public Node {
+  public:
+    TernaryExpr(
+      std::optional<VNode> operand1,
+      std::optional<VNode> operand2,
+      std::optional<VNode> operand3,
+      std::string op1, std::string op2
+    );
+
+    auto first() const noexcept -> const VNode & {
+      return childAt(0);
+    }
+
+    auto second() const noexcept -> const VNode & {
+      return childAt(1);
+    }
+
+    auto third() const noexcept -> const VNode & {
+      return childAt(2);
+    }
+
+    auto firstOp() const noexcept -> const std::string & {
+      return m_op1;
+    }
+
+    auto secondOp() const noexcept -> const std::string & {
+      return m_op2;
+    }
+
+  private:
+    std::string m_op1;
+    std::string m_op2;
+  };
+
   class UnaryExpr final : public Node {
   public:
-    UnaryExpr(VNode operand, std::string op);
+    UnaryExpr(std::optional<VNode> operand, std::string op);
 
     auto operand() const noexcept -> const VNode & {
       return childAt(0);
@@ -83,7 +117,7 @@ namespace tl::syntax {
 
   class StringLiteral final : public Node {
   public:
-    explicit StringLiteral(
+    StringLiteral(
       std::string value,
       std::vector<VNode> placeholders = {}
     );
@@ -110,6 +144,32 @@ namespace tl::syntax {
 
   private:
     bool m_value;
+  };
+
+  class FunctionCallExpr final : public Node {
+  public:
+    FunctionCallExpr(
+      std::optional<VNode> callee,
+      std::vector<VNode> args
+    );
+
+    auto callee() const noexcept -> VNode;
+  };
+
+  class SubScriptingExpr final : public Node {
+  public:
+    SubScriptingExpr(
+      std::optional<VNode> collection,
+      std::optional<VNode> subscript
+    );
+
+    auto collection() const noexcept -> VNode {
+      return childAt(0);
+    }
+
+    auto subscript() const noexcept -> VNode {
+      return childAt(1);
+    }
   };
 }
 
