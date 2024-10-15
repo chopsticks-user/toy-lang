@@ -11,29 +11,29 @@ namespace tl::syntax {
   ) : Node(std::move(fragments)), m_mutibility(std::move(mut)) {
   }
 
-  ReturnStatement::ReturnStatement(std::optional<VNode> expr, std::optional<VNode>)
-    : Node({expr.value()}) {
+  ReturnStatement::ReturnStatement(VNode expr)
+    : Node(isEmpty(expr) ? std::vector<VNode>{} : std::vector{expr}) {
   }
 
   AssignmentStatement::AssignmentStatement(
-    std::optional<VNode> left, std::optional<VNode> right, std::string op
-  ): Node({left.value(), right.value()}), m_op(std::move(op)) {
+    VNode left, VNode right, std::string op
+  ): Node({left, right}), m_op(std::move(op)) {
   }
 
   IfStatement::IfStatement(
-    std::optional<VNode> decl, std::optional<VNode> cond,
-    std::optional<VNode> body, std::optional<VNode> elseBody
-  ): Node({decl.value(), cond.value(), body.value(), elseBody.value()}) {
+    VNode decl, VNode cond,
+    VNode body, VNode elseBody
+  ): Node({decl, cond, body, elseBody}) {
   }
 
   ForStatement::ForStatement(
-    std::optional<VNode> decl, std::optional<VNode> cond,
-    std::optional<VNode> postExpr, std::optional<VNode> loopBody
-  ): Node({decl.value(), cond.value(), postExpr.value(), loopBody.value()}) {
+    VNode decl, VNode cond,
+    VNode postExpr, VNode loopBody
+  ): Node({decl, cond, postExpr, loopBody}) {
   }
 
   ForStatement::ForStatement(
-    std::optional<VNode> it, std::optional<VNode> collection, std::optional<VNode> loopBody
-  ): Node({it.value(), collection.value(), loopBody.value()}) {
+    VNode it, VNode collection, VNode loopBody
+  ): Node({it, collection, loopBody}) {
   }
 }

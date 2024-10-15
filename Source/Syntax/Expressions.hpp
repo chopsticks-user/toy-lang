@@ -9,7 +9,7 @@ namespace tl::syntax {
   class ParameterDeclFragment final : public Node {
   public:
     ParameterDeclFragment(
-      std::optional<VNode> identifierDeclFragment,
+      VNode identifierDeclFragment,
       std::string mut
     );
 
@@ -32,9 +32,9 @@ namespace tl::syntax {
   class IdentifierDeclFragment final : public Node {
   public:
     IdentifierDeclFragment(
-      std::optional<VNode> identifier,
-      std::optional<VNode> typeExpr,
-      std::optional<VNode> rhsExpr
+      VNode identifier,
+      VNode typeExpr,
+      VNode rhsExpr
     );
 
     auto identifier() -> const VNode & {
@@ -78,7 +78,7 @@ namespace tl::syntax {
 
   class BinaryExpr final : public Node {
   public:
-    BinaryExpr(std::optional<VNode> lhs, std::optional<VNode> rhs, std::string op);
+    BinaryExpr(VNode lhs, VNode rhs, std::string op);
 
     auto left() const noexcept -> const VNode & {
       return childAt(0);
@@ -99,9 +99,9 @@ namespace tl::syntax {
   class TernaryExpr final : public Node {
   public:
     TernaryExpr(
-      std::optional<VNode> operand1,
-      std::optional<VNode> operand2,
-      std::optional<VNode> operand3,
+      VNode operand1,
+      VNode operand2,
+      VNode operand3,
       std::string op1, std::string op2
     );
 
@@ -132,7 +132,23 @@ namespace tl::syntax {
 
   class UnaryExpr final : public Node {
   public:
-    UnaryExpr(std::optional<VNode> operand, std::string op);
+    UnaryExpr(VNode operand, std::string op);
+
+    auto operand() const noexcept -> const VNode & {
+      return childAt(0);
+    }
+
+    auto op() const noexcept -> const std::string & {
+      return m_op;
+    }
+
+  private:
+    std::string m_op;
+  };
+
+  class PostfixUnaryExpr final : public Node {
+  public:
+    PostfixUnaryExpr(VNode operand, std::string op);
 
     auto operand() const noexcept -> const VNode & {
       return childAt(0);
@@ -207,7 +223,7 @@ namespace tl::syntax {
   class FunctionCallExpr final : public Node {
   public:
     FunctionCallExpr(
-      std::optional<VNode> callee,
+      VNode callee,
       std::vector<VNode> args
     );
 
@@ -217,8 +233,8 @@ namespace tl::syntax {
   class SubScriptingExpr final : public Node {
   public:
     SubScriptingExpr(
-      std::optional<VNode> collection,
-      std::optional<VNode> subscript
+      VNode collection,
+      VNode subscript
     );
 
     auto collection() const noexcept -> VNode;
@@ -229,6 +245,17 @@ namespace tl::syntax {
   class ModuleExpr final : public Node {
   public:
     explicit ModuleExpr(std::vector<VNode> fragments);
+
+    auto fragment(sz index) -> const VNode & {
+      return childAt(index);
+    }
+
+  private:
+  };
+
+  class ImportExpr final : public Node {
+  public:
+    explicit ImportExpr(std::vector<VNode> fragments);
 
     auto fragment(sz index) -> const VNode & {
       return childAt(index);

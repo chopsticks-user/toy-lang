@@ -28,7 +28,11 @@ namespace tl::syntax {
     return m_children.back();
   }
 
-  auto Node::nChildren() -> sz {
+  auto Node::nChildren() const noexcept -> sz {
     return m_children.size();
+  }
+
+  auto isEmpty(const VNode &node) -> bool {
+    return node.index() == 0;
   }
 }

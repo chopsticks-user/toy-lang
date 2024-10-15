@@ -7,6 +7,7 @@ namespace tl::syntax {
   class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
+  class PostfixUnaryExpr;
   class Identifier;
   class TypeExpr;
   class FunctionCallExpr;
@@ -14,6 +15,7 @@ namespace tl::syntax {
   class IdentifierDeclFragment;
   class ParameterDeclFragment;
   class ModuleExpr;
+  class ImportExpr;
 
   class IntegerLiteral;
   class FloatLiteral;
@@ -34,11 +36,11 @@ namespace tl::syntax {
   class TranslationUnit;
 
   using VNode = std::variant<
-    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
+    std::monostate, BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
     BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
     BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
     FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit, ReturnStatement,
-    AssignmentStatement, IfStatement, ForStatement
+    AssignmentStatement, IfStatement, ForStatement, ImportExpr, PostfixUnaryExpr
   >;
 }
 

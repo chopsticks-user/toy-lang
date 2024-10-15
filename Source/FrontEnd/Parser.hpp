@@ -9,12 +9,15 @@
 namespace tl::fe {
   class Parser {
     using TokenIterator = Tokens::const_iterator;
-    using NodeOrEmpty = std::optional<syntax::VNode>;
 
   public:
     auto operator()(Tokens tokens) -> syntax::VNode;
 
   private:
+    auto revert() -> void;
+
+    auto advance() -> void;
+
     auto current() const -> Token;
 
     auto match(std::same_as<EToken> auto... expected) -> bool;
@@ -26,80 +29,83 @@ namespace tl::fe {
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
-    auto parseClassDefinition() -> NodeOrEmpty;
+    auto parseClassDefinition() -> syntax::VNode;
 
-    auto parseFunctionDefinition() -> NodeOrEmpty;
+    auto parseFunctionDefinition() -> syntax::VNode;
 
-    auto parseFunctionPrototype() -> NodeOrEmpty;
+    auto parseFunctionPrototype() -> syntax::VNode;
 
-    auto parseIdentifierDeclStatement() -> NodeOrEmpty;
+    auto parseIdentifierDeclStatement() -> syntax::VNode;
 
-    auto parseIdentifierDeclFragment() -> NodeOrEmpty;
+    auto parseIdentifierDeclFragment() -> syntax::VNode;
 
-    auto parseModuleStatement() -> NodeOrEmpty;
+    auto parseModuleStatement() -> syntax::VNode;
 
-    auto parseImportStatement() -> NodeOrEmpty;
+    auto parseImportStatement() -> syntax::VNode;
 
     auto parseSpecifier() -> std::string;
 
     auto parseVisibilitySpecifier() -> std::string;
 
-    auto parseExpression() -> NodeOrEmpty;
+    auto parseExpression() -> syntax::VNode;
 
-    auto parseSequenceExpression() -> NodeOrEmpty;
+    auto parseSequenceExpression() -> syntax::VNode;
 
-    auto parseTernaryExpression() -> NodeOrEmpty;
+    auto parseTernaryExpression() -> syntax::VNode;
 
-    auto parseNullCoalescingExpression() -> NodeOrEmpty;
+    auto parseNullCoalescingExpression() -> syntax::VNode;
 
-    auto parseLogicalOrExpression() -> NodeOrEmpty;
+    auto parseLogicalOrExpression() -> syntax::VNode;
 
-    auto parseLogicalAndExpression() -> NodeOrEmpty;
+    auto parseLogicalAndExpression() -> syntax::VNode;
 
-    auto parseInclusiveOrExpression() -> NodeOrEmpty;
+    auto parseInclusiveOrExpression() -> syntax::VNode;
 
-    auto parseExclusiveOrExpression() -> NodeOrEmpty;
+    auto parseExclusiveOrExpression() -> syntax::VNode;
 
-    auto parseAndExpression() -> NodeOrEmpty;
+    auto parseAndExpression() -> syntax::VNode;
 
-    auto parseEqualityExpression() -> NodeOrEmpty;
+    auto parseEqualityExpression() -> syntax::VNode;
 
-    auto parseRelationalExpression() -> NodeOrEmpty;
+    auto parseRelationalExpression() -> syntax::VNode;
 
-    auto parseShiftExpression() -> NodeOrEmpty;
+    auto parseShiftExpression() -> syntax::VNode;
 
-    auto parseAdditiveExpression() -> NodeOrEmpty;
+    auto parseAdditiveExpression() -> syntax::VNode;
 
-    auto parseMultiplicativeExpression() -> NodeOrEmpty;
+    auto parseMultiplicativeExpression() -> syntax::VNode;
 
-    auto parsePrefixUnaryExpression() -> NodeOrEmpty;
+    auto parsePrefixUnaryExpression() -> syntax::VNode;
 
-    auto parsePostfixExpression() -> NodeOrEmpty;
+    auto parsePostfixExpression() -> syntax::VNode;
 
-    auto parsePrimaryExpression() -> NodeOrEmpty;
+    auto parsePrimaryExpression() -> syntax::VNode;
 
     auto parseArgumentList() -> std::vector<syntax::VNode>;
 
-    auto parseBlockStatement() -> NodeOrEmpty;
+    auto parseBlockStatement() -> syntax::VNode;
 
-    auto parseTypeExpression() -> NodeOrEmpty;
+    auto parseTypeExpression() -> syntax::VNode;
 
-    auto parseParameterDeclFragment() -> NodeOrEmpty;
+    auto parseParameterDeclFragment() -> syntax::VNode;
 
-    auto parseLambdaExpression() -> NodeOrEmpty;
+    auto parseLambdaExpression() -> syntax::VNode;
 
-    auto parseStatement() -> NodeOrEmpty;
+    auto parseStatement() -> syntax::VNode;
 
-    auto parseControlStatement() -> NodeOrEmpty;
+    auto parseControlStatement() -> syntax::VNode;
 
-    auto parseIfStatement() -> NodeOrEmpty;
+    auto parseIfStatement() -> syntax::VNode;
 
-    auto parseForStatement() -> NodeOrEmpty;
+    auto parseForStatement() -> syntax::VNode;
 
-    auto parseReturnStatement() -> NodeOrEmpty;
+    auto parseReturnStatement() -> syntax::VNode;
+
+    auto parseLambdaPrototype() -> syntax::VNode;
 
   private:
     TokenIterator m_tokenIt;
+    TokenIterator m_tokenItEnd;
   };
 }
 

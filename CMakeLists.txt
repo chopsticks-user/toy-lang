@@ -9,6 +9,7 @@ add_subdirectory(Source)
 
 if (${ToyLang_BUILD_TESTS})
   message(STATUS "Enable building tests")
+  enable_testing()
   add_subdirectory(Test)
 endif ()
 

@@ -28,9 +28,9 @@ namespace tl::syntax {
 
   class ReturnStatement final : public Node {
   public:
-    // don't know why I need to put std::optional<VNode> at the end,
+    // don't know why I need to put VNode at the end,
     // took me half an hour but whatever
-    explicit ReturnStatement(std::optional<VNode> expr, std::optional<VNode>);
+    explicit ReturnStatement(VNode expr);
 
     auto expression() -> const VNode & {
       return childAt(0);
@@ -42,7 +42,7 @@ namespace tl::syntax {
   class AssignmentStatement final : public Node {
   public:
     AssignmentStatement(
-      std::optional<VNode> left, std::optional<VNode> right, std::string op
+      VNode left, VNode right, std::string op
     );
 
     auto left() -> const VNode & {
@@ -64,8 +64,8 @@ namespace tl::syntax {
   class IfStatement final : public Node {
   public:
     IfStatement(
-      std::optional<VNode> decl, std::optional<VNode> cond,
-      std::optional<VNode> body, std::optional<VNode> elseBody
+      VNode decl, VNode cond,
+      VNode body, VNode elseBody
     );
 
     auto declStatement() -> const VNode & {
@@ -91,12 +91,12 @@ namespace tl::syntax {
   class ForStatement final : public Node {
   public:
     ForStatement(
-      std::optional<VNode> decl, std::optional<VNode> cond,
-      std::optional<VNode> postExpr, std::optional<VNode> loopBody
+      VNode decl, VNode cond,
+      VNode postExpr, VNode loopBody
     );
 
     ForStatement(
-      std::optional<VNode> it, std::optional<VNode> collection, std::optional<VNode> loopBody
+      VNode it, VNode collection, VNode loopBody
     );
 
     auto isForRange() -> bool {
