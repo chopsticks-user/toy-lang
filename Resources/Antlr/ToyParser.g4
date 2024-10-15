@@ -47,7 +47,8 @@ functionPrototype
     ;
 
 functionPrototypePostfix
-    : LeftParen (parameterDeclFragment)* RightParen MinusGreater typeExpression
+    : LeftParen parameterDeclFragment (Comma parameterDeclFragment)*
+        RightParen MinusGreater typeExpression
     | parameterDeclFragment MinusGreater typeExpression
     ;
 
@@ -58,12 +59,7 @@ statement
     | returnStatement
     | expressionStatement
     | blockStatement
-//    | builtinStatement
     ;
-
-//builtinStatement
-//    : Print expression
-//    ;
 
 blockStatement
     : LeftBrace (statement)* RightBrace
@@ -94,7 +90,7 @@ forRegularPrototype
     ;
 
 parameterDeclFragment
-    : identifierDeclFragment+
+    : mutibilitySpecifier? identifierDeclFragment
     ;
 
 identifierDeclStatement
@@ -102,11 +98,11 @@ identifierDeclStatement
     ;
 
 identifierDeclFragmentList
-    : identifierDeclFragment (Equal expression)?  (Comma identifierDeclFragment (Equal expression)?)*
+    : identifierDeclFragment (Comma identifierDeclFragment)*
     ;
 
 identifierDeclFragment
-    : Identifier Colon typeExpression
+    : Identifier Colon typeExpression (Equal expression)?
     ;
 
 ifStatement
@@ -132,7 +128,7 @@ primaryExpression
     ;
 
 lambdaExpression
-    : functionPrototypePostfix qualifier blockStatement
+    : functionPrototypePostfix qualifier? blockStatement
     ;
 
 stringExpression

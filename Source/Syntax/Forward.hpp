@@ -8,21 +8,28 @@ namespace tl::syntax {
   class BinaryExpr;
   class UnaryExpr;
   class Identifier;
+  class TypeExpr;
   class FunctionCallExpr;
   class SubScriptingExpr;
+  class IdentifierDeclFragment;
+  class ParameterDeclFragment;
 
   class IntegerLiteral;
   class FloatLiteral;
   class StringLiteral;
   class BooleanLiteral;
 
+  class BlockStatement;
+  class IdentifierDeclStatement;
+
+  class FunctionPrototype;
   class Program;
   class Function;
-  class Block;
 
   using VNode = std::variant<
     BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
-    TernaryExpr, FunctionCallExpr, SubScriptingExpr
+    TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr, BlockStatement, IdentifierDeclFragment,
+    IdentifierDeclStatement, ParameterDeclFragment, FunctionPrototype, Function
   >;
 }
 

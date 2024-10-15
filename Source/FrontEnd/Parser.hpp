@@ -31,7 +31,11 @@ namespace tl::fe {
 
     auto parseFunctionDefinition() -> NodeOrEmpty;
 
+    auto parseFunctionPrototype() -> NodeOrEmpty;
+
     auto parseIdentifierDeclStatement() -> NodeOrEmpty;
+
+    auto parseIdentifierDeclFragment() -> NodeOrEmpty;
 
     auto parseModuleStatement() -> NodeOrEmpty;
 
@@ -76,6 +80,14 @@ namespace tl::fe {
     auto parsePrimaryExpression() -> NodeOrEmpty;
 
     auto parseArgumentList() -> std::vector<syntax::VNode>;
+
+    auto parseBlockStatement() -> NodeOrEmpty;
+
+    auto parseTypeExpression() -> NodeOrEmpty;
+
+    auto parseParameterDeclFragment() -> NodeOrEmpty;
+
+    auto parseLambdaExpression() -> NodeOrEmpty;
 
   private
   :
