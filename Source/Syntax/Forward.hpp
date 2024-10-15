@@ -4,9 +4,12 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
+  class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
   class Identifier;
+  class FunctionCallExpr;
+  class SubScriptingExpr;
 
   class IntegerLiteral;
   class FloatLiteral;
@@ -18,7 +21,8 @@ namespace tl::syntax {
   class Block;
 
   using VNode = std::variant<
-    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral
+    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
+    TernaryExpr, FunctionCallExpr, SubScriptingExpr
   >;
 }
 

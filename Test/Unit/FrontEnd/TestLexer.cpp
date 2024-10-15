@@ -10,7 +10,6 @@ using tl::fe::Lexer;
 std::filesystem::path resourceDir = RESOURCE_DIR;
 
 TEST_CASE("Simple program", "[Lexer]") {
-  // todo: fix operator lexing
   auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
   for (const auto &token: tokens) {
     std::cout << token.string() << '\n';

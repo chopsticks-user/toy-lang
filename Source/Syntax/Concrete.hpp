@@ -6,13 +6,13 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class Program {
+  class TranslationUnit {
   };
 
   class Function {
   };
 
-  class Block {
+  class Clazz {
   };
 }
 

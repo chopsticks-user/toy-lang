@@ -13,6 +13,8 @@
 #include <array>
 #include <unordered_set>
 #include <regex>
+#include <optional>
+#include <ranges>
 
 namespace tl {
   using i64 = std::int64_t;

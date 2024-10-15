@@ -12,6 +12,8 @@ definition
     : functionDefinition
     | identifierDeclStatement
     | classDefinition
+//    | moduleDeclStatement
+//    | importDeclStatement
     ;
 
 classDefinition
@@ -203,7 +205,7 @@ logicalOrExpression
     ;
 
 ternaryExpression
-    : nullCoalescingExpression (QMark expression Colon ternaryExpression)?
+    : nullCoalescingExpression (QMark nullCoalescingExpression Colon nullCoalescingExpression)?
     ;
 
 expression
@@ -223,13 +225,13 @@ exponentialExpression // from python
     ;
 
 nullCoalescingExpression // from JavaScript
-    : logicalOrExpression (QMark2)*
+    : logicalOrExpression (QMark2 logicalOrExpression)*
     ;
 
 //=============================================================================
 
 sequenceExpression
-    : ternaryExpression (Dot2 sequenceExpression (By expression)?)?
+    : ternaryExpression (Dot2 ternaryExpression (By ternaryExpression)?)?
     ;
 
 // Terminals
