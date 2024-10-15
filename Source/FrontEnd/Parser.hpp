@@ -89,8 +89,7 @@ namespace tl::fe {
 
     auto parseLambdaExpression() -> NodeOrEmpty;
 
-  private
-  :
+  private:
     TokenIterator m_tokenIt;
   };
 }

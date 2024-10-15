@@ -75,6 +75,7 @@ assignStatement
 
 controlStatement
     : forStatement
+    | ifStatement
     ;
 
 forStatement

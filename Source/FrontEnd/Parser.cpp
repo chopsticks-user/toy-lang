@@ -41,9 +41,9 @@ namespace tl::fe {
     bool pure = false;
 
     if (match(EToken::Fn) && match(EToken::Identifier)) {
-      identifier = peekPrev().string();
+      identifier = syntax::Identifier{peekPrev().string()};
     } else if (match(EToken::Identifier)) {
-      identifier = peekPrev().string();
+      identifier = syntax::Identifier{peekPrev().string()};
 
       if (!match(EToken::Colon)) {
         // todo: throw
@@ -135,7 +135,7 @@ namespace tl::fe {
 
   auto Parser::parseIdentifierDeclFragment() -> NodeOrEmpty {
     if (match(EToken::Identifier)) {
-      auto identifier = peekPrev().string();
+      auto identifier = syntax::Identifier(peekPrev().string());
       if (match(EToken::Colon)) {
         auto typeExpr = parseTypeExpression();
         NodeOrEmpty rhsExpr;

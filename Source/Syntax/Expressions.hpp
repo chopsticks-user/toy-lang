@@ -175,7 +175,7 @@ namespace tl::syntax {
 
   class StringLiteral final : public Node {
   public:
-    StringLiteral(
+    explicit StringLiteral(
       std::string value,
       std::vector<VNode> placeholders = {}
     );
