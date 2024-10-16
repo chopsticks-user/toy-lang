@@ -88,7 +88,6 @@ namespace tl::fe {
   }
 
   auto Lexer::appendError(std::runtime_error error) -> void {
-    std::cout << error.what() << std::endl;
     m_collectedErrors.push_back(std::move(error));
   }
 

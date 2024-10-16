@@ -2,16 +2,16 @@ module foo;
 
 import std::io;
 
-local product: (const x: Float, const y: float) -> float pure {
+local product: (const x: Float, const y: Float) -> Float pure {
     return x * y;
 }
 
-export double: (const x: float) -> float pure {
-    return x: float -> float pure { return x |> product(2); };
+export double: (const x: Float) -> Float pure {
+    return x: Float -> Float pure { return x |> product(2); };
 }
 
-main: () -> void {
-    var x: int = 5;
+main: () -> Void {
+    var x: Int = 5;
 
     if x > 4 {
         println(x);
@@ -21,7 +21,7 @@ main: () -> void {
         println(":(");
     }
 
-    for var i: int = 0; i < 5; i++ {
+    for var i: Int = 0; i < 5; i++ {
         println("{i |> double}");
     }
 

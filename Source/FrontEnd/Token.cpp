@@ -1,7 +1,7 @@
 #include "Token.hpp"
 
 namespace tl::fe {
-  static const std::unordered_map<std::string, EToken> nonTypeKeywordTable = {
+  static const std::unordered_map<String, EToken> nonTypeKeywordTable = {
     {"fn", EToken::Fn},
     {"class", EToken::Class},
     {"super", EToken::Super},
@@ -32,14 +32,16 @@ namespace tl::fe {
     {"else", EToken::Else},
   };
 
-  static const std::unordered_set<std::string> fundamentalTypes{
-    "int", "float", "bool", "char", "string", "void"
+  static const std::unordered_set<String> fundamentalTypes{
+    // "int", "float", "bool", "char", "string", "void",
+    "Int", "Float", "Bool", "Char", "String", "Void"
   };
 
-  static const std::unordered_set<EToken> reservedTokens{
+  static const std::unordered_set<String> reservedKeywords{
+    "int", "float", "bool", "char", "string", "void",
   };
 
-  static const std::unordered_map<std::string, EToken> operatorTable{
+  static const std::unordered_map<String, EToken> operatorTable{
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
     {"...", EToken::Dot3},
@@ -98,9 +100,13 @@ namespace tl::fe {
     {"$", EToken::Dollar},
   };
 
-  static auto identifierType(const std::string &idStr) noexcept -> EToken {
+  static auto identifierType(const String &idStr) noexcept -> EToken {
     if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
       return EToken::UserDefinedType;
+    }
+
+    if (reservedKeywords.contains(idStr)) {
+      return EToken::Reserved;
     }
 
     if (
@@ -120,12 +126,12 @@ namespace tl::fe {
     return EToken::Identifier;
   }
 
-  static auto operatorType(const std::string &opStr) noexcept -> EToken {
+  static auto operatorType(const String &opStr) noexcept -> EToken {
     const auto it = operatorTable.find(opStr);
     return it == operatorTable.end() ? EToken::Invalid : it->second;
   }
 
-  Token::Token(EToken type, std::string str, sz line, sz column)
+  Token::Token(EToken type, String str, sz line, sz column)
     : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
     if (m_type == EToken::Identifier) {
       m_type = identifierType(m_str);
@@ -133,14 +139,9 @@ namespace tl::fe {
     if (m_type == EToken::MaybeOperator) {
       m_type = operatorType(m_str);
     }
-
-    const auto it = reservedTokens.find(m_type);
-    if (it != reservedTokens.end()) {
-      m_type = EToken::Reserved;
-    }
   }
 
-  auto Token::isValidOperator(const std::string &symbol) -> bool {
+  auto Token::isValidOperator(const String &symbol) -> bool {
     return operatorType(symbol) != EToken::Invalid;
   }
 }

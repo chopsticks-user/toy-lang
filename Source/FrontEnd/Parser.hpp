@@ -11,7 +11,7 @@ namespace tl::fe {
     using TokenIterator = Tokens::const_iterator;
 
   public:
-    auto operator()(Tokens tokens) -> syntax::VNode;
+    auto operator()(Tokens tokens) -> syntax::TranslationUnit;
 
   private:
     auto revert() -> void;

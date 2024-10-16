@@ -6,7 +6,7 @@ namespace tl::fe {
   auto PrettyPrinter::operator()(const syntax::TranslationUnit &node) -> String {
     Strings results = visitChildren(node);
     return std::accumulate(
-             results.begin(), results.end(), std::string(""),
+             results.begin(), results.end(), ""s,
              [](const String &a, const String &b) {
                return a + "\n" + b;
              }) + "\n";
@@ -71,7 +71,7 @@ namespace tl::fe {
   auto PrettyPrinter::operator()(const syntax::BlockStatement &node) -> String {
     auto results = visitChildren(node);
     auto str = std::accumulate(
-      results.begin(), results.end(), std::string(),
+      results.begin(), results.end(), ""s,
       [](const String &a, const String &b) {
         return a + b + "\n";
       }

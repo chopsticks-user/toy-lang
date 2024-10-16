@@ -32,7 +32,7 @@ namespace tl::fe {
     return *(m_tokenIt++);
   }
 
-  auto Parser::operator()(Tokens tokens) -> syntax::VNode {
+  auto Parser::operator()(Tokens tokens) -> syntax::TranslationUnit {
     m_tokenIt = tokens.begin();
     m_tokenItEnd = tokens.end();
     return parseTranslationUnit();

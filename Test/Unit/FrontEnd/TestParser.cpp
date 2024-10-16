@@ -14,11 +14,4 @@ static std::filesystem::path resourceDir = RESOURCE_DIR;
 TEST_CASE("Parser: Simple program", "[Parser]") {
   auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
   auto translationUnit = apply<Parser>(tokens);
-
-  std::cout <<
-      std::get<tl::syntax::BlockStatement>(
-        std::get<tl::syntax::Function>(
-          std::get<tl::syntax::TranslationUnit>(translationUnit).definition(4)
-        ).body()
-      ).nChildren() << '\n';
 }
