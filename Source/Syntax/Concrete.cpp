@@ -18,7 +18,7 @@ namespace tl::syntax {
       m_pure(pure), m_storage(storageSpecifier.empty() ? "export" : std::move(storageSpecifier)) {
   }
 
-  Clazz::Clazz(std::string visibility, std::vector<VNode> parents, VNode body)
+  Clazz::Clazz(std::string visibility, std::vector<VNode> parents, const VNode &body)
     : Node({
         [&]() {
           // todo: move args
@@ -30,7 +30,7 @@ namespace tl::syntax {
   }
 
   FunctionPrototype::FunctionPrototype(
-    VNode returnTypeExpr,
+    const VNode &returnTypeExpr,
     std::vector<VNode> parameterDecls
   ) : Node({
     [&] {

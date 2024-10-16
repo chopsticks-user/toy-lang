@@ -40,7 +40,7 @@ namespace tl::fe {
   public:
     Token(EToken type, std::string str, sz line, sz column);
 
-    static auto isValidOperator(const std::string &symbol) -> bool;
+    static auto isValidOperator(StringView symbol) -> bool;
 
     auto type() const noexcept -> EToken {
       return m_type;

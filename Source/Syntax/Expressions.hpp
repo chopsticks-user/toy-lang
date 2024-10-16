@@ -21,7 +21,7 @@ namespace tl::syntax {
       return childAt(1);
     }
 
-    auto mutibility() const -> const std::string & {
+    auto mutibility() const -> const String & {
       return m_mutibility;
     }
 
@@ -56,7 +56,7 @@ namespace tl::syntax {
   public:
     explicit Identifier(std::string name);
 
-    auto name() const noexcept -> const std::string & {
+    auto name() const noexcept -> const String & {
       return m_name;
     }
 
@@ -68,7 +68,7 @@ namespace tl::syntax {
   public:
     explicit TypeExpr(std::string name);
 
-    auto name() const noexcept -> const std::string & {
+    auto name() const noexcept -> const String & {
       return m_name;
     }
 
@@ -88,7 +88,7 @@ namespace tl::syntax {
       return childAt(1);
     }
 
-    auto op() const noexcept -> const std::string & {
+    auto op() const noexcept -> const String & {
       return m_op;
     }
 
@@ -117,11 +117,11 @@ namespace tl::syntax {
       return childAt(2);
     }
 
-    auto firstOp() const noexcept -> const std::string & {
+    auto firstOp() const noexcept -> const String & {
       return m_op1;
     }
 
-    auto secondOp() const noexcept -> const std::string & {
+    auto secondOp() const noexcept -> const String & {
       return m_op2;
     }
 
@@ -138,7 +138,7 @@ namespace tl::syntax {
       return childAt(0);
     }
 
-    auto op() const noexcept -> const std::string & {
+    auto op() const noexcept -> const String & {
       return m_op;
     }
 
@@ -154,7 +154,7 @@ namespace tl::syntax {
       return childAt(0);
     }
 
-    auto op() const noexcept -> const std::string & {
+    auto op() const noexcept -> const String & {
       return m_op;
     }
 
@@ -167,7 +167,7 @@ namespace tl::syntax {
 
   class IntegerLiteral final : public Node {
   public:
-    explicit IntegerLiteral(const std::string &value);
+    explicit IntegerLiteral(const String &value);
 
     auto value() const noexcept -> i64 {
       return m_value;
@@ -179,7 +179,7 @@ namespace tl::syntax {
 
   class FloatLiteral final : public Node {
   public:
-    explicit FloatLiteral(const std::string &value);
+    explicit FloatLiteral(const String &value);
 
     auto value() const noexcept -> double {
       return m_value;
@@ -196,11 +196,11 @@ namespace tl::syntax {
       std::vector<VNode> placeholders = {}
     );
 
-    auto value() const noexcept -> const std::string & {
+    auto value() const noexcept -> const String & {
       return m_value;
     }
 
-    auto placeholder(sz index) const noexcept -> const VNode & {
+    auto placeholder(const sz index) const noexcept -> const VNode & {
       return childAt(index);
     }
 
@@ -210,7 +210,7 @@ namespace tl::syntax {
 
   class BooleanLiteral final : public Node {
   public:
-    explicit BooleanLiteral(const std::string &value);
+    explicit BooleanLiteral(const String &value);
 
     auto value() const noexcept -> bool {
       return m_value;
@@ -223,7 +223,7 @@ namespace tl::syntax {
   class FunctionCallExpr final : public Node {
   public:
     FunctionCallExpr(
-      VNode callee,
+      const VNode &callee,
       std::vector<VNode> args
     );
 

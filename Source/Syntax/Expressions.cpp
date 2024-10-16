@@ -47,12 +47,12 @@ namespace tl::syntax {
     : Node({operand}), m_op(std::move(op)) {
   }
 
-  IntegerLiteral::IntegerLiteral(const std::string &value)
-    : Node({}), m_value(std::stol(value)) {
+  IntegerLiteral::IntegerLiteral(const String &value)
+    : Node({}), m_value(std::stol(std::string(value))) {
   }
 
-  FloatLiteral::FloatLiteral(const std::string &value)
-    : Node({}), m_value(std::stod(value)) {
+  FloatLiteral::FloatLiteral(const String &value)
+    : Node({}), m_value(std::stod(std::string(value))) {
   }
 
   StringLiteral::StringLiteral(
@@ -62,12 +62,12 @@ namespace tl::syntax {
     : Node({std::move(placeholders)}), m_value(std::move(value)) {
   }
 
-  BooleanLiteral::BooleanLiteral(const std::string &value)
+  BooleanLiteral::BooleanLiteral(const String &value)
     : Node({}), m_value(value == "true") {
   }
 
   FunctionCallExpr::FunctionCallExpr(
-    VNode callee,
+    const VNode &callee,
     std::vector<VNode> args
   ) : Node({
     [&]() {

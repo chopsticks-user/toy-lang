@@ -11,7 +11,7 @@ namespace tl::syntax {
   ) : Node(std::move(fragments)), m_mutibility(std::move(mut)) {
   }
 
-  ReturnStatement::ReturnStatement(VNode expr)
+  ReturnStatement::ReturnStatement(const VNode &expr)
     : Node(isEmpty(expr) ? std::vector<VNode>{} : std::vector{expr}) {
   }
 
