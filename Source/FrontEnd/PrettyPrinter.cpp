@@ -36,7 +36,7 @@ namespace tl::fe {
     enterScope();
     Strings results = visitChildren(node);
     return node.storage() + " " + results[0] + ": " + results[1]
-           + (node.pure() ? " pure" : " ") + " {\n" + results[2];
+           + (node.pure() ? " pure" : "") + " {\n" + results[2];
   }
 
   auto PrettyPrinter::operator()(const syntax::FunctionPrototype &node) -> String {
@@ -69,10 +69,21 @@ namespace tl::fe {
   }
 
   auto PrettyPrinter::operator()(const syntax::BlockStatement &node) -> String {
-    auto result = scopeString() + "...\n";
+    auto results = visitChildren(node);
+    auto str = std::accumulate(
+      results.begin(), results.end(), std::string(),
+      [](const String &a, const String &b) {
+        return a + b + "\n";
+      }
+    );
     exitScope();
-    result += "}\n";
-    return result;
+    str += "}\n";
+    return str;
+  }
+
+  auto PrettyPrinter::operator()(const syntax::ReturnStatement &node) -> String {
+    auto results = visitChildren(node);
+    return scopeString() + "return" + (results.empty() ? "" : " " + results[0]) + ";";
   }
 
   auto PrettyPrinter::operator()(const syntax::Identifier &node) -> String {
@@ -80,8 +91,8 @@ namespace tl::fe {
   }
 
   auto PrettyPrinter::operator()(const syntax::BinaryExpr &node) -> String {
-    visitChildren(node);
-    return "Visiting BinaryExpr\n";
+    auto results = visitChildren(node);
+    return results[0] + " " + node.op() + " " + results[1];
   }
 
   auto PrettyPrinter::operator()(const syntax::UnaryExpr &node) -> String {

@@ -2,7 +2,7 @@ module foo;
 
 import std::io;
 
-local product: (const x: float, const y: float) -> float pure {
+local product: (const x: Float, const y: float) -> float pure {
     return x * y;
 }
 
@@ -11,7 +11,7 @@ export double: (const x: float) -> float pure {
 }
 
 main: () -> void {
-    var x: Int = 5;
+    var x: int = 5;
 
     if x > 4 {
         println(x);

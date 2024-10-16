@@ -180,6 +180,10 @@ namespace tl::fe {
       decls.push_back(parseIdentifierDeclFragment());
     }
 
+    if (!match(EToken::Semicolon)) {
+      throw std::runtime_error("missing ; required in parseIdentifierDeclStatement");
+    }
+
     auto declView = decls
                     | rv::filter([](const syntax::VNode &node) {
                       return !isEmpty(node);
@@ -697,9 +701,9 @@ namespace tl::fe {
 
     // regular for loop
     if (!isEmpty(idDecl)) {
-      if (!match(EToken::Semicolon)) {
-        throw std::runtime_error("missing ; required in parseForStatement");
-      }
+      // if (!match(EToken::Semicolon)) {
+      //   throw std::runtime_error("missing ; required in parseForStatement");
+      // }
 
       auto cond = parseExpression();
 

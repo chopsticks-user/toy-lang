@@ -99,6 +99,10 @@ namespace tl::fe {
   };
 
   static auto identifierType(const std::string &idStr) noexcept -> EToken {
+    if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
+      return EToken::UserDefinedType;
+    }
+
     if (
       const auto it = nonTypeKeywordTable.find(idStr);
       it != nonTypeKeywordTable.end()

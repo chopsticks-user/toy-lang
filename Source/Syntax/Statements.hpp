@@ -28,8 +28,6 @@ namespace tl::syntax {
 
   class ReturnStatement final : public Node {
   public:
-    // don't know why I need to put VNode at the end,
-    // took me half an hour but whatever
     explicit ReturnStatement(VNode expr);
 
     auto expression() -> const VNode & {

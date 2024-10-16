@@ -39,6 +39,8 @@ namespace tl::fe {
 
     auto operator()(const syntax::BlockStatement &node) -> String;
 
+    auto operator()(const syntax::ReturnStatement &node) -> String;
+
     auto operator()(const syntax::Identifier &node) -> String;
 
     auto operator()(const syntax::BinaryExpr &node) -> String;
