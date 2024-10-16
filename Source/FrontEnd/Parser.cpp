@@ -117,18 +117,16 @@ namespace tl::fe {
       }
     }
 
-    paramFragments.push_back(parseParameterDeclFragment());
-    while (match(EToken::Comma)) {
-      paramFragments.push_back(parseParameterDeclFragment());
+    if (auto first = parseParameterDeclFragment(); !isEmpty(first)) {
+      paramFragments.push_back(first);
+      while (match(EToken::Comma)) {
+        paramFragments.push_back(parseParameterDeclFragment());
+      }
     }
 
-    auto paramView = paramFragments
-                     | rv::filter([](const syntax::VNode &node) {
-                       return !isEmpty(node);
-                     })
-                     | rv::transform([](const syntax::VNode &node) {
-                       return node;
-                     });
+    auto paramView = paramFragments | rv::filter([](const syntax::VNode &node) {
+      return !isEmpty(node);
+    });
 
     [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
 
@@ -572,7 +570,11 @@ namespace tl::fe {
       mutibility = peekPrev().string();
     }
 
-    return syntax::ParameterDeclFragment{parseIdentifierDeclFragment(), mutibility};
+    if (auto idDecl = parseIdentifierDeclFragment(); !isEmpty(idDecl)) {
+      return syntax::ParameterDeclFragment{idDecl, mutibility};
+    }
+
+    return {};
   }
 
   auto Parser::parseLambdaExpression() -> syntax::VNode {

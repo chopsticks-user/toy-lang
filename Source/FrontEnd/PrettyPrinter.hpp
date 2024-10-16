@@ -31,6 +31,12 @@ namespace tl::fe {
 
     auto operator()(const syntax::FunctionPrototype &node) -> String;
 
+    auto operator()(const syntax::ParameterDeclFragment &node) -> String;
+
+    auto operator()(const syntax::IdentifierDeclFragment &node) -> String;
+
+    auto operator()(const syntax::TypeExpr &node) -> String;
+
     auto operator()(const syntax::BlockStatement &node) -> String;
 
     auto operator()(const syntax::Identifier &node) -> String;
@@ -46,6 +52,22 @@ namespace tl::fe {
     auto operator()(const syntax::StringLiteral &node) -> String;
 
     auto operator()(const syntax::BooleanLiteral &node) -> String;
+
+  private:
+    auto enterScope() -> void {
+      m_whiteSpaces += "  ";
+    }
+
+    auto exitScope() -> void {
+      m_whiteSpaces = m_whiteSpaces.substr(0, m_whiteSpaces.length() - 2);
+    }
+
+    auto scopeString() -> String {
+      return m_whiteSpaces;
+    }
+
+  private:
+    String m_whiteSpaces;
   };
 }
 

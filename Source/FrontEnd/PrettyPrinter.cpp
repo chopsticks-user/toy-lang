@@ -33,16 +33,46 @@ namespace tl::fe {
   }
 
   auto PrettyPrinter::operator()(const syntax::Function &node) -> String {
+    enterScope();
     Strings results = visitChildren(node);
-    auto str = node.storage() + " " + results[0] + ": ";
-    return str;
+    return node.storage() + " " + results[0] + ": " + results[1]
+           + (node.pure() ? " pure" : " ") + " {\n" + results[2];
   }
 
   auto PrettyPrinter::operator()(const syntax::FunctionPrototype &node) -> String {
+    Strings results = visitChildren(node);
+
+    if (results.size() == 1) {
+      return "() -> " + results[0];
+    }
+
+    return "(" + std::accumulate(
+             std::next(results.begin(), 2), results.end(), results[1],
+             [](const String &a, const String &b) {
+               return a + ", " + b;
+             }
+           ) + ") -> " + results[0];
+  }
+
+  auto PrettyPrinter::operator()(const syntax::ParameterDeclFragment &node) -> String {
+    Strings results = visitChildren(node);
+    return node.mutibility() + " " + results[0];
+  }
+
+  auto PrettyPrinter::operator()(const syntax::IdentifierDeclFragment &node) -> String {
+    Strings results = visitChildren(node);
+    return results[0] + ": " + results[1];
+  }
+
+  auto PrettyPrinter::operator()(const syntax::TypeExpr &node) -> String {
+    return node.name();
   }
 
   auto PrettyPrinter::operator()(const syntax::BlockStatement &node) -> String {
-    return "{...}";
+    auto result = scopeString() + "...\n";
+    exitScope();
+    result += "}\n";
+    return result;
   }
 
   auto PrettyPrinter::operator()(const syntax::Identifier &node) -> String {
