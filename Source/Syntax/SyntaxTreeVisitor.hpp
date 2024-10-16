@@ -8,11 +8,6 @@ namespace tl::syntax {
   class SyntaxTreeVisitor : public Visitor<
         TDerived, TReturn, VNode
       > {
-  public:
-    auto operator()(std::convertible_to<VNode> auto const &) -> TReturn {
-      return {};
-    }
-
   protected:
     using Super = SyntaxTreeVisitor;
   };

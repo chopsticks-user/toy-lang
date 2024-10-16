@@ -117,18 +117,16 @@ namespace tl::fe {
       }
     }
 
-    paramFragments.push_back(parseParameterDeclFragment());
-    while (match(EToken::Comma)) {
-      paramFragments.push_back(parseParameterDeclFragment());
+    if (auto first = parseParameterDeclFragment(); !isEmpty(first)) {
+      paramFragments.push_back(first);
+      while (match(EToken::Comma)) {
+        paramFragments.push_back(parseParameterDeclFragment());
+      }
     }
 
-    auto paramView = paramFragments
-                     | rv::filter([](const syntax::VNode &node) {
-                       return !isEmpty(node);
-                     })
-                     | rv::transform([](const syntax::VNode &node) {
-                       return node;
-                     });
+    auto paramView = paramFragments | rv::filter([](const syntax::VNode &node) {
+      return !isEmpty(node);
+    });
 
     [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
 
@@ -162,13 +160,9 @@ namespace tl::fe {
 
     auto body = parseBlockStatement();
 
-    auto parentView = parents
-                      | rv::filter([](const syntax::VNode &node) {
-                        return !isEmpty(node);
-                      })
-                      | rv::transform([](const syntax::VNode &node) {
-                        return node;
-                      });
+    auto parentView = parents | rv::filter([](const syntax::VNode &node) {
+      return !isEmpty(node);
+    });
     return syntax::Clazz(visibility, {parentView.begin(), parentView.end()}, body);
   }
 
@@ -237,14 +231,9 @@ namespace tl::fe {
         throw std::runtime_error("Missing ; required in parseModuleStatement");
       }
 
-      auto fragmentView = fragments
-                          | rv::filter(
+      auto fragmentView = fragments | rv::filter(
                             [](const syntax::VNode &node) {
                               return !isEmpty(node);
-                            })
-                          | rv::transform(
-                            [](const syntax::VNode &node) {
-                              return node;
                             });
       return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
     }
@@ -273,14 +262,9 @@ namespace tl::fe {
       throw std::runtime_error("Missing ; required in parseImportStatement");
     }
 
-    auto fragmentView = fragments
-                        | rv::filter(
+    auto fragmentView = fragments | rv::filter(
                           [](const syntax::VNode &node) {
                             return !isEmpty(node);
-                          })
-                        | rv::transform(
-                          [](const syntax::VNode &node) {
-                            return node;
                           });
     return syntax::ImportExpr({fragmentView.begin(), fragmentView.end()});
   }
@@ -586,7 +570,11 @@ namespace tl::fe {
       mutibility = peekPrev().string();
     }
 
-    return syntax::ParameterDeclFragment{parseIdentifierDeclFragment(), mutibility};
+    if (auto idDecl = parseIdentifierDeclFragment(); !isEmpty(idDecl)) {
+      return syntax::ParameterDeclFragment{idDecl, mutibility};
+    }
+
+    return {};
   }
 
   auto Parser::parseLambdaExpression() -> syntax::VNode {

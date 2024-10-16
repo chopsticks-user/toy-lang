@@ -8,6 +8,7 @@ target_sources(
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/TestLexer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TestParser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TestPrettyPrinter.cpp
 )
 #target_include_directories(ToyLang_UnitTestFrontEnd ${PROJECT_SOURCE_DIR}/Source)
 target_link_libraries(

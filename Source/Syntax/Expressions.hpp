@@ -13,15 +13,15 @@ namespace tl::syntax {
       std::string mut
     );
 
-    auto identifier() -> const VNode & {
+    auto identifier() const -> const VNode & {
       return childAt(0);
     }
 
-    auto typeExpr() -> const VNode & {
+    auto typeExpr() const -> const VNode & {
       return childAt(1);
     }
 
-    auto mutibility() -> const std::string & {
+    auto mutibility() const -> const std::string & {
       return m_mutibility;
     }
 

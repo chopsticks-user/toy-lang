@@ -33,8 +33,8 @@ int protected_main(int argc, char **argv) {
     }
   );
 
-  std::cout << tl::visit<tl::fe::PrettyPrinter>(binaryExpr) << '\n';
-  std::cout << tl::visit<tl::fe::PrettyPrinter>(stringLiteral) << '\n';
+  // std::cout << tl::visit<tl::fe::PrettyPrinter>(binaryExpr) << '\n';
+  // std::cout << tl::visit<tl::fe::PrettyPrinter>(stringLiteral) << '\n';
 
   return EXIT_SUCCESS;
 }

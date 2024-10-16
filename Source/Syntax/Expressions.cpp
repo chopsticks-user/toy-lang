@@ -6,7 +6,8 @@ namespace tl::syntax {
   ParameterDeclFragment::ParameterDeclFragment(
     VNode identifierDeclFragment,
     std::string mut
-  ) : Node({identifierDeclFragment}), m_mutibility(std::move(mut)) {
+  ) : Node({identifierDeclFragment}),
+      m_mutibility(mut.empty() ? "const" : std::move(mut)) {
   }
 
   IdentifierDeclFragment::IdentifierDeclFragment(

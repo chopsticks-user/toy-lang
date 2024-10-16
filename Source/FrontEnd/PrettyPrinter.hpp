@@ -7,25 +7,67 @@
 
 namespace tl::fe {
   class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
+    using String = std::string;
+    using Strings = std::vector<std::string>;
+
   public:
     using Super::operator();
 
-    auto operator()(const syntax::Identifier &node) -> std::string;
+    // using Visitable = syntax::VNode;
 
-    auto operator()(const syntax::BinaryExpr &node) -> std::string;
+    // using Visitable = std::variant<
+    //   syntax::TranslationUnit, syntax::ModuleExpr, syntax::Identifier, syntax::BinaryExpr,
+    //   syntax::UnaryExpr, syntax::IntegerLiteral, syntax::FloatLiteral, syntax::StringLiteral,
+    //   syntax::BooleanLiteral
+    // >;
 
-    auto operator()(const syntax::UnaryExpr &node) -> std::string;
+    auto operator()(const syntax::TranslationUnit &node) -> String;
 
-    auto operator()(const syntax::IntegerLiteral &node) -> std::string;
+    auto operator()(const syntax::ModuleExpr &node) -> String;
 
-    auto operator()(const syntax::FloatLiteral &node) -> std::string;
+    auto operator()(const syntax::ImportExpr &node) -> String;
 
-    auto operator()(const syntax::StringLiteral &node) -> std::string;
+    auto operator()(const syntax::Function &node) -> String;
 
-    auto operator()(const syntax::BooleanLiteral &node) -> std::string;
+    auto operator()(const syntax::FunctionPrototype &node) -> String;
+
+    auto operator()(const syntax::ParameterDeclFragment &node) -> String;
+
+    auto operator()(const syntax::IdentifierDeclFragment &node) -> String;
+
+    auto operator()(const syntax::TypeExpr &node) -> String;
+
+    auto operator()(const syntax::BlockStatement &node) -> String;
+
+    auto operator()(const syntax::Identifier &node) -> String;
+
+    auto operator()(const syntax::BinaryExpr &node) -> String;
+
+    auto operator()(const syntax::UnaryExpr &node) -> String;
+
+    auto operator()(const syntax::IntegerLiteral &node) -> String;
+
+    auto operator()(const syntax::FloatLiteral &node) -> String;
+
+    auto operator()(const syntax::StringLiteral &node) -> String;
+
+    auto operator()(const syntax::BooleanLiteral &node) -> String;
 
   private:
-    std::string result;
+    auto enterScope() -> void {
+      m_whiteSpaces += "  ";
+    }
+
+    auto exitScope() -> void {
+      m_whiteSpaces = m_whiteSpaces.substr(0, m_whiteSpaces.length() - 2);
+    }
+
+    auto scopeString() -> String {
+      return m_whiteSpaces;
+    }
+
+  private:
+    String m_whiteSpaces;
   };
 }
 
