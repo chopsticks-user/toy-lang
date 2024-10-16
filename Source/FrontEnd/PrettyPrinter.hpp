@@ -7,9 +7,6 @@
 
 namespace tl::fe {
   class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
-    using String = std::string;
-    using Strings = std::vector<std::string>;
-
   public:
     using Super::operator();
 
@@ -38,6 +35,8 @@ namespace tl::fe {
     auto operator()(const syntax::TypeExpr &node) -> String;
 
     auto operator()(const syntax::BlockStatement &node) -> String;
+
+    auto operator()(const syntax::ReturnStatement &node) -> String;
 
     auto operator()(const syntax::Identifier &node) -> String;
 

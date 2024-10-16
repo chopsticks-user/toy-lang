@@ -2,15 +2,15 @@ module foo;
 
 import std::io;
 
-local product: (const x: float, const y: float) -> float pure {
+local product: (const x: Float, const y: Float) -> Float pure {
     return x * y;
 }
 
-export double: (const x: float) -> float pure {
-    return x: float -> float pure { return x |> product(2); };
+export double: (const x: Float) -> Float pure {
+    return x: Float -> Float pure { return x |> product(2); };
 }
 
-main: () -> void {
+main: () -> Void {
     var x: Int = 5;
 
     if x > 4 {
@@ -21,7 +21,7 @@ main: () -> void {
         println(":(");
     }
 
-    for var i: int = 0; i < 5; i++ {
+    for var i: Int = 0; i < 5; i++ {
         println("{i |> double}");
     }
 

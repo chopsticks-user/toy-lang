@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
+#include <string_view>
 #include <cfloat>
 #include <cstdint>
 #include <unordered_map>
@@ -15,6 +15,13 @@
 #include <regex>
 #include <optional>
 #include <ranges>
+#include <fstream>
+#include <queue>
+#include <stack>
+#include <thread>
+#include <memory_resource>
+#include <source_location>
+#include <filesystem>
 
 namespace tl {
   using i64 = std::int64_t;
@@ -34,6 +41,13 @@ namespace tl {
   using b32 = u32;
   using c8 = char;
   using sz = std::size_t;
+
+  using String = std::string;
+  using StringView = std::string_view;
+  using Strings = std::vector<std::string>;
+
+  using std::literals::operator ""s;
+  using std::literals::operator ""sv;
 }
 
 #endif // TOY_LANG_CORE_TYPES_HPP

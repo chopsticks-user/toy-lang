@@ -11,7 +11,7 @@ namespace tl::syntax {
     // todo
     explicit TranslationUnit(std::vector<VNode> definitions);
 
-    auto definition(sz index) -> const VNode & {
+    auto definition(const sz index) -> const VNode & {
       return childAt(index);
     }
 
@@ -53,7 +53,7 @@ namespace tl::syntax {
 
   class Clazz final : public Node {
   public:
-    Clazz(std::string visibility, std::vector<VNode> parents, VNode body);
+    Clazz(std::string visibility, std::vector<VNode> parents, const VNode &body);
 
     auto visibility() -> const std::string & {
       return m_visibility;
@@ -66,7 +66,7 @@ namespace tl::syntax {
   class FunctionPrototype final : public Node {
   public:
     FunctionPrototype(
-      VNode returnTypeExpr,
+      const VNode &returnTypeExpr,
       std::vector<VNode> parameterDecls
     );
 

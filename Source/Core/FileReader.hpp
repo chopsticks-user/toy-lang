@@ -3,9 +3,6 @@
 
 #include "Types.hpp"
 
-#include <fstream>
-#include <filesystem>
-
 namespace tl {
   class FileReader final {
   public:
@@ -16,8 +13,6 @@ namespace tl {
       if (!m_fs.is_open()) {
         throw std::runtime_error("Failed to open " + filepath.string());
       }
-
-      std::cout << m_filepath << '\n';
     }
 
     auto skipLine() {

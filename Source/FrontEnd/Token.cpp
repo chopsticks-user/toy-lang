@@ -1,7 +1,7 @@
 #include "Token.hpp"
 
 namespace tl::fe {
-  static const std::unordered_map<std::string, EToken> nonTypeKeywordTable = {
+  static const std::unordered_map<StringView, EToken> nonTypeKeywordTable = {
     {"fn", EToken::Fn},
     {"class", EToken::Class},
     {"super", EToken::Super},
@@ -32,14 +32,16 @@ namespace tl::fe {
     {"else", EToken::Else},
   };
 
-  static const std::unordered_set<std::string> fundamentalTypes{
-    "int", "float", "bool", "char", "string", "void"
+  static const std::unordered_set<StringView> fundamentalTypes{
+    // "int", "float", "bool", "char", "string", "void",
+    "Int", "Float", "Bool", "Char", "String", "Void",
   };
 
-  static const std::unordered_set<EToken> reservedTokens{
+  static const std::unordered_set<StringView> reservedKeywords{
+    "int", "float", "bool", "char", "string", "void",
   };
 
-  static const std::unordered_map<std::string, EToken> operatorTable{
+  static const std::unordered_map<StringView, EToken> operatorTable{
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
     {"...", EToken::Dot3},
@@ -98,30 +100,34 @@ namespace tl::fe {
     {"$", EToken::Dollar},
   };
 
-  static auto identifierType(const std::string &idStr) noexcept -> EToken {
-    if (
-      const auto it = nonTypeKeywordTable.find(idStr);
-      it != nonTypeKeywordTable.end()
-    ) {
+  static const auto identifierType(const StringView idStr) noexcept -> EToken {
+    if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
+      return EToken::UserDefinedType;
+    }
+
+    if (reservedKeywords.contains(idStr)) {
+      return EToken::Reserved;
+    }
+
+    if (const auto it = nonTypeKeywordTable.find(idStr); it != nonTypeKeywordTable.end()) {
       return it->second;
     }
 
-    if (
-      const auto it = fundamentalTypes.find(idStr);
-      it != fundamentalTypes.end()
-    ) {
+    if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
       return EToken::FundamentalType;
     }
 
     return EToken::Identifier;
   }
 
-  static auto operatorType(const std::string &opStr) noexcept -> EToken {
-    const auto it = operatorTable.find(opStr);
-    return it == operatorTable.end() ? EToken::Invalid : it->second;
+  static const auto operatorType(const StringView opStr) noexcept -> EToken {
+    if (const auto it = operatorTable.find(opStr); it != operatorTable.end()) {
+      return it->second;
+    }
+    return EToken::Invalid;
   }
 
-  Token::Token(EToken type, std::string str, sz line, sz column)
+  Token::Token(const EToken type, String str, const sz line, const sz column)
     : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
     if (m_type == EToken::Identifier) {
       m_type = identifierType(m_str);
@@ -129,14 +135,9 @@ namespace tl::fe {
     if (m_type == EToken::MaybeOperator) {
       m_type = operatorType(m_str);
     }
-
-    const auto it = reservedTokens.find(m_type);
-    if (it != reservedTokens.end()) {
-      m_type = EToken::Reserved;
-    }
   }
 
-  auto Token::isValidOperator(const std::string &symbol) -> bool {
+  auto Token::isValidOperator(const StringView symbol) -> bool {
     return operatorType(symbol) != EToken::Invalid;
   }
 }

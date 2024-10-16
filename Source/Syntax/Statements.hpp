@@ -18,7 +18,7 @@ namespace tl::syntax {
   public:
     IdentifierDeclStatement(std::vector<VNode> fragments, std::string mut);
 
-    auto mutibility() -> const std::string & {
+    auto mutibility() -> const String & {
       return m_mutibility;
     }
 
@@ -28,9 +28,7 @@ namespace tl::syntax {
 
   class ReturnStatement final : public Node {
   public:
-    // don't know why I need to put VNode at the end,
-    // took me half an hour but whatever
-    explicit ReturnStatement(VNode expr);
+    explicit ReturnStatement(const VNode &expr);
 
     auto expression() -> const VNode & {
       return childAt(0);
@@ -53,7 +51,7 @@ namespace tl::syntax {
       return childAt(1);
     }
 
-    auto op() -> const std::string & {
+    auto op() -> const String & {
       return m_op;
     }
 
@@ -99,7 +97,7 @@ namespace tl::syntax {
       VNode it, VNode collection, VNode loopBody
     );
 
-    auto isForRange() -> bool {
+    auto isForRange() const -> bool {
       // ranged-for loops only contains 2 elements, an iterator and a collection
       return nChildren() == 2;
     }

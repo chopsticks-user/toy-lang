@@ -32,7 +32,7 @@ namespace tl::fe {
     return *(m_tokenIt++);
   }
 
-  auto Parser::operator()(Tokens tokens) -> syntax::VNode {
+  auto Parser::operator()(Tokens tokens) -> syntax::TranslationUnit {
     m_tokenIt = tokens.begin();
     m_tokenItEnd = tokens.end();
     return parseTranslationUnit();
@@ -178,6 +178,10 @@ namespace tl::fe {
 
     while (match(EToken::Comma)) {
       decls.push_back(parseIdentifierDeclFragment());
+    }
+
+    if (!match(EToken::Semicolon)) {
+      throw std::runtime_error("missing ; required in parseIdentifierDeclStatement");
     }
 
     auto declView = decls
@@ -697,9 +701,9 @@ namespace tl::fe {
 
     // regular for loop
     if (!isEmpty(idDecl)) {
-      if (!match(EToken::Semicolon)) {
-        throw std::runtime_error("missing ; required in parseForStatement");
-      }
+      // if (!match(EToken::Semicolon)) {
+      //   throw std::runtime_error("missing ; required in parseForStatement");
+      // }
 
       auto cond = parseExpression();
 
