@@ -1,6 +1,8 @@
 module foo;
 
 import std::io;
+import std::math;
+import std::container;
 
 local product: (const x: Float, const y: Float) -> Float pure {
     return x * y;

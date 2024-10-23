@@ -5,21 +5,21 @@
 #include "Statements.hpp"
 
 namespace tl::syntax {
-  TranslationUnit::TranslationUnit(Vec<VNode> definitions)
-    : Node(std::move(definitions)) {
+  TranslationUnit::TranslationUnit(Vec<ASTNode> definitions)
+    : ASTNodeBase(std::move(definitions)) {
   }
 
   Function::Function(
-    VNode fIdentifier, VNode fPrototype,
-    VNode fBody,
+    ASTNode fIdentifier, ASTNode fPrototype,
+    ASTNode fBody,
     String storageSpecifier, const bool pure
   )
-    : Node({fIdentifier, fPrototype, fBody}),
+    : ASTNodeBase({fIdentifier, fPrototype, fBody}),
       m_pure(pure), m_storage(storageSpecifier.empty() ? "export" : std::move(storageSpecifier)) {
   }
 
-  Clazz::Clazz(String visibility, Vec<VNode> parents, CRef<VNode> body)
-    : Node({
+  Clazz::Clazz(String visibility, Vec<ASTNode> parents, CRef<ASTNode> body)
+    : ASTNodeBase({
         [&]() {
           // todo: move args
           auto v = std::vector{body};
@@ -30,9 +30,9 @@ namespace tl::syntax {
   }
 
   FunctionPrototype::FunctionPrototype(
-    CRef<VNode> returnTypeExpr,
-    Vec<VNode> parameterDecls
-  ) : Node({
+    CRef<ASTNode> returnTypeExpr,
+    Vec<ASTNode> parameterDecls
+  ) : ASTNodeBase({
     [&] {
       // todo: move args
       auto v = std::vector{returnTypeExpr};

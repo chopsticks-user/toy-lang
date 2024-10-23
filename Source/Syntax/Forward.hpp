@@ -35,8 +35,8 @@ namespace tl::syntax {
   class Clazz;
   class TranslationUnit;
 
-  using VNode = std::variant<
-    std::monostate, BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
+  using ASTNode = Poly<
+    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
     BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
     BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
     FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit, ReturnStatement,

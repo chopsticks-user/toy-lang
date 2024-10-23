@@ -1,6 +1,6 @@
 #include "Parser.hpp"
 
-using tl::syntax::VNode;
+using tl::syntax::ASTNode;
 
 namespace tl::fe {
   auto Parser::current() const -> Token {
@@ -41,7 +41,7 @@ namespace tl::fe {
   }
 
   auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
-    Vec<VNode> definitions;
+    Vec<ASTNode> definitions;
 
     while (m_tokenIt != m_tokenItEnd) {
       if (auto moduleStmt = parseModuleStatement(); !isEmpty(moduleStmt)) {
@@ -72,10 +72,10 @@ namespace tl::fe {
     return syntax::TranslationUnit(definitions);
   }
 
-  auto Parser::parseFunctionDefinition() -> VNode {
+  auto Parser::parseFunctionDefinition() -> ASTNode {
     const auto specifier = parseSpecifier();
 
-    VNode identifier;
+    ASTNode identifier;
     if (match(EToken::Fn) && match(EToken::Identifier)) {
       identifier = syntax::Identifier{peekPrev().string()};
     } else if (match(EToken::Identifier)) {
@@ -89,7 +89,7 @@ namespace tl::fe {
       return {};
     }
 
-    const VNode prototype = parseFunctionPrototype();
+    const ASTNode prototype = parseFunctionPrototype();
 
     // qualifier
     bool pure = false;
@@ -97,7 +97,7 @@ namespace tl::fe {
       pure = true;
     }
 
-    const VNode body = parseBlockStatement();
+    const ASTNode body = parseBlockStatement();
     if (isEmpty(body)) {
       throw std::runtime_error("missing body required in parseFunctionDefinition");
     }
@@ -105,8 +105,8 @@ namespace tl::fe {
     return syntax::Function{identifier, prototype, body, specifier, pure};
   }
 
-  auto Parser::parseFunctionPrototype() -> VNode {
-    Vec<VNode> paramFragments;
+  auto Parser::parseFunctionPrototype() -> ASTNode {
+    Vec<ASTNode> paramFragments;
 
     if (!match(EToken::LeftParen)) {
       paramFragments.push_back(parseParameterDeclFragment());
@@ -123,7 +123,7 @@ namespace tl::fe {
       }
     }
 
-    auto paramView = paramFragments | rv::filter([](CRef<VNode> node) {
+    auto paramView = paramFragments | rv::filter([](CRef<ASTNode> node) {
       return !isEmpty(node);
     });
 
@@ -133,20 +133,20 @@ namespace tl::fe {
       throw std::runtime_error("Missing -> required in parseFunctionPrototype");
     }
 
-    const VNode typeExpr = parseTypeExpression();
+    const ASTNode typeExpr = parseTypeExpression();
     return syntax::FunctionPrototype(
       typeExpr, {paramView.begin(), paramView.end()}
     );
   }
 
-  auto Parser::parseClassDefinition() -> VNode {
+  auto Parser::parseClassDefinition() -> ASTNode {
     auto visibility = parseVisibilitySpecifier();
 
     if (!match(EToken::Class, EToken::Interface)) {
       return {};
     }
 
-    Vec<VNode> parents;
+    Vec<ASTNode> parents;
     if (match(EToken::Colon)) {
       parents.push_back(parseTypeExpression());
 
@@ -157,19 +157,19 @@ namespace tl::fe {
 
     auto body = parseBlockStatement();
 
-    auto parentView = parents | rv::filter([](CRef<VNode> node) {
+    auto parentView = parents | rv::filter([](CRef<ASTNode> node) {
       return !isEmpty(node);
     });
     return syntax::Clazz(visibility, {parentView.begin(), parentView.end()}, body);
   }
 
-  auto Parser::parseIdentifierDeclStatement() -> VNode {
+  auto Parser::parseIdentifierDeclStatement() -> ASTNode {
     if (!match(EToken::Var, EToken::Const)) {
       return {};
     }
 
     String mutibilitySpecifier = peekPrev().string();
-    Vec<VNode> decls{parseIdentifierDeclFragment()};
+    Vec<ASTNode> decls{parseIdentifierDeclFragment()};
 
     while (match(EToken::Comma)) {
       decls.push_back(parseIdentifierDeclFragment());
@@ -180,10 +180,10 @@ namespace tl::fe {
     }
 
     auto declView = decls
-                    | rv::filter([](CRef<VNode> node) {
+                    | rv::filter([](CRef<ASTNode> node) {
                       return !isEmpty(node);
                     })
-                    | rv::transform([](CRef<VNode> node) {
+                    | rv::transform([](CRef<ASTNode> node) {
                       return node;
                     });
     return syntax::IdentifierDeclStatement(
@@ -192,12 +192,12 @@ namespace tl::fe {
     );
   }
 
-  auto Parser::parseIdentifierDeclFragment() -> VNode {
+  auto Parser::parseIdentifierDeclFragment() -> ASTNode {
     if (match(EToken::Identifier)) {
       auto identifier = syntax::Identifier(peekPrev().string());
       if (match(EToken::Colon)) {
         auto typeExpr = parseTypeExpression();
-        VNode rhsExpr;
+        ASTNode rhsExpr;
 
         if (match(EToken::Equal)) {
           rhsExpr = parseExpression();
@@ -210,9 +210,9 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseModuleStatement() -> VNode {
+  auto Parser::parseModuleStatement() -> ASTNode {
     if (match(EToken::Module)) {
-      auto fragments = Vec<VNode>{};
+      auto fragments = Vec<ASTNode>{};
 
       if (match(EToken::Identifier)) {
         fragments.push_back(syntax::Identifier(peekPrev().string()));
@@ -229,7 +229,7 @@ namespace tl::fe {
       }
 
       auto fragmentView = fragments | rv::filter(
-                            [](CRef<VNode> node) {
+                            [](CRef<ASTNode> node) {
                               return !isEmpty(node);
                             });
       return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
@@ -238,12 +238,12 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseImportStatement() -> VNode {
+  auto Parser::parseImportStatement() -> ASTNode {
     if (!match(EToken::Import)) {
       return {};
     }
 
-    auto fragments = Vec<VNode>{};
+    auto fragments = Vec<ASTNode>{};
 
     if (match(EToken::Identifier)) {
       fragments.push_back(syntax::Identifier(peekPrev().string()));
@@ -258,7 +258,7 @@ namespace tl::fe {
     }
 
     auto fragmentView = fragments | rv::filter(
-                          [](CRef<VNode> node) {
+                          [](CRef<ASTNode> node) {
                             return !isEmpty(node);
                           });
     return syntax::ImportExpr({fragmentView.begin(), fragmentView.end()});
@@ -275,11 +275,11 @@ namespace tl::fe {
     return "";
   }
 
-  auto Parser::parseExpression() -> VNode {
+  auto Parser::parseExpression() -> ASTNode {
     return parseSequenceExpression();
   }
 
-  auto Parser::parseSequenceExpression() -> VNode {
+  auto Parser::parseSequenceExpression() -> ASTNode {
     auto from = parseTernaryExpression();
 
     if (match(EToken::Dot2)) {
@@ -297,11 +297,11 @@ namespace tl::fe {
     return from;
   }
 
-  auto Parser::parseTernaryExpression() -> VNode {
+  auto Parser::parseTernaryExpression() -> ASTNode {
     auto cond = parseNullCoalescingExpression();
 
     if (match(EToken::QMark)) {
-      const VNode ifTrue = parseNullCoalescingExpression();
+      const ASTNode ifTrue = parseNullCoalescingExpression();
 
       if (match(EToken::Colon)) {
         return syntax::TernaryExpr(
@@ -316,7 +316,7 @@ namespace tl::fe {
     return cond;
   }
 
-  auto Parser::parseNullCoalescingExpression() -> VNode {
+  auto Parser::parseNullCoalescingExpression() -> ASTNode {
     auto lhs = parseLogicalOrExpression();
 
     while (match(EToken::QMark2)) {
@@ -326,7 +326,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseLogicalOrExpression() -> VNode {
+  auto Parser::parseLogicalOrExpression() -> ASTNode {
     auto lhs = parseLogicalAndExpression();
 
     while (match(EToken::Bar2)) {
@@ -336,7 +336,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseLogicalAndExpression() -> VNode {
+  auto Parser::parseLogicalAndExpression() -> ASTNode {
     auto lhs = parseInclusiveOrExpression();
 
     while (match(EToken::Ampersand2)) {
@@ -346,7 +346,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseInclusiveOrExpression() -> VNode {
+  auto Parser::parseInclusiveOrExpression() -> ASTNode {
     auto lhs = parseExclusiveOrExpression();
 
     while (match(EToken::Bar)) {
@@ -356,7 +356,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseExclusiveOrExpression() -> VNode {
+  auto Parser::parseExclusiveOrExpression() -> ASTNode {
     auto lhs = parseAndExpression();
 
     while (match(EToken::Hat)) {
@@ -366,7 +366,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseAndExpression() -> VNode {
+  auto Parser::parseAndExpression() -> ASTNode {
     auto lhs = parseEqualityExpression();
 
     while (match(EToken::Ampersand)) {
@@ -376,7 +376,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseEqualityExpression() -> VNode {
+  auto Parser::parseEqualityExpression() -> ASTNode {
     auto lhs = parseRelationalExpression();
 
     while (match(EToken::Equal2, EToken::BarEqual)) {
@@ -386,7 +386,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseRelationalExpression() -> VNode {
+  auto Parser::parseRelationalExpression() -> ASTNode {
     auto lhs = parseShiftExpression();
 
     while (match(EToken::Less, EToken::LessEqual, EToken::Greater, EToken::GreaterEqual)) {
@@ -396,7 +396,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseShiftExpression() -> VNode {
+  auto Parser::parseShiftExpression() -> ASTNode {
     auto lhs = parseAdditiveExpression();
 
     while (match(EToken::Less2, EToken::Greater2)) {
@@ -406,7 +406,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseAdditiveExpression() -> VNode {
+  auto Parser::parseAdditiveExpression() -> ASTNode {
     auto lhs = parseMultiplicativeExpression();
 
     while (match(EToken::Plus, EToken::Minus)) {
@@ -416,7 +416,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseMultiplicativeExpression() -> VNode {
+  auto Parser::parseMultiplicativeExpression() -> ASTNode {
     auto lhs = parsePrefixUnaryExpression();
 
     while (match(EToken::Star, EToken::FwdSlash, EToken::Percent)) {
@@ -426,7 +426,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parsePrefixUnaryExpression() -> VNode {
+  auto Parser::parsePrefixUnaryExpression() -> ASTNode {
     auto operand = parsePostfixExpression();
 
     if (match(EToken::Exclaim, EToken::Tilde, EToken::Plus, EToken::Minus)) {
@@ -436,7 +436,7 @@ namespace tl::fe {
     return operand;
   }
 
-  auto Parser::parsePostfixExpression() -> VNode {
+  auto Parser::parsePostfixExpression() -> ASTNode {
     auto operand = parsePrimaryExpression();
 
     // array-subscripting expression
@@ -477,7 +477,7 @@ namespace tl::fe {
     return operand;
   }
 
-  auto Parser::parsePrimaryExpression() -> VNode {
+  auto Parser::parsePrimaryExpression() -> ASTNode {
     if (auto lambda = parseLambdaExpression(); !isEmpty(lambda)) {
       return lambda;
     }
@@ -513,26 +513,26 @@ namespace tl::fe {
     throw std::runtime_error("unknown primary expression");
   }
 
-  auto Parser::parseArgumentList() -> Vec<VNode> {
-    Vec<VNode> arguments{parseExpression()};
+  auto Parser::parseArgumentList() -> Vec<ASTNode> {
+    Vec<ASTNode> arguments{parseExpression()};
 
     while (match(EToken::Comma)) {
       arguments.push_back(parseExpression());
     }
 
     auto argumentView = arguments
-                        | rv::filter([](CRef<VNode> node) {
+                        | rv::filter([](CRef<ASTNode> node) {
                           return !isEmpty(node);
                         });
     return {argumentView.begin(), argumentView.end()};
   }
 
-  auto Parser::parseBlockStatement() -> VNode {
+  auto Parser::parseBlockStatement() -> ASTNode {
     if (!match(EToken::LeftBrace)) {
       return {};
     }
 
-    Vec<VNode> statements;
+    Vec<ASTNode> statements;
     for (auto stmt = parseStatement();
          !isEmpty(stmt);
          stmt = parseStatement()
@@ -550,7 +550,7 @@ namespace tl::fe {
     return syntax::BlockStatement(statements);
   }
 
-  auto Parser::parseTypeExpression() -> VNode {
+  auto Parser::parseTypeExpression() -> ASTNode {
     if (match(EToken::FundamentalType, EToken::UserDefinedType)) {
       return syntax::TypeExpr(peekPrev().string());
     }
@@ -558,7 +558,7 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseParameterDeclFragment() -> VNode {
+  auto Parser::parseParameterDeclFragment() -> ASTNode {
     std::string mutibility = "const";
     if (match(EToken::Var, EToken::Const)) {
       mutibility = peekPrev().string();
@@ -571,7 +571,7 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseLambdaExpression() -> VNode {
+  auto Parser::parseLambdaExpression() -> ASTNode {
     const auto prototype = parseLambdaPrototype();
 
     if (isEmpty(prototype)) {
@@ -590,7 +590,7 @@ namespace tl::fe {
     );
   }
 
-  auto Parser::parseStatement() -> VNode {
+  auto Parser::parseStatement() -> ASTNode {
     if (auto control = parseControlStatement(); !isEmpty(control)) {
       return control;
     }
@@ -642,7 +642,7 @@ namespace tl::fe {
     return expr;
   }
 
-  auto Parser::parseControlStatement() -> VNode {
+  auto Parser::parseControlStatement() -> ASTNode {
     if (auto ifStmt = parseIfStatement(); !isEmpty(ifStmt)) {
       return ifStmt;
     }
@@ -654,7 +654,7 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseIfStatement() -> VNode {
+  auto Parser::parseIfStatement() -> ASTNode {
     if (!match(EToken::If)) {
       return {};
     }
@@ -669,7 +669,7 @@ namespace tl::fe {
     [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
 
     const auto body = parseBlockStatement();
-    VNode elseBody;
+    ASTNode elseBody;
 
     if (match(EToken::Else)) {
       elseBody = parseBlockStatement();
@@ -681,7 +681,7 @@ namespace tl::fe {
     return syntax::IfStatement(idDecl, cond, body, elseBody);
   }
 
-  auto Parser::parseForStatement() -> VNode {
+  auto Parser::parseForStatement() -> ASTNode {
     if (!match(EToken::For)) {
       return {};
     }
@@ -724,7 +724,7 @@ namespace tl::fe {
     return syntax::ForStatement(idDecl, collection, parseBlockStatement());
   }
 
-  auto Parser::parseReturnStatement() -> VNode {
+  auto Parser::parseReturnStatement() -> ASTNode {
     if (!match(EToken::Return)) {
       return {};
     }
@@ -743,11 +743,11 @@ namespace tl::fe {
     return syntax::ReturnStatement(expr);
   }
 
-  auto Parser::parseLambdaPrototype() -> VNode {
+  auto Parser::parseLambdaPrototype() -> ASTNode {
     // for recovering in case this is not a lambda expression
     const auto it = m_tokenIt;
 
-    Vec<VNode> paramFragments;
+    Vec<ASTNode> paramFragments;
 
     if (!match(EToken::LeftParen)) {
       paramFragments.push_back(parseParameterDeclFragment());
@@ -764,10 +764,10 @@ namespace tl::fe {
     }
 
     auto paramView = paramFragments
-                     | rv::filter([](CRef<VNode> node) {
+                     | rv::filter([](CRef<ASTNode> node) {
                        return !isEmpty(node);
                      })
-                     | rv::transform([](CRef<VNode> node) {
+                     | rv::transform([](CRef<ASTNode> node) {
                        return node;
                      });
 
@@ -778,7 +778,7 @@ namespace tl::fe {
       return {};
     }
 
-    const VNode typeExpr = parseTypeExpression();
+    const ASTNode typeExpr = parseTypeExpression();
     return syntax::FunctionPrototype(
       typeExpr, {paramView.begin(), paramView.end()}
     );

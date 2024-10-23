@@ -4,43 +4,38 @@
 #include "Types.hpp"
 
 namespace tl {
-  template<typename Derived, typename TReturn, typename TVisitable>
+  template<typename TVisitable, typename TReturn = void>
+    requires std::is_default_constructible_v<TReturn> || std::same_as<TReturn, void>
   class Visitor {
   public:
     using Visitable = TVisitable;
 
-    auto operator()(std::convertible_to<Visitable> auto const &node) -> TReturn {
-      if constexpr (std::same_as<TReturn, void>) {
-        return;
-      } else {
-        return {};
-      }
+    auto operator()(std::convertible_to<TVisitable> auto const &)
+      -> void requires std::is_void_v<TReturn> {
+    }
+
+    auto operator()(std::convertible_to<TVisitable> auto const &)
+      -> TReturn requires (!std::is_void_v<TReturn>) {
+      return {};
     }
 
   protected:
-    using Super = Visitor;
-
     Visitor() = default;
-
-    auto visitChildren(std::convertible_to<Visitable> auto const &node)
-      -> std::vector<TReturn> requires (!std::same_as<TReturn, void>) {
-      std::vector<TReturn> results;
-      results.reserve(node.nChildren());
-      for (const auto &child: node.children()) {
-        results.push_back(std::visit(*static_cast<Derived *>(this), child));
-      }
-      return results;
-    }
-
-    auto visitChildren(std::convertible_to<Visitable> auto const &node)
-      -> void requires std::same_as<TReturn, void> {
-      for (const auto &child: node.children()) {
-        std::visit(*static_cast<Derived *>(this), child);
-      }
-    }
   };
 
-  template<typename TVisitor>
+  template<typename T>
+  concept IsVisitor =
+      requires(T t) // inherits from Visitor<...>
+      {
+        []<typename TVisitable, typename TReturn = void>(Visitor<TVisitable, TReturn>) {
+        }(t);
+      } &&
+      requires(T) // the typename field Visitable is accessible
+      {
+        typename T::Visitable;
+      };
+
+  template<IsVisitor TVisitor>
   auto visit(std::convertible_to<typename TVisitor::Visitable> auto &&visitable) {
     return std::visit(TVisitor{}, std::forward<typename TVisitor::Visitable>(visitable));
   }

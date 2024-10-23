@@ -29,79 +29,79 @@ namespace tl::fe {
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
-    auto parseClassDefinition() -> syntax::VNode;
+    auto parseClassDefinition() -> syntax::ASTNode;
 
-    auto parseFunctionDefinition() -> syntax::VNode;
+    auto parseFunctionDefinition() -> syntax::ASTNode;
 
-    auto parseFunctionPrototype() -> syntax::VNode;
+    auto parseFunctionPrototype() -> syntax::ASTNode;
 
-    auto parseIdentifierDeclStatement() -> syntax::VNode;
+    auto parseIdentifierDeclStatement() -> syntax::ASTNode;
 
-    auto parseIdentifierDeclFragment() -> syntax::VNode;
+    auto parseIdentifierDeclFragment() -> syntax::ASTNode;
 
-    auto parseModuleStatement() -> syntax::VNode;
+    auto parseModuleStatement() -> syntax::ASTNode;
 
-    auto parseImportStatement() -> syntax::VNode;
+    auto parseImportStatement() -> syntax::ASTNode;
 
     auto parseSpecifier() -> std::string;
 
     auto parseVisibilitySpecifier() -> std::string;
 
-    auto parseExpression() -> syntax::VNode;
+    auto parseExpression() -> syntax::ASTNode;
 
-    auto parseSequenceExpression() -> syntax::VNode;
+    auto parseSequenceExpression() -> syntax::ASTNode;
 
-    auto parseTernaryExpression() -> syntax::VNode;
+    auto parseTernaryExpression() -> syntax::ASTNode;
 
-    auto parseNullCoalescingExpression() -> syntax::VNode;
+    auto parseNullCoalescingExpression() -> syntax::ASTNode;
 
-    auto parseLogicalOrExpression() -> syntax::VNode;
+    auto parseLogicalOrExpression() -> syntax::ASTNode;
 
-    auto parseLogicalAndExpression() -> syntax::VNode;
+    auto parseLogicalAndExpression() -> syntax::ASTNode;
 
-    auto parseInclusiveOrExpression() -> syntax::VNode;
+    auto parseInclusiveOrExpression() -> syntax::ASTNode;
 
-    auto parseExclusiveOrExpression() -> syntax::VNode;
+    auto parseExclusiveOrExpression() -> syntax::ASTNode;
 
-    auto parseAndExpression() -> syntax::VNode;
+    auto parseAndExpression() -> syntax::ASTNode;
 
-    auto parseEqualityExpression() -> syntax::VNode;
+    auto parseEqualityExpression() -> syntax::ASTNode;
 
-    auto parseRelationalExpression() -> syntax::VNode;
+    auto parseRelationalExpression() -> syntax::ASTNode;
 
-    auto parseShiftExpression() -> syntax::VNode;
+    auto parseShiftExpression() -> syntax::ASTNode;
 
-    auto parseAdditiveExpression() -> syntax::VNode;
+    auto parseAdditiveExpression() -> syntax::ASTNode;
 
-    auto parseMultiplicativeExpression() -> syntax::VNode;
+    auto parseMultiplicativeExpression() -> syntax::ASTNode;
 
-    auto parsePrefixUnaryExpression() -> syntax::VNode;
+    auto parsePrefixUnaryExpression() -> syntax::ASTNode;
 
-    auto parsePostfixExpression() -> syntax::VNode;
+    auto parsePostfixExpression() -> syntax::ASTNode;
 
-    auto parsePrimaryExpression() -> syntax::VNode;
+    auto parsePrimaryExpression() -> syntax::ASTNode;
 
-    auto parseArgumentList() -> std::vector<syntax::VNode>;
+    auto parseArgumentList() -> std::vector<syntax::ASTNode>;
 
-    auto parseBlockStatement() -> syntax::VNode;
+    auto parseBlockStatement() -> syntax::ASTNode;
 
-    auto parseTypeExpression() -> syntax::VNode;
+    auto parseTypeExpression() -> syntax::ASTNode;
 
-    auto parseParameterDeclFragment() -> syntax::VNode;
+    auto parseParameterDeclFragment() -> syntax::ASTNode;
 
-    auto parseLambdaExpression() -> syntax::VNode;
+    auto parseLambdaExpression() -> syntax::ASTNode;
 
-    auto parseStatement() -> syntax::VNode;
+    auto parseStatement() -> syntax::ASTNode;
 
-    auto parseControlStatement() -> syntax::VNode;
+    auto parseControlStatement() -> syntax::ASTNode;
 
-    auto parseIfStatement() -> syntax::VNode;
+    auto parseIfStatement() -> syntax::ASTNode;
 
-    auto parseForStatement() -> syntax::VNode;
+    auto parseForStatement() -> syntax::ASTNode;
 
-    auto parseReturnStatement() -> syntax::VNode;
+    auto parseReturnStatement() -> syntax::ASTNode;
 
-    auto parseLambdaPrototype() -> syntax::VNode;
+    auto parseLambdaPrototype() -> syntax::ASTNode;
 
   private:
     TokenIterator m_tokenIt;

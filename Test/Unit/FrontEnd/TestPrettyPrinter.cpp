@@ -7,8 +7,9 @@
 using tl::util::apply;
 using tl::fe::Lexer;
 using tl::fe::Parser;
-using tl::syntax::VNode;
+using tl::syntax::ASTNode;
 using tl::fe::PrettyPrinter;
+using tl::fe::ImportedModuleNameCollector;
 using tl::visit;
 
 static std::filesystem::path resourceDir = RESOURCE_DIR;
@@ -16,6 +17,12 @@ static std::filesystem::path resourceDir = RESOURCE_DIR;
 TEST_CASE("PrettyPrinter: Simple program", "[PrettyPrinter]") {
   auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
   auto translationUnit = apply<Parser>(tokens);
+
   auto text = visit<PrettyPrinter>(translationUnit);
   std::cout << text << '\n';
+
+  // auto result = visit<ImportedModuleNameCollector>(translationUnit);
+  // for (const auto &name: result) {
+  //   std::cout << name << '\n';
+  // }
 }

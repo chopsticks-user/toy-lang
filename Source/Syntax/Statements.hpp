@@ -7,16 +7,16 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class BlockStatement final : public Node {
+  class BlockStatement final : public ASTNodeBase {
   public:
-    explicit BlockStatement(Vec<VNode> statements);
+    explicit BlockStatement(Vec<ASTNode> statements);
 
   private:
   };
 
-  class IdentifierDeclStatement final : public Node {
+  class IdentifierDeclStatement final : public ASTNodeBase {
   public:
-    IdentifierDeclStatement(Vec<VNode> fragments, String mut);
+    IdentifierDeclStatement(Vec<ASTNode> fragments, String mut);
 
     auto mutibility() -> const String & {
       return m_mutibility;
@@ -26,28 +26,28 @@ namespace tl::syntax {
     String m_mutibility;
   };
 
-  class ReturnStatement final : public Node {
+  class ReturnStatement final : public ASTNodeBase {
   public:
-    explicit ReturnStatement(CRef<VNode> expr);
+    explicit ReturnStatement(CRef<ASTNode> expr);
 
-    auto expression() -> CRef<VNode> {
+    auto expression() -> CRef<ASTNode> {
       return childAt(0);
     }
 
   private:
   };
 
-  class AssignmentStatement final : public Node {
+  class AssignmentStatement final : public ASTNodeBase {
   public:
     AssignmentStatement(
-      VNode left, VNode right, String op
+      ASTNode left, ASTNode right, String op
     );
 
-    auto left() -> CRef<VNode> {
+    auto left() -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto right() -> CRef<VNode> {
+    auto right() -> CRef<ASTNode> {
       return childAt(1);
     }
 
@@ -59,42 +59,42 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class IfStatement final : public Node {
+  class IfStatement final : public ASTNodeBase {
   public:
     IfStatement(
-      VNode decl, VNode cond,
-      VNode body, VNode elseBody
+      ASTNode decl, ASTNode cond,
+      ASTNode body, ASTNode elseBody
     );
 
-    auto declStatement() -> CRef<VNode> {
+    auto declStatement() -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto condition() -> CRef<VNode> {
+    auto condition() -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto body() -> CRef<VNode> {
+    auto body() -> CRef<ASTNode> {
       return childAt(2);
     }
 
     // may contain another if statement
-    auto elseNode() -> CRef<VNode> {
+    auto elseNode() -> CRef<ASTNode> {
       return childAt(3);
     }
 
   private:
   };
 
-  class ForStatement final : public Node {
+  class ForStatement final : public ASTNodeBase {
   public:
     ForStatement(
-      VNode decl, VNode cond,
-      VNode postExpr, VNode loopBody
+      ASTNode decl, ASTNode cond,
+      ASTNode postExpr, ASTNode loopBody
     );
 
     ForStatement(
-      VNode it, VNode collection, VNode loopBody
+      ASTNode it, ASTNode collection, ASTNode loopBody
     );
 
     auto isForRange() const -> bool {
@@ -102,20 +102,20 @@ namespace tl::syntax {
       return nChildren() == 2;
     }
 
-    auto iterator() -> CRef<VNode> {
+    auto iterator() -> CRef<ASTNode> {
       return firstChild();
     }
 
-    auto conditionOrCollection() -> CRef<VNode> {
+    auto conditionOrCollection() -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto postExpression() -> CRef<VNode> {
+    auto postExpression() -> CRef<ASTNode> {
       return childAt(2);
     }
 
     // may contain another if statement
-    auto body() -> CRef<VNode> {
+    auto body() -> CRef<ASTNode> {
       return lastChild();
     }
 

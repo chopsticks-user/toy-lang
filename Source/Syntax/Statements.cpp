@@ -2,38 +2,38 @@
 #include "Concrete.hpp"
 
 namespace tl::syntax {
-  BlockStatement::BlockStatement(Vec<VNode> statements)
-    : Node(std::move(statements)) {
+  BlockStatement::BlockStatement(Vec<ASTNode> statements)
+    : ASTNodeBase(std::move(statements)) {
   }
 
   IdentifierDeclStatement::IdentifierDeclStatement(
-    Vec<VNode> fragments, String mut
-  ) : Node(std::move(fragments)), m_mutibility(std::move(mut)) {
+    Vec<ASTNode> fragments, String mut
+  ) : ASTNodeBase(std::move(fragments)), m_mutibility(std::move(mut)) {
   }
 
-  ReturnStatement::ReturnStatement(const VNode &expr)
-    : Node(isEmpty(expr) ? Vec<VNode>{} : std::vector{expr}) {
+  ReturnStatement::ReturnStatement(const ASTNode &expr)
+    : ASTNodeBase(isEmpty(expr) ? Vec<ASTNode>{} : std::vector{expr}) {
   }
 
   AssignmentStatement::AssignmentStatement(
-    VNode left, VNode right, String op
-  ): Node({left, right}), m_op(std::move(op)) {
+    ASTNode left, ASTNode right, String op
+  ): ASTNodeBase({left, right}), m_op(std::move(op)) {
   }
 
   IfStatement::IfStatement(
-    VNode decl, VNode cond,
-    VNode body, VNode elseBody
-  ): Node({decl, cond, body, elseBody}) {
+    ASTNode decl, ASTNode cond,
+    ASTNode body, ASTNode elseBody
+  ): ASTNodeBase({decl, cond, body, elseBody}) {
   }
 
   ForStatement::ForStatement(
-    VNode decl, VNode cond,
-    VNode postExpr, VNode loopBody
-  ): Node({decl, cond, postExpr, loopBody}) {
+    ASTNode decl, ASTNode cond,
+    ASTNode postExpr, ASTNode loopBody
+  ): ASTNodeBase({decl, cond, postExpr, loopBody}) {
   }
 
   ForStatement::ForStatement(
-    VNode it, VNode collection, VNode loopBody
-  ): Node({it, collection, loopBody}) {
+    ASTNode it, ASTNode collection, ASTNode loopBody
+  ): ASTNodeBase({it, collection, loopBody}) {
   }
 }

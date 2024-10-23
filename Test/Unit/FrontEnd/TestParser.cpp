@@ -7,7 +7,7 @@
 using tl::util::apply;
 using tl::fe::Lexer;
 using tl::fe::Parser;
-using tl::syntax::VNode;
+using tl::syntax::ASTNode;
 
 static std::filesystem::path resourceDir = RESOURCE_DIR;
 

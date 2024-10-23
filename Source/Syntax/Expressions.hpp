@@ -6,18 +6,18 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class ParameterDeclFragment final : public Node {
+  class ParameterDeclFragment final : public ASTNodeBase {
   public:
     ParameterDeclFragment(
-      VNode identifierDeclFragment,
+      ASTNode identifierDeclFragment,
       String mut
     );
 
-    auto identifier() const -> CRef<VNode> {
+    auto identifier() const -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto typeExpr() const -> CRef<VNode> {
+    auto typeExpr() const -> CRef<ASTNode> {
       return childAt(1);
     }
 
@@ -29,30 +29,30 @@ namespace tl::syntax {
     String m_mutibility;
   };
 
-  class IdentifierDeclFragment final : public Node {
+  class IdentifierDeclFragment final : public ASTNodeBase {
   public:
     IdentifierDeclFragment(
-      const VNode &identifier,
-      const VNode &typeExpr,
-      const VNode &rhsExpr
+      const ASTNode &identifier,
+      const ASTNode &typeExpr,
+      const ASTNode &rhsExpr
     );
 
-    auto identifier() -> CRef<VNode> {
+    auto identifier() -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto typeExpr() -> CRef<VNode> {
+    auto typeExpr() -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto rhsExpr() -> CRef<VNode> {
+    auto rhsExpr() -> CRef<ASTNode> {
       return childAt(2);
     }
 
   private:
   };
 
-  class Identifier final : public Node {
+  class Identifier final : public ASTNodeBase {
   public:
     explicit Identifier(String name);
 
@@ -64,7 +64,7 @@ namespace tl::syntax {
     String m_name;
   };
 
-  class TypeExpr final : public Node {
+  class TypeExpr final : public ASTNodeBase {
   public:
     explicit TypeExpr(String name);
 
@@ -76,15 +76,15 @@ namespace tl::syntax {
     String m_name;
   };
 
-  class BinaryExpr final : public Node {
+  class BinaryExpr final : public ASTNodeBase {
   public:
-    BinaryExpr(VNode lhs, VNode rhs, String op);
+    BinaryExpr(ASTNode lhs, ASTNode rhs, String op);
 
-    auto left() const noexcept -> CRef<VNode> {
+    auto left() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto right() const noexcept -> CRef<VNode> {
+    auto right() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
@@ -96,24 +96,24 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class TernaryExpr final : public Node {
+  class TernaryExpr final : public ASTNodeBase {
   public:
     TernaryExpr(
-      VNode operand1,
-      VNode operand2,
-      VNode operand3,
+      ASTNode operand1,
+      ASTNode operand2,
+      ASTNode operand3,
       String op1, String op2
     );
 
-    auto first() const noexcept -> CRef<VNode> {
+    auto first() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto second() const noexcept -> CRef<VNode> {
+    auto second() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto third() const noexcept -> CRef<VNode> {
+    auto third() const noexcept -> CRef<ASTNode> {
       return childAt(2);
     }
 
@@ -130,11 +130,11 @@ namespace tl::syntax {
     String m_op2;
   };
 
-  class UnaryExpr final : public Node {
+  class UnaryExpr final : public ASTNodeBase {
   public:
-    UnaryExpr(VNode operand, String op);
+    UnaryExpr(ASTNode operand, String op);
 
-    auto operand() const noexcept -> CRef<VNode> {
+    auto operand() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
@@ -146,11 +146,11 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class PostfixUnaryExpr final : public Node {
+  class PostfixUnaryExpr final : public ASTNodeBase {
   public:
-    PostfixUnaryExpr(VNode operand, String op);
+    PostfixUnaryExpr(ASTNode operand, String op);
 
-    auto operand() const noexcept -> CRef<VNode> {
+    auto operand() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
@@ -165,7 +165,7 @@ namespace tl::syntax {
   // Literals belong here to avoid circular dependencies
   // between Expression and Literals
 
-  class IntegerLiteral final : public Node {
+  class IntegerLiteral final : public ASTNodeBase {
   public:
     explicit IntegerLiteral(CRef<String> value);
 
@@ -177,7 +177,7 @@ namespace tl::syntax {
     i64 m_value;
   };
 
-  class FloatLiteral final : public Node {
+  class FloatLiteral final : public ASTNodeBase {
   public:
     explicit FloatLiteral(CRef<String> value);
 
@@ -189,18 +189,18 @@ namespace tl::syntax {
     f64 m_value;
   };
 
-  class StringLiteral final : public Node {
+  class StringLiteral final : public ASTNodeBase {
   public:
     explicit StringLiteral(
       String value,
-      Vec<VNode> placeholders = {}
+      Vec<ASTNode> placeholders = {}
     );
 
     auto value() const noexcept -> CRef<String> {
       return m_value;
     }
 
-    auto placeholder(const sz index) const noexcept -> CRef<VNode> {
+    auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
 
@@ -208,7 +208,7 @@ namespace tl::syntax {
     String m_value;
   };
 
-  class BooleanLiteral final : public Node {
+  class BooleanLiteral final : public ASTNodeBase {
   public:
     explicit BooleanLiteral(CRef<String> value);
 
@@ -220,44 +220,44 @@ namespace tl::syntax {
     bool m_value;
   };
 
-  class FunctionCallExpr final : public Node {
+  class FunctionCallExpr final : public ASTNodeBase {
   public:
     FunctionCallExpr(
-      CRef<VNode> callee,
-      Vec<VNode> args
+      CRef<ASTNode> callee,
+      Vec<ASTNode> args
     );
 
-    auto callee() const noexcept -> VNode;
+    auto callee() const noexcept -> ASTNode;
   };
 
-  class SubScriptingExpr final : public Node {
+  class SubScriptingExpr final : public ASTNodeBase {
   public:
     SubScriptingExpr(
-      VNode collection,
-      VNode subscript
+      ASTNode collection,
+      ASTNode subscript
     );
 
-    auto collection() const noexcept -> VNode;
+    auto collection() const noexcept -> ASTNode;
 
-    auto subscript() const noexcept -> VNode;
+    auto subscript() const noexcept -> ASTNode;
   };
 
-  class ModuleExpr final : public Node {
+  class ModuleExpr final : public ASTNodeBase {
   public:
-    explicit ModuleExpr(Vec<VNode> fragments);
+    explicit ModuleExpr(Vec<ASTNode> fragments);
 
-    auto fragment(const sz index) -> CRef<VNode> {
+    auto fragment(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
 
   private:
   };
 
-  class ImportExpr final : public Node {
+  class ImportExpr final : public ASTNodeBase {
   public:
-    explicit ImportExpr(Vec<VNode> fragments);
+    explicit ImportExpr(Vec<ASTNode> fragments);
 
-    auto fragment(const sz index) -> CRef<VNode> {
+    auto fragment(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
 

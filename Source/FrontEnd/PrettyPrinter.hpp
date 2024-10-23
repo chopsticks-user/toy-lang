@@ -6,43 +6,70 @@
 #include "Core/Core.hpp"
 
 namespace tl::fe {
+  class ImportedModuleNameCollector
+      : public syntax::SyntaxTreeVisitor<ImportedModuleNameCollector, Vec<String> > {
+  public:
+    using SyntaxTreeVisitor::operator();
+
+    auto operator()(CRef<syntax::TranslationUnit> node) -> Vec<String> {
+      auto v = visitChildren(node) | rv::join;
+      return {v.begin(), v.end()};
+    }
+
+    auto operator()(CRef<syntax::ImportExpr> node) -> Vec<String> {
+      auto results = visitChildren(node);
+      return {
+        std::accumulate(
+          std::next(results.begin()), results.end(), results[0].front(),
+          [](const String &a, const Vec<String> &b) {
+            return a + "::" + b.front();
+          }
+        )
+      };
+    }
+
+    auto operator()(CRef<syntax::Identifier> node) -> Vec<String> {
+      return {node.name()};
+    }
+  };
+
   class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, String> {
   public:
-    using Super::operator();
+    using SyntaxTreeVisitor::operator();
 
-    auto operator()(const syntax::TranslationUnit &node) -> String;
+    auto operator()(CRef<syntax::TranslationUnit> node) -> String;
 
-    auto operator()(const syntax::ModuleExpr &node) -> String;
+    auto operator()(CRef<syntax::ModuleExpr> node) -> String;
 
-    auto operator()(const syntax::ImportExpr &node) -> String;
+    auto operator()(CRef<syntax::ImportExpr> node) -> String;
 
-    auto operator()(const syntax::Function &node) -> String;
+    auto operator()(CRef<syntax::Function> node) -> String;
 
-    auto operator()(const syntax::FunctionPrototype &node) -> String;
+    auto operator()(CRef<syntax::FunctionPrototype> node) -> String;
 
-    auto operator()(const syntax::ParameterDeclFragment &node) -> String;
+    auto operator()(CRef<syntax::ParameterDeclFragment> node) -> String;
 
-    auto operator()(const syntax::IdentifierDeclFragment &node) -> String;
+    auto operator()(CRef<syntax::IdentifierDeclFragment> node) -> String;
 
-    auto operator()(const syntax::TypeExpr &node) -> String;
+    auto operator()(CRef<syntax::TypeExpr> node) -> String;
 
-    auto operator()(const syntax::BlockStatement &node) -> String;
+    auto operator()(CRef<syntax::BlockStatement> node) -> String;
 
-    auto operator()(const syntax::ReturnStatement &node) -> String;
+    auto operator()(CRef<syntax::ReturnStatement> node) -> String;
 
-    auto operator()(const syntax::Identifier &node) -> String;
+    auto operator()(CRef<syntax::Identifier> node) -> String;
 
-    auto operator()(const syntax::BinaryExpr &node) -> String;
+    auto operator()(CRef<syntax::BinaryExpr> node) -> String;
 
-    auto operator()(const syntax::UnaryExpr &node) -> String;
+    auto operator()(CRef<syntax::UnaryExpr> node) -> String;
 
-    auto operator()(const syntax::IntegerLiteral &node) -> String;
+    auto operator()(CRef<syntax::IntegerLiteral> node) -> String;
 
-    auto operator()(const syntax::FloatLiteral &node) -> String;
+    auto operator()(CRef<syntax::FloatLiteral> node) -> String;
 
-    auto operator()(const syntax::StringLiteral &node) -> String;
+    auto operator()(CRef<syntax::StringLiteral> node) -> String;
 
-    auto operator()(const syntax::BooleanLiteral &node) -> String;
+    auto operator()(CRef<syntax::BooleanLiteral> node) -> String;
 
   private:
     auto enterScope() -> void {

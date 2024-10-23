@@ -6,31 +6,31 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class TranslationUnit final : public Node {
+  class TranslationUnit final : public ASTNodeBase {
   public:
     // todo
-    explicit TranslationUnit(Vec<VNode> definitions);
+    explicit TranslationUnit(Vec<ASTNode> definitions);
 
-    auto definition(const sz index) -> CRef<VNode> {
+    auto definition(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
 
   private:
   };
 
-  class Function final : public Node {
+  class Function final : public ASTNodeBase {
   public:
     Function(
-      VNode fIdentifier, VNode fPrototype,
-      VNode fBody,
+      ASTNode fIdentifier, ASTNode fPrototype,
+      ASTNode fBody,
       String storageSpecifier, bool pure
     );
 
-    auto identifier() -> CRef<VNode> {
+    auto identifier() -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto prototype() -> CRef<VNode> {
+    auto prototype() -> CRef<ASTNode> {
       return childAt(1);
     }
 
@@ -38,7 +38,7 @@ namespace tl::syntax {
       return m_pure;
     }
 
-    auto body() const -> CRef<VNode> {
+    auto body() const -> CRef<ASTNode> {
       return childAt(2);
     }
 
@@ -51,9 +51,9 @@ namespace tl::syntax {
     String m_storage;
   };
 
-  class Clazz final : public Node {
+  class Clazz final : public ASTNodeBase {
   public:
-    Clazz(String visibility, Vec<VNode> parents, CRef<VNode> body);
+    Clazz(String visibility, Vec<ASTNode> parents, CRef<ASTNode> body);
 
     auto visibility() -> CRef<String> {
       return m_visibility;
@@ -63,14 +63,14 @@ namespace tl::syntax {
     String m_visibility;
   };
 
-  class FunctionPrototype final : public Node {
+  class FunctionPrototype final : public ASTNodeBase {
   public:
     FunctionPrototype(
-      CRef<VNode> returnTypeExpr,
-      Vec<VNode> parameterDecls
+      CRef<ASTNode> returnTypeExpr,
+      Vec<ASTNode> parameterDecls
     );
 
-    auto returnTypeExpr() -> CRef<VNode> {
+    auto returnTypeExpr() -> CRef<ASTNode> {
       return childAt(0);
     }
   };
