@@ -5,20 +5,20 @@
 #include "Statements.hpp"
 
 namespace tl::syntax {
-  TranslationUnit::TranslationUnit(std::vector<VNode> definitions)
+  TranslationUnit::TranslationUnit(Vec<VNode> definitions)
     : Node(std::move(definitions)) {
   }
 
   Function::Function(
     VNode fIdentifier, VNode fPrototype,
     VNode fBody,
-    std::string storageSpecifier, bool pure
+    String storageSpecifier, const bool pure
   )
     : Node({fIdentifier, fPrototype, fBody}),
       m_pure(pure), m_storage(storageSpecifier.empty() ? "export" : std::move(storageSpecifier)) {
   }
 
-  Clazz::Clazz(std::string visibility, std::vector<VNode> parents, const VNode &body)
+  Clazz::Clazz(String visibility, Vec<VNode> parents, CRef<VNode> body)
     : Node({
         [&]() {
           // todo: move args
@@ -30,8 +30,8 @@ namespace tl::syntax {
   }
 
   FunctionPrototype::FunctionPrototype(
-    const VNode &returnTypeExpr,
-    std::vector<VNode> parameterDecls
+    CRef<VNode> returnTypeExpr,
+    Vec<VNode> parameterDecls
   ) : Node({
     [&] {
       // todo: move args

@@ -10,42 +10,42 @@ namespace tl::syntax {
   public:
     ParameterDeclFragment(
       VNode identifierDeclFragment,
-      std::string mut
+      String mut
     );
 
-    auto identifier() const -> const VNode & {
+    auto identifier() const -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto typeExpr() const -> const VNode & {
+    auto typeExpr() const -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto mutibility() const -> const String & {
+    auto mutibility() const -> CRef<String> {
       return m_mutibility;
     }
 
   private:
-    std::string m_mutibility;
+    String m_mutibility;
   };
 
   class IdentifierDeclFragment final : public Node {
   public:
     IdentifierDeclFragment(
-      VNode identifier,
-      VNode typeExpr,
-      VNode rhsExpr
+      const VNode &identifier,
+      const VNode &typeExpr,
+      const VNode &rhsExpr
     );
 
-    auto identifier() -> const VNode & {
+    auto identifier() -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto typeExpr() -> const VNode & {
+    auto typeExpr() -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto rhsExpr() -> const VNode & {
+    auto rhsExpr() -> CRef<VNode> {
       return childAt(2);
     }
 
@@ -54,46 +54,46 @@ namespace tl::syntax {
 
   class Identifier final : public Node {
   public:
-    explicit Identifier(std::string name);
+    explicit Identifier(String name);
 
-    auto name() const noexcept -> const String & {
+    auto name() const noexcept -> CRef<String> {
       return m_name;
     }
 
   private:
-    std::string m_name;
+    String m_name;
   };
 
   class TypeExpr final : public Node {
   public:
-    explicit TypeExpr(std::string name);
+    explicit TypeExpr(String name);
 
-    auto name() const noexcept -> const String & {
+    auto name() const noexcept -> CRef<String> {
       return m_name;
     }
 
   private:
-    std::string m_name;
+    String m_name;
   };
 
   class BinaryExpr final : public Node {
   public:
-    BinaryExpr(VNode lhs, VNode rhs, std::string op);
+    BinaryExpr(VNode lhs, VNode rhs, String op);
 
-    auto left() const noexcept -> const VNode & {
+    auto left() const noexcept -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto right() const noexcept -> const VNode & {
+    auto right() const noexcept -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto op() const noexcept -> const String & {
+    auto op() const noexcept -> CRef<String> {
       return m_op;
     }
 
   private:
-    std::string m_op;
+    String m_op;
   };
 
   class TernaryExpr final : public Node {
@@ -102,64 +102,64 @@ namespace tl::syntax {
       VNode operand1,
       VNode operand2,
       VNode operand3,
-      std::string op1, std::string op2
+      String op1, String op2
     );
 
-    auto first() const noexcept -> const VNode & {
+    auto first() const noexcept -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto second() const noexcept -> const VNode & {
+    auto second() const noexcept -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto third() const noexcept -> const VNode & {
+    auto third() const noexcept -> CRef<VNode> {
       return childAt(2);
     }
 
-    auto firstOp() const noexcept -> const String & {
+    auto firstOp() const noexcept -> CRef<String> {
       return m_op1;
     }
 
-    auto secondOp() const noexcept -> const String & {
+    auto secondOp() const noexcept -> CRef<String> {
       return m_op2;
     }
 
   private:
-    std::string m_op1;
-    std::string m_op2;
+    String m_op1;
+    String m_op2;
   };
 
   class UnaryExpr final : public Node {
   public:
-    UnaryExpr(VNode operand, std::string op);
+    UnaryExpr(VNode operand, String op);
 
-    auto operand() const noexcept -> const VNode & {
+    auto operand() const noexcept -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto op() const noexcept -> const String & {
+    auto op() const noexcept -> CRef<String> {
       return m_op;
     }
 
   private:
-    std::string m_op;
+    String m_op;
   };
 
   class PostfixUnaryExpr final : public Node {
   public:
-    PostfixUnaryExpr(VNode operand, std::string op);
+    PostfixUnaryExpr(VNode operand, String op);
 
-    auto operand() const noexcept -> const VNode & {
+    auto operand() const noexcept -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto op() const noexcept -> const String & {
+    auto op() const noexcept -> CRef<String> {
       return m_op;
     }
 
   private:
-    std::string m_op;
+    String m_op;
   };
 
   // Literals belong here to avoid circular dependencies
@@ -167,7 +167,7 @@ namespace tl::syntax {
 
   class IntegerLiteral final : public Node {
   public:
-    explicit IntegerLiteral(const String &value);
+    explicit IntegerLiteral(CRef<String> value);
 
     auto value() const noexcept -> i64 {
       return m_value;
@@ -179,7 +179,7 @@ namespace tl::syntax {
 
   class FloatLiteral final : public Node {
   public:
-    explicit FloatLiteral(const String &value);
+    explicit FloatLiteral(CRef<String> value);
 
     auto value() const noexcept -> double {
       return m_value;
@@ -192,25 +192,25 @@ namespace tl::syntax {
   class StringLiteral final : public Node {
   public:
     explicit StringLiteral(
-      std::string value,
-      std::vector<VNode> placeholders = {}
+      String value,
+      Vec<VNode> placeholders = {}
     );
 
-    auto value() const noexcept -> const String & {
+    auto value() const noexcept -> CRef<String> {
       return m_value;
     }
 
-    auto placeholder(const sz index) const noexcept -> const VNode & {
+    auto placeholder(const sz index) const noexcept -> CRef<VNode> {
       return childAt(index);
     }
 
   private:
-    std::string m_value;
+    String m_value;
   };
 
   class BooleanLiteral final : public Node {
   public:
-    explicit BooleanLiteral(const String &value);
+    explicit BooleanLiteral(CRef<String> value);
 
     auto value() const noexcept -> bool {
       return m_value;
@@ -223,8 +223,8 @@ namespace tl::syntax {
   class FunctionCallExpr final : public Node {
   public:
     FunctionCallExpr(
-      const VNode &callee,
-      std::vector<VNode> args
+      CRef<VNode> callee,
+      Vec<VNode> args
     );
 
     auto callee() const noexcept -> VNode;
@@ -244,9 +244,9 @@ namespace tl::syntax {
 
   class ModuleExpr final : public Node {
   public:
-    explicit ModuleExpr(std::vector<VNode> fragments);
+    explicit ModuleExpr(Vec<VNode> fragments);
 
-    auto fragment(sz index) -> const VNode & {
+    auto fragment(const sz index) -> CRef<VNode> {
       return childAt(index);
     }
 
@@ -255,9 +255,9 @@ namespace tl::syntax {
 
   class ImportExpr final : public Node {
   public:
-    explicit ImportExpr(std::vector<VNode> fragments);
+    explicit ImportExpr(Vec<VNode> fragments);
 
-    auto fragment(sz index) -> const VNode & {
+    auto fragment(const sz index) -> CRef<VNode> {
       return childAt(index);
     }
 

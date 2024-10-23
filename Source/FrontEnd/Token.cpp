@@ -1,7 +1,7 @@
 #include "Token.hpp"
 
 namespace tl::fe {
-  static const std::unordered_map<StringView, EToken> nonTypeKeywordTable = {
+  static const HashMap<StringView, EToken> nonTypeKeywordTable = {
     {"fn", EToken::Fn},
     {"class", EToken::Class},
     {"super", EToken::Super},
@@ -32,16 +32,16 @@ namespace tl::fe {
     {"else", EToken::Else},
   };
 
-  static const std::unordered_set<StringView> fundamentalTypes{
+  static const HashSet<StringView> fundamentalTypes{
     // "int", "float", "bool", "char", "string", "void",
     "Int", "Float", "Bool", "Char", "String", "Void",
   };
 
-  static const std::unordered_set<StringView> reservedKeywords{
+  static const HashSet<StringView> reservedKeywords{
     "int", "float", "bool", "char", "string", "void",
   };
 
-  static const std::unordered_map<StringView, EToken> operatorTable{
+  static const HashMap<StringView, EToken> operatorTable{
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
     {"...", EToken::Dot3},

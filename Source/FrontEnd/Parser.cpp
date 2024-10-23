@@ -1,5 +1,7 @@
 #include "Parser.hpp"
 
+using tl::syntax::VNode;
+
 namespace tl::fe {
   auto Parser::current() const -> Token {
     return *m_tokenIt;
@@ -39,7 +41,7 @@ namespace tl::fe {
   }
 
   auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
-    std::vector<syntax::VNode> definitions;
+    Vec<VNode> definitions;
 
     while (m_tokenIt != m_tokenItEnd) {
       if (auto moduleStmt = parseModuleStatement(); !isEmpty(moduleStmt)) {
@@ -70,11 +72,10 @@ namespace tl::fe {
     return syntax::TranslationUnit(definitions);
   }
 
-  auto Parser::parseFunctionDefinition() -> syntax::VNode {
-    auto specifier = parseSpecifier();
-    syntax::VNode prototype, identifier, body;
-    bool pure = false;
+  auto Parser::parseFunctionDefinition() -> VNode {
+    const auto specifier = parseSpecifier();
 
+    VNode identifier;
     if (match(EToken::Fn) && match(EToken::Identifier)) {
       identifier = syntax::Identifier{peekPrev().string()};
     } else if (match(EToken::Identifier)) {
@@ -88,14 +89,15 @@ namespace tl::fe {
       return {};
     }
 
-    prototype = parseFunctionPrototype();
+    const VNode prototype = parseFunctionPrototype();
 
     // qualifier
+    bool pure = false;
     if (match(EToken::Pure)) {
       pure = true;
     }
 
-    body = parseBlockStatement();
+    const VNode body = parseBlockStatement();
     if (isEmpty(body)) {
       throw std::runtime_error("missing body required in parseFunctionDefinition");
     }
@@ -103,11 +105,8 @@ namespace tl::fe {
     return syntax::Function{identifier, prototype, body, specifier, pure};
   }
 
-  auto Parser::parseFunctionPrototype() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
-    std::vector<syntax::VNode> paramFragments;
-    syntax::VNode typeExpr;
+  auto Parser::parseFunctionPrototype() -> VNode {
+    Vec<VNode> paramFragments;
 
     if (!match(EToken::LeftParen)) {
       paramFragments.push_back(parseParameterDeclFragment());
@@ -124,7 +123,7 @@ namespace tl::fe {
       }
     }
 
-    auto paramView = paramFragments | rv::filter([](const syntax::VNode &node) {
+    auto paramView = paramFragments | rv::filter([](CRef<VNode> node) {
       return !isEmpty(node);
     });
 
@@ -134,22 +133,20 @@ namespace tl::fe {
       throw std::runtime_error("Missing -> required in parseFunctionPrototype");
     }
 
-    typeExpr = parseTypeExpression();
+    const VNode typeExpr = parseTypeExpression();
     return syntax::FunctionPrototype(
       typeExpr, {paramView.begin(), paramView.end()}
     );
   }
 
-  auto Parser::parseClassDefinition() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
+  auto Parser::parseClassDefinition() -> VNode {
     auto visibility = parseVisibilitySpecifier();
 
     if (!match(EToken::Class, EToken::Interface)) {
       return {};
     }
 
-    std::vector<syntax::VNode> parents;
+    Vec<VNode> parents;
     if (match(EToken::Colon)) {
       parents.push_back(parseTypeExpression());
 
@@ -160,21 +157,19 @@ namespace tl::fe {
 
     auto body = parseBlockStatement();
 
-    auto parentView = parents | rv::filter([](const syntax::VNode &node) {
+    auto parentView = parents | rv::filter([](CRef<VNode> node) {
       return !isEmpty(node);
     });
     return syntax::Clazz(visibility, {parentView.begin(), parentView.end()}, body);
   }
 
-  auto Parser::parseIdentifierDeclStatement() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
+  auto Parser::parseIdentifierDeclStatement() -> VNode {
     if (!match(EToken::Var, EToken::Const)) {
       return {};
     }
 
-    std::string mutibilitySpecifier = peekPrev().string();
-    std::vector decls{parseIdentifierDeclFragment()};
+    String mutibilitySpecifier = peekPrev().string();
+    Vec<VNode> decls{parseIdentifierDeclFragment()};
 
     while (match(EToken::Comma)) {
       decls.push_back(parseIdentifierDeclFragment());
@@ -185,10 +180,10 @@ namespace tl::fe {
     }
 
     auto declView = decls
-                    | rv::filter([](const syntax::VNode &node) {
+                    | rv::filter([](CRef<VNode> node) {
                       return !isEmpty(node);
                     })
-                    | rv::transform([](const syntax::VNode &node) {
+                    | rv::transform([](CRef<VNode> node) {
                       return node;
                     });
     return syntax::IdentifierDeclStatement(
@@ -197,12 +192,12 @@ namespace tl::fe {
     );
   }
 
-  auto Parser::parseIdentifierDeclFragment() -> syntax::VNode {
+  auto Parser::parseIdentifierDeclFragment() -> VNode {
     if (match(EToken::Identifier)) {
       auto identifier = syntax::Identifier(peekPrev().string());
       if (match(EToken::Colon)) {
         auto typeExpr = parseTypeExpression();
-        syntax::VNode rhsExpr;
+        VNode rhsExpr;
 
         if (match(EToken::Equal)) {
           rhsExpr = parseExpression();
@@ -215,11 +210,9 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseModuleStatement() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
+  auto Parser::parseModuleStatement() -> VNode {
     if (match(EToken::Module)) {
-      auto fragments = std::vector<syntax::VNode>{};
+      auto fragments = Vec<VNode>{};
 
       if (match(EToken::Identifier)) {
         fragments.push_back(syntax::Identifier(peekPrev().string()));
@@ -236,7 +229,7 @@ namespace tl::fe {
       }
 
       auto fragmentView = fragments | rv::filter(
-                            [](const syntax::VNode &node) {
+                            [](CRef<VNode> node) {
                               return !isEmpty(node);
                             });
       return syntax::ModuleExpr({fragmentView.begin(), fragmentView.end()});
@@ -245,14 +238,12 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseImportStatement() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
+  auto Parser::parseImportStatement() -> VNode {
     if (!match(EToken::Import)) {
       return {};
     }
 
-    auto fragments = std::vector<syntax::VNode>{};
+    auto fragments = Vec<VNode>{};
 
     if (match(EToken::Identifier)) {
       fragments.push_back(syntax::Identifier(peekPrev().string()));
@@ -267,7 +258,7 @@ namespace tl::fe {
     }
 
     auto fragmentView = fragments | rv::filter(
-                          [](const syntax::VNode &node) {
+                          [](CRef<VNode> node) {
                             return !isEmpty(node);
                           });
     return syntax::ImportExpr({fragmentView.begin(), fragmentView.end()});
@@ -284,11 +275,11 @@ namespace tl::fe {
     return "";
   }
 
-  auto Parser::parseExpression() -> syntax::VNode {
+  auto Parser::parseExpression() -> VNode {
     return parseSequenceExpression();
   }
 
-  auto Parser::parseSequenceExpression() -> syntax::VNode {
+  auto Parser::parseSequenceExpression() -> VNode {
     auto from = parseTernaryExpression();
 
     if (match(EToken::Dot2)) {
@@ -306,15 +297,16 @@ namespace tl::fe {
     return from;
   }
 
-  auto Parser::parseTernaryExpression() -> syntax::VNode {
+  auto Parser::parseTernaryExpression() -> VNode {
     auto cond = parseNullCoalescingExpression();
 
     if (match(EToken::QMark)) {
-      syntax::VNode ifTrue = parseNullCoalescingExpression();
+      const VNode ifTrue = parseNullCoalescingExpression();
 
       if (match(EToken::Colon)) {
         return syntax::TernaryExpr(
-          cond, ifTrue, parseNullCoalescingExpression(), "?", ":"
+          cond, ifTrue, parseNullCoalescingExpression(),
+          "?", ":"
         );
       }
 
@@ -324,7 +316,7 @@ namespace tl::fe {
     return cond;
   }
 
-  auto Parser::parseNullCoalescingExpression() -> syntax::VNode {
+  auto Parser::parseNullCoalescingExpression() -> VNode {
     auto lhs = parseLogicalOrExpression();
 
     while (match(EToken::QMark2)) {
@@ -334,7 +326,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseLogicalOrExpression() -> syntax::VNode {
+  auto Parser::parseLogicalOrExpression() -> VNode {
     auto lhs = parseLogicalAndExpression();
 
     while (match(EToken::Bar2)) {
@@ -344,7 +336,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseLogicalAndExpression() -> syntax::VNode {
+  auto Parser::parseLogicalAndExpression() -> VNode {
     auto lhs = parseInclusiveOrExpression();
 
     while (match(EToken::Ampersand2)) {
@@ -354,7 +346,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseInclusiveOrExpression() -> syntax::VNode {
+  auto Parser::parseInclusiveOrExpression() -> VNode {
     auto lhs = parseExclusiveOrExpression();
 
     while (match(EToken::Bar)) {
@@ -364,7 +356,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseExclusiveOrExpression() -> syntax::VNode {
+  auto Parser::parseExclusiveOrExpression() -> VNode {
     auto lhs = parseAndExpression();
 
     while (match(EToken::Hat)) {
@@ -374,7 +366,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseAndExpression() -> syntax::VNode {
+  auto Parser::parseAndExpression() -> VNode {
     auto lhs = parseEqualityExpression();
 
     while (match(EToken::Ampersand)) {
@@ -384,7 +376,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseEqualityExpression() -> syntax::VNode {
+  auto Parser::parseEqualityExpression() -> VNode {
     auto lhs = parseRelationalExpression();
 
     while (match(EToken::Equal2, EToken::BarEqual)) {
@@ -394,7 +386,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseRelationalExpression() -> syntax::VNode {
+  auto Parser::parseRelationalExpression() -> VNode {
     auto lhs = parseShiftExpression();
 
     while (match(EToken::Less, EToken::LessEqual, EToken::Greater, EToken::GreaterEqual)) {
@@ -404,7 +396,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseShiftExpression() -> syntax::VNode {
+  auto Parser::parseShiftExpression() -> VNode {
     auto lhs = parseAdditiveExpression();
 
     while (match(EToken::Less2, EToken::Greater2)) {
@@ -414,7 +406,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseAdditiveExpression() -> syntax::VNode {
+  auto Parser::parseAdditiveExpression() -> VNode {
     auto lhs = parseMultiplicativeExpression();
 
     while (match(EToken::Plus, EToken::Minus)) {
@@ -424,7 +416,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parseMultiplicativeExpression() -> syntax::VNode {
+  auto Parser::parseMultiplicativeExpression() -> VNode {
     auto lhs = parsePrefixUnaryExpression();
 
     while (match(EToken::Star, EToken::FwdSlash, EToken::Percent)) {
@@ -434,7 +426,7 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parsePrefixUnaryExpression() -> syntax::VNode {
+  auto Parser::parsePrefixUnaryExpression() -> VNode {
     auto operand = parsePostfixExpression();
 
     if (match(EToken::Exclaim, EToken::Tilde, EToken::Plus, EToken::Minus)) {
@@ -444,7 +436,7 @@ namespace tl::fe {
     return operand;
   }
 
-  auto Parser::parsePostfixExpression() -> syntax::VNode {
+  auto Parser::parsePostfixExpression() -> VNode {
     auto operand = parsePrimaryExpression();
 
     // array-subscripting expression
@@ -485,7 +477,7 @@ namespace tl::fe {
     return operand;
   }
 
-  auto Parser::parsePrimaryExpression() -> syntax::VNode {
+  auto Parser::parsePrimaryExpression() -> VNode {
     if (auto lambda = parseLambdaExpression(); !isEmpty(lambda)) {
       return lambda;
     }
@@ -521,28 +513,26 @@ namespace tl::fe {
     throw std::runtime_error("unknown primary expression");
   }
 
-  auto Parser::parseArgumentList() -> std::vector<syntax::VNode> {
-    namespace rv = std::ranges::views;
-
-    std::vector arguments{parseExpression()};
+  auto Parser::parseArgumentList() -> Vec<VNode> {
+    Vec<VNode> arguments{parseExpression()};
 
     while (match(EToken::Comma)) {
       arguments.push_back(parseExpression());
     }
 
     auto argumentView = arguments
-                        | rv::filter([](const syntax::VNode &node) {
+                        | rv::filter([](CRef<VNode> node) {
                           return !isEmpty(node);
                         });
     return {argumentView.begin(), argumentView.end()};
   }
 
-  auto Parser::parseBlockStatement() -> syntax::VNode {
+  auto Parser::parseBlockStatement() -> VNode {
     if (!match(EToken::LeftBrace)) {
       return {};
     }
 
-    std::vector<syntax::VNode> statements;
+    Vec<VNode> statements;
     for (auto stmt = parseStatement();
          !isEmpty(stmt);
          stmt = parseStatement()
@@ -560,7 +550,7 @@ namespace tl::fe {
     return syntax::BlockStatement(statements);
   }
 
-  auto Parser::parseTypeExpression() -> syntax::VNode {
+  auto Parser::parseTypeExpression() -> VNode {
     if (match(EToken::FundamentalType, EToken::UserDefinedType)) {
       return syntax::TypeExpr(peekPrev().string());
     }
@@ -568,7 +558,7 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseParameterDeclFragment() -> syntax::VNode {
+  auto Parser::parseParameterDeclFragment() -> VNode {
     std::string mutibility = "const";
     if (match(EToken::Var, EToken::Const)) {
       mutibility = peekPrev().string();
@@ -581,8 +571,8 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseLambdaExpression() -> syntax::VNode {
-    auto prototype = parseLambdaPrototype();
+  auto Parser::parseLambdaExpression() -> VNode {
+    const auto prototype = parseLambdaPrototype();
 
     if (isEmpty(prototype)) {
       return {};
@@ -600,7 +590,7 @@ namespace tl::fe {
     );
   }
 
-  auto Parser::parseStatement() -> syntax::VNode {
+  auto Parser::parseStatement() -> VNode {
     if (auto control = parseControlStatement(); !isEmpty(control)) {
       return control;
     }
@@ -632,8 +622,10 @@ namespace tl::fe {
     if (match(EToken::StarEqual, EToken::FwdSlashEqual, EToken::PercentEqual, EToken::PlusEqual,
               EToken::MinusEqual, EToken::Greater2Equal, EToken::Less2Equal, EToken::AmpersandEqual,
               EToken::HatEqual, EToken::BarEqual, EToken::Equal)) {
-      auto lhs = parseExpression();
-      auto assignmentStmt = syntax::AssignmentStatement(expr, lhs, peekPrev().string());
+      const auto lhs = parseExpression();
+      auto assignmentStmt = syntax::AssignmentStatement(
+        expr, lhs, peekPrev().string()
+      );
 
       if (!match(EToken::Semicolon)) {
         throw std::runtime_error("Missing ; required in parseStatement");
@@ -650,7 +642,7 @@ namespace tl::fe {
     return expr;
   }
 
-  auto Parser::parseControlStatement() -> syntax::VNode {
+  auto Parser::parseControlStatement() -> VNode {
     if (auto ifStmt = parseIfStatement(); !isEmpty(ifStmt)) {
       return ifStmt;
     }
@@ -662,7 +654,7 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseIfStatement() -> syntax::VNode {
+  auto Parser::parseIfStatement() -> VNode {
     if (!match(EToken::If)) {
       return {};
     }
@@ -670,14 +662,14 @@ namespace tl::fe {
     // optional parenthesis, marked volatile to avoid being optimized away (maybe)
     [[maybe_unused]] volatile bool mlp = match(EToken::LeftParen);
 
-    auto idDecl = parseIdentifierDeclStatement();
-    auto cond = parseExpression();
+    const auto idDecl = parseIdentifierDeclStatement();
+    const auto cond = parseExpression();
 
     // optional parenthesis, marked volatile to avoid being optimized away (maybe)
     [[maybe_unused]] volatile bool mrp = match(EToken::RightParen);
 
-    auto body = parseBlockStatement();
-    syntax::VNode elseBody;
+    const auto body = parseBlockStatement();
+    VNode elseBody;
 
     if (match(EToken::Else)) {
       elseBody = parseBlockStatement();
@@ -689,7 +681,7 @@ namespace tl::fe {
     return syntax::IfStatement(idDecl, cond, body, elseBody);
   }
 
-  auto Parser::parseForStatement() -> syntax::VNode {
+  auto Parser::parseForStatement() -> VNode {
     if (!match(EToken::For)) {
       return {};
     }
@@ -697,7 +689,7 @@ namespace tl::fe {
     // optional parenthesis, marked volatile to avoid being optimized away (maybe)
     [[maybe_unused]] volatile bool mlp = match(EToken::LeftParen);
 
-    auto idDecl = parseIdentifierDeclStatement();
+    const auto idDecl = parseIdentifierDeclStatement();
 
     // regular for loop
     if (!isEmpty(idDecl)) {
@@ -732,7 +724,7 @@ namespace tl::fe {
     return syntax::ForStatement(idDecl, collection, parseBlockStatement());
   }
 
-  auto Parser::parseReturnStatement() -> syntax::VNode {
+  auto Parser::parseReturnStatement() -> VNode {
     if (!match(EToken::Return)) {
       return {};
     }
@@ -751,14 +743,11 @@ namespace tl::fe {
     return syntax::ReturnStatement(expr);
   }
 
-  auto Parser::parseLambdaPrototype() -> syntax::VNode {
-    namespace rv = std::ranges::views;
-
+  auto Parser::parseLambdaPrototype() -> VNode {
     // for recovering in case this is not a lambda expression
     const auto it = m_tokenIt;
 
-    std::vector<syntax::VNode> paramFragments;
-    syntax::VNode typeExpr;
+    Vec<VNode> paramFragments;
 
     if (!match(EToken::LeftParen)) {
       paramFragments.push_back(parseParameterDeclFragment());
@@ -775,10 +764,10 @@ namespace tl::fe {
     }
 
     auto paramView = paramFragments
-                     | rv::filter([](const syntax::VNode &node) {
+                     | rv::filter([](CRef<VNode> node) {
                        return !isEmpty(node);
                      })
-                     | rv::transform([](const syntax::VNode &node) {
+                     | rv::transform([](CRef<VNode> node) {
                        return node;
                      });
 
@@ -789,7 +778,7 @@ namespace tl::fe {
       return {};
     }
 
-    typeExpr = parseTypeExpression();
+    const VNode typeExpr = parseTypeExpression();
     return syntax::FunctionPrototype(
       typeExpr, {paramView.begin(), paramView.end()}
     );

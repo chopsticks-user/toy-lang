@@ -6,17 +6,9 @@
 #include "Core/Core.hpp"
 
 namespace tl::fe {
-  class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
+  class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, String> {
   public:
     using Super::operator();
-
-    // using Visitable = syntax::VNode;
-
-    // using Visitable = std::variant<
-    //   syntax::TranslationUnit, syntax::ModuleExpr, syntax::Identifier, syntax::BinaryExpr,
-    //   syntax::UnaryExpr, syntax::IntegerLiteral, syntax::FloatLiteral, syntax::StringLiteral,
-    //   syntax::BooleanLiteral
-    // >;
 
     auto operator()(const syntax::TranslationUnit &node) -> String;
 

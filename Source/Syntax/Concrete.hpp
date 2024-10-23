@@ -9,9 +9,9 @@ namespace tl::syntax {
   class TranslationUnit final : public Node {
   public:
     // todo
-    explicit TranslationUnit(std::vector<VNode> definitions);
+    explicit TranslationUnit(Vec<VNode> definitions);
 
-    auto definition(const sz index) -> const VNode & {
+    auto definition(const sz index) -> CRef<VNode> {
       return childAt(index);
     }
 
@@ -23,14 +23,14 @@ namespace tl::syntax {
     Function(
       VNode fIdentifier, VNode fPrototype,
       VNode fBody,
-      std::string storageSpecifier, bool pure
+      String storageSpecifier, bool pure
     );
 
-    auto identifier() -> const VNode & {
+    auto identifier() -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto prototype() -> const VNode & {
+    auto prototype() -> CRef<VNode> {
       return childAt(1);
     }
 
@@ -38,39 +38,39 @@ namespace tl::syntax {
       return m_pure;
     }
 
-    auto body() const -> const VNode & {
+    auto body() const -> CRef<VNode> {
       return childAt(2);
     }
 
-    auto storage() const -> const std::string & {
+    auto storage() const -> CRef<String> {
       return m_storage;
     }
 
   private:
     bool m_pure;
-    std::string m_storage;
+    String m_storage;
   };
 
   class Clazz final : public Node {
   public:
-    Clazz(std::string visibility, std::vector<VNode> parents, const VNode &body);
+    Clazz(String visibility, Vec<VNode> parents, CRef<VNode> body);
 
-    auto visibility() -> const std::string & {
+    auto visibility() -> CRef<String> {
       return m_visibility;
     }
 
   private:
-    std::string m_visibility;
+    String m_visibility;
   };
 
   class FunctionPrototype final : public Node {
   public:
     FunctionPrototype(
-      const VNode &returnTypeExpr,
-      std::vector<VNode> parameterDecls
+      CRef<VNode> returnTypeExpr,
+      Vec<VNode> parameterDecls
     );
 
-    auto returnTypeExpr() -> const VNode & {
+    auto returnTypeExpr() -> CRef<VNode> {
       return childAt(0);
     }
   };

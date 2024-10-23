@@ -5,27 +5,31 @@
 namespace tl::syntax {
   ParameterDeclFragment::ParameterDeclFragment(
     VNode identifierDeclFragment,
-    std::string mut
+    String mut
   ) : Node({identifierDeclFragment}),
       m_mutibility(mut.empty() ? "const" : std::move(mut)) {
   }
 
   IdentifierDeclFragment::IdentifierDeclFragment(
-    VNode identifier,
-    VNode typeExpr,
-    VNode rhsExpr
-  ) : Node({identifier, typeExpr, rhsExpr}) {
+    CRef<VNode> identifier,
+    CRef<VNode> typeExpr,
+    CRef<VNode> rhsExpr
+  ) : Node(
+    isEmpty(rhsExpr)
+      ? Vec<VNode>{identifier, typeExpr}
+      : Vec<VNode>{identifier, typeExpr, rhsExpr}
+  ) {
   }
 
-  Identifier::Identifier(std::string name)
+  Identifier::Identifier(String name)
     : Node({}), m_name(std::move(name)) {
   }
 
-  TypeExpr::TypeExpr(std::string name)
+  TypeExpr::TypeExpr(String name)
     : Node({}), m_name(std::move(name)) {
   }
 
-  BinaryExpr::BinaryExpr(VNode lhs, VNode rhs, std::string op)
+  BinaryExpr::BinaryExpr(VNode lhs, VNode rhs, String op)
     : Node({lhs, rhs}), m_op(std::move(op)) {
   }
 
@@ -33,42 +37,42 @@ namespace tl::syntax {
     VNode operand1,
     VNode operand2,
     VNode operand3,
-    std::string op1, std::string op2
+    String op1, String op2
   )
     : Node({operand1, operand2, operand3}),
       m_op1(std::move(op1)), m_op2(std::move(op2)) {
   }
 
-  UnaryExpr::UnaryExpr(VNode operand, std::string op)
+  UnaryExpr::UnaryExpr(VNode operand, String op)
     : Node({operand}), m_op(std::move(op)) {
   }
 
-  PostfixUnaryExpr::PostfixUnaryExpr(VNode operand, std::string op)
+  PostfixUnaryExpr::PostfixUnaryExpr(VNode operand, String op)
     : Node({operand}), m_op(std::move(op)) {
   }
 
-  IntegerLiteral::IntegerLiteral(const String &value)
-    : Node({}), m_value(std::stol(std::string(value))) {
+  IntegerLiteral::IntegerLiteral(CRef<String> value)
+    : Node({}), m_value(std::stol(String(value))) {
   }
 
-  FloatLiteral::FloatLiteral(const String &value)
-    : Node({}), m_value(std::stod(std::string(value))) {
+  FloatLiteral::FloatLiteral(CRef<String> value)
+    : Node({}), m_value(std::stod(String(value))) {
   }
 
   StringLiteral::StringLiteral(
-    std::string value,
-    std::vector<VNode> placeholders
+    String value,
+    Vec<VNode> placeholders
   )
     : Node({std::move(placeholders)}), m_value(std::move(value)) {
   }
 
-  BooleanLiteral::BooleanLiteral(const String &value)
+  BooleanLiteral::BooleanLiteral(CRef<String> value)
     : Node({}), m_value(value == "true") {
   }
 
   FunctionCallExpr::FunctionCallExpr(
-    const VNode &callee,
-    std::vector<VNode> args
+    CRef<VNode> callee,
+    Vec<VNode> args
   ) : Node({
     [&]() {
       // todo: move args
@@ -97,11 +101,11 @@ namespace tl::syntax {
     return childAt(1);
   }
 
-  ModuleExpr::ModuleExpr(std::vector<VNode> fragments)
+  ModuleExpr::ModuleExpr(Vec<VNode> fragments)
     : Node(std::move(fragments)) {
   }
 
-  ImportExpr::ImportExpr(std::vector<VNode> fragments)
+  ImportExpr::ImportExpr(Vec<VNode> fragments)
     : Node(std::move(fragments)) {
   }
 }

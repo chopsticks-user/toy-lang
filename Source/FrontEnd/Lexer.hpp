@@ -36,6 +36,8 @@ namespace tl::fe {
       m_currentToken += m_currentChar;
     }
 
+    auto skip(sz n = 1) -> void;
+
     auto trySkip() -> bool;
 
     auto addToken(EToken tokenType) -> void;

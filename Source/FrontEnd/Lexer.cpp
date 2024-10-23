@@ -31,6 +31,12 @@ namespace tl::fe {
     return handleWhiteSpace() || handleNewLine() || handleComment();
   }
 
+  auto Lexer::skip(sz n) -> void {
+    for (sz i = 0; i < n; ++i) {
+      consume();
+      advance();
+    }
+  }
 
   auto Lexer::match(char expected) -> bool {
     if (m_fs.eof() || m_fs.peek() != expected) {
@@ -278,17 +284,13 @@ namespace tl::fe {
 
     // Maximum number of chracters is 3
     if (Token::isValidOperator(m_currentToken + m_currentChar + peek())) {
-      consume();
-      advance();
-      consume();
-      advance();
+      skip(2);
       addToken(EToken::MaybeOperator); // valid 3-char operator
       return true;
     }
 
     if (Token::isValidOperator(m_currentToken + m_currentChar)) {
-      consume();
-      advance();
+      skip();
       addToken(EToken::MaybeOperator); // valid 2-char operator
       return true;
     }
@@ -296,6 +298,7 @@ namespace tl::fe {
     addToken(EToken::MaybeOperator);
     if (m_lastTokenType == EToken::Invalid) {
       appendError(std::runtime_error("Unrecognizable token 0"));
+      return false;
     }
 
     return true;

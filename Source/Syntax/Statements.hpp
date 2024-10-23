@@ -9,28 +9,28 @@
 namespace tl::syntax {
   class BlockStatement final : public Node {
   public:
-    explicit BlockStatement(std::vector<VNode> statements);
+    explicit BlockStatement(Vec<VNode> statements);
 
   private:
   };
 
   class IdentifierDeclStatement final : public Node {
   public:
-    IdentifierDeclStatement(std::vector<VNode> fragments, std::string mut);
+    IdentifierDeclStatement(Vec<VNode> fragments, String mut);
 
     auto mutibility() -> const String & {
       return m_mutibility;
     }
 
   private:
-    std::string m_mutibility;
+    String m_mutibility;
   };
 
   class ReturnStatement final : public Node {
   public:
-    explicit ReturnStatement(const VNode &expr);
+    explicit ReturnStatement(CRef<VNode> expr);
 
-    auto expression() -> const VNode & {
+    auto expression() -> CRef<VNode> {
       return childAt(0);
     }
 
@@ -40,14 +40,14 @@ namespace tl::syntax {
   class AssignmentStatement final : public Node {
   public:
     AssignmentStatement(
-      VNode left, VNode right, std::string op
+      VNode left, VNode right, String op
     );
 
-    auto left() -> const VNode & {
+    auto left() -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto right() -> const VNode & {
+    auto right() -> CRef<VNode> {
       return childAt(1);
     }
 
@@ -56,7 +56,7 @@ namespace tl::syntax {
     }
 
   private:
-    std::string m_op;
+    String m_op;
   };
 
   class IfStatement final : public Node {
@@ -66,20 +66,20 @@ namespace tl::syntax {
       VNode body, VNode elseBody
     );
 
-    auto declStatement() -> const VNode & {
+    auto declStatement() -> CRef<VNode> {
       return childAt(0);
     }
 
-    auto condition() -> const VNode & {
+    auto condition() -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto body() -> const VNode & {
+    auto body() -> CRef<VNode> {
       return childAt(2);
     }
 
     // may contain another if statement
-    auto elseNode() -> const VNode & {
+    auto elseNode() -> CRef<VNode> {
       return childAt(3);
     }
 
@@ -102,20 +102,20 @@ namespace tl::syntax {
       return nChildren() == 2;
     }
 
-    auto iterator() -> const VNode & {
+    auto iterator() -> CRef<VNode> {
       return firstChild();
     }
 
-    auto conditionOrCollection() -> const VNode & {
+    auto conditionOrCollection() -> CRef<VNode> {
       return childAt(1);
     }
 
-    auto postExpression() -> const VNode & {
+    auto postExpression() -> CRef<VNode> {
       return childAt(2);
     }
 
     // may contain another if statement
-    auto body() -> const VNode & {
+    auto body() -> CRef<VNode> {
       return lastChild();
     }
 

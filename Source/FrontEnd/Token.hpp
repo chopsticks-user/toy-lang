@@ -38,7 +38,7 @@ namespace tl::fe {
 
   class Token final {
   public:
-    Token(EToken type, std::string str, sz line, sz column);
+    Token(EToken type, String str, sz line, sz column);
 
     static auto isValidOperator(StringView symbol) -> bool;
 
@@ -46,7 +46,7 @@ namespace tl::fe {
       return m_type;
     }
 
-    auto string() const noexcept -> const std::string & {
+    auto string() const noexcept -> CRef<String> {
       return m_str;
     }
 
@@ -60,7 +60,7 @@ namespace tl::fe {
 
   private:
     EToken m_type;
-    std::string m_str;
+    String m_str;
     sz m_line;
     sz m_column;
   };
