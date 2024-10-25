@@ -2,26 +2,71 @@
 
 #include "FrontEnd/Lexer.hpp"
 
-#include <iostream>
-#include <sstream>
+using tl::fe::EToken;
+using tl::fe::Tokens;
+using tl::String;
+using tl::u64;
 
-using tl::util::apply;
-using tl::fe::Lexer;
-
-static std::filesystem::path resourceDir = RESOURCE_DIR;
-
-TEST_CASE("Lexer: Simple program", "[Lexer]") {
-  auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
-  for (const auto &token: tokens) {
-    std::cout << token.string() << '\n';
+class LexerTestFixture {
+protected:
+  auto lex(String source) -> void {
+    std::istringstream iss;
+    iss.str(std::move(source));
+    m_tokens = tl::util::apply<tl::fe::Lexer>(std::move(iss));
   }
+
+  auto nTokens() const -> u64 {
+    return m_tokens.size();
+  }
+
+  auto contains(const EToken expected) const -> bool {
+    return rng::find_if(
+             m_tokens.begin(), m_tokens.end(),
+             [&expected](const tl::fe::Token &token) {
+               return token.type() == expected;
+             }
+           ) != m_tokens.end();
+  }
+
+  auto tokens() const -> const Tokens & {
+    return m_tokens;
+  }
+
+private:
+  Tokens m_tokens;
+};
+
+#define REQUIRE_TOKENS(...) \
+  do { \
+    tl::Vec<EToken> expected{__VA_ARGS__}; \
+    auto actual = tokens(); \
+    REQUIRE(actual.size() == expected.size()); \
+    for (auto i: rv::iota(0ul, actual.size())) { \
+        REQUIRE(expected[i] == actual[i].type()); \
+    } \
+  } \
+  while(false)
+
+
+TEST_CASE_METHOD(LexerTestFixture, "Lexer: Module declaration", "[Lexer]") {
+  lex(R"(module foo;\n)");
+
+  REQUIRE_TOKENS(
+    EToken::Module, EToken::Identifier, EToken::Semicolon
+  );
 }
 
-TEST_CASE("Lexer: Another simple program", "[Lexer]") {
-  std::istringstream iss;
-  iss.str("module foo;\n\n\n\n\n");
-  auto tokens = apply<Lexer>(std::move(iss));
-  for (const auto &token: tokens) {
-    std::cout << token.string() << '\n';
-  }
+TEST_CASE_METHOD(LexerTestFixture, "Lexer: Import declaration", "[Lexer]") {
+  lex(R"(
+    import foo;
+    import bar;
+    import foo::bar;
+  )");
+
+  REQUIRE_TOKENS(
+    EToken::Import, EToken::Identifier, EToken::Semicolon, // line 1
+    EToken::Import, EToken::Identifier, EToken::Semicolon, // line 2
+    EToken::Import, EToken::Identifier, EToken::Colon2, // line 3
+    EToken::Identifier, EToken::Semicolon
+  );
 }
