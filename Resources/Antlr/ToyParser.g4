@@ -29,7 +29,7 @@ classDefinition
     ;
 
 classParentList
-    : typeExpression (Comma typeExpression)*
+    : nullableTypeExpression (Comma nullableTypeExpression)*
     ;
 
 classDefinitionBody
@@ -55,8 +55,8 @@ functionPrototype
 
 functionPrototypePostfix
     : LeftParen parameterDeclFragment (Comma parameterDeclFragment)*
-        RightParen MinusGreater typeExpression
-    | parameterDeclFragment MinusGreater typeExpression
+        RightParen MinusGreater nullableTypeExpression
+    | parameterDeclFragment MinusGreater nullableTypeExpression
     ;
 
 statement
@@ -110,7 +110,7 @@ identifierDeclFragmentList
     ;
 
 identifierDeclFragment
-    : Identifier Colon typeExpression (Equal expression)?
+    : (Identifier | tupleExpression) Colon nullableTypeExpression (Equal expression)?
     ;
 
 ifStatement
@@ -127,12 +127,31 @@ returnStatement
 
 primaryExpression
     : lambdaExpression
-    | LeftParen expression RightParen
-    | typeExpression
+    | nullableTypeExpression
     | numberExpression
     | stringExpression
+    | arrayExpression
+    | tupleExpression
+    | typeQueryExpression
     | Identifier
     | Self
+    ;
+
+typeQueryExpression
+    : LeftBracket2 expression RightBracket2
+    ;
+
+commaSeparatedExprList
+    : expression (Comma expression)*
+    ;
+
+arrayExpression
+    : LeftBracket commaSeparatedExprList? RightBracket
+    ;
+
+// empty tuples are not allowed
+tupleExpression
+    : LeftParen commaSeparatedExprList RightParen
     ;
 
 lambdaExpression
@@ -148,18 +167,14 @@ stringPlaceholder
     : LeftBrace expression RightBrace
     ;
 
-argumentList
-    : expression (Comma expression)*
-    ;
-
 // References: https://github.com/antlr/grammars-v4/blob/master/c/C.g4
 
 postfixExpression
     : primaryExpression (
-          LeftBracket expression RightBracket
-        | LeftParen argumentList? RightParen
-        | BarGreater postfixExpression // Pipe operator from Elixir
-        | Dot Identifier
+          (LeftBracket expression RightBracket)+ // array subscripting
+        | tupleExpression // function call
+        | BarGreater postfixExpression // pipe operator from Elixir
+        | Dot Identifier // field access
         | postfixUnaryOperators
       )*
     ;
@@ -264,6 +279,7 @@ prefixUnaryOperators
 postfixUnaryOperators
     : Plus2
     | Minus2
+    | Exclaim2
     ;
 
 numberExpression
@@ -294,11 +310,43 @@ mutibilitySpecifier
     | Const
     ;
 
+nullableTypeExpression
+    : typeExpression QMark?
+    ;
+
 typeExpression
+    : typeArrayExpression
+    | typeTupleExpression
+    | typeExpressionUnit
+    ;
+
+typeTupleExpression
+    : LeftParen typeExpression (Comma typeExpression)* RightParen
+    ;
+
+typeArrayExpression
+    : (LeftBracket RightBracket)+ typeExpression
+    ;
+
+typeGenericExpression
+    : typeGenricPrefix Less typeExpression Greater
+    ;
+
+typeGenricPrefix
+    : Atomic
+    | Reactive
+    | Optional
+    ;
+
+typeExpressionUnit
     : Int
     | Float
     | Bool
     | String
     | Void
+    | Any
+    | Atomic
+    | Reactive
+//    | Optional
     | TypeIdentifier
     ;

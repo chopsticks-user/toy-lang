@@ -11,9 +11,13 @@ namespace tl::fe {
    */
   class Lexer {
   public:
-    auto operator()(const std::filesystem::path &filepath) -> Tokens;
+    auto operator()(const fs::path &filepath) -> Tokens;
+
+    auto operator()(std::istringstream ss) -> Tokens;
 
   private:
+    auto lex() -> Tokens;
+
     auto advance() -> bool;
 
     auto revertInline() -> bool;
@@ -29,7 +33,7 @@ namespace tl::fe {
     }
 
     auto readNext() -> void {
-      m_fs.get(m_currentChar);
+      m_fs->get(m_currentChar);
     }
 
     auto consume() -> void {
@@ -44,7 +48,7 @@ namespace tl::fe {
 
     auto appendError(std::runtime_error error) -> void;
 
-    auto reset(const std::filesystem::path &filepath) -> void;
+    auto reset() -> void;
 
   private:
     static auto isDigit(char c) -> bool {
@@ -105,16 +109,16 @@ namespace tl::fe {
     auto handleEscapeSequence() -> bool;
 
   private:
-    std::fstream m_fs;
+    Ptr<std::istream> m_fs;
     EToken m_lastTokenType = EToken::Empty;
     c8 m_currentChar = '\0';
-    std::string m_currentToken;
+    String m_currentToken;
     Tokens m_collectedTokens;
     sz m_currentLine = 0;
     sz m_currentColumn = 0;
     sz m_lastNonEmptyColumn = 0;
     bool m_stringState = false;
-    std::vector<std::runtime_error> m_collectedErrors;
+    Vec<std::runtime_error> m_collectedErrors;
   };
 }
 

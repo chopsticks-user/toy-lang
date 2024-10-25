@@ -33,6 +33,8 @@ Greater2       : '>>';
 Less2          : '<<';
 QMark2         : '??';
 Dot2           : '..';
+RightBracket2  : '[[';
+LeftBracket2   : ']]';
 
 LeftParen      : '(';
 RightParen     : ')';
@@ -67,13 +69,16 @@ Hat            : '^';
 Int         : 'Int';
 Float       : 'Float';
 Bool        : 'Bool';
-String      : 'String';
 Void        : 'Void';
+String      : 'String';
+Any         : 'Any';
+Optional    : 'Optional';
+Atomic      : 'Atomic';
+Reactive    : 'Reactive';
 
 Export      : 'export';
 Internal    : 'internal';
 Local       : 'local';
-Fn          : 'fn';
 Main        : 'main';
 Class       : 'class';
 Super       : 'super';
@@ -98,6 +103,8 @@ Abstract    : 'abstract';
 Interface   : 'interface';
 True        : 'true';
 False       : 'false';
+Null        : 'null';
+Fn          : 'fn';
 
 // Basic
 

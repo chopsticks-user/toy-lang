@@ -23,6 +23,7 @@
 #include <memory_resource>
 #include <source_location>
 #include <filesystem>
+#include <sstream>
 
 namespace rv = std::ranges::views;
 namespace rng = std::ranges;

@@ -2,7 +2,6 @@
 
 namespace tl::fe {
   static const HashMap<StringView, EToken> nonTypeKeywordTable = {
-    {"fn", EToken::Fn},
     {"class", EToken::Class},
     {"super", EToken::Super},
     {"self", EToken::Self},
@@ -33,12 +32,13 @@ namespace tl::fe {
   };
 
   static const HashSet<StringView> fundamentalTypes{
-    // "int", "float", "bool", "char", "string", "void",
-    "Int", "Float", "Bool", "Char", "String", "Void",
+    "Int", "Float", "Bool", "Char", "Void",
+    "Array", "Set", "Tuple", "Fn", "String"
   };
 
   static const HashSet<StringView> reservedKeywords{
-    "int", "float", "bool", "char", "string", "void",
+    "int", "float", "bool", "char", "void",
+    "array", "set", "tuple", "fn", "string"
   };
 
   static const HashMap<StringView, EToken> operatorTable{

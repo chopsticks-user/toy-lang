@@ -6,9 +6,10 @@ add_executable(
 target_sources(
     ToyLang_UnitTestFrontEnd
     PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestLexer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestParser.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TestPrettyPrinter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Lexer.test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Parser.test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PrettyPrinter.test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Syntax.test.cpp
 )
 #target_include_directories(ToyLang_UnitTestFrontEnd ${PROJECT_SOURCE_DIR}/Source)
 target_link_libraries(
