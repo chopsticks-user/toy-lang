@@ -227,20 +227,31 @@ namespace tl::fe {
     bool lexed = false;
 
     if (isStartOfInteger(m_currentChar)) {
+      auto tokenType = EToken::IntegerLiteral;
+
       // accept both, then check if it is actually a number
-      while (advance() && isDigitOrLetter(m_currentChar)) {
+      while (advance() && isDigit(m_currentChar)) {
         consume();
       }
 
-      addToken(EToken::IntegerLiteral);
-      lexed = true;
-    }
+      if (isStartOfDecimalPart(m_currentChar) && isDigit(peek())) {
+        consume();
 
-    if (isStartOfDecimalPart(m_currentChar)) {
+        // accept both, then check if it is actually a number
+        while (advance() && isDigit(m_currentChar)) {
+          consume();
+        }
+
+        tokenType = EToken::FloatLiteral;
+      }
+
+      addToken(tokenType);
+      lexed = true;
+    } else if (isStartOfDecimalPart(m_currentChar) && isDigit(peek())) {
       consume();
 
       // accept both, then check if it is actually a number
-      while (advance() && isDigitOrLetter(m_currentChar)) {
+      while (advance() && isDigit(m_currentChar)) {
         consume();
       }
 

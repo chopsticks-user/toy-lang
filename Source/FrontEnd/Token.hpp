@@ -8,7 +8,7 @@ namespace tl::fe {
     // Single
     LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace,
     Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
-    Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar,
+    Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar, At,
 
     AnnonymousIdentifier,
 
@@ -26,8 +26,8 @@ namespace tl::fe {
 
     // Keywords
     Fn, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
-    Default, Export, Import, Module, Internal, Local, Pure, Var, Const, Print, Extern, Abstract,
-    Interface, By, Else, Let, Mutable,
+    Default, Export, Import, Module, Internal, Local, Pure, Print, Extern, Abstract,
+    Interface, By, Else, Let, Mutable, True, False, Of,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

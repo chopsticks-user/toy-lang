@@ -164,9 +164,9 @@ namespace tl::fe {
   }
 
   auto Parser::parseIdentifierDeclStatement() -> ASTNode {
-    if (!match(EToken::Var, EToken::Const)) {
-      return {};
-    }
+    // if (!match(EToken::Var, EToken::Const)) {
+    //   return {};
+    // }
 
     String mutibilitySpecifier = peekPrev().string();
     Vec<ASTNode> decls{parseIdentifierDeclFragment()};
@@ -560,9 +560,9 @@ namespace tl::fe {
 
   auto Parser::parseParameterDeclFragment() -> ASTNode {
     std::string mutibility = "const";
-    if (match(EToken::Var, EToken::Const)) {
-      mutibility = peekPrev().string();
-    }
+    // if (match(EToken::Var, EToken::Const)) {
+    //   mutibility = peekPrev().string();
+    // }
 
     if (auto idDecl = parseIdentifierDeclFragment(); !isEmpty(idDecl)) {
       return syntax::ParameterDeclFragment{idDecl, mutibility};

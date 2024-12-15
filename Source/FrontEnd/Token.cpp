@@ -21,8 +21,6 @@ namespace tl::fe {
     {"internal", EToken::Internal},
     {"local", EToken::Local},
     {"pure", EToken::Pure},
-    {"var", EToken::Var},
-    {"const", EToken::Const},
     {"print", EToken::Print},
     {"extern", EToken::Extern},
     {"abstract", EToken::Abstract},
@@ -31,6 +29,9 @@ namespace tl::fe {
     {"else", EToken::Else},
     {"let", EToken::Let},
     {"mutable", EToken::Mutable},
+    {"true", EToken::True},
+    {"false", EToken::False},
+    {"of", EToken::Of},
   };
 
   static const HashSet<StringView> fundamentalTypes{
@@ -100,6 +101,7 @@ namespace tl::fe {
     {"?", EToken::QMark},
     {"~", EToken::Tilde},
     {"$", EToken::Dollar},
+    {"@", EToken::At},
   };
 
   static const auto identifierType(const StringView idStr) noexcept -> EToken {
