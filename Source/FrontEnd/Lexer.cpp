@@ -261,7 +261,9 @@ namespace tl::fe {
         appendError(std::runtime_error("Identifiers cannot contain or be prefixed with '_'"));
         return false;
       }
+
       addToken(EToken::AnnonymousIdentifier);
+      advance();
       return true;
     }
 

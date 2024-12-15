@@ -159,10 +159,10 @@ TEST_CASE_WITH_FIXTURE("Lexer: Tuple declaration", "[Lexer]") {
     EToken::FundamentalType, // Float
     EToken::Comma,
     EToken::Identifier, // sum
-    EToken::Colon,
+    EToken::Comma,
     EToken::Identifier, // foo
     EToken::Colon,
-    EToken::FundamentalType, // Type
+    EToken::UserDefinedType, // Type
     EToken::RightParen,
   );
 }
