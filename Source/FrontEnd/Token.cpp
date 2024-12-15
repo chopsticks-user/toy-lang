@@ -29,6 +29,8 @@ namespace tl::fe {
     {"interface", EToken::Interface},
     {"by", EToken::By},
     {"else", EToken::Else},
+    {"let", EToken::Let},
+    {"mutable", EToken::Mutable},
   };
 
   static const HashSet<StringView> fundamentalTypes{
@@ -102,6 +104,10 @@ namespace tl::fe {
 
   static const auto identifierType(const StringView idStr) noexcept -> EToken {
     if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
+      if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
+        return EToken::FundamentalType;
+      }
+
       return EToken::UserDefinedType;
     }
 
@@ -111,10 +117,6 @@ namespace tl::fe {
 
     if (const auto it = nonTypeKeywordTable.find(idStr); it != nonTypeKeywordTable.end()) {
       return it->second;
-    }
-
-    if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
-      return EToken::FundamentalType;
     }
 
     return EToken::Identifier;

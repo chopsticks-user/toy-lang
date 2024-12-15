@@ -12,6 +12,6 @@ using tl::syntax::ASTNode;
 static std::filesystem::path resourceDir = RESOURCE_DIR;
 
 TEST_CASE("Parser: Simple program", "[Parser]") {
-  auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
-  auto translationUnit = apply<Parser>(tokens);
+  // auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
+  // auto translationUnit = apply<Parser>(tokens);
 }

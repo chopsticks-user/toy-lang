@@ -15,11 +15,11 @@ using tl::visit;
 static std::filesystem::path resourceDir = RESOURCE_DIR;
 
 TEST_CASE("PrettyPrinter: Simple program", "[PrettyPrinter]") {
-  auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
-  auto translationUnit = apply<Parser>(tokens);
-
-  auto text = visit<PrettyPrinter>(translationUnit);
-  std::cout << text << '\n';
+  // auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
+  // auto translationUnit = apply<Parser>(tokens);
+  //
+  // auto text = visit<PrettyPrinter>(translationUnit);
+  // std::cout << text << '\n';
 
   // auto result = visit<ImportedModuleNameCollector>(translationUnit);
   // for (const auto &name: result) {

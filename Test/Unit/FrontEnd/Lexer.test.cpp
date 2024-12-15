@@ -47,26 +47,122 @@ private:
   } \
   while(false)
 
+#define TEST_CASE_WITH_FIXTURE(...) \
+  TEST_CASE_METHOD(LexerTestFixture, __VA_ARGS__)
 
-TEST_CASE_METHOD(LexerTestFixture, "Lexer: Module declaration", "[Lexer]") {
-  lex(R"(module foo;\n)");
+TEST_CASE_WITH_FIXTURE("Lexer: Module statement", "[Lexer]") {
+  lex(R"(module foo;)");
 
   REQUIRE_TOKENS(
-    EToken::Module, EToken::Identifier, EToken::Semicolon
+    EToken::Module,
+    EToken::Identifier, // foo
+    EToken::Semicolon
   );
 }
 
-TEST_CASE_METHOD(LexerTestFixture, "Lexer: Import declaration", "[Lexer]") {
+TEST_CASE_WITH_FIXTURE("Lexer: Import statement", "[Lexer]") {
   lex(R"(
-    import foo;
-    import bar;
-    import foo::bar;
+import foo;
+import foo::bar;
   )");
 
   REQUIRE_TOKENS(
-    EToken::Import, EToken::Identifier, EToken::Semicolon, // line 1
-    EToken::Import, EToken::Identifier, EToken::Semicolon, // line 2
-    EToken::Import, EToken::Identifier, EToken::Colon2, // line 3
-    EToken::Identifier, EToken::Semicolon
+    // line 1
+    EToken::Import,
+    EToken::Identifier, // foo
+    EToken::Semicolon,
+
+    // line 2
+    EToken::Import,
+    EToken::Identifier, // foo
+    EToken::Colon2,
+    EToken::Identifier, // bar
+    EToken::Semicolon
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Let statement", "[Lexer]") {
+  lex(R"(
+let x: Int, y: Type = foo, z = bar, t;
+let mutable x: Int, mutable y: Type = foo, mutable z = bar, mutable t;
+  )");
+
+  REQUIRE_TOKENS(
+    // line 1
+    EToken::Let,
+    EToken::Identifier, // x
+    EToken::Colon,
+    EToken::FundamentalType, // Int
+    EToken::Comma,
+    EToken::Identifier, // y
+    EToken::Colon,
+    EToken::UserDefinedType, // Type
+    EToken::Equal,
+    EToken::Identifier,
+    EToken::Comma,
+    EToken::Identifier, // z
+    EToken::Equal,
+    EToken::Identifier,
+    EToken::Comma,
+    EToken::Identifier, // t
+    EToken::Semicolon,
+
+    // line 2
+    EToken::Let,
+    EToken::Mutable,
+    EToken::Identifier, // x
+    EToken::Colon,
+    EToken::FundamentalType, // Int
+    EToken::Comma,
+    EToken::Mutable,
+    EToken::Identifier, // y
+    EToken::Colon,
+    EToken::UserDefinedType, // Type
+    EToken::Equal,
+    EToken::Identifier,
+    EToken::Comma,
+    EToken::Mutable,
+    EToken::Identifier, // z
+    EToken::Equal,
+    EToken::Identifier,
+    EToken::Comma,
+    EToken::Mutable,
+    EToken::Identifier, // t
+    EToken::Semicolon,
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Tuple declaration", "[Lexer]") {
+  lex(R"(
+(x: Float, y: Float)
+(_, product: Float, sum, foo: Type)
+  )");
+
+  REQUIRE_TOKENS(
+    // line 1
+    EToken::LeftParen,
+    EToken::Identifier, // x
+    EToken::Colon,
+    EToken::FundamentalType, // Float
+    EToken::Comma,
+    EToken::Identifier, // y
+    EToken::Colon,
+    EToken::FundamentalType, // Float
+    EToken::RightParen,
+
+    // line 2
+    EToken::LeftParen,
+    EToken::AnnonymousIdentifier,
+    EToken::Comma,
+    EToken::Identifier, // product
+    EToken::Colon,
+    EToken::FundamentalType, // Float
+    EToken::Comma,
+    EToken::Identifier, // sum
+    EToken::Colon,
+    EToken::Identifier, // foo
+    EToken::Colon,
+    EToken::FundamentalType, // Type
+    EToken::RightParen,
   );
 }

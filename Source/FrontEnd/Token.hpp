@@ -24,10 +24,10 @@ namespace tl::fe {
     // Multiple
     Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
-    // Non-type reserved keywords
+    // Keywords
     Fn, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
     Default, Export, Import, Module, Internal, Local, Pure, Var, Const, Print, Extern, Abstract,
-    Interface, By, Else,
+    Interface, By, Else, Let, Mutable,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

@@ -48,8 +48,6 @@ namespace tl::syntax {
     auto rhsExpr() -> CRef<ASTNode> {
       return childAt(2);
     }
-
-  private:
   };
 
   class Identifier final : public ASTNodeBase {
@@ -249,8 +247,6 @@ namespace tl::syntax {
     auto fragment(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
-
-  private:
   };
 
   class ImportExpr final : public ASTNodeBase {
@@ -260,8 +256,6 @@ namespace tl::syntax {
     auto fragment(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
-
-  private:
   };
 }
 
