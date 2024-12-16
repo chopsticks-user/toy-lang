@@ -4,7 +4,7 @@ namespace tl::fe {
   auto Lexer::advance() -> bool {
     if (m_fs->eof()) {
       return false;
-    };
+    }
 
     readNext();
     m_lastNonEmptyColumn = m_currentColumn;
@@ -82,7 +82,7 @@ namespace tl::fe {
     }
 
     m_collectedTokens.emplace_back(
-      tokenType, m_currentToken, m_currentLine, column
+      tokenType, m_currentToken, line, column
     );
     m_lastTokenType = m_collectedTokens.back().type();
   }
@@ -273,8 +273,8 @@ namespace tl::fe {
         return false;
       }
 
-      addToken(EToken::AnnonymousIdentifier);
       advance();
+      addToken(EToken::AnnonymousIdentifier);
       return true;
     }
 
