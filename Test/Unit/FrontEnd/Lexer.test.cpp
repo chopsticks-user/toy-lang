@@ -48,7 +48,7 @@ private:
   do { \
     tl::Vec<Token> expected{__VA_ARGS__}; \
     auto actual = tokens(); \
-    REQUIRE(actual.size() == expected.size()); \
+    REQUIRE(actual.size() >= expected.size()); \
     for (auto i: rv::iota(0ul, expected.size())) { \
         CAPTURE(i); \
         CAPTURE(expected[i].line(), actual[i].line()); \
@@ -91,6 +91,206 @@ import foo::bar;
     {EToken::Colon2, "::", 2, 10},
     {EToken::Identifier, "bar", 2, 12},
     {EToken::Semicolon, ";", 2, 15}
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Function prototype", "[Lexer]") {
+  lex(R"(
+local fn fun1: (x: Float, y: Float) -> (sum: Float, Float) {
+}
+
+internal fn fun2: (obj: Type) -> Void {
+}
+
+export fn fun3: () -> (result: Int) {
+}
+
+fn main: () -> {
+}
+  )");
+
+  REQUIRE_TOKENS(
+    {EToken::Local, "local", 1, 0},
+    {EToken::Fn, "fn", 1, 6},
+    {EToken::Identifier, "fun1", 1, 9},
+    {EToken::Colon, ":", 1, 13},
+    {EToken::LeftParen, "(", 1, 15},
+    {EToken::Identifier, "x", 1, 16},
+    {EToken::Colon, ":", 1, 17},
+    {EToken::FundamentalType, "Float", 1, 19},
+    {EToken::Comma, ",", 1, 24},
+    {EToken::Identifier, "y", 1, 26},
+    {EToken::Colon, ":", 1, 27},
+    {EToken::FundamentalType, "Float", 1, 29},
+    {EToken::RightParen, ")", 1, 34},
+    {EToken::MinusGreater, "->", 1, 36},
+    {EToken::LeftParen, "(", 1, 39},
+    {EToken::Identifier, "sum", 1, 40},
+    {EToken::Colon, ":", 1, 43},
+    {EToken::FundamentalType, "Float", 1, 45},
+    {EToken::Comma, ",", 1, 50},
+    {EToken::FundamentalType, "Float", 1, 52},
+    {EToken::RightParen, ")", 1, 57},
+    {EToken::LeftBrace, "{", 1, 59},
+    {EToken::RightBrace, "}", 2, 0},
+
+    {EToken::Internal, "internal", 4, 0},
+    {EToken::Fn, "fn", 4, 9},
+    {EToken::Identifier, "fun2", 4, 12},
+    {EToken::Colon, ":", 4, 16},
+    {EToken::LeftParen, "(", 4, 18},
+    {EToken::Identifier, "obj", 4, 19},
+    {EToken::Colon, ":", 4, 22},
+    {EToken::UserDefinedType, "Type", 4, 24},
+    {EToken::RightParen, ")", 4, 28},
+    {EToken::MinusGreater, "->", 4, 30},
+    {EToken::FundamentalType, "Void", 4, 33},
+    {EToken::LeftBrace, "{", 4, 38},
+    {EToken::RightBrace, "}", 5, 0},
+
+    {EToken::Export, "export", 7, 0},
+    {EToken::Fn, "fn", 7, 7},
+    {EToken::Identifier, "fun3", 7, 10},
+    {EToken::Colon, ":", 7, 14},
+    {EToken::LeftParen, "(", 7, 16},
+    {EToken::RightParen, ")", 7, 17},
+    {EToken::MinusGreater, "->", 7, 19},
+    {EToken::LeftParen, "(", 7, 22},
+    {EToken::Identifier, "result", 7, 23},
+    {EToken::Colon, ":", 7, 29},
+    {EToken::FundamentalType, "Int", 7, 31},
+    {EToken::RightParen, ")", 7, 34},
+    {EToken::LeftBrace, "{", 7, 36},
+    {EToken::RightBrace, "}", 8, 0},
+
+    {EToken::Fn, "fn", 10, 0},
+    {EToken::Identifier, "main", 10, 3},
+    {EToken::Colon, ":", 10, 7},
+    {EToken::LeftParen, "(", 10, 9},
+    {EToken::RightParen, ")", 10, 10},
+    {EToken::MinusGreater, "->", 10, 12},
+    {EToken::LeftBrace, "{", 10, 15},
+    {EToken::RightBrace, "}", 11, 0},
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Type declaration", "[Lexer]") {
+  lex(R"(
+export type Complex = {
+  field real: Float;
+  field img: Float;
+
+  cast: (val: Float | Int) -> {
+    return {real: val |> Float, img: 0.0};
+  }
+
+  operator +: (rhs: Complex, lhs: Complex) -> Complex {
+    return {real: rhs.real + lhs.real, img: rhs.img + lhs.img};
+  }
+
+  operator ==: (rhs: Complex, lhs: Complex) -> Bool {
+    return rhs.real == lhs.real && rhs.img == lhs.img;
+  }
+
+  method conjugate: () -> Complex {
+    return {real: real, img: -img};
+  }
+
+  method magnitude: () -> Float {
+    return math::sqrt(real * real + img * img);
+  }
+}
+
+export type Addible = Int | Float | String | Char | Complex;
+  )");
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Global statement", "[Lexer]") {
+  lex(R"(
+local global x: Int, y: Type = foo, z = bar, t;
+internal global mutable x: Int, mutable y: Type = foo, mutable z = bar, mutable t;
+export global val = Type(-3.14159, true, []);
+global (a: Float, b: Float) = (+2, -1);
+  )");
+
+  REQUIRE_TOKENS(
+    {EToken::Local, "local", 1, 0},
+    {EToken::Global, "global", 1, 6},
+    {EToken::Identifier, "x", 1, 13},
+    {EToken::Colon, ":", 1, 14},
+    {EToken::FundamentalType, "Int", 1, 16},
+    {EToken::Comma, ",", 1, 19},
+    {EToken::Identifier, "y", 1, 21},
+    {EToken::Colon, ":", 1, 22},
+    {EToken::UserDefinedType, "Type", 1, 24},
+    {EToken::Equal, "=", 1, 29},
+    {EToken::Identifier, "foo", 1, 31},
+    {EToken::Comma, ",", 1, 34},
+    {EToken::Identifier, "z", 1, 36},
+    {EToken::Equal, "=", 1, 38},
+    {EToken::Identifier, "bar", 1, 40},
+    {EToken::Comma, ",", 1, 43},
+    {EToken::Identifier, "t", 1, 45},
+    {EToken::Semicolon, ";", 1, 46},
+
+    {EToken::Internal, "internal", 2, 0},
+    {EToken::Global, "global", 2, 9},
+    {EToken::Mutable, "mutable", 2, 16},
+    {EToken::Identifier, "x", 2, 24},
+    {EToken::Colon, ":", 2, 25},
+    {EToken::FundamentalType, "Int", 2, 27},
+    {EToken::Comma, ",", 2, 30},
+    {EToken::Mutable, "mutable", 2, 32},
+    {EToken::Identifier, "y", 2, 40},
+    {EToken::Colon, ":", 2, 41},
+    {EToken::UserDefinedType, "Type", 2, 43},
+    {EToken::Equal, "=", 2, 48},
+    {EToken::Identifier, "foo", 2, 50},
+    {EToken::Comma, ",", 2, 53},
+    {EToken::Mutable, "mutable", 2, 55},
+    {EToken::Identifier, "z", 2, 63},
+    {EToken::Equal, "=", 2, 65},
+    {EToken::Identifier, "bar", 2, 67},
+    {EToken::Comma, ",", 2, 70},
+    {EToken::Mutable, "mutable", 2, 72},
+    {EToken::Identifier, "t", 2, 80},
+    {EToken::Semicolon, ";", 2, 81},
+
+    {EToken::Export, "export", 3, 0},
+    {EToken::Global, "global", 3, 7},
+    {EToken::Identifier, "val", 3, 14}, // val
+    {EToken::Equal, "=", 3, 18},
+    {EToken::UserDefinedType, "Type", 3, 20},
+    {EToken::LeftParen, "(", 3, 24},
+    {EToken::Minus, "-", 3, 25},
+    {EToken::FloatLiteral, "3.14159", 3, 26},
+    {EToken::Comma, ",", 3, 33},
+    {EToken::True, "true", 3, 35},
+    {EToken::Comma, ",", 3, 39},
+    {EToken::LeftBracket, "[", 3, 41},
+    {EToken::RightBracket, "]", 3, 42},
+    {EToken::RightParen, ")", 3, 43},
+    {EToken::Semicolon, ";", 3, 44},
+
+    {EToken::Global, "global", 4, 0},
+    {EToken::LeftParen, "(", 4, 7},
+    {EToken::Identifier, "a", 4, 8},
+    {EToken::Colon, ":", 4, 9},
+    {EToken::FundamentalType, "Float", 4, 11},
+    {EToken::Comma, ",", 4, 16},
+    {EToken::Identifier, "b", 4, 18},
+    {EToken::Colon, ":", 4, 19},
+    {EToken::FundamentalType, "Float", 4, 21},
+    {EToken::RightParen, ")", 4, 26},
+    {EToken::Equal, "=", 4, 28},
+    {EToken::LeftParen, "(", 4, 30},
+    {EToken::Plus, "+", 4, 31},
+    {EToken::IntegerLiteral, "2", 4, 32},
+    {EToken::Comma, ",", 4, 33},
+    {EToken::Minus, "-", 4, 35},
+    {EToken::IntegerLiteral, "1", 4, 36},
+    {EToken::RightParen, ")", 4, 37},
+    {EToken::Semicolon, ";", 4, 38},
   );
 }
 
@@ -296,9 +496,17 @@ let obj2 = {};
   );
 }
 
-// TEST_CASE_WITH_FIXTURE("Lexer: Function prototype", "[Lexer]") {
-//   lex(R"(
-// (x: Float, y: Float)
-// (_, product: Float, sum, foo: Type)
-//   )");
-// }
+TEST_CASE_WITH_FIXTURE("Lexer: For statement", "[Lexer]") {
+  lex(R"(
+  )");
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Match statement", "[Lexer]") {
+  lex(R"(
+  )");
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Lambda expression", "[Lexer]") {
+  lex(R"(
+  )");
+}

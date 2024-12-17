@@ -655,9 +655,9 @@ namespace tl::fe {
   }
 
   auto Parser::parseIfStatement() -> ASTNode {
-    if (!match(EToken::If)) {
-      return {};
-    }
+    // if (!match(EToken::If)) {
+    //   return {};
+    // }
 
     // optional parenthesis, marked volatile to avoid being optimized away (maybe)
     [[maybe_unused]] volatile bool mlp = match(EToken::LeftParen);
@@ -671,12 +671,12 @@ namespace tl::fe {
     const auto body = parseBlockStatement();
     ASTNode elseBody;
 
-    if (match(EToken::Else)) {
-      elseBody = parseBlockStatement();
-      if (!isEmpty(elseBody)) {
-        elseBody = parseIfStatement();
-      }
-    }
+    // if (match(EToken::Else)) {
+    //   elseBody = parseBlockStatement();
+    //   if (!isEmpty(elseBody)) {
+    //     elseBody = parseIfStatement();
+    //   }
+    // }
 
     return syntax::IfStatement(idDecl, cond, body, elseBody);
   }

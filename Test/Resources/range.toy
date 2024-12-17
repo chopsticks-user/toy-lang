@@ -5,7 +5,7 @@ import std::rng;
 
 local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
     sum = x + y;
-    return sum, x * y;
+    return (sum, x * y);
 }
 
 export fn double: (x: Float) -> {
@@ -19,8 +19,9 @@ fn main = () -> {
     let x: Int, _: Bool, y: Int = 5;
 
     (x, y) :=> {
-        > 4, > 4 => x |> io::println;
-        x <= 8 && y <= 8 => x * 2 |> io::println;
+        (_, _) when x > 4 && y > 4 => x |> io::println;
+        (_, 8) when x > 8 => x |> io::println;
+        (8, _) when y <= 8 => x * 2 |> io::println;
         _ => io::println(":(");
     }
 
@@ -43,11 +44,11 @@ fn main = () -> {
 
     let r5: Rng<Int, Double> = r1 |> rng::zip(0.0 .. 5.0 @ 1.0);
 
-    let v1: Int, v2: Float, i: Int <~ r5 :~> {
+    let v1: Int, v2: Float, i: Int in r5 :~> {
         "{i}: ({v1}, {v2}) -> ({v1 |> double}, {v2 |> double})" |> io::println;
     }
 
-    let v1: Int, v2: Float <~ r5 :~> {
+    let (v1: Int, v2: Float) in r5 :~> {
         "({v1}, {v2}) -> ({v1 |> double}, {v2 |> double})" |> io::println;
     }
 }

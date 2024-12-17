@@ -9,7 +9,6 @@ namespace tl::fe {
     LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace,
     Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
     Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar, At,
-
     AnnonymousIdentifier,
 
     // Double
@@ -19,15 +18,18 @@ namespace tl::fe {
     MinusGreater, LessMinus, Dot2, HatEqual,
 
     // Triple
-    Dot3, Greater2Equal, Less2Equal,
+    Dot3, Greater2Equal, Less2Equal, ColonEqualGreater, ColonTildeGreater,
 
     // Multiple
     Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
     // Keywords
-    Fn, Class, Super, Self, Public, Private, Protected, Return, For, While, If, Switch, Case,
-    Default, Export, Import, Module, Internal, Local, Pure, Print, Extern, Abstract,
-    Interface, By, Else, Let, Mutable, True, False, Of,
+    Module, Import, Export, Internal, Local, Extern,
+    Let, Mutable, Pure, Fn, Type, Field, Cast, Operator, Method, Global,
+    For, Return, Match,
+    By, Of, In, If,
+    True, False,
+    Class, Super, Self, Public, Private, Protected, Abstract, Interface,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

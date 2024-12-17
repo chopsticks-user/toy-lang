@@ -2,49 +2,63 @@
 
 namespace tl::fe {
   static const HashMap<StringView, EToken> nonTypeKeywordTable = {
-    {"class", EToken::Class},
-    {"super", EToken::Super},
-    {"self", EToken::Self},
-    {"public", EToken::Public},
-    {"private", EToken::Private},
-    {"protected", EToken::Protected},
-    {"return", EToken::Return},
-    {"for", EToken::For},
-    {"while", EToken::While},
-    {"if", EToken::If},
-    {"switch", EToken::Switch},
-    {"case", EToken::Case},
-    {"default", EToken::Default},
-    {"export", EToken::Export},
-    {"import", EToken::Import},
+    // visibility
     {"module", EToken::Module},
+    {"import", EToken::Import},
+    {"export", EToken::Export},
     {"internal", EToken::Internal},
     {"local", EToken::Local},
-    {"pure", EToken::Pure},
-    {"print", EToken::Print},
     {"extern", EToken::Extern},
-    {"abstract", EToken::Abstract},
-    {"interface", EToken::Interface},
-    {"by", EToken::By},
-    {"else", EToken::Else},
+
+    // definition
     {"let", EToken::Let},
     {"mutable", EToken::Mutable},
+    // {"pure", EToken::Pure},
+    {"fn", EToken::Fn},
+    {"type", EToken::Type},
+    {"field", EToken::Field},
+    {"cast", EToken::Cast},
+    {"operator", EToken::Operator},
+    {"method", EToken::Method},
+    {"global", EToken::Global},
+
+    // control
+    {"for", EToken::For},
+    {"return", EToken::Return},
+    {"match", EToken::Match},
+
+    // adverb
+    {"by", EToken::By},
+    {"of", EToken::Of},
+    {"in", EToken::In},
+    {"if", EToken::If},
+
+    // boolean
     {"true", EToken::True},
     {"false", EToken::False},
-    {"of", EToken::Of},
+
+    // object-oriented
+    // {"class", EToken::Class},
+    // {"super", EToken::Super},
+    // {"self", EToken::Self},
+    // {"public", EToken::Public},
+    // {"private", EToken::Private},
+    // {"protected", EToken::Protected},
+    // {"abstract", EToken::Abstract},
+    // {"interface", EToken::Interface},
   };
 
   static const HashSet<StringView> fundamentalTypes{
-    "Int", "Float", "Bool", "Char", "Void",
-    "Array", "Set", "Tuple", "Fn", "String"
+    "Int", "Float", "Bool", "Char", "Void", "String", "Any"
   };
 
   static const HashSet<StringView> reservedKeywords{
-    "int", "float", "bool", "char", "void",
-    "array", "set", "tuple", "fn", "string"
+    "int", "float", "bool", "char", "void", "string", "any"
   };
 
   static const HashMap<StringView, EToken> operatorTable{
+    {":=>", EToken::ColonEqualGreater},
+    {":~>", EToken::ColonTildeGreater},
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
     {"...", EToken::Dot3},
