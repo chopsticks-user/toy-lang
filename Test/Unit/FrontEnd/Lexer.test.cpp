@@ -64,9 +64,11 @@ private:
   TEST_CASE_METHOD(LexerTestFixture, __VA_ARGS__)
 
 TEST_CASE_WITH_FIXTURE("Lexer: Module statement", "[Lexer]") {
-  lex(R"(
+  REQUIRE_NOTHROW(
+    lex(R"(
 module foo;
-)");
+    )")
+  );
 
   REQUIRE_TOKENS(
     {EToken::Module, "module", 1, 0},
@@ -76,10 +78,12 @@ module foo;
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Import statement", "[Lexer]") {
-  lex(R"(
+  REQUIRE_NOTHROW(
+    lex(R"(
 import foo;
 import foo::bar;
-  )");
+    )")
+  );
 
   REQUIRE_TOKENS(
     {EToken::Import, "import", 1, 0},
@@ -95,11 +99,12 @@ import foo::bar;
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Function prototype", "[Lexer]") {
-  lex(R"(
+  REQUIRE_NOTHROW(
+    lex(R"(
 local fn fun1: (x: Float, y: Float) -> (sum: Float, Float) {
 }
 
-internal fn fun2: (obj: Type) -> Void {
+internal fn fun2: (obj: Objj) -> Void {
 }
 
 export fn fun3: () -> (result: Int) {
@@ -107,7 +112,8 @@ export fn fun3: () -> (result: Int) {
 
 fn main: () -> {
 }
-  )");
+    )")
+  );
 
   REQUIRE_TOKENS(
     {EToken::Local, "local", 1, 0},
@@ -141,7 +147,7 @@ fn main: () -> {
     {EToken::LeftParen, "(", 4, 18},
     {EToken::Identifier, "obj", 4, 19},
     {EToken::Colon, ":", 4, 22},
-    {EToken::UserDefinedType, "Type", 4, 24},
+    {EToken::UserDefinedType, "Objj", 4, 24},
     {EToken::RightParen, ")", 4, 28},
     {EToken::MinusGreater, "->", 4, 30},
     {EToken::FundamentalType, "Void", 4, 33},
@@ -175,43 +181,22 @@ fn main: () -> {
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Type declaration", "[Lexer]") {
-  lex(R"(
-export type Complex = {
-  field real: Float;
-  field img: Float;
-
-  cast: (val: Float | Int) -> {
-    return {real: val |> Float, img: 0.0};
-  }
-
-  operator +: (rhs: Complex, lhs: Complex) -> Complex {
-    return {real: rhs.real + lhs.real, img: rhs.img + lhs.img};
-  }
-
-  operator ==: (rhs: Complex, lhs: Complex) -> Bool {
-    return rhs.real == lhs.real && rhs.img == lhs.img;
-  }
-
-  method conjugate: () -> Complex {
-    return {real: real, img: -img};
-  }
-
-  method magnitude: () -> Float {
-    return math::sqrt(real * real + img * img);
-  }
-}
-
-export type Addible = Int | Float | String | Char | Complex;
-  )");
+  REQUIRE_NOTHROW(
+    lex(R"(
+export type AddibleType = Int | Float | String | Char | Complex;
+    )")
+  );
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Global statement", "[Lexer]") {
-  lex(R"(
-local global x: Int, y: Type = foo, z = bar, t;
-internal global mutable x: Int, mutable y: Type = foo, mutable z = bar, mutable t;
-export global val = Type(-3.14159, true, []);
+  REQUIRE_NOTHROW(
+    lex(R"(
+local global x: Int, y: Objj = foo, z = bar, t;
+internal global mutable x: Int, mutable y: Objj = foo, mutable z = bar, mutable t;
+export global val = Objj(-3.14159, true, []);
 global (a: Float, b: Float) = (+2, -1);
-  )");
+    )")
+  );
 
   REQUIRE_TOKENS(
     {EToken::Local, "local", 1, 0},
@@ -222,7 +207,7 @@ global (a: Float, b: Float) = (+2, -1);
     {EToken::Comma, ",", 1, 19},
     {EToken::Identifier, "y", 1, 21},
     {EToken::Colon, ":", 1, 22},
-    {EToken::UserDefinedType, "Type", 1, 24},
+    {EToken::UserDefinedType, "Objj", 1, 24},
     {EToken::Equal, "=", 1, 29},
     {EToken::Identifier, "foo", 1, 31},
     {EToken::Comma, ",", 1, 34},
@@ -243,7 +228,7 @@ global (a: Float, b: Float) = (+2, -1);
     {EToken::Mutable, "mutable", 2, 32},
     {EToken::Identifier, "y", 2, 40},
     {EToken::Colon, ":", 2, 41},
-    {EToken::UserDefinedType, "Type", 2, 43},
+    {EToken::UserDefinedType, "Objj", 2, 43},
     {EToken::Equal, "=", 2, 48},
     {EToken::Identifier, "foo", 2, 50},
     {EToken::Comma, ",", 2, 53},
@@ -260,7 +245,7 @@ global (a: Float, b: Float) = (+2, -1);
     {EToken::Global, "global", 3, 7},
     {EToken::Identifier, "val", 3, 14}, // val
     {EToken::Equal, "=", 3, 18},
-    {EToken::UserDefinedType, "Type", 3, 20},
+    {EToken::UserDefinedType, "Objj", 3, 20},
     {EToken::LeftParen, "(", 3, 24},
     {EToken::Minus, "-", 3, 25},
     {EToken::FloatLiteral, "3.14159", 3, 26},
@@ -295,18 +280,20 @@ global (a: Float, b: Float) = (+2, -1);
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Let statement", "[Lexer]") {
-  lex(R"(
-let x: Int, y: Type = foo, z = bar, t;
-let mutable x: Int, mutable y: Type = foo, mutable z = bar, mutable t;
-let val = Type(-3.14159, true, []);
+  REQUIRE_NOTHROW(
+    lex(R"(
+let x: Int, y: Objj = foo, z = bar, t;
+let mutable x: Int, mutable y: Objj = foo, mutable z = bar, mutable t;
+let val = Objj(-3.14159, true, []);
 let (a: Float, b: Float) = (+2, -1);
-let (_, product: Float, sum, val: Type) = compute(5, bar);
-let arr1: Type[][];
+let (_, product: Float, sum, val: Objj) = compute(5, bar);
+let arr1: Objj[][];
 let arr2 = [-10 .. 10 @ 2, ...[0 .. 5], 2, 3, 5 of -1, ...[]];
 let arr3 = [];
 let obj1 = {x: 1, y: [0 .. 5], z: {x: true, y: false}};
 let obj2 = {};
-  )");
+    )")
+  );
 
   REQUIRE_TOKENS(
     {EToken::Let, "let", 1, 0},
@@ -316,7 +303,7 @@ let obj2 = {};
     {EToken::Comma, ",", 1, 10},
     {EToken::Identifier, "y", 1, 12},
     {EToken::Colon, ":", 1, 13},
-    {EToken::UserDefinedType, "Type", 1, 15},
+    {EToken::UserDefinedType, "Objj", 1, 15},
     {EToken::Equal, "=", 1, 20},
     {EToken::Identifier, "foo", 1, 22},
     {EToken::Comma, ",", 1, 25},
@@ -336,7 +323,7 @@ let obj2 = {};
     {EToken::Mutable, "mutable", 2, 20},
     {EToken::Identifier, "y", 2, 28},
     {EToken::Colon, ":", 2, 29},
-    {EToken::UserDefinedType, "Type", 2, 31},
+    {EToken::UserDefinedType, "Objj", 2, 31},
     {EToken::Equal, "=", 2, 36},
     {EToken::Identifier, "foo", 2, 38},
     {EToken::Comma, ",", 2, 41},
@@ -352,7 +339,7 @@ let obj2 = {};
     {EToken::Let, "let", 3, 0},
     {EToken::Identifier, "val", 3, 4}, // val
     {EToken::Equal, "=", 3, 8},
-    {EToken::UserDefinedType, "Type", 3, 10},
+    {EToken::UserDefinedType, "Objj", 3, 10},
     {EToken::LeftParen, "(", 3, 14},
     {EToken::Minus, "-", 3, 15},
     {EToken::FloatLiteral, "3.14159", 3, 16},
@@ -396,7 +383,7 @@ let obj2 = {};
     {EToken::Comma, ",", 5, 27},
     {EToken::Identifier, "val", 5, 29},
     {EToken::Colon, ":", 5, 32},
-    {EToken::UserDefinedType, "Type", 5, 34},
+    {EToken::UserDefinedType, "Objj", 5, 34},
     {EToken::RightParen, ")", 5, 38},
     {EToken::Equal, "=", 5, 40},
     {EToken::Identifier, "compute", 5, 42},
@@ -410,7 +397,7 @@ let obj2 = {};
     {EToken::Let, "let", 6, 0},
     {EToken::Identifier, "arr1", 6, 4},
     {EToken::Colon, ":", 6, 8},
-    {EToken::UserDefinedType, "Type", 6, 10},
+    {EToken::UserDefinedType, "Objj", 6, 10},
     {EToken::LeftBracket, "[", 6, 14},
     {EToken::RightBracket, "]", 6, 15},
     {EToken::LeftBracket, "[", 6, 16},
@@ -496,17 +483,162 @@ let obj2 = {};
   );
 }
 
+TEST_CASE_WITH_FIXTURE("Lexer: Lambda expression", "[Lexer]") {
+  REQUIRE_NOTHROW(
+    lex(R"(
+    )")
+  );
+}
+
 TEST_CASE_WITH_FIXTURE("Lexer: For statement", "[Lexer]") {
-  lex(R"(
-  )");
+  REQUIRE_NOTHROW(
+    lex(R"(
+for (v1: Int, v2: Float) in rng {
+}
+
+(v1: Int, v2: Float) in rng :~> {
+}
+
+(_, v2: Float) in rng :~> {
+}
+
+x < 10 :~> {
+}
+
+true :~> {
+}
+    )")
+  );
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Match statement", "[Lexer]") {
-  lex(R"(
-  )");
+  REQUIRE_NOTHROW(
+    lex(R"(
+match {
+  x == 5 && y > 5 => (x + y) |> io::println,
+  _ => {}
 }
 
-TEST_CASE_WITH_FIXTURE("Lexer: Lambda expression", "[Lexer]") {
-  lex(R"(
-  )");
+:=> {
+  x == 5 && y > 5 => {},
+  _ => {}
+}
+
+match (x, y) {
+  (_, _) if x > 4 && y > 4 => {},
+  (_, 8) if x > 8 => {},
+  (8, _) if y <= 8 => {},
+  _ => {}
+}
+
+(x, y) :=> {
+  (_, _) if x > 4 && y > 4 => {},
+  (_, 8) if x > 8 => {},
+  (8, _) if y <= 8 => {},
+  _ => {}
+}
+    )")
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Operators", "[Lexer]") {
+  SECTION("Postfix unary") {
+    REQUIRE_NOTHROW(
+      lex(R"(
+x++;
+x--;
+      )")
+    );
+  }
+
+  SECTION("Prefix unary") {
+    REQUIRE_NOTHROW(
+      lex(R"(
+x = !y;
+x = ~y;
+x = +y;
+x = -y;
+x = #y;
+      )")
+    );
+  }
+
+  SECTION("Binary") {
+    REQUIRE_NOTHROW(
+      lex(R"(
+x = a ** b;
+x = a * b;
+x = a / b;
+x = a % b;
+x = a + b;
+x = a - b;
+x = a << b;
+x = a >> b;
+x = a < b;
+x = a > b;
+x = a <= b;
+x = a >= b;
+x = a == b;
+x = a != b;
+x = a & b;
+x = a ^ b;
+x = a | b;
+x = a && b;
+x = a || b;
+x = a ?? b;
+      )")
+    );
+  }
+
+  SECTION("Assignment") {
+    REQUIRE_NOTHROW(
+      lex(R"(
+x **= y;
+x *= y;
+x /= y;
+x %= y;
+x += y;
+x -= y;
+x <<= y;
+x >>= y;
+x &= y;
+x ^= y;
+x |= y;
+      )")
+    );
+  }
+
+  SECTION("Miscellaneous") {
+    REQUIRE_NOTHROW(
+      lex(R"(
+let x: Rxt<Float>, y: Atm<Int>, z: Rng<Float, Obj>;
+x = [[y]] == Float;
+x = f(x, y) + g() + h(x);
+x = x |> f(y) + x |> h;
+x = a[b];
+x = a ? b : c;
+x = a .. b @ c;
+x = a .. b by c;
+      )")
+    );
+  }
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: String", "[Lexer]") {
+  // REQUIRE_NOTHROW(
+  //   lex(R"(
+  // s = "a simple string";
+  // s = "\tline 1\n\t\tline 2\n";
+  // s = "";
+  // s = "{a} + {b} = {c}";
+  // s = "\{a\} + \{b\} = \{c\}";
+  //   )")
+  // );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Enumerate", "[Lexer]") {
+  REQUIRE_NOTHROW(
+    lex(R"(
+    )")
+  );
 }

@@ -13,13 +13,10 @@ namespace tl::fe {
     // definition
     {"let", EToken::Let},
     {"mutable", EToken::Mutable},
-    // {"pure", EToken::Pure},
     {"fn", EToken::Fn},
+    // {"pure", EToken::Pure},
     {"type", EToken::Type},
-    {"field", EToken::Field},
-    {"cast", EToken::Cast},
-    {"operator", EToken::Operator},
-    {"method", EToken::Method},
+    {"self", EToken::Self},
     {"global", EToken::Global},
 
     // control
@@ -38,22 +35,24 @@ namespace tl::fe {
     {"false", EToken::False},
 
     // object-oriented
-    // {"class", EToken::Class},
-    // {"super", EToken::Super},
-    // {"self", EToken::Self},
-    // {"public", EToken::Public},
-    // {"private", EToken::Private},
-    // {"protected", EToken::Protected},
-    // {"abstract", EToken::Abstract},
-    // {"interface", EToken::Interface},
+    {"class", EToken::Class},
+    {"super", EToken::Super},
+    {"self", EToken::Self},
+    {"public", EToken::Public},
+    {"private", EToken::Private},
+    {"protected", EToken::Protected},
+    {"abstract", EToken::Abstract},
+    {"interface", EToken::Interface},
+    {"impl", EToken::Impl},
   };
 
   static const HashSet<StringView> fundamentalTypes{
-    "Int", "Float", "Bool", "Char", "Void", "String", "Any"
+    "Int", "Float", "Bool", "Char", "Void", "String", "Any", "Type",
+    // "Rxt", "Atm", "Rng"
   };
 
   static const HashSet<StringView> reservedKeywords{
-    "int", "float", "bool", "char", "void", "string", "any"
+    // "int", "float", "bool", "char", "void", "string", "any"
   };
 
   static const HashMap<StringView, EToken> operatorTable{
@@ -61,6 +60,7 @@ namespace tl::fe {
     {":~>", EToken::ColonTildeGreater},
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
+    {"**=", EToken::Star2Equal},
     {"...", EToken::Dot3},
     {"!=", EToken::ExclaimEqual},
     {"*=", EToken::StarEqual},
@@ -75,14 +75,14 @@ namespace tl::fe {
     {"-=", EToken::MinusEqual},
     {"|>", EToken::BarGreater},
     {"->", EToken::MinusGreater},
-    {"<-", EToken::LessMinus},
+    // {"<-", EToken::LessMinus},
     {"::", EToken::Colon2},
     {"**", EToken::Star2},
     {"&&", EToken::Ampersand2},
     {"||", EToken::Bar2},
     {"++", EToken::Plus2},
     {"--", EToken::Minus2},
-    {"!!", EToken::Exclaim2},
+    // {"!!", EToken::Exclaim2},
     {"==", EToken::Equal2},
     {">>", EToken::Greater2},
     {"<<", EToken::Less2},
@@ -100,6 +100,7 @@ namespace tl::fe {
     {";", EToken::Semicolon},
     {"*", EToken::Star},
     {"&", EToken::Ampersand},
+    {"#", EToken::Hash},
     {"|", EToken::Bar},
     {"^", EToken::Hat},
     {"+", EToken::Plus},

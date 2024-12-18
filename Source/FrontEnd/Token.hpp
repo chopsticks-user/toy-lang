@@ -6,7 +6,7 @@
 namespace tl::fe {
   enum class EToken {
     // Single
-    LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace,
+    LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace, Hash,
     Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
     Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar, At,
     AnnonymousIdentifier,
@@ -18,18 +18,18 @@ namespace tl::fe {
     MinusGreater, LessMinus, Dot2, HatEqual,
 
     // Triple
-    Dot3, Greater2Equal, Less2Equal, ColonEqualGreater, ColonTildeGreater,
+    Dot3, Greater2Equal, Less2Equal, ColonEqualGreater, ColonTildeGreater, Star2Equal,
 
     // Multiple
     Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
     // Keywords
     Module, Import, Export, Internal, Local, Extern,
-    Let, Mutable, Pure, Fn, Type, Field, Cast, Operator, Method, Global,
+    Let, Mutable, Pure, Fn, Type, Self, Global,
     For, Return, Match,
     By, Of, In, If,
     True, False,
-    Class, Super, Self, Public, Private, Protected, Abstract, Interface,
+    Class, Super, Public, Private, Protected, Abstract, Interface, Impl,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,
