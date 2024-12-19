@@ -41,9 +41,11 @@ namespace tl::fe {
     {"public", EToken::Public},
     {"private", EToken::Private},
     {"protected", EToken::Protected},
-    {"abstract", EToken::Abstract},
+    // {"abstract", EToken::Abstract},
     {"interface", EToken::Interface},
     {"impl", EToken::Impl},
+    {"ext", EToken::Ext},
+    {"final", EToken::Final},
   };
 
   static const HashSet<StringView> fundamentalTypes{

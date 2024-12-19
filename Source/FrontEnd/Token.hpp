@@ -29,7 +29,7 @@ namespace tl::fe {
     For, Return, Match,
     By, Of, In, If,
     True, False,
-    Class, Super, Public, Private, Protected, Abstract, Interface, Impl,
+    Class, Super, Public, Private, Protected, Abstract, Interface, Impl, Ext, Final,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

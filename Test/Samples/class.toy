@@ -1,0 +1,49 @@
+export interface IComplex {
+public:
+  +: (other: Complex) -> Complex;
+  ==: (other: Complex) -> Bool;
+
+  conjugate: () -> Complex;
+  magnitude: () -> Float;
+}
+
+export class Complex<T> ext Number impl IComplex {
+protected:
+  mutable real: T;
+  mutable img: T;
+
+public:
+  fn real: () -> {}
+  fn img: () -> {}
+
+  fn real: (val: T) -> {}
+  fn img: (val: T) -> {}
+
+  fn self: (r: T, i: T) -> {
+    r |> self.real;
+    i |> self.img;
+  }
+
+  final fn self: () -> String {
+    return match {
+      self.img < 0 => "{self.real} - {math::abs(self.img)}i",
+      _ => "{self.real} + {self.img}i",
+    }
+  }
+
+  fn +: (other: Complex) -> Complex {
+    return {real: self.real + other.real, img: self.img + other.img};
+  }
+
+  fn ==: (other: Complex) -> Bool {
+    return self.real == other.real && self.img == other.img;
+  }
+
+  fn conjugate: () -> Complex {
+    return {real: self.real, img: -self.img};
+  }
+
+  fn magnitude: () -> Float {
+    return math::sqrt((self.real * self.real + self.img * self.img) |> Float);
+  }
+}

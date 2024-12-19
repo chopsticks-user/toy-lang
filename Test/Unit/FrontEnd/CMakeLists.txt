@@ -24,7 +24,7 @@ target_link_libraries(
     ${ToyLang_PROJECT_NAME}::Syntax
 )
 
-add_compile_definitions(RESOURCE_DIR="${PROJECT_SOURCE_DIR}/Test/Resources")
+add_compile_definitions(RESOURCE_DIR="${PROJECT_SOURCE_DIR}/Test/Samples")
 
 add_test(
     NAME ToyLang_UnitTestFrontEnd

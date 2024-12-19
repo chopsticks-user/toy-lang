@@ -184,6 +184,63 @@ TEST_CASE_WITH_FIXTURE("Lexer: Type declaration", "[Lexer]") {
   REQUIRE_NOTHROW(
     lex(R"(
 export type AddibleType = Int | Float | String | Char | Complex;
+local type IntAlias = Int;
+    )")
+  );
+}
+
+TEST_CASE_WITH_FIXTURE("Lexer: Class definition", "[Lexer]") {
+  REQUIRE_NOTHROW(
+    lex(R"(
+export interface IComplex {
+public:
+  +: (other: Complex) -> Complex;
+  ==: (other: Complex) -> Bool;
+
+  conjugate: () -> Complex;
+  magnitude: () -> Float;
+}
+
+export class Complex<T> ext Number impl IComplex {
+protected:
+  mutable real: T;
+  mutable img: T;
+
+public:
+  fn real: () -> {}
+  fn img: () -> {}
+
+  fn real: (val: T) -> {}
+  fn img: (val: T) -> {}
+
+  fn self: (r: T, i: T) -> {
+    r |> self.real;
+    i |> self.img;
+  }
+
+  final fn self: () -> String {
+    return match {
+      self.img < 0 => "{self.real} - {math::abs(self.img)}i",
+      _ => "{self.real} + {self.img}i",
+    }
+  }
+
+  fn +: (other: Complex) -> Complex {
+    return {real: self.real + other.real, img: self.img + other.img};
+  }
+
+  fn ==: (other: Complex) -> Bool {
+    return self.real == other.real && self.img == other.img;
+  }
+
+  fn conjugate: () -> Complex {
+    return {real: self.real, img: -self.img};
+  }
+
+  fn magnitude: () -> Float {
+    return math::sqrt((self.real * self.real + self.img * self.img) |> Float);
+  }
+}
     )")
   );
 }
@@ -625,15 +682,15 @@ x = a .. b by c;
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: String", "[Lexer]") {
-  // REQUIRE_NOTHROW(
-  //   lex(R"(
-  // s = "a simple string";
-  // s = "\tline 1\n\t\tline 2\n";
-  // s = "";
-  // s = "{a} + {b} = {c}";
-  // s = "\{a\} + \{b\} = \{c\}";
-  //   )")
-  // );
+  REQUIRE_NOTHROW(
+    lex(R"(
+  s = "a simple string";
+  s = "\tline 1\n\t\tline 2\n";
+  s = "";
+  s = "{a} + {b} = {c}";
+  s = "\{a\} + \{b\} = \{c\}";
+    )")
+  );
 }
 
 TEST_CASE_WITH_FIXTURE("Lexer: Enumerate", "[Lexer]") {
