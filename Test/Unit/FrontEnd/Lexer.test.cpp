@@ -693,9 +693,16 @@ TEST_CASE_WITH_FIXTURE("Lexer: String", "[Lexer]") {
   );
 }
 
-TEST_CASE_WITH_FIXTURE("Lexer: Enumerate", "[Lexer]") {
+TEST_CASE_WITH_FIXTURE("Lexer: Enumerate and Flag", "[Lexer]") {
   REQUIRE_NOTHROW(
     lex(R"(
+export enum EState {
+  Start, End = -1, Stop, Continue, Pause
+}
+
+export flag FVisited {
+  Chicago, Boston = 3, Richmond, Charlottesville = 2, Los Angeles
+}
     )")
   );
 }
