@@ -5,7 +5,7 @@
 #include "Base.hpp"
 #include "Expressions.hpp"
 #include "Statements.hpp"
-#include "Concrete.hpp"
+#include "Definitions.hpp"
 #include "SyntaxTreeVisitor.hpp"
 
 #endif // TOYLANG_SYNTAX_HPP

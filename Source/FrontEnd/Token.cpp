@@ -14,12 +14,14 @@ namespace tl::fe {
     {"let", EToken::Let},
     {"mutable", EToken::Mutable},
     {"fn", EToken::Fn},
+    {"static", EToken::Static},
     // {"pure", EToken::Pure},
     {"type", EToken::Type},
     {"self", EToken::Self},
     {"global", EToken::Global},
     {"enum", EToken::Enum},
     {"flag", EToken::Flag},
+
 
     // control
     {"for", EToken::For},

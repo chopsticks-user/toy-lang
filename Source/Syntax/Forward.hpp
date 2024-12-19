@@ -4,6 +4,11 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
+  class IntegerLiteral;
+  class FloatLiteral;
+  class StringLiteral;
+  class BooleanLiteral;
+
   class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
@@ -12,36 +17,52 @@ namespace tl::syntax {
   class TypeExpr;
   class FunctionCallExpr;
   class SubScriptingExpr;
-  class IdentifierDeclFragment;
-  class ParameterDeclFragment;
-  class ModuleExpr;
-  class ImportExpr;
+  class AccessExpr;
+  class NamespaceExpr;
 
-  class IntegerLiteral;
-  class FloatLiteral;
-  class StringLiteral;
-  class BooleanLiteral;
+  class ModuleDecl;
+  class ImportDecl;
+  class TypeDecl;
+  class IdentifierDecl;
+  class TupleDecl;
 
-  class BlockStatement;
-  class IdentifierDeclStatement;
-  class ReturnStatement;
-  class AssignmentStatement;
-  class IfStatement;
-  class ForStatement;
+  // class BlockStatement;
+  // class IdentifierDeclStatement;
+  // class ReturnStatement;
+  // class AssignmentStatement;
+  // class MatchStatement;
+  // class ForStatement;
 
-  class FunctionPrototype;
-  class Program;
-  class Function;
-  class Clazz;
+  class FunctionDef;
+  class MethodDef;
+  // class ClassDef;
+
   class TranslationUnit;
 
   using ASTNode = Poly<
-    BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
-    BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
-    BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
-    FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit, ReturnStatement,
-    AssignmentStatement, IfStatement, ForStatement, ImportExpr, PostfixUnaryExpr
+    IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
+
+    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TypeExpr,
+    FunctionCallExpr, SubScriptingExpr, AccessExpr, NamespaceExpr,
+
+    // BlockStatement, IdentifierDeclStatement, ReturnStatement,
+    // AssignmentStatement, MatchStatement, ForStatement,
+
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
+    FunctionDef, MethodDef, TranslationUnit
   >;
+
+  enum class Access : u8 {
+    Public, Protected, Private
+  };
+
+  enum class Storage : u8 {
+    Export, Internal, Local
+  };
+
+  enum class Virtuality : u8 {
+    Abstract, Final
+  };
 }
 
 #endif // TOYLANG_SYNTAX_FORWARD_HPP

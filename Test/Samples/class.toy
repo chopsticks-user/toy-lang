@@ -9,8 +9,8 @@ public:
 
 export class Complex<T> ext Number impl IComplex {
 protected:
-  mutable real: T;
-  mutable img: T;
+  let mutable real: T;
+  let mutable img: T;
 
 public:
   fn real: () -> {}
@@ -24,7 +24,7 @@ public:
     i |> self.img;
   }
 
-  final fn self: () -> String {
+  abstract fn self: () -> String {
     return match {
       self.img < 0 => "{self.real} - {math::abs(self.img)}i",
       _ => "{self.real} + {self.img}i",

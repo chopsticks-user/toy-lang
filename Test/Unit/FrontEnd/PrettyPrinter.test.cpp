@@ -8,8 +8,6 @@ using tl::util::apply;
 using tl::fe::Lexer;
 using tl::fe::Parser;
 using tl::syntax::ASTNode;
-using tl::fe::PrettyPrinter;
-using tl::fe::ImportedModuleNameCollector;
 using tl::visit;
 
 static std::filesystem::path resourceDir = RESOURCE_DIR;

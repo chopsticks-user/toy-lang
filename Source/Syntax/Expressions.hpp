@@ -2,96 +2,65 @@
 #define  TOYLANG_SYNTAX_EXPRESSIONS_HPP
 
 #include "Base.hpp"
-
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class ParameterDeclFragment final : public ASTNodeBase {
+  // Literals belong here to avoid circular dependencies
+  // between Expression and Literals
+
+  class IntegerLiteral final : public ASTNodeBase {
   public:
-    ParameterDeclFragment(
-      ASTNode identifierDeclFragment,
-      String mut
+    explicit IntegerLiteral(i64 value);
+
+    auto value() const noexcept -> i64 {
+      return m_value;
+    }
+
+  private:
+    i64 m_value;
+  };
+
+  class FloatLiteral final : public ASTNodeBase {
+  public:
+    explicit FloatLiteral(f64 value);
+
+    auto value() const noexcept -> double {
+      return m_value;
+    }
+
+  private:
+    f64 m_value;
+  };
+
+  class StringLiteral final : public ASTNodeBase {
+  public:
+    explicit StringLiteral(
+      String value,
+      Vec<ASTNode> placeholders = {}
     );
 
-    auto identifier() const -> CRef<ASTNode> {
-      return childAt(0);
+    auto value() const noexcept -> CRef<String> {
+      return m_value;
     }
 
-    auto typeExpr() const -> CRef<ASTNode> {
-      return childAt(1);
-    }
-
-    auto mutibility() const -> CRef<String> {
-      return m_mutibility;
+    auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
+      return childAt(index);
     }
 
   private:
-    String m_mutibility;
+    String m_value;
   };
 
-  class IdentifierDeclFragment final : public ASTNodeBase {
+  class BooleanLiteral final : public ASTNodeBase {
   public:
-    IdentifierDeclFragment(
-      const ASTNode &identifier,
-      const ASTNode &typeExpr,
-      const ASTNode &rhsExpr
-    );
+    explicit BooleanLiteral(bool value);
 
-    auto identifier() -> CRef<ASTNode> {
-      return childAt(0);
-    }
-
-    auto typeExpr() -> CRef<ASTNode> {
-      return childAt(1);
-    }
-
-    auto rhsExpr() -> CRef<ASTNode> {
-      return childAt(2);
-    }
-  };
-
-  class Identifier final : public ASTNodeBase {
-  public:
-    explicit Identifier(String name);
-
-    auto name() const noexcept -> CRef<String> {
-      return m_name;
+    auto value() const noexcept -> bool {
+      return m_value;
     }
 
   private:
-    String m_name;
-  };
-
-  class TypeExpr final : public ASTNodeBase {
-  public:
-    explicit TypeExpr(String name);
-
-    auto name() const noexcept -> CRef<String> {
-      return m_name;
-    }
-
-  private:
-    String m_name;
-  };
-
-  class BinaryExpr final : public ASTNodeBase {
-  public:
-    BinaryExpr(ASTNode lhs, ASTNode rhs, String op);
-
-    auto left() const noexcept -> CRef<ASTNode> {
-      return childAt(0);
-    }
-
-    auto right() const noexcept -> CRef<ASTNode> {
-      return childAt(1);
-    }
-
-    auto op() const noexcept -> CRef<String> {
-      return m_op;
-    }
-
-  private:
-    String m_op;
+    bool m_value;
   };
 
   class TernaryExpr final : public ASTNodeBase {
@@ -128,6 +97,26 @@ namespace tl::syntax {
     String m_op2;
   };
 
+  class BinaryExpr final : public ASTNodeBase {
+  public:
+    BinaryExpr(ASTNode lhs, ASTNode rhs, String op);
+
+    auto left() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto right() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto op() const noexcept -> CRef<String> {
+      return m_op;
+    }
+
+  private:
+    String m_op;
+  };
+
   class UnaryExpr final : public ASTNodeBase {
   public:
     UnaryExpr(ASTNode operand, String op);
@@ -160,102 +149,69 @@ namespace tl::syntax {
     String m_op;
   };
 
-  // Literals belong here to avoid circular dependencies
-  // between Expression and Literals
-
-  class IntegerLiteral final : public ASTNodeBase {
+  class Identifier final : public ASTNodeBase {
   public:
-    explicit IntegerLiteral(CRef<String> value);
+    explicit Identifier(String name);
 
-    auto value() const noexcept -> i64 {
-      return m_value;
+    auto name() const noexcept -> CRef<String> {
+      return m_name;
     }
 
   private:
-    i64 m_value;
+    String m_name;
   };
 
-  class FloatLiteral final : public ASTNodeBase {
+  class TypeExpr final : public ASTNodeBase {
   public:
-    explicit FloatLiteral(CRef<String> value);
+    explicit TypeExpr(String name);
 
-    auto value() const noexcept -> double {
-      return m_value;
+    auto name() const noexcept -> CRef<String> {
+      return m_name;
     }
 
   private:
-    f64 m_value;
-  };
-
-  class StringLiteral final : public ASTNodeBase {
-  public:
-    explicit StringLiteral(
-      String value,
-      Vec<ASTNode> placeholders = {}
-    );
-
-    auto value() const noexcept -> CRef<String> {
-      return m_value;
-    }
-
-    auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
-      return childAt(index);
-    }
-
-  private:
-    String m_value;
-  };
-
-  class BooleanLiteral final : public ASTNodeBase {
-  public:
-    explicit BooleanLiteral(CRef<String> value);
-
-    auto value() const noexcept -> bool {
-      return m_value;
-    }
-
-  private:
-    bool m_value;
+    String m_name;
   };
 
   class FunctionCallExpr final : public ASTNodeBase {
   public:
-    FunctionCallExpr(
-      CRef<ASTNode> callee,
-      Vec<ASTNode> args
+    FunctionCallExpr(CRef<ASTNode> callee, Vec<ASTNode> args
     );
 
-    auto callee() const noexcept -> ASTNode;
+    auto callee() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
   };
 
   class SubScriptingExpr final : public ASTNodeBase {
   public:
-    SubScriptingExpr(
-      ASTNode collection,
-      ASTNode subscript
-    );
+    SubScriptingExpr(ASTNode collection, ASTNode subscript);
 
-    auto collection() const noexcept -> ASTNode;
+    auto collection() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
 
-    auto subscript() const noexcept -> ASTNode;
-  };
-
-  class ModuleExpr final : public ASTNodeBase {
-  public:
-    explicit ModuleExpr(Vec<ASTNode> fragments);
-
-    auto fragment(const sz index) -> CRef<ASTNode> {
-      return childAt(index);
+    auto subscript() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
     }
   };
 
-  class ImportExpr final : public ASTNodeBase {
+  class AccessExpr final : public ASTNodeBase {
   public:
-    explicit ImportExpr(Vec<ASTNode> fragments);
+    AccessExpr(ASTNode object, ASTNode field);
 
-    auto fragment(const sz index) -> CRef<ASTNode> {
-      return childAt(index);
+    auto object() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
     }
+
+    auto field() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class NamespaceExpr final : public ASTNodeBase {
+  public:
+    explicit NamespaceExpr(Vec<ASTNode> fragments);
   };
 }
 

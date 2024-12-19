@@ -24,12 +24,12 @@ namespace tl::fe {
     Identifier, IntegerLiteral, FloatLiteral, StringLiteral, FundamentalType, UserDefinedType,
 
     // Keywords
-    Module, Import, Export, Internal, Local, Extern,
-    Let, Mutable, Pure, Fn, Type, Self, Global, Enum, Flag,
+    Module, Import, Export, Internal, Local, Extern, Static,
+    Let, Mutable, Fn, Type, Self, Global, Enum, Flag,
     For, Return, Match,
     By, Of, In, If,
     True, False,
-    Class, Super, Public, Private, Protected, Abstract, Interface, Impl, Ext, Final,
+    Class, Super, Public, Private, Protected, Interface, Impl, Ext, Final,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

@@ -1,7 +1,7 @@
 #include "Base.hpp"
 #include "Expressions.hpp"
 #include "Statements.hpp"
-#include "Concrete.hpp"
+#include "Definitions.hpp"
 
 namespace tl::syntax {
   ASTNodeBase::ASTNodeBase(std::vector<ASTNode> children) noexcept

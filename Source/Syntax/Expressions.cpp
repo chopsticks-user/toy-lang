@@ -1,36 +1,25 @@
 #include "Expressions.hpp"
 #include "Statements.hpp"
-#include "Concrete.hpp"
+#include "Definitions.hpp"
 
 namespace tl::syntax {
-  ParameterDeclFragment::ParameterDeclFragment(
-    ASTNode identifierDeclFragment,
-    String mut
-  ) : ASTNodeBase({identifierDeclFragment}),
-      m_mutibility(mut.empty() ? "const" : std::move(mut)) {
+  IntegerLiteral::IntegerLiteral(i64 value)
+    : ASTNodeBase({}), m_value(value) {
   }
 
-  IdentifierDeclFragment::IdentifierDeclFragment(
-    CRef<ASTNode> identifier,
-    CRef<ASTNode> typeExpr,
-    CRef<ASTNode> rhsExpr
-  ) : ASTNodeBase(
-    isEmpty(rhsExpr)
-      ? Vec<ASTNode>{identifier, typeExpr}
-      : Vec<ASTNode>{identifier, typeExpr, rhsExpr}
-  ) {
+  FloatLiteral::FloatLiteral(f64 value)
+    : ASTNodeBase({}), m_value(value) {
   }
 
-  Identifier::Identifier(String name)
-    : ASTNodeBase({}), m_name(std::move(name)) {
+  StringLiteral::StringLiteral(
+    String value,
+    Vec<ASTNode> placeholders
+  )
+    : ASTNodeBase({std::move(placeholders)}), m_value(std::move(value)) {
   }
 
-  TypeExpr::TypeExpr(String name)
-    : ASTNodeBase({}), m_name(std::move(name)) {
-  }
-
-  BinaryExpr::BinaryExpr(ASTNode lhs, ASTNode rhs, String op)
-    : ASTNodeBase({lhs, rhs}), m_op(std::move(op)) {
+  BooleanLiteral::BooleanLiteral(bool value)
+    : ASTNodeBase({}), m_value(value) {
   }
 
   TernaryExpr::TernaryExpr(
@@ -43,6 +32,11 @@ namespace tl::syntax {
       m_op1(std::move(op1)), m_op2(std::move(op2)) {
   }
 
+  BinaryExpr::BinaryExpr(ASTNode lhs, ASTNode rhs, String op)
+    : ASTNodeBase({lhs, rhs}), m_op(std::move(op)) {
+  }
+
+
   UnaryExpr::UnaryExpr(ASTNode operand, String op)
     : ASTNodeBase({operand}), m_op(std::move(op)) {
   }
@@ -51,23 +45,12 @@ namespace tl::syntax {
     : ASTNodeBase({operand}), m_op(std::move(op)) {
   }
 
-  IntegerLiteral::IntegerLiteral(CRef<String> value)
-    : ASTNodeBase({}), m_value(std::stol(String(value))) {
+  Identifier::Identifier(String name)
+    : ASTNodeBase({}), m_name(std::move(name)) {
   }
 
-  FloatLiteral::FloatLiteral(CRef<String> value)
-    : ASTNodeBase({}), m_value(std::stod(String(value))) {
-  }
-
-  StringLiteral::StringLiteral(
-    String value,
-    Vec<ASTNode> placeholders
-  )
-    : ASTNodeBase({std::move(placeholders)}), m_value(std::move(value)) {
-  }
-
-  BooleanLiteral::BooleanLiteral(CRef<String> value)
-    : ASTNodeBase({}), m_value(value == "true") {
+  TypeExpr::TypeExpr(String name)
+    : ASTNodeBase({}), m_name(std::move(name)) {
   }
 
   FunctionCallExpr::FunctionCallExpr(
@@ -83,29 +66,17 @@ namespace tl::syntax {
   }) {
   }
 
-  auto FunctionCallExpr::callee() const noexcept -> ASTNode {
-    return childAt(0);
-  }
-
   SubScriptingExpr::SubScriptingExpr(
     ASTNode collection,
     ASTNode subscript
   ): ASTNodeBase({collection, subscript}) {
   }
 
-  auto SubScriptingExpr::collection() const noexcept -> ASTNode {
-    return childAt(0);
+  AccessExpr::AccessExpr(ASTNode object, ASTNode field)
+    : ASTNodeBase({object, field}) {
   }
 
-  auto SubScriptingExpr::subscript() const noexcept -> ASTNode {
-    return childAt(1);
-  }
-
-  ModuleExpr::ModuleExpr(Vec<ASTNode> fragments)
-    : ASTNodeBase(std::move(fragments)) {
-  }
-
-  ImportExpr::ImportExpr(Vec<ASTNode> fragments)
+  NamespaceExpr::NamespaceExpr(Vec<ASTNode> fragments)
     : ASTNodeBase(std::move(fragments)) {
   }
 }
