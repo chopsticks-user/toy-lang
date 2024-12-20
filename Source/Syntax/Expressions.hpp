@@ -151,14 +151,28 @@ namespace tl::syntax {
 
   class Identifier final : public ASTNodeBase {
   public:
-    explicit Identifier(String name);
+    explicit Identifier(Vec<String> path);
 
     auto name() const noexcept -> CRef<String> {
-      return m_name;
+      return m_path.back();
+    }
+
+    auto path() const noexcept -> String {
+      String pathStr = m_path.front();
+
+      if (m_path.size() == 1) {
+        return pathStr;
+      }
+
+      for (CRef<String> s: m_path | rv::drop(1)) {
+        pathStr += "::" + s;
+      }
+
+      return pathStr;
     }
 
   private:
-    String m_name;
+    Vec<String> m_path;
   };
 
   class TypeExpr final : public ASTNodeBase {
@@ -209,10 +223,10 @@ namespace tl::syntax {
     }
   };
 
-  class NamespaceExpr final : public ASTNodeBase {
-  public:
-    explicit NamespaceExpr(Vec<ASTNode> fragments);
-  };
+  // class NamespaceExpr final : public ASTNodeBase {
+  // public:
+  //   explicit NamespaceExpr(Vec<ASTNode> fragments);
+  // };
 }
 
 #endif // TOYLANG_SYNTAX_EXPRESSIONS_HPP

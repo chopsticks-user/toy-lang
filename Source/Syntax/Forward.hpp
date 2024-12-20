@@ -18,7 +18,7 @@ namespace tl::syntax {
   class FunctionCallExpr;
   class SubScriptingExpr;
   class AccessExpr;
-  class NamespaceExpr;
+  // class NamespaceExpr;
 
   class ModuleDecl;
   class ImportDecl;
@@ -36,6 +36,9 @@ namespace tl::syntax {
   class FunctionDef;
   class MethodDef;
   // class ClassDef;
+  // class InterfaceDef;
+  // class EnumDef;
+  // class FlagDef;
 
   class TranslationUnit;
 
@@ -43,7 +46,7 @@ namespace tl::syntax {
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
     TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TypeExpr,
-    FunctionCallExpr, SubScriptingExpr, AccessExpr, NamespaceExpr,
+    FunctionCallExpr, SubScriptingExpr, AccessExpr,
 
     // BlockStatement, IdentifierDeclStatement, ReturnStatement,
     // AssignmentStatement, MatchStatement, ForStatement,

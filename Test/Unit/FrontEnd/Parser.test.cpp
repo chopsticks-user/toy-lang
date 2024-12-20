@@ -2,16 +2,57 @@
 
 #include "FrontEnd/Parser.hpp"
 
-#include <iostream>
+using tl::String;
+using tl::u64;
+using tl::CRef;
+using namespace tl::syntax;
 
-using tl::util::apply;
-using tl::fe::Lexer;
-using tl::fe::Parser;
-using tl::syntax::ASTNode;
+#define TEST_CASE_WITH_FIXTURE(...) \
+TEST_CASE_METHOD(ParserTestFixture, __VA_ARGS__)
 
-static std::filesystem::path resourceDir = RESOURCE_DIR;
+#define REQUIRE_VTYPE_OF(variant, Type) \
+  REQUIRE(std::derived_from<Type, ASTNodeBase>); \
+  REQUIRE(std::holds_alternative<Type>(variant))
 
-TEST_CASE("Parser: Simple program", "[Parser]") {
-  // auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
-  // auto translationUnit = apply<Parser>(tokens);
+class ParserTestFixture {
+protected:
+  static constexpr auto filepath = "./parserTestSample.toy";
+
+  auto parse(String source) -> void {
+    std::istringstream iss;
+    iss.str(std::move(source));
+    m_ast = tl::util::apply<tl::fe::Parser>(
+      m_eCollector, filepath, tl::util::apply<tl::fe::Lexer>(std::move(iss))
+    );
+    m_eCollector.throwAllIfExists();
+
+    REQUIRE_VTYPE_OF(m_ast, TranslationUnit);
+  }
+
+  template<typename TNode>
+    requires std::derived_from<TNode, ASTNodeBase>
+  auto nodeAt(const u64 index) -> TNode {
+    CAPTURE(index);
+    const auto ast = std::get<TranslationUnit>(m_ast);
+    const auto node = ast.childAt(index);
+    REQUIRE_VTYPE_OF(node, TNode);
+    return std::get<TNode>(node);
+  }
+
+private:
+  ASTNode m_ast;
+  tl::ExpceptionCollector m_eCollector;
+};
+
+TEST_CASE_WITH_FIXTURE("Parser: module and import declarations", "[Parser]") {
+  REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+import std::io;
+import std::math;
+  )"));
+
+  nodeAt<ModuleDecl>(0);
+  nodeAt<ImportDecl>(1);
+  nodeAt<ImportDecl>(2);
 }

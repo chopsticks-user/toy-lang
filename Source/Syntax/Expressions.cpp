@@ -45,8 +45,8 @@ namespace tl::syntax {
     : ASTNodeBase({operand}), m_op(std::move(op)) {
   }
 
-  Identifier::Identifier(String name)
-    : ASTNodeBase({}), m_name(std::move(name)) {
+  Identifier::Identifier(Vec<String> path)
+    : ASTNodeBase({}), m_path(std::move(path)) {
   }
 
   TypeExpr::TypeExpr(String name)
@@ -76,7 +76,7 @@ namespace tl::syntax {
     : ASTNodeBase({object, field}) {
   }
 
-  NamespaceExpr::NamespaceExpr(Vec<ASTNode> fragments)
-    : ASTNodeBase(std::move(fragments)) {
-  }
+  // NamespaceExpr::NamespaceExpr(Vec<ASTNode> fragments)
+  //   : ASTNodeBase(std::move(fragments)) {
+  // }
 }

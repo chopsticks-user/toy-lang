@@ -33,6 +33,6 @@ namespace tl::syntax {
   }
 
   auto isEmpty(const ASTNode &node) -> bool {
-    return node.index() == 0;
+    return std::holds_alternative<std::monostate>(node);
   }
 }
