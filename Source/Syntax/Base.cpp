@@ -32,7 +32,7 @@ namespace tl::syntax {
     return m_children.size();
   }
 
-  auto isEmpty(const ASTNode &node) -> bool {
+  auto isEmptyAst(const ASTNode &node) -> bool {
     return std::holds_alternative<std::monostate>(node);
   }
 }

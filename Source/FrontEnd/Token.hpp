@@ -25,11 +25,11 @@ namespace tl::fe {
 
     // Keywords
     Module, Import, Export, Internal, Local, Extern, Static,
-    Let, Mutable, Fn, Type, Self, Global, Enum, Flag,
+    Let, Mutable, Fn, Concept, Satisfies, Type, Global, Enum, Flag,
     For, Return, Match,
     By, Of, In, If,
     True, False,
-    Class, Super, Public, Private, Protected, Interface, Impl, Ext, Final,
+    Class, Self, Public, Private,
 
     // Misc
     Empty, MaybeOperator, Reserved, Invalid,

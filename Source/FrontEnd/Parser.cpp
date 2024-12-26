@@ -7,7 +7,7 @@ using tl::syntax::ASTNode;
 namespace tl::fe {
   auto Parser::current() const -> CRef<Token> {
     if (m_currentToken == nullptr) {
-      throw std::runtime_error("Parser: m_currentToken == nullptr");
+      throw InternalException(m_filepath, "Parser: m_currentToken == nullptr");
     }
     return *m_currentToken;
   }
@@ -42,7 +42,7 @@ namespace tl::fe {
     return *(m_tokenIt++);
   }
 
-  auto Parser::createError(ToyLangException &&e) const -> void {
+  auto Parser::collectException(ToyLangException &&e) const -> void {
     m_eCollector->add(std::move(e));
   }
 
@@ -55,8 +55,8 @@ namespace tl::fe {
     m_eCollector = &eCollector;
 
     if (m_tokenIt == m_tokenItEnd) {
-      createError(
-        ParserExpception(filepath, "module declaration not found")
+      collectException(
+        ParserExpception(filepath, "empty file is not allowed; module declaration must be specified")
       );
     }
 
@@ -73,11 +73,9 @@ namespace tl::fe {
         definition = parseModuleDecl();
       } else if (match(EToken::Import)) {
         definition = parseImportDecl();
-      } else if (match(EToken::Type)) {
-        definition = parseTypeDecl();
       } else {
         if (match(EToken::Export, EToken::Internal, EToken::Local)) {
-          switch (peekPrev().type()) {
+          switch (current().type()) {
             case EToken::Export: {
               currentStorage = syntax::Storage::Export;
               break;
@@ -95,13 +93,15 @@ namespace tl::fe {
 
         if (match(EToken::Fn)) {
           definition = parseFunctionDef();
+        } else if (match(EToken::Type)) {
+          definition = parseTypeDecl();
         } else if (match(EToken::Class)) {
           classState = true;
           definition = parseClassDef();
           classState = false;
-        } else if (match(EToken::Interface)) {
+        } else if (match(EToken::Concept)) {
           interfaceState = true;
-          definition = parseInterfaceDef();
+          definition = parseConceptDef();
           interfaceState = false;
         }
       }
@@ -121,24 +121,74 @@ namespace tl::fe {
 
   auto Parser::parseModuleDecl() -> ASTNode {
     if (const auto identifier = parseIdentifier();
-      !isEmpty(identifier)) {
+      !isEmptyAst(identifier)) {
+      if (!match(EToken::Semicolon)) {
+        collectException(
+          ParserExpception(m_filepath, current(), "missing ; at the end of module declaration")
+        );
+      }
+
       return syntax::ModuleDecl{identifier};
     }
 
-    throw ParserExpception(m_filepath, current(), "module path must be specified");
+    collectException(
+      ParserExpception(m_filepath, current(), "module path must be specified")
+    );
+    return {};
   }
 
   auto Parser::parseImportDecl() -> ASTNode {
     if (const auto identifier = parseIdentifier();
-      !isEmpty(identifier)) {
+      !isEmptyAst(identifier)) {
+      if (!match(EToken::Semicolon)) {
+        collectException(
+          ParserExpception(m_filepath, current(), "missing ; at the end of import declaration")
+        );
+      }
+
       return syntax::ImportDecl{identifier};
     }
 
-    throw ParserExpception(m_filepath, current(), "module path must be specified");
+    collectException(
+      ParserExpception(m_filepath, current(), "module path must be specified")
+    );
+    return {};
   }
 
   auto Parser::parseTypeDecl() -> ASTNode {
-    return {};
+    const auto typeId = parseIdentifier();
+    if (isEmptyAst(typeId)) {
+      collectException(
+        ParserExpception(m_filepath, current(), "missing lhs type identifier for type declaration")
+      );
+    }
+
+    if (syntax::astCast<syntax::Identifier>(typeId).imported()) {
+      collectException(
+        ParserExpception(m_filepath, current(), "imported type cannot be re-defined")
+      );
+    }
+
+    if (!match(EToken::Equal)) {
+      collectException(
+        ParserExpception(m_filepath, current(), "missing = for type declaration")
+      );
+    }
+
+    const auto typeExpr = parseTypeExpr();
+    if (isEmptyAst(typeExpr)) {
+      collectException(
+        ParserExpception(m_filepath, current(), "missing rhs type expression for type declaration")
+      );
+    }
+
+    if (!match(EToken::Semicolon)) {
+      collectException(
+        ParserExpception(m_filepath, current(), "missing ; at the end of type declaration")
+      );
+    }
+
+    return syntax::TypeDecl{typeId, typeExpr};
   }
 
   auto Parser::parseFunctionDef() -> ASTNode {
@@ -149,24 +199,47 @@ namespace tl::fe {
     return {};
   }
 
-  auto Parser::parseInterfaceDef() -> ASTNode {
+  auto Parser::parseConceptDef() -> ASTNode {
     return {};
   }
 
   auto Parser::parseIdentifier() -> ASTNode {
     Vec<String> path;
 
-    while (match(EToken::Identifier)) {
-      path.push_back(current().string());
+    while (match(EToken::Identifier, EToken::UserDefinedType, EToken::FundamentalType)) {
+      const auto id = current();
+
+      path.push_back(id.string());
       if (!match(EToken::Colon2)) {
+        break;
+      }
+
+      if (id.type() != EToken::Identifier) {
+        collectException(
+          ParserExpception(m_filepath, current(), "path to imported name cannot be type")
+        );
         break;
       }
     }
 
-    if (!match(EToken::Semicolon)) {
-      throw ParserExpception(m_filepath, current(), "missing ; at the end of identifier");
-    }
-
+    // identifier
     return syntax::Identifier{path};
+  }
+
+  auto Parser::parseTypeExpr() -> ASTNode {
+    Vec<ASTNode> types;
+
+    do {
+      if (auto type = parseIdentifier();
+        !isEmptyAst(type) && syntax::astCast<syntax::Identifier>(type).isType()) {
+        types.emplace_back(type);
+      } else {
+        collectException(
+          ParserExpception(m_filepath, current(), "invalid type identifier")
+        );
+      }
+    } while (match(EToken::Bar));
+
+    return syntax::TypeExpr{types};
   }
 }

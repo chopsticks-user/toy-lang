@@ -171,20 +171,17 @@ namespace tl::syntax {
       return pathStr;
     }
 
-  private:
-    Vec<String> m_path;
-  };
+    auto imported() const noexcept -> bool {
+      return m_path.size() > 1;
+    }
 
-  class TypeExpr final : public ASTNodeBase {
-  public:
-    explicit TypeExpr(String name);
-
-    auto name() const noexcept -> CRef<String> {
-      return m_name;
+    auto isType() const noexcept -> bool {
+      const char c = name()[0];
+      return c >= 'A' && c <= 'Z';
     }
 
   private:
-    String m_name;
+    Vec<String> m_path;
   };
 
   class FunctionCallExpr final : public ASTNodeBase {
@@ -223,10 +220,23 @@ namespace tl::syntax {
     }
   };
 
-  // class NamespaceExpr final : public ASTNodeBase {
-  // public:
-  //   explicit NamespaceExpr(Vec<ASTNode> fragments);
-  // };
+  class TypeOfExpr final : public ASTNodeBase {
+  public:
+    explicit TypeOfExpr(ASTNode identifier);
+
+    auto identifier() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+
+  class TypeExpr final : public ASTNodeBase {
+  public:
+    explicit TypeExpr(Vec<ASTNode> types);
+
+    auto type(const sz index) const -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
 }
 
 #endif // TOYLANG_SYNTAX_EXPRESSIONS_HPP

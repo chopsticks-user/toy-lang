@@ -12,15 +12,8 @@ namespace tl::syntax {
     : ASTNodeBase({nsIdentifier}) {
   }
 
-  TypeDecl::TypeDecl(CRef<ASTNode> identifier, const Vec<ASTNode> &types)
-    : ASTNodeBase({
-      [&]() {
-        // todo: move args
-        auto v = std::vector{identifier};
-        v.insert(v.end(), types.begin(), types.end());
-        return v;
-      }()
-    }) {
+  TypeDecl::TypeDecl(ASTNode identifier, ASTNode typeExpr)
+    : ASTNodeBase({identifier, typeExpr}) {
   }
 
   IdentifierDecl::IdentifierDecl(
@@ -28,7 +21,7 @@ namespace tl::syntax {
     CRef<ASTNode> typeExpr,
     CRef<ASTNode> rhsExpr
   ) : ASTNodeBase(
-    isEmpty(rhsExpr)
+    isEmptyAst(rhsExpr)
       ? Vec<ASTNode>{identifier, typeExpr}
       : Vec<ASTNode>{identifier, typeExpr, rhsExpr}
   ) {

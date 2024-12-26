@@ -27,7 +27,22 @@ namespace tl::syntax {
     std::vector<ASTNode> m_children;
   };
 
-  auto isEmpty(const ASTNode &node) -> bool;
+  auto isEmptyAst(CRef<ASTNode> node) -> bool;
+
+  template<std::derived_from<ASTNodeBase> TNode>
+  auto astCast(CRef<ASTNode> node, CRef<String> filepath = "") -> TNode {
+    if (!std::holds_alternative<TNode>(node)) {
+      throw filepath.empty()
+              ? InternalException(filepath, "invalid AST-node cast")
+              : InternalException("invalid AST-node cast");
+    }
+    return std::get<TNode>(node);
+  }
+
+  template<std::derived_from<ASTNodeBase>... TNode>
+  auto matchAstType(CRef<ASTNode> node) -> bool {
+    return !((std::holds_alternative<TNode>(node)) || ...);
+  }
 }
 
 #endif // TOYLANG_SYNTAX_BASE_HPP

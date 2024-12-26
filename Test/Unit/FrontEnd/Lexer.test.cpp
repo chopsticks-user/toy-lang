@@ -192,19 +192,25 @@ local type IntAlias = Int;
 TEST_CASE_WITH_FIXTURE("Lexer: Class definition", "[Lexer]") {
   REQUIRE_NOTHROW(
     lex(R"(
-export interface IComplex {
+export concept IsComplex<T> {
 public:
-  +: (other: Complex) -> Complex;
-  ==: (other: Complex) -> Bool;
+  fn real: () -> T;
+  fn img: () -> T;
 
-  conjugate: () -> Complex;
-  magnitude: () -> Float;
+  fn real: (val: T) -> Void;
+  fn img: (val: T) -> Void;
+
+  fn +: (other: Complex) -> Complex;
+  fn ==: (other: Complex) -> Bool;
+
+  fn conjugate: () -> Complex;
+  fn magnitude: () -> Float;
 }
 
-export class Complex<T> ext Number impl IComplex {
+export class Complex<T> satisfies IsComplex {
 protected:
-  mutable real: T;
-  mutable img: T;
+  let mutable real: T;
+  let mutable img: T;
 
 public:
   fn real: () -> {}
@@ -218,7 +224,7 @@ public:
     i |> self.img;
   }
 
-  final fn self: () -> String {
+  fn self: () -> String {
     return match {
       self.img < 0 => "{self.real} - {math::abs(self.img)}i",
       _ => "{self.real} + {self.img}i",
@@ -684,11 +690,11 @@ x = a .. b by c;
 TEST_CASE_WITH_FIXTURE("Lexer: String", "[Lexer]") {
   REQUIRE_NOTHROW(
     lex(R"(
-  s = "a simple string";
-  s = "\tline 1\n\t\tline 2\n";
-  s = "";
-  s = "{a} + {b} = {c}";
-  s = "\{a\} + \{b\} = \{c\}";
+s = "a simple string";
+s = "\tline 1\n\t\tline 2\n";
+s = "";
+s = "{a} + {b} = {c}";
+s = "\{a\} + \{b\} = \{c\}";
     )")
   );
 }

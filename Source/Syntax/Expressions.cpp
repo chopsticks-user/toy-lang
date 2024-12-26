@@ -1,4 +1,6 @@
 #include "Expressions.hpp"
+
+#include <utility>
 #include "Statements.hpp"
 #include "Definitions.hpp"
 
@@ -49,10 +51,6 @@ namespace tl::syntax {
     : ASTNodeBase({}), m_path(std::move(path)) {
   }
 
-  TypeExpr::TypeExpr(String name)
-    : ASTNodeBase({}), m_name(std::move(name)) {
-  }
-
   FunctionCallExpr::FunctionCallExpr(
     CRef<ASTNode> callee,
     Vec<ASTNode> args
@@ -76,7 +74,11 @@ namespace tl::syntax {
     : ASTNodeBase({object, field}) {
   }
 
-  // NamespaceExpr::NamespaceExpr(Vec<ASTNode> fragments)
-  //   : ASTNodeBase(std::move(fragments)) {
-  // }
+  TypeOfExpr::TypeOfExpr(ASTNode identifier)
+    : ASTNodeBase({identifier}) {
+  }
+
+  TypeExpr::TypeExpr(Vec<ASTNode> types)
+    : ASTNodeBase(std::move(types)) {
+  }
 }

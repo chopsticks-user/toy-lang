@@ -15,13 +15,13 @@ namespace tl::fe {
     {"mutable", EToken::Mutable},
     {"fn", EToken::Fn},
     {"static", EToken::Static},
-    // {"pure", EToken::Pure},
+    {"concept", EToken::Concept},
+    {"satisfies", EToken::Satisfies},
     {"type", EToken::Type},
-    {"self", EToken::Self},
     {"global", EToken::Global},
     {"enum", EToken::Enum},
     {"flag", EToken::Flag},
-
+    // {"pure", EToken::Pure},
 
     // control
     {"for", EToken::For},
@@ -39,17 +39,17 @@ namespace tl::fe {
     {"false", EToken::False},
 
     // object-oriented
-    {"class", EToken::Class},
-    {"super", EToken::Super},
     {"self", EToken::Self},
     {"public", EToken::Public},
     {"private", EToken::Private},
-    {"protected", EToken::Protected},
+    {"class", EToken::Class},
+    // {"super", EToken::Super},
+    // {"protected", EToken::Protected},
+    // {"interface", EToken::Interface},
+    // {"impl", EToken::Impl},
+    // {"ext", EToken::Ext},
     // {"abstract", EToken::Abstract},
-    {"interface", EToken::Interface},
-    {"impl", EToken::Impl},
-    {"ext", EToken::Ext},
-    {"final", EToken::Final},
+    // {"final", EToken::Final},
   };
 
   static const HashSet<StringView> fundamentalTypes{

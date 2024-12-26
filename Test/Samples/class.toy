@@ -1,13 +1,19 @@
-export interface IComplex {
+export concept IsComplex<T> {
 public:
-  +: (other: Complex) -> Complex;
-  ==: (other: Complex) -> Bool;
+  fn real: () -> T;
+  fn img: () -> T;
 
-  conjugate: () -> Complex;
-  magnitude: () -> Float;
+  fn real: (val: T) -> Void;
+  fn img: (val: T) -> Void;
+
+  fn +: (other: Complex) -> Complex;
+  fn ==: (other: Complex) -> Bool;
+
+  fn conjugate: () -> Complex;
+  fn magnitude: () -> Float;
 }
 
-export class Complex<T> ext Number impl IComplex {
+export class Complex<T> satisfies IsComplex {
 protected:
   let mutable real: T;
   let mutable img: T;
@@ -24,7 +30,7 @@ public:
     i |> self.img;
   }
 
-  abstract fn self: () -> String {
+  fn self: () -> String {
     return match {
       self.img < 0 => "{self.real} - {math::abs(self.img)}i",
       _ => "{self.real} + {self.img}i",

@@ -11,19 +11,31 @@ namespace tl::syntax {
   class ModuleDecl final : public ASTNodeBase {
   public:
     explicit ModuleDecl(ASTNode nsIdentifier);
+
+    auto identifier() const -> CRef<ASTNode> {
+      return childAt(0);
+    }
   };
 
   class ImportDecl final : public ASTNodeBase {
   public:
     explicit ImportDecl(ASTNode nsIdentifier);
+
+    auto identifier() const -> CRef<ASTNode> {
+      return childAt(0);
+    }
   };
 
   class TypeDecl final : public ASTNodeBase {
   public:
-    explicit TypeDecl(const ASTNode &identifier, const Vec<ASTNode> &types);
+    explicit TypeDecl(ASTNode identifier, ASTNode typeExpr);
 
-    auto identifier() const -> CRef<ASTNode> {
+    auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
+    }
+
+    auto typeExpr() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
     }
 
     // todo: types

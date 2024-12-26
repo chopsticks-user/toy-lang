@@ -39,7 +39,7 @@ namespace tl::fe {
 
     auto peekPrev() -> Token;
 
-    auto createError(ToyLangException &&e) const -> void;
+    auto collectException(ToyLangException &&e) const -> void;
 
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
@@ -54,9 +54,13 @@ namespace tl::fe {
 
     auto parseClassDef() -> syntax::ASTNode;
 
-    auto parseInterfaceDef() -> syntax::ASTNode;
+    auto parseConceptDef() -> syntax::ASTNode;
 
     auto parseIdentifier() -> syntax::ASTNode;
+
+    auto parseTypeExpr() -> syntax::ASTNode;
+
+    // auto parseExpr() -> syntax::ASTNode;
 
   private:
     String m_filepath;
