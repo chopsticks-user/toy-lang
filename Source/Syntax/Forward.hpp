@@ -34,8 +34,8 @@ namespace tl::syntax {
   // class MatchStatement;
   // class ForStatement;
 
+  class FunctionPrototype;
   class FunctionDef;
-  class MethodDef;
   // class ClassDef;
   // class InterfaceDef;
   // class EnumDef;
@@ -53,19 +53,19 @@ namespace tl::syntax {
     // AssignmentStatement, MatchStatement, ForStatement,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
-    FunctionDef, MethodDef, TranslationUnit
+    FunctionPrototype, FunctionDef, TranslationUnit
   >;
-
-  enum class Access : u8 {
-    Public, Protected, Private
-  };
 
   enum class Storage : u8 {
     Export, Internal, Local
   };
 
-  enum class Virtuality : u8 {
-    Abstract, Final
+  enum class FnType : u8 {
+    Function, Method, Field, Operator, Constructor,
+  };
+
+  const HashSet<String> overloadableOps = {
+    "+", "-", "*", "/",
   };
 }
 

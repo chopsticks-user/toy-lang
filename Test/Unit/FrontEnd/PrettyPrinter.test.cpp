@@ -4,23 +4,49 @@
 
 #include <iostream>
 
-using tl::util::apply;
-using tl::fe::Lexer;
-using tl::fe::Parser;
 using tl::syntax::ASTNode;
-using tl::visit;
+using tl::String;
+using tl::u64;
+using tl::CRef;
+using namespace tl::syntax;
 
-static std::filesystem::path resourceDir = RESOURCE_DIR;
+#define TEST_CASE_WITH_FIXTURE(...) \
+TEST_CASE_METHOD(PrettyPrinterTestFixture, __VA_ARGS__)
 
-TEST_CASE("PrettyPrinter: Simple program", "[PrettyPrinter]") {
-  // auto tokens = apply<Lexer>(resourceDir / "Simple.toy");
-  // auto translationUnit = apply<Parser>(tokens);
-  //
-  // auto text = visit<PrettyPrinter>(translationUnit);
-  // std::cout << text << '\n';
+#define REQUIRE_VTYPE_OF(variant, Type) \
+REQUIRE(std::holds_alternative<Type>(variant))
 
-  // auto result = visit<ImportedModuleNameCollector>(translationUnit);
-  // for (const auto &name: result) {
-  //   std::cout << name << '\n';
-  // }
+class PrettyPrinterTestFixture {
+protected:
+  static constexpr auto filepath = "./prettyPrinterTestSample.toy";
+
+  auto print(String source) -> String {
+    std::istringstream iss;
+    iss.str(std::move(source));
+    const ASTNode ast = tl::util::apply<tl::fe::Parser>(
+      m_eCollector, filepath, tl::util::apply<tl::fe::Lexer>(std::move(iss))
+    );
+    m_eCollector.throwAllIfExists();
+    return tl::util::apply<tl::fe::PrettyPrinter>(astCast<TranslationUnit>(ast));
+  }
+
+private:
+  tl::ExpceptionCollector m_eCollector;
+};
+
+TEST_CASE_WITH_FIXTURE("PrettyPrinter: module, import and type declarations", "[PrettyPrinter]") {
+  String source = R"(
+module    foo;
+import std  ::io ;
+import  std:: math;
+)";
+
+  String expected = R"(
+module foo;
+
+import std::io;
+import std::math;
+)";
+
+  REQUIRE(print(std::move(source)) == expected);
 }

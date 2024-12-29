@@ -41,6 +41,8 @@ namespace tl::fe {
 
     auto collectException(ToyLangException &&e) const -> void;
 
+    auto setStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
+
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
@@ -68,10 +70,7 @@ namespace tl::fe {
     TokenIterator m_tokenItEnd;
     const Token *m_currentToken = nullptr;
 
-    bool classState = false;
-    bool interfaceState = false;
-    syntax::Storage currentStorage = syntax::Storage::Internal;
-    syntax::Access currentAccess = syntax::Access::Private;
+    syntax::Storage m_currentStorage = syntax::Storage::Internal;
 
     ExpceptionCollector *m_eCollector = nullptr;
   };

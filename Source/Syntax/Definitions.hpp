@@ -37,8 +37,6 @@ namespace tl::syntax {
     auto typeExpr() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
-
-    // todo: types
   };
 
   class IdentifierDecl final : public ASTNodeBase {
@@ -65,11 +63,11 @@ namespace tl::syntax {
     explicit TupleDecl(Vec<ASTNode> idDecls);
   };
 
-  class FunctionDef final : public ASTNodeBase {
+  class FunctionPrototype final : public ASTNodeBase {
   public:
-    FunctionDef(
-      Storage fStorage, ASTNode fIdentifier,
-      ASTNode fParamDecls, ASTNode fReturnDecls, ASTNode fBody
+    FunctionPrototype(
+      bool fStatic, FnType fType, ASTNode fIdentifier,
+      ASTNode fParamDecls, ASTNode fReturnDecls
     );
 
     auto identifier() const -> CRef<ASTNode> {
@@ -84,8 +82,29 @@ namespace tl::syntax {
       return childAt(2);
     }
 
+    auto isStatic() const noexcept -> bool {
+      return m_static;
+    }
+
+    auto type() const noexcept -> FnType {
+      return m_type;
+    }
+
+  private:
+    FnType m_type;
+    bool m_static;
+  };
+
+  class FunctionDef final : public ASTNodeBase {
+  public:
+    FunctionDef(Storage fStorage, ASTNode fPrototype, ASTNode fBody);
+
+    auto prototype() const -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
     auto body() const -> CRef<ASTNode> {
-      return childAt(3);
+      return childAt(1);
     }
 
     auto storage() const -> Storage {
@@ -94,46 +113,6 @@ namespace tl::syntax {
 
   private:
     Storage m_storage;
-  };
-
-  class MethodDef final : public ASTNodeBase {
-  public:
-    MethodDef(
-      Access mAccess, Virtuality mVirtuality, ASTNode mIdentifier,
-      ASTNode mParamDecls, ASTNode mReturnDecls, ASTNode mBody
-    );
-
-    auto identifier() const -> CRef<ASTNode> {
-      return childAt(0);
-    }
-
-    auto params() const -> CRef<ASTNode> {
-      return childAt(1);
-    }
-
-    auto returns() -> CRef<ASTNode> {
-      return childAt(2);
-    }
-
-    auto body() const -> CRef<ASTNode> {
-      return childAt(3);
-    }
-
-    auto access() const -> Access {
-      return m_access;
-    }
-
-    auto virtuality() const -> Virtuality {
-      return m_virtuality;
-    }
-
-    // auto isConstructor() const -> bool { return false; }
-    //
-    // auto isOpOverload() const -> bool { return false; }
-
-  private:
-    Access m_access;
-    Virtuality m_virtuality;
   };
 
   // class ClassDef final : public ASTNodeBase {

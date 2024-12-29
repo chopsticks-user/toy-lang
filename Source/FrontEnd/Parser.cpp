@@ -23,6 +23,10 @@ namespace tl::fe {
   }
 
   auto Parser::match(std::same_as<EToken> auto... expected) -> bool {
+    if (m_tokenIt == m_tokenItEnd) {
+      return false;
+    }
+
     if (!((m_tokenIt->type() == expected) || ...)) {
       return false;
     }
@@ -46,6 +50,10 @@ namespace tl::fe {
     m_eCollector->add(std::move(e));
   }
 
+  auto Parser::setStorage(const syntax::Storage storage) -> void {
+    m_currentStorage = storage;
+  }
+
   auto Parser::operator()(
     ExpceptionCollector &eCollector, String filepath, Tokens tokens
   ) -> syntax::TranslationUnit {
@@ -66,53 +74,49 @@ namespace tl::fe {
   auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
     std::vector<ASTNode> definitions;
 
+    if (match(EToken::Module)) {
+      definitions.push_back(parseModuleDecl());
+    } else {
+      throw ParserExpception(m_filepath, current(), "module declaration must be specified");
+    }
+
+    while (match(EToken::Import)) {
+      definitions.push_back(parseImportDecl());
+    }
+
     while (m_tokenIt != m_tokenItEnd) {
       ASTNode definition;
 
-      if (match(EToken::Module)) {
-        definition = parseModuleDecl();
-      } else if (match(EToken::Import)) {
-        definition = parseImportDecl();
-      } else {
-        if (match(EToken::Export, EToken::Internal, EToken::Local)) {
-          switch (current().type()) {
-            case EToken::Export: {
-              currentStorage = syntax::Storage::Export;
-              break;
-            }
-            case EToken::Internal: {
-              currentStorage = syntax::Storage::Internal;
-              break;
-            }
-            default: {
-              currentStorage = syntax::Storage::Local;
-              break;
-            }
+      if (match(EToken::Export, EToken::Internal, EToken::Local)) {
+        switch (current().type()) {
+          case EToken::Export: {
+            setStorage(syntax::Storage::Export);
+            break;
           }
-        }
-
-        if (match(EToken::Fn)) {
-          definition = parseFunctionDef();
-        } else if (match(EToken::Type)) {
-          definition = parseTypeDecl();
-        } else if (match(EToken::Class)) {
-          classState = true;
-          definition = parseClassDef();
-          classState = false;
-        } else if (match(EToken::Concept)) {
-          interfaceState = true;
-          definition = parseConceptDef();
-          interfaceState = false;
+          case EToken::Local: {
+            setStorage(syntax::Storage::Local);
+            break;
+          }
+          default: {
+            setStorage(syntax::Storage::Internal);
+            break;
+          }
         }
       }
 
-      currentStorage = syntax::Storage::Internal;
-      currentAccess = syntax::Access::Private;
+      if (match(EToken::Fn)) {
+        definition = parseFunctionDef();
+      } else if (match(EToken::Type)) {
+        definition = parseTypeDecl();
+      } else if (match(EToken::Class)) {
+        definition = parseClassDef();
+      } else if (match(EToken::Concept)) {
+        definition = parseConceptDef();
+      } else {
+        throw ParserExpception(m_filepath, current(), "unknown statement");
+      }
 
-      // if (isEmpty(definition)) {
-      //   throw;
-      // }
-
+      setStorage();
       definitions.emplace_back(definition);
     }
 

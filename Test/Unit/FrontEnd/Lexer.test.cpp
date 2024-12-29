@@ -193,7 +193,6 @@ TEST_CASE_WITH_FIXTURE("Lexer: Class definition", "[Lexer]") {
   REQUIRE_NOTHROW(
     lex(R"(
 export concept IsComplex<T> {
-public:
   fn real: () -> T;
   fn img: () -> T;
 
@@ -207,12 +206,10 @@ public:
   fn magnitude: () -> Float;
 }
 
-export class Complex<T> satisfies IsComplex {
-protected:
+export class Complex<T> satisfies IsComplex<T> {
   let mutable real: T;
   let mutable img: T;
 
-public:
   fn real: () -> {}
   fn img: () -> {}
 

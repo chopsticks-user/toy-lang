@@ -31,18 +31,16 @@ namespace tl::syntax {
     : ASTNodeBase(std::move(varDecls)) {
   }
 
-  FunctionDef::FunctionDef(
-    const Storage fStorage, ASTNode fIdentifier,
-    ASTNode fParamDecls, ASTNode fReturnDecls, ASTNode fBody
-  ): ASTNodeBase({fIdentifier, fParamDecls, fReturnDecls, fBody}),
-     m_storage(fStorage) {
+  FunctionPrototype::FunctionPrototype(
+    bool fStatic, const FnType fType, ASTNode fIdentifier,
+    ASTNode fParamDecls, ASTNode fReturnDecls
+  ): ASTNodeBase({fIdentifier, fParamDecls, fReturnDecls}),
+     m_static(fStatic), m_type(fType) {
   }
 
-  MethodDef::MethodDef(
-    const Access mAccess, const Virtuality mVirtuality, ASTNode mIdentifier,
-    ASTNode mParamDecls, ASTNode mReturnDecls, ASTNode mBody
-  ) : ASTNodeBase({mIdentifier, mParamDecls, mReturnDecls, mBody}),
-      m_access(mAccess), m_virtuality(mVirtuality) {
+  FunctionDef::FunctionDef(
+    const Storage fStorage, ASTNode fPrototype, ASTNode fBody
+  ): ASTNodeBase({fPrototype, fBody}), m_storage(fStorage) {
   }
 
   // ClassDef::ClassDef(String visibility, Vec<ASTNode> parents, CRef<ASTNode> body)
