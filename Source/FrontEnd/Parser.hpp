@@ -41,7 +41,9 @@ namespace tl::fe {
 
     auto collectException(ToyLangException &&e) const -> void;
 
-    auto setStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
+    auto setCurrentStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
+
+    auto currentStorage() const noexcept -> syntax::Storage;
 
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;

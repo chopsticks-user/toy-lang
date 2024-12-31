@@ -50,8 +50,12 @@ namespace tl::fe {
     m_eCollector->add(std::move(e));
   }
 
-  auto Parser::setStorage(const syntax::Storage storage) -> void {
+  auto Parser::setCurrentStorage(const syntax::Storage storage) -> void {
     m_currentStorage = storage;
+  }
+
+  auto Parser::currentStorage() const noexcept -> syntax::Storage {
+    return m_currentStorage;
   }
 
   auto Parser::operator()(
@@ -90,15 +94,15 @@ namespace tl::fe {
       if (match(EToken::Export, EToken::Internal, EToken::Local)) {
         switch (current().type()) {
           case EToken::Export: {
-            setStorage(syntax::Storage::Export);
+            setCurrentStorage(syntax::Storage::Export);
             break;
           }
           case EToken::Local: {
-            setStorage(syntax::Storage::Local);
+            setCurrentStorage(syntax::Storage::Local);
             break;
           }
           default: {
-            setStorage(syntax::Storage::Internal);
+            setCurrentStorage(syntax::Storage::Internal);
             break;
           }
         }
@@ -116,7 +120,7 @@ namespace tl::fe {
         throw ParserExpception(m_filepath, current(), "unknown statement");
       }
 
-      setStorage();
+      setCurrentStorage();
       definitions.emplace_back(definition);
     }
 
@@ -192,7 +196,7 @@ namespace tl::fe {
       );
     }
 
-    return syntax::TypeDecl{typeId, typeExpr};
+    return syntax::TypeDecl{currentStorage(), typeId, typeExpr};
   }
 
   auto Parser::parseFunctionDef() -> ASTNode {

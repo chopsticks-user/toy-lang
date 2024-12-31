@@ -12,8 +12,8 @@ namespace tl::syntax {
     : ASTNodeBase({nsIdentifier}) {
   }
 
-  TypeDecl::TypeDecl(ASTNode identifier, ASTNode typeExpr)
-    : ASTNodeBase({identifier, typeExpr}) {
+  TypeDecl::TypeDecl(const Storage storage, ASTNode identifier, ASTNode typeExpr)
+    : ASTNodeBase({identifier, typeExpr}), m_storage(storage) {
   }
 
   IdentifierDecl::IdentifierDecl(

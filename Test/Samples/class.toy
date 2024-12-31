@@ -13,40 +13,40 @@ export concept IsComplex<T> {
 }
 
 export class Complex<T> satisfies IsComplex<T> {
-  let mutable real: T;
-  let mutable img: T;
+  prv let mutable real: T;
+  prv let mutable img: T;
 
-  fn real: () -> {}
-  fn img: () -> {}
+  pub fn real: () -> {}
+  pub fn img: () -> {}
 
-  fn real: (val: T) -> {}
-  fn img: (val: T) -> {}
+  pub fn real: (val: T) -> {}
+  pub fn img: (val: T) -> {}
 
-  fn self: (r: T, i: T) -> {
+  pub fn self: (r: T, i: T) -> {
     r |> self.real;
     i |> self.img;
   }
 
-  fn self: () -> String {
+  pub fn self: () -> String {
     return match {
       self.img < 0 => "{self.real} - {math::abs(self.img)}i",
       _ => "{self.real} + {self.img}i",
     }
   }
 
-  fn +: (other: Complex) -> Complex {
+  pub fn +: (other: Complex) -> Complex {
     return {real: self.real + other.real, img: self.img + other.img};
   }
 
-  fn ==: (other: Complex) -> Bool {
+  pub fn ==: (other: Complex) -> Bool {
     return self.real == other.real && self.img == other.img;
   }
 
-  fn conjugate: () -> Complex {
+  pub fn conjugate: () -> Complex {
     return {real: self.real, img: -self.img};
   }
 
-  fn magnitude: () -> Float {
+  pub fn magnitude: () -> Float {
     return math::sqrt((self.real * self.real + self.img * self.img) |> Float);
   }
 }

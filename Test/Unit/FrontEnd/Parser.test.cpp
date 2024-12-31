@@ -4,7 +4,6 @@
 
 using tl::String;
 using tl::u64;
-using tl::CRef;
 using namespace tl::syntax;
 
 #define TEST_CASE_WITH_FIXTURE(...) \

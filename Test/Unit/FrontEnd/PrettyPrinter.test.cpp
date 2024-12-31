@@ -4,17 +4,14 @@
 
 #include <iostream>
 
-using tl::syntax::ASTNode;
 using tl::String;
-using tl::u64;
-using tl::CRef;
 using namespace tl::syntax;
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-TEST_CASE_METHOD(PrettyPrinterTestFixture, __VA_ARGS__)
+  TEST_CASE_METHOD(PrettyPrinterTestFixture, __VA_ARGS__)
 
-#define REQUIRE_VTYPE_OF(variant, Type) \
-REQUIRE(std::holds_alternative<Type>(variant))
+#define REQUIRE_PRETTY_PRINTER(source, expected) \
+  REQUIRE(print(std::move(source)) == expected)
 
 class PrettyPrinterTestFixture {
 protected:
@@ -39,6 +36,9 @@ TEST_CASE_WITH_FIXTURE("PrettyPrinter: module, import and type declarations", "[
 module    foo;
 import std  ::io ;
 import  std:: math;
+
+export type   Number = math ::Complex   | Int| Float  ;
+type Complex=math::Complex;
 )";
 
   String expected = R"(
@@ -46,7 +46,11 @@ module foo;
 
 import std::io;
 import std::math;
+
+export type Number = math::Complex | Int | Float;
+
+internal type Complex = math::Complex;
 )";
 
-  REQUIRE(print(std::move(source)) == expected);
+  REQUIRE_PRETTY_PRINTER(source, expected);
 }

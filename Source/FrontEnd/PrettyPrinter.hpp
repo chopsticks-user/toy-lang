@@ -16,6 +16,12 @@ namespace tl::fe {
 
     auto operator()(CRef<syntax::ImportDecl> node) -> String;
 
+    auto operator()(CRef<syntax::TypeDecl> node) -> String;
+
+    auto operator()(CRef<syntax::TypeExpr> node) -> String;
+
+    auto operator()(CRef<syntax::Identifier> node) -> String;
+
     // auto operator()(CRef<syntax::Function> node) -> String;
     //
     // auto operator()(CRef<syntax::ParameterDeclFragment> node) -> String;
@@ -53,6 +59,14 @@ namespace tl::fe {
 
     auto scopeString() -> String {
       return m_whiteSpaces;
+    }
+
+    static auto storageString(const syntax::Storage storage) -> String {
+      switch (storage) {
+        case syntax::Storage::Export: return "export";
+        case syntax::Storage::Local: return "local";
+        default: return "internal";
+      }
     }
 
   private:

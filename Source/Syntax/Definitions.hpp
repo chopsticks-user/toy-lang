@@ -12,7 +12,7 @@ namespace tl::syntax {
   public:
     explicit ModuleDecl(ASTNode nsIdentifier);
 
-    auto identifier() const -> CRef<ASTNode> {
+    auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
   };
@@ -21,14 +21,14 @@ namespace tl::syntax {
   public:
     explicit ImportDecl(ASTNode nsIdentifier);
 
-    auto identifier() const -> CRef<ASTNode> {
+    auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
   };
 
   class TypeDecl final : public ASTNodeBase {
   public:
-    explicit TypeDecl(ASTNode identifier, ASTNode typeExpr);
+    explicit TypeDecl(Storage storage, ASTNode identifier, ASTNode typeExpr);
 
     auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -37,6 +37,13 @@ namespace tl::syntax {
     auto typeExpr() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
+
+    auto storage() const noexcept -> Storage {
+      return m_storage;
+    }
+
+  private:
+    Storage m_storage;
   };
 
   class IdentifierDecl final : public ASTNodeBase {
@@ -45,15 +52,15 @@ namespace tl::syntax {
       CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, CRef<ASTNode> rhsExpr
     );
 
-    auto identifier() -> CRef<ASTNode> {
+    auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto typeExpr() -> CRef<ASTNode> {
+    auto typeExpr() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto initExpr() -> CRef<ASTNode> {
+    auto initExpr() const noexcept -> CRef<ASTNode> {
       return childAt(2);
     }
   };
@@ -70,15 +77,15 @@ namespace tl::syntax {
       ASTNode fParamDecls, ASTNode fReturnDecls
     );
 
-    auto identifier() const -> CRef<ASTNode> {
+    auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto params() const -> CRef<ASTNode> {
+    auto params() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto returns() const -> CRef<ASTNode> {
+    auto returns() const noexcept -> CRef<ASTNode> {
       return childAt(2);
     }
 
@@ -99,15 +106,15 @@ namespace tl::syntax {
   public:
     FunctionDef(Storage fStorage, ASTNode fPrototype, ASTNode fBody);
 
-    auto prototype() const -> CRef<ASTNode> {
+    auto prototype() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto body() const -> CRef<ASTNode> {
+    auto body() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto storage() const -> Storage {
+    auto storage() const noexcept -> Storage {
       return m_storage;
     }
 
@@ -132,7 +139,7 @@ namespace tl::syntax {
     // todo
     explicit TranslationUnit(Vec<ASTNode> definitions);
 
-    auto definition(const sz index) -> CRef<ASTNode> {
+    auto definition(const sz index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
   };
