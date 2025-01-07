@@ -53,7 +53,7 @@ namespace tl::fe {
   };
 
   static const HashSet<StringView> fundamentalTypes{
-    "Int", "Float", "Bool", "Char", "Void", "String", "Any", "Type",
+    "Int", "Float", "Bool", "Char", "Void", "String", "Any",
     // "Rxt", "Atm", "Rng"
   };
 

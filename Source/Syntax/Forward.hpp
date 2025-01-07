@@ -26,6 +26,8 @@ namespace tl::syntax {
   class TypeDecl;
   class IdentifierDecl;
   class TupleDecl;
+  class ParameterDecl;
+  class ReturnDecl;
 
   // class BlockStatement;
   // class IdentifierDeclStatement;
@@ -52,16 +54,20 @@ namespace tl::syntax {
     // BlockStatement, IdentifierDeclStatement, ReturnStatement,
     // AssignmentStatement, MatchStatement, ForStatement,
 
-    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
     FunctionPrototype, FunctionDef, TranslationUnit
   >;
 
   enum class Storage : u8 {
-    Export, Internal, Local
+    Export, Internal, Local,
+  };
+
+  enum class Visibility : u8 {
+    Public, Private,
   };
 
   enum class FnType : u8 {
-    Function, Method, Field, Operator, Constructor,
+    Function, Method, Field, Operator, Constructor, Prototype,
   };
 
   const HashSet<String> overloadableOps = {

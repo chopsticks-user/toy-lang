@@ -171,13 +171,17 @@ namespace tl::syntax {
       return pathStr;
     }
 
-    auto imported() const noexcept -> bool {
+    auto isImported() const noexcept -> bool {
       return m_path.size() > 1;
     }
 
     auto isType() const noexcept -> bool {
       const char c = name()[0];
       return c >= 'A' && c <= 'Z';
+    }
+
+    auto isAnnonymous() const noexcept -> bool {
+      return m_path.size() == 1 && m_path.back() == "_";
     }
 
   private:

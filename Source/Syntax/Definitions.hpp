@@ -48,9 +48,7 @@ namespace tl::syntax {
 
   class IdentifierDecl final : public ASTNodeBase {
   public:
-    IdentifierDecl(
-      CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, CRef<ASTNode> rhsExpr
-    );
+    IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr);
 
     auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -59,10 +57,6 @@ namespace tl::syntax {
     auto typeExpr() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
-
-    auto initExpr() const noexcept -> CRef<ASTNode> {
-      return childAt(2);
-    }
   };
 
   class TupleDecl final : public ASTNodeBase {
@@ -70,11 +64,20 @@ namespace tl::syntax {
     explicit TupleDecl(Vec<ASTNode> idDecls);
   };
 
+  class ParameterDecl final : public ASTNodeBase {
+  public:
+    explicit ParameterDecl(Vec<ASTNode> idDecls);
+  };
+
+  class ReturnDecl final : public ASTNodeBase {
+  public:
+    explicit ReturnDecl(Vec<ASTNode> typeExprs);
+  };
+
   class FunctionPrototype final : public ASTNodeBase {
   public:
     FunctionPrototype(
-      bool fStatic, FnType fType, ASTNode fIdentifier,
-      ASTNode fParamDecls, ASTNode fReturnDecls
+      FnType fType, ASTNode fIdentifier, ASTNode fParamDecls, ASTNode fReturnDecls
     );
 
     auto identifier() const noexcept -> CRef<ASTNode> {
@@ -89,17 +92,12 @@ namespace tl::syntax {
       return childAt(2);
     }
 
-    auto isStatic() const noexcept -> bool {
-      return m_static;
-    }
-
     auto type() const noexcept -> FnType {
       return m_type;
     }
 
   private:
     FnType m_type;
-    bool m_static;
   };
 
   class FunctionDef final : public ASTNodeBase {

@@ -21,6 +21,10 @@ namespace tl::fe {
   class Parser {
     using TokenIterator = Tokens::const_iterator;
 
+    enum class TupleDeclState {
+      Local, Param, Return,
+    };
+
   public:
     auto operator()(
       ExpceptionCollector &eCollector, String filepath, Tokens tokens
@@ -41,9 +45,15 @@ namespace tl::fe {
 
     auto collectException(ToyLangException &&e) const -> void;
 
+    auto collectException(CRef<String> mesg) const -> void;
+
     auto setCurrentStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
 
     auto currentStorage() const noexcept -> syntax::Storage;
+
+    auto markRevertPoint() noexcept -> void;
+
+    auto toRevertPoint() noexcept -> void;
 
   private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
@@ -62,7 +72,19 @@ namespace tl::fe {
 
     auto parseIdentifier() -> syntax::ASTNode;
 
+    auto parseTypeIdentifier() -> syntax::ASTNode;
+
     auto parseTypeExpr() -> syntax::ASTNode;
+
+    auto parseFunctionPrototype() -> syntax::ASTNode;
+
+    auto parseTupleDecl() -> syntax::ASTNode;
+
+    auto parseParameterDecl() -> syntax::ASTNode;
+
+    auto parseReturnDecl() -> syntax::ASTNode;
+
+    auto parseIdentifierDecl() -> syntax::ASTNode;
 
     // auto parseExpr() -> syntax::ASTNode;
 
@@ -70,10 +92,9 @@ namespace tl::fe {
     String m_filepath;
     TokenIterator m_tokenIt;
     TokenIterator m_tokenItEnd;
-    const Token *m_currentToken = nullptr;
-
+    Opt<Token> m_currentToken;
+    Opt<TokenIterator> m_revertPoint;
     syntax::Storage m_currentStorage = syntax::Storage::Internal;
-
     ExpceptionCollector *m_eCollector = nullptr;
   };
 }

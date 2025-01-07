@@ -1,0 +1,27 @@
+declaration:
+  parameters:
+    ()
+    a: Int
+    (a: Int)
+    (a: Int, b: Float)
+
+  returns:
+    @nothing
+    Int
+    (Int, Float)
+
+  local:
+    a: Int
+    (a: Int) // simplified to 'a: Int'
+    (a: Int, b: Float)
+    (Int, b: Float)
+    (Int, Float)
+    (_, b: Float)
+
+expression:
+  ()
+  (a)
+  (_)
+  (a, b)
+  (_, b)
+  (_, _)

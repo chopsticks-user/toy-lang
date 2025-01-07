@@ -54,3 +54,43 @@ internal type Complex = math::Complex;
 
   REQUIRE_PRETTY_PRINTER(source, expected);
 }
+
+// TEST_CASE_WITH_FIXTURE("PrettyPrinter: concept", "[PrettyPrinter]") {
+//   String source = R"(
+// module foo;
+//
+// export concept IsComplex {
+//   fn real: () -> Float | Int;
+//   fn img: () -> Float | Int;
+//
+//   fn real: (val: Float | Int) -> Void;
+//   fn img: (val: Float | Int) -> Void;
+//
+//   fn +: (other: Complex) -> Complex;
+//   fn ==: (other: Complex) -> Bool;
+//
+//   fn conjugate: () -> Complex;
+//   fn magnitude: () -> Float;
+// }
+// )";
+//
+//   String expected = R"(
+// module foo;
+//
+// export concept IsComplex {
+//   fn real: () -> Float | Int;
+//   fn img: () -> Float | Int;
+//
+//   fn real: (val: Float | Int) -> Void;
+//   fn img: (val: Float | Int) -> Void;
+//
+//   fn +: (other: Complex) -> Complex;
+//   fn ==: (other: Complex) -> Bool;
+//
+//   fn conjugate: () -> Complex;
+//   fn magnitude: () -> Float;
+// }
+// )";
+//
+//   REQUIRE_PRETTY_PRINTER(source, expected);
+// }

@@ -1,5 +1,7 @@
 #include "Definitions.hpp"
 
+#include <utility>
+
 #include "Expressions.hpp"
 #include "Statements.hpp"
 
@@ -16,26 +18,26 @@ namespace tl::syntax {
     : ASTNodeBase({identifier, typeExpr}), m_storage(storage) {
   }
 
-  IdentifierDecl::IdentifierDecl(
-    CRef<ASTNode> identifier,
-    CRef<ASTNode> typeExpr,
-    CRef<ASTNode> rhsExpr
-  ) : ASTNodeBase(
-    isEmptyAst(rhsExpr)
-      ? Vec<ASTNode>{identifier, typeExpr}
-      : Vec<ASTNode>{identifier, typeExpr, rhsExpr}
-  ) {
+  IdentifierDecl::IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr)
+    : ASTNodeBase({identifier, typeExpr}) {
   }
 
-  TupleDecl::TupleDecl(Vec<ASTNode> varDecls)
-    : ASTNodeBase(std::move(varDecls)) {
+  TupleDecl::TupleDecl(Vec<ASTNode> idDecls)
+    : ASTNodeBase(std::move(idDecls)) {
+  }
+
+  ParameterDecl::ParameterDecl(Vec<ASTNode> idDecls)
+    : ASTNodeBase(std::move(idDecls)) {
+  }
+
+  ReturnDecl::ReturnDecl(Vec<ASTNode> typeExprs)
+    : ASTNodeBase(std::move(typeExprs)) {
   }
 
   FunctionPrototype::FunctionPrototype(
-    bool fStatic, const FnType fType, ASTNode fIdentifier,
-    ASTNode fParamDecls, ASTNode fReturnDecls
+    const FnType fType, ASTNode fIdentifier, ASTNode fParamDecls, ASTNode fReturnDecls
   ): ASTNodeBase({fIdentifier, fParamDecls, fReturnDecls}),
-     m_static(fStatic), m_type(fType) {
+     m_type(fType) {
   }
 
   FunctionDef::FunctionDef(

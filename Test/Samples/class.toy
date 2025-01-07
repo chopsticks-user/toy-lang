@@ -1,9 +1,9 @@
-export concept IsComplex<T> {
-  fn real: () -> T;
-  fn img: () -> T;
+export concept IsComplex {
+  fn real: () -> Float | Int;
+  fn img: () -> Float | Int;
 
-  fn real: (val: T) -> Void;
-  fn img: (val: T) -> Void;
+  fn real: (val: Float | Int) -> Void;
+  fn img: (val: Float | Int) -> Void;
 
   fn +: (other: Complex) -> Complex;
   fn ==: (other: Complex) -> Bool;
@@ -12,17 +12,17 @@ export concept IsComplex<T> {
   fn magnitude: () -> Float;
 }
 
-export class Complex<T> satisfies IsComplex<T> {
-  prv let mutable real: T;
-  prv let mutable img: T;
+export class Complex satisfies IsComplex {
+  prv let mutable real: Float | Int;
+  prv let mutable img: Float | Int;
 
   pub fn real: () -> {}
   pub fn img: () -> {}
 
-  pub fn real: (val: T) -> {}
-  pub fn img: (val: T) -> {}
+  pub fn real: (val: Float | Int) -> {}
+  pub fn img: (val: Float | Int) -> {}
 
-  pub fn self: (r: T, i: T) -> {
+  pub fn self: (r: Float | Int, i: Float | Int) -> {
     r |> self.real;
     i |> self.img;
   }

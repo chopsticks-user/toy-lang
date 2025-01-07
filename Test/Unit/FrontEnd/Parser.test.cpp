@@ -53,19 +53,19 @@ type Complex = math::Complex;
   auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
   REQUIRE(moduleId.name() == "foo");
   REQUIRE(moduleId.path() == "foo");
-  REQUIRE_FALSE(moduleId.imported());
+  REQUIRE_FALSE(moduleId.isImported());
   REQUIRE_FALSE(moduleId.isType());
 
   auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
   REQUIRE(importId0.name() == "io");
   REQUIRE(importId0.path() == "std::io");
-  REQUIRE(importId0.imported());
+  REQUIRE(importId0.isImported());
   REQUIRE_FALSE(importId0.isType());
 
   auto importId1 = astCast<Identifier>(nodeAt<ImportDecl>(2).identifier());
   REQUIRE(importId1.name() == "math");
   REQUIRE(importId1.path() == "std::math");
-  REQUIRE(importId1.imported());
+  REQUIRE(importId1.isImported());
   REQUIRE_FALSE(importId1.isType());
 
   auto typeDecl0 = nodeAt<TypeDecl>(3);
@@ -82,19 +82,19 @@ type Complex = math::Complex;
   auto type00 = astCast<Identifier>(typeExpr0.type(0));
   REQUIRE(type00.name() == "Complex");
   REQUIRE(type00.path() == "math::Complex");
-  REQUIRE(type00.imported());
+  REQUIRE(type00.isImported());
   REQUIRE(type00.isType());
 
   auto type01 = astCast<Identifier>(typeExpr0.type(1));
   REQUIRE(type01.name() == "Int");
   REQUIRE(type01.path() == "Int");
-  REQUIRE_FALSE(type01.imported());
+  REQUIRE_FALSE(type01.isImported());
   REQUIRE(type01.isType());
 
   auto type02 = astCast<Identifier>(typeExpr0.type(2));
   REQUIRE(type02.name() == "Float");
   REQUIRE(type02.path() == "Float");
-  REQUIRE_FALSE(type02.imported());
+  REQUIRE_FALSE(type02.isImported());
   REQUIRE(type02.isType());
 
   auto typeDecl1 = nodeAt<TypeDecl>(4);
@@ -111,6 +111,6 @@ type Complex = math::Complex;
   auto type10 = astCast<Identifier>(typeExpr1.type(0));
   REQUIRE(type10.name() == "Complex");
   REQUIRE(type10.path() == "math::Complex");
-  REQUIRE(type10.imported());
+  REQUIRE(type10.isImported());
   REQUIRE(type10.isType());
 }
