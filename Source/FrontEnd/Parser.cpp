@@ -56,12 +56,32 @@ namespace tl::fe {
     );
   }
 
-  auto Parser::setCurrentStorage(const syntax::Storage storage) -> void {
+  auto Parser::setStorage(const syntax::Storage storage) -> void {
     m_currentStorage = storage;
   }
 
-  auto Parser::currentStorage() const noexcept -> syntax::Storage {
+  auto Parser::storage() const noexcept -> syntax::Storage {
     return m_currentStorage;
+  }
+
+  auto Parser::setContext(const Context context) noexcept -> void {
+    if (m_parseContext.empty()) {
+      return enterContext(context);
+    }
+
+    m_parseContext.top() = context;
+  }
+
+  auto Parser::enterContext(const Context context) noexcept -> void {
+    m_parseContext.push(context);
+  }
+
+  auto Parser::exitContext() noexcept -> void {
+    m_parseContext.pop();
+  }
+
+  auto Parser::context() const noexcept -> Context {
+    return m_parseContext.empty() ? Context::None : m_parseContext.top();
   }
 
   auto Parser::markRevertPoint() noexcept -> void {
@@ -119,31 +139,35 @@ namespace tl::fe {
       if (match(EToken::Export, EToken::Internal, EToken::Local)) {
         switch (current().type()) {
           case EToken::Export: {
-            setCurrentStorage(syntax::Storage::Export);
+            setStorage(syntax::Storage::Export);
             break;
           }
           case EToken::Local: {
-            setCurrentStorage(syntax::Storage::Local);
+            setStorage(syntax::Storage::Local);
             break;
           }
           default: {
-            setCurrentStorage(syntax::Storage::Internal);
+            setStorage(syntax::Storage::Internal);
             break;
           }
         }
       }
 
+      setContext(Context::Function);
       definition = parseFunctionDef();
 
       if (isEmptyAst(definition)) {
+        setContext();
         definition = parseTypeDecl();
       }
 
       if (isEmptyAst(definition)) {
+        setContext(Context::Class);
         definition = parseClassDef();
       }
 
       if (isEmptyAst(definition)) {
+        setContext(Context::Concept);
         definition = parseConceptDef();
       }
 
@@ -153,7 +177,8 @@ namespace tl::fe {
       }
 
       definitions.push_back(definition);
-      setCurrentStorage();
+      setContext();
+      setStorage();
     }
 
     return syntax::TranslationUnit(definitions);
@@ -222,11 +247,13 @@ namespace tl::fe {
       collectException("missing ; at the end of type declaration");
     }
 
-    return syntax::TypeDecl{currentStorage(), typeId, typeExpr};
+    return syntax::TypeDecl{storage(), typeId, typeExpr};
   }
 
   auto Parser::parseFunctionDef() -> ASTNode {
-    if (!match(EToken::Fn)) {
+    const auto prototype = parseFunctionPrototype();
+
+    if (isEmptyAst(prototype)) {
       return {};
     }
 
@@ -246,7 +273,36 @@ namespace tl::fe {
       return {};
     }
 
-    return {};
+    const auto conceptId = parseTypeIdentifier();
+    if (isEmptyAst(conceptId)) {
+      collectException("missing concept identifier");
+    }
+    if (const auto id = syntax::astCast<syntax::Identifier>(conceptId);
+      !id.isType() || id.isImported()) {
+      collectException("invalid concept identifier");
+    }
+
+    if (!match(EToken::LeftBrace)) {
+      collectException("missing '{' in concept definition");
+    }
+
+    Vec<ASTNode> requirements;
+    auto requirement = parseFunctionPrototype();
+    while (!isEmptyAst(requirement)) {
+      requirements.push_back(requirement);
+
+      if (!match(EToken::Semicolon)) {
+        collectException("missing ; at the end of concept requirement");
+      }
+
+      requirement = parseFunctionPrototype();
+    }
+
+    if (!match(EToken::RightBrace)) {
+      collectException("missing '}' in concept definition");
+    }
+
+    return syntax::ConceptDef{storage(), conceptId, requirements};
   }
 
   auto Parser::parseIdentifier() -> ASTNode {
@@ -316,11 +372,21 @@ namespace tl::fe {
   }
 
   auto Parser::parseFunctionPrototype() -> ASTNode {
-    const auto identifier = parseIdentifier();
+    if (!match(EToken::Fn)) {
+      return {};
+    }
+
+    auto identifier = parseIdentifier();
 
     // todo
     if (isEmptyAst(identifier)) {
-      collectException("missing function identifier");
+      if ((context() == Context::Concept || context() == Context::Class) &&
+          syntax::overloadableOps.contains(current().string())) {
+        identifier = syntax::Identifier{{current().string()}};
+        advance();
+      } else {
+        collectException("missing function identifier");
+      }
     }
 
     if (!match(EToken::Colon)) {
@@ -352,7 +418,11 @@ namespace tl::fe {
   auto Parser::parseParameterDecl() -> ASTNode {
     // a: Int
     if (!match(EToken::LeftParen)) {
-      return syntax::ParameterDecl{{parseIdentifierDecl()}};
+      const auto idDecl = parseIdentifierDecl();
+      if (isEmptyAst(idDecl)) {
+        collectException("missing parameter declaration");
+      }
+      return syntax::ParameterDecl{{idDecl}};
     }
 
     // ()
@@ -375,17 +445,18 @@ namespace tl::fe {
   }
 
   auto Parser::parseReturnDecl() -> ASTNode {
-    // a: Int
+    // Int
     if (!match(EToken::LeftParen)) {
       return syntax::ReturnDecl{{parseTypeExpr()}};
     }
 
     // ()
     if (match(EToken::RightParen)) {
-      return syntax::ReturnDecl{{}};
+      collectException("invalid return type");
+      return {};
     }
 
-    // (a: Int) or (a: Int, ...)
+    // (Int) or (Int, ...)
     Vec<ASTNode> typeExprs;
     do {
       const auto typeExpr = parseTypeExpr();

@@ -38,8 +38,8 @@ namespace tl::syntax {
 
   class FunctionPrototype;
   class FunctionDef;
+  class ConceptDef;
   // class ClassDef;
-  // class InterfaceDef;
   // class EnumDef;
   // class FlagDef;
 
@@ -55,7 +55,7 @@ namespace tl::syntax {
     // AssignmentStatement, MatchStatement, ForStatement,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
-    FunctionPrototype, FunctionDef, TranslationUnit
+    FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
   >;
 
   enum class Storage : u8 {
@@ -72,6 +72,7 @@ namespace tl::syntax {
 
   const HashSet<String> overloadableOps = {
     "+", "-", "*", "/",
+    "==", "!=",
   };
 }
 

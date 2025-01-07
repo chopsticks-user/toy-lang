@@ -120,6 +120,26 @@ namespace tl::syntax {
     Storage m_storage;
   };
 
+  class ConceptDef final : public ASTNodeBase {
+  public:
+    ConceptDef(Storage storage, ASTNode identifier, Vec<ASTNode> requirements);
+
+    auto identifier() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto requirement(const u64 index) const noexcept -> CRef<ASTNode> {
+      return childAt(index + 1);
+    }
+
+    auto storage() const noexcept -> Storage {
+      return m_storage;
+    }
+
+  private:
+    Storage m_storage;
+  };
+
   // class ClassDef final : public ASTNodeBase {
   // public:
   //   ClassDef(String visibility, Vec<ASTNode> parents, CRef<ASTNode> body);

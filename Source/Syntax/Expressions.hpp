@@ -180,6 +180,10 @@ namespace tl::syntax {
       return c >= 'A' && c <= 'Z';
     }
 
+    auto isOverloadedOp() const noexcept -> bool {
+      return m_path.size() == 1 && overloadableOps.contains(m_path.back());
+    }
+
     auto isAnnonymous() const noexcept -> bool {
       return m_path.size() == 1 && m_path.back() == "_";
     }

@@ -114,3 +114,29 @@ type Complex = math::Complex;
   REQUIRE(type10.isImported());
   REQUIRE(type10.isType());
 }
+
+TEST_CASE_WITH_FIXTURE("Parser: concept", "[Parser]") {
+  REQUIRE_NOTHROW(parse(R"(
+module foo::bar;
+
+export concept IsComplex {
+  fn real: () -> Float | Int;
+  fn img: () -> Float | Int;
+
+  fn real: (val: Float | Int) -> Void;
+  fn img: (val: Float | Int) -> Void;
+
+  fn +: (other: Complex) -> Complex;
+  fn ==: (other: Complex) -> Bool;
+
+  fn conjugate: () -> Complex;
+  fn magnitude: () -> Float;
+}
+  )"));
+
+  auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
+  REQUIRE(moduleId.name() == "bar");
+  REQUIRE(moduleId.path() == "foo::bar");
+  REQUIRE(moduleId.isImported());
+  REQUIRE_FALSE(moduleId.isType());
+}

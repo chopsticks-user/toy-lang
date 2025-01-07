@@ -45,6 +45,17 @@ namespace tl::syntax {
   ): ASTNodeBase({fPrototype, fBody}), m_storage(fStorage) {
   }
 
+  ConceptDef::ConceptDef(const Storage storage, ASTNode identifier, Vec<ASTNode> requirements)
+    : ASTNodeBase({
+        [&]() {
+          // todo: move args
+          auto v = std::vector{identifier};
+          v.insert(v.end(), requirements.begin(), requirements.end());
+          return v;
+        }()
+      }), m_storage(storage) {
+  }
+
   // ClassDef::ClassDef(String visibility, Vec<ASTNode> parents, CRef<ASTNode> body)
   //   : ASTNodeBase({
   //       [&]() {

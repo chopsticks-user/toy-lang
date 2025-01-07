@@ -25,6 +25,10 @@ namespace tl::fe {
       Local, Param, Return,
     };
 
+    enum class Context {
+      None, Global, Function, Concept, Class, String,
+    };
+
   public:
     auto operator()(
       ExpceptionCollector &eCollector, String filepath, Tokens tokens
@@ -47,9 +51,17 @@ namespace tl::fe {
 
     auto collectException(CRef<String> mesg) const -> void;
 
-    auto setCurrentStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
+    auto setStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
 
-    auto currentStorage() const noexcept -> syntax::Storage;
+    auto storage() const noexcept -> syntax::Storage;
+
+    auto setContext(Context context = Context::None) noexcept -> void;
+
+    auto enterContext(Context context = Context::None) noexcept -> void;
+
+    auto exitContext() noexcept -> void;
+
+    auto context() const noexcept -> Context;
 
     auto markRevertPoint() noexcept -> void;
 
@@ -95,7 +107,8 @@ namespace tl::fe {
     Opt<Token> m_currentToken;
     Opt<TokenIterator> m_revertPoint;
     syntax::Storage m_currentStorage = syntax::Storage::Internal;
-    ExpceptionCollector *m_eCollector = nullptr;
+    Stack<Context> m_parseContext;
+    ExpceptionCollector *m_eCollector = nullptr; // todo: global singleton
   };
 }
 
