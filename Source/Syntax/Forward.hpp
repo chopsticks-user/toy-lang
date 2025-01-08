@@ -15,12 +15,12 @@ namespace tl::syntax {
   class PostfixUnaryExpr;
   class Identifier;
   class TupleExpr;
-  class TypeIdentifier;
   class FunctionCallExpr;
   class SubScriptingExpr;
   class AccessExpr;
   class TypeOfExpr;
   class TypeExpr;
+  class ArrayExpr;
 
   class ModuleDecl;
   class ImportDecl;
@@ -52,7 +52,7 @@ namespace tl::syntax {
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
     TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
-    FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr,
+    FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
 
     ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
 

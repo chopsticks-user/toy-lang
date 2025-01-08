@@ -203,11 +203,16 @@ namespace tl::syntax {
 
   class FunctionCallExpr final : public ASTNodeBase {
   public:
-    FunctionCallExpr(CRef<ASTNode> callee, Vec<ASTNode> args
-    );
+    FunctionCallExpr(ASTNode callee, ASTNode args);
+
+    static auto fromPipeExpr(ASTNode lhs, ASTNode rhs) -> Opt<FunctionCallExpr>;
 
     auto callee() const noexcept -> CRef<ASTNode> {
       return childAt(0);
+    }
+
+    auto args() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
     }
   };
 
@@ -251,6 +256,15 @@ namespace tl::syntax {
     explicit TypeExpr(Vec<ASTNode> types);
 
     auto type(const sz index) const -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
+
+  class ArrayExpr final : public ASTNodeBase {
+  public:
+    explicit ArrayExpr(Vec<ASTNode> elements);
+
+    auto element(const sz index) const -> CRef<ASTNode> {
       return childAt(index);
     }
   };

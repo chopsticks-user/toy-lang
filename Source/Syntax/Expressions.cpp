@@ -54,17 +54,25 @@ namespace tl::syntax {
   TupleExpr::TupleExpr(Vec<ASTNode> ids) : ASTNodeBase(std::move(ids)) {
   }
 
-  FunctionCallExpr::FunctionCallExpr(
-    CRef<ASTNode> callee,
-    Vec<ASTNode> args
-  ) : ASTNodeBase({
-    [&]() {
-      // todo: move args
-      auto v = std::vector{callee};
-      v.insert(v.end(), args.begin(), args.end());
-      return v;
-    }()
-  }) {
+  FunctionCallExpr::FunctionCallExpr(ASTNode callee, ASTNode args
+  ) : ASTNodeBase({callee, args}) {
+  }
+
+  auto FunctionCallExpr::fromPipeExpr(ASTNode lhs, ASTNode rhs) -> Opt<FunctionCallExpr> {
+    if (matchAstType<FunctionCallExpr>(rhs)) {
+      auto args = astCast<FunctionCallExpr>(rhs).children();
+      args.front() = lhs;
+
+      return FunctionCallExpr{
+        astCast<FunctionCallExpr>(rhs).callee(), TupleExpr{std::move(args)}
+      };
+    }
+
+    if (matchAstType<Identifier>(rhs)) {
+      return FunctionCallExpr{rhs, {lhs}};
+    }
+
+    return {};
   }
 
   SubScriptingExpr::SubScriptingExpr(
@@ -83,5 +91,8 @@ namespace tl::syntax {
 
   TypeExpr::TypeExpr(Vec<ASTNode> types)
     : ASTNodeBase(std::move(types)) {
+  }
+
+  ArrayExpr::ArrayExpr(Vec<ASTNode> elements) : ASTNodeBase(std::move(elements)) {
   }
 }

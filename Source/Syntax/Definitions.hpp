@@ -103,6 +103,8 @@ namespace tl::syntax {
       return m_type;
     }
 
+    auto isAnonymous() const noexcept -> bool;
+
   private:
     FnType m_type;
   };
@@ -122,6 +124,8 @@ namespace tl::syntax {
     auto storage() const noexcept -> Storage {
       return m_storage;
     }
+
+    auto isLambda() const noexcept -> bool;
 
   private:
     Storage m_storage;

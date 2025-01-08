@@ -26,7 +26,7 @@ namespace tl::fe {
     };
 
     enum class Context {
-      None, Global, Function, Concept, Class, Type, String,
+      None, Global, Function, Concept, Class, Type, String, Lambda,
     };
 
   public:
@@ -88,12 +88,6 @@ namespace tl::fe {
 
     auto parseIdentifierDecl() -> syntax::ASTNode;
 
-    auto parseTypeExpr() -> syntax::ASTNode;
-
-    auto parseTypeIdentifier() -> syntax::ASTNode;
-
-    auto parseIdentifier() -> syntax::ASTNode;
-
     auto parseStmt() -> syntax::ASTNode;
 
     auto parseForStmt() -> syntax::ASTNode;
@@ -110,7 +104,51 @@ namespace tl::fe {
 
     auto parseExpr() -> syntax::ASTNode;
 
+    auto parseTernaryExpr() -> syntax::ASTNode;
+
+    auto parseSequenceExpr() -> syntax::ASTNode;
+
+    auto parseNullCoalescingExpr() -> syntax::ASTNode;
+
+    auto parseLogicalOrExpr() -> syntax::ASTNode;
+
+    auto parseLogicalAndExpr() -> syntax::ASTNode;
+
+    auto parseInclusiveOrExpr() -> syntax::ASTNode;
+
+    auto parseExclusiveOrExpr() -> syntax::ASTNode;
+
+    auto parseAndExpr() -> syntax::ASTNode;
+
+    auto parseEqualityExpr() -> syntax::ASTNode;
+
+    auto parseRelationalExpr() -> syntax::ASTNode;
+
+    auto parseShiftExpr() -> syntax::ASTNode;
+
+    auto parseAdditiveExpr() -> syntax::ASTNode;
+
+    auto parseMultiplicativeExpr() -> syntax::ASTNode;
+
+    auto parseExponentialExpr() -> syntax::ASTNode;
+
+    auto parsePipeExpr() -> syntax::ASTNode;
+
+    auto parsePrefixUnaryExpr() -> syntax::ASTNode;
+
+    auto parsePostfixExpr() -> syntax::ASTNode;
+
+    auto parsePrimaryExpr() -> syntax::ASTNode;
+
+    auto parseLambdaExpr() -> syntax::ASTNode;
+
     auto parseTupleExpr() -> syntax::ASTNode;
+
+    auto parseTypeExpr() -> syntax::ASTNode;
+
+    auto parseTypeIdentifier() -> syntax::ASTNode;
+
+    auto parseIdentifier() -> syntax::ASTNode;
 
   private:
     String m_filepath;
