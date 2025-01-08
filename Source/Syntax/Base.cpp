@@ -1,38 +1,46 @@
 #include "Base.hpp"
 #include "Expressions.hpp"
 #include "Statements.hpp"
-#include "Concrete.hpp"
+#include "Definitions.hpp"
 
 namespace tl::syntax {
-  Node::Node(std::vector<VNode> children) noexcept
+  ASTNodeBase::ASTNodeBase(std::vector<ASTNode> children) noexcept
     : m_children(std::move(children)) {
   }
 
-  auto Node::children() const noexcept -> const std::vector<VNode> & {
+  auto ASTNodeBase::children() const noexcept -> const std::vector<ASTNode> & {
     return m_children;
   }
 
-  auto Node::childAt(sz index) const -> const VNode & {
+  auto ASTNodeBase::childAt(sz index) const -> const ASTNode & {
     return m_children.at(index);
   }
 
-  auto Node::childAt(sz index) -> VNode & {
-    return m_children.at(index);
-  }
-
-  auto Node::firstChild() -> VNode & {
+  auto ASTNodeBase::firstChild() const -> CRef<ASTNode> {
     return m_children.front();
   }
 
-  auto Node::lastChild() -> VNode & {
+  auto ASTNodeBase::lastChild() const -> CRef<ASTNode> {
     return m_children.back();
   }
 
-  auto Node::nChildren() const noexcept -> sz {
+  auto ASTNodeBase::childAt(sz index) -> ASTNode & {
+    return m_children.at(index);
+  }
+
+  auto ASTNodeBase::firstChild() -> ASTNode & {
+    return m_children.front();
+  }
+
+  auto ASTNodeBase::lastChild() -> ASTNode & {
+    return m_children.back();
+  }
+
+  auto ASTNodeBase::nChildren() const noexcept -> sz {
     return m_children.size();
   }
 
-  auto isEmpty(const VNode &node) -> bool {
-    return node.index() == 0;
+  auto isEmptyAst(const ASTNode &node) -> bool {
+    return std::holds_alternative<std::monostate>(node);
   }
 }

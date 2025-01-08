@@ -1,49 +1,72 @@
 #include "Token.hpp"
 
 namespace tl::fe {
-  static const std::unordered_map<StringView, EToken> nonTypeKeywordTable = {
+  static const HashMap<StringView, EToken> nonTypeKeywordTable = {
+    // visibility
+    {"module", EToken::Module},
+    {"import", EToken::Import},
+    {"export", EToken::Export},
+    {"internal", EToken::Internal},
+    {"local", EToken::Local},
+    {"extern", EToken::Extern},
+
+    // definition
+    {"let", EToken::Let},
+    {"mutable", EToken::Mutable},
     {"fn", EToken::Fn},
-    {"class", EToken::Class},
-    {"super", EToken::Super},
+    {"static", EToken::Static},
+    {"concept", EToken::Concept},
+    {"satisfies", EToken::Satisfies},
+    {"type", EToken::Type},
+    {"global", EToken::Global},
+    {"enum", EToken::Enum},
+    {"flag", EToken::Flag},
+    // {"pure", EToken::Pure},
+
+    // control
+    {"for", EToken::For},
+    {"return", EToken::Return},
+    {"match", EToken::Match},
+
+    // adverb
+    {"by", EToken::By},
+    {"of", EToken::Of},
+    {"in", EToken::In},
+    {"if", EToken::If},
+
+    // boolean
+    {"true", EToken::True},
+    {"false", EToken::False},
+
+    // object-oriented
     {"self", EToken::Self},
     {"public", EToken::Public},
     {"private", EToken::Private},
-    {"protected", EToken::Protected},
-    {"return", EToken::Return},
-    {"for", EToken::For},
-    {"while", EToken::While},
-    {"if", EToken::If},
-    {"switch", EToken::Switch},
-    {"case", EToken::Case},
-    {"default", EToken::Default},
-    {"export", EToken::Export},
-    {"import", EToken::Import},
-    {"module", EToken::Module},
-    {"internal", EToken::Internal},
-    {"local", EToken::Local},
-    {"pure", EToken::Pure},
-    {"var", EToken::Var},
-    {"const", EToken::Const},
-    {"print", EToken::Print},
-    {"extern", EToken::Extern},
-    {"abstract", EToken::Abstract},
-    {"interface", EToken::Interface},
-    {"by", EToken::By},
-    {"else", EToken::Else},
+    {"class", EToken::Class},
+    // {"super", EToken::Super},
+    // {"protected", EToken::Protected},
+    // {"interface", EToken::Interface},
+    // {"impl", EToken::Impl},
+    // {"ext", EToken::Ext},
+    // {"abstract", EToken::Abstract},
+    // {"final", EToken::Final},
   };
 
-  static const std::unordered_set<StringView> fundamentalTypes{
-    // "int", "float", "bool", "char", "string", "void",
-    "Int", "Float", "Bool", "Char", "String", "Void",
+  static const HashSet<StringView> fundamentalTypes{
+    "Int", "Float", "Bool", "Char", "Void", "String", "Any",
+    // "Rxt", "Atm", "Rng"
   };
 
-  static const std::unordered_set<StringView> reservedKeywords{
-    "int", "float", "bool", "char", "string", "void",
+  static const HashSet<StringView> reservedKeywords{
+    // "int", "float", "bool", "char", "void", "string", "any"
   };
 
-  static const std::unordered_map<StringView, EToken> operatorTable{
+  static const HashMap<StringView, EToken> operatorTable{
+    {":=>", EToken::ColonEqualGreater},
+    {":~>", EToken::ColonTildeGreater},
     {">>=", EToken::Greater2Equal},
     {"<<=", EToken::Less2Equal},
+    {"**=", EToken::Star2Equal},
     {"...", EToken::Dot3},
     {"!=", EToken::ExclaimEqual},
     {"*=", EToken::StarEqual},
@@ -58,14 +81,15 @@ namespace tl::fe {
     {"-=", EToken::MinusEqual},
     {"|>", EToken::BarGreater},
     {"->", EToken::MinusGreater},
-    {"<-", EToken::LessMinus},
+    {"->", EToken::EqualGreater},
+    // {"<-", EToken::LessMinus},
     {"::", EToken::Colon2},
     {"**", EToken::Star2},
     {"&&", EToken::Ampersand2},
     {"||", EToken::Bar2},
     {"++", EToken::Plus2},
     {"--", EToken::Minus2},
-    {"!!", EToken::Exclaim2},
+    // {"!!", EToken::Exclaim2},
     {"==", EToken::Equal2},
     {">>", EToken::Greater2},
     {"<<", EToken::Less2},
@@ -83,6 +107,7 @@ namespace tl::fe {
     {";", EToken::Semicolon},
     {"*", EToken::Star},
     {"&", EToken::Ampersand},
+    {"#", EToken::Hash},
     {"|", EToken::Bar},
     {"^", EToken::Hat},
     {"+", EToken::Plus},
@@ -98,10 +123,15 @@ namespace tl::fe {
     {"?", EToken::QMark},
     {"~", EToken::Tilde},
     {"$", EToken::Dollar},
+    {"@", EToken::At},
   };
 
   static const auto identifierType(const StringView idStr) noexcept -> EToken {
     if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
+      if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
+        return EToken::FundamentalType;
+      }
+
       return EToken::UserDefinedType;
     }
 
@@ -111,10 +141,6 @@ namespace tl::fe {
 
     if (const auto it = nonTypeKeywordTable.find(idStr); it != nonTypeKeywordTable.end()) {
       return it->second;
-    }
-
-    if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
-      return EToken::FundamentalType;
     }
 
     return EToken::Identifier;

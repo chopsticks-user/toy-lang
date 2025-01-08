@@ -2,9 +2,9 @@
 
 namespace tl::fe {
   auto Lexer::advance() -> bool {
-    if (m_fs.eof()) {
+    if (m_fs->eof()) {
       return false;
-    };
+    }
 
     readNext();
     m_lastNonEmptyColumn = m_currentColumn;
@@ -21,7 +21,7 @@ namespace tl::fe {
       return false;
     }
 
-    m_fs.unget();
+    m_fs->unget();
     --m_currentColumn;
     return true;
   }
@@ -31,9 +31,15 @@ namespace tl::fe {
     return handleWhiteSpace() || handleNewLine() || handleComment();
   }
 
+  auto Lexer::skip(sz n) -> void {
+    for (sz i = 0; i < n; ++i) {
+      consume();
+      advance();
+    }
+  }
 
   auto Lexer::match(char expected) -> bool {
-    if (m_fs.eof() || m_fs.peek() != expected) {
+    if (m_fs->eof() || m_fs->peek() != expected) {
       return false;
     }
 
@@ -42,24 +48,18 @@ namespace tl::fe {
   }
 
   auto Lexer::peek() -> char {
-    return static_cast<char>(m_fs.peek());
+    return static_cast<char>(m_fs->peek());
   }
 
   auto Lexer::peek2() -> std::string {
     std::string str;
     str += peek();
-    str += static_cast<char>(m_fs.get());
-    m_fs.unget();
+    str += static_cast<char>(m_fs->get());
+    m_fs->unget();
     return str;
   }
 
-  auto Lexer::reset(const std::filesystem::path &filepath) -> void {
-    m_fs = {};
-    m_fs.open(filepath);
-    if (!m_fs.is_open()) {
-      throw std::runtime_error("Failed to open " + filepath.string());
-    }
-
+  auto Lexer::reset() -> void {
     m_lastTokenType = EToken::Empty;
     m_currentChar = '\0';
     m_currentToken = "";
@@ -82,7 +82,7 @@ namespace tl::fe {
     }
 
     m_collectedTokens.emplace_back(
-      tokenType, m_currentToken, m_currentLine, column
+      tokenType, m_currentToken, line, column
     );
     m_lastTokenType = m_collectedTokens.back().type();
   }
@@ -122,7 +122,7 @@ namespace tl::fe {
 
     if (match('/')) {
       std::string dummy;
-      m_fs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      m_fs->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       return true;
     }
 
@@ -137,15 +137,30 @@ namespace tl::fe {
     return false;
   }
 
-  auto Lexer::operator()(const std::filesystem::path &filepath) -> Tokens {
-    reset(filepath);
+  auto Lexer::operator()(const fs::path &filepath) -> Tokens {
+    reset();
+    auto fs = std::make_unique<std::ifstream>();
+    fs->open(filepath);
+    if (!fs->is_open()) {
+      throw std::runtime_error("Failed to open " + filepath.string());
+    }
+    m_fs = std::move(fs);
+    return lex();
+  }
 
+  auto Lexer::operator()(std::istringstream ss) -> Tokens {
+    reset();
+    m_fs = std::make_unique<std::istringstream>(std::move(ss));
+    return lex();
+  }
+
+  auto Lexer::lex() -> Tokens {
     advance();
     while (true) {
-      while (isSpacingCharacter(m_currentChar)) {
+      while (isSpacingCharacter(m_currentChar) && !m_fs->eof()) {
         advance();
       }
-      if (m_fs.eof()) {
+      if (m_fs->eof()) {
         break;
       }
       m_currentToken = m_currentChar;
@@ -170,7 +185,7 @@ namespace tl::fe {
     }
 
     // in case the lexer will be used for more than once
-    m_fs.close();
+    m_fs.reset();
     return m_collectedTokens;
   }
 
@@ -212,20 +227,31 @@ namespace tl::fe {
     bool lexed = false;
 
     if (isStartOfInteger(m_currentChar)) {
+      auto tokenType = EToken::IntegerLiteral;
+
       // accept both, then check if it is actually a number
-      while (advance() && isDigitOrLetter(m_currentChar)) {
+      while (advance() && isDigit(m_currentChar)) {
         consume();
       }
 
-      addToken(EToken::IntegerLiteral);
-      lexed = true;
-    }
+      if (isStartOfDecimalPart(m_currentChar) && isDigit(peek())) {
+        consume();
 
-    if (isStartOfDecimalPart(m_currentChar)) {
+        // accept both, then check if it is actually a number
+        while (advance() && isDigit(m_currentChar)) {
+          consume();
+        }
+
+        tokenType = EToken::FloatLiteral;
+      }
+
+      addToken(tokenType);
+      lexed = true;
+    } else if (isStartOfDecimalPart(m_currentChar) && isDigit(peek())) {
       consume();
 
       // accept both, then check if it is actually a number
-      while (advance() && isDigitOrLetter(m_currentChar)) {
+      while (advance() && isDigit(m_currentChar)) {
         consume();
       }
 
@@ -246,6 +272,8 @@ namespace tl::fe {
         appendError(std::runtime_error("Identifiers cannot contain or be prefixed with '_'"));
         return false;
       }
+
+      advance();
       addToken(EToken::AnnonymousIdentifier);
       return true;
     }
@@ -278,17 +306,13 @@ namespace tl::fe {
 
     // Maximum number of chracters is 3
     if (Token::isValidOperator(m_currentToken + m_currentChar + peek())) {
-      consume();
-      advance();
-      consume();
-      advance();
+      skip(2);
       addToken(EToken::MaybeOperator); // valid 3-char operator
       return true;
     }
 
     if (Token::isValidOperator(m_currentToken + m_currentChar)) {
-      consume();
-      advance();
+      skip();
       addToken(EToken::MaybeOperator); // valid 2-char operator
       return true;
     }
@@ -296,6 +320,7 @@ namespace tl::fe {
     addToken(EToken::MaybeOperator);
     if (m_lastTokenType == EToken::Invalid) {
       appendError(std::runtime_error("Unrecognizable token 0"));
+      return false;
     }
 
     return true;

@@ -1,39 +1,44 @@
 #include "Statements.hpp"
-#include "Concrete.hpp"
+#include "Expressions.hpp"
+#include "Definitions.hpp"
 
 namespace tl::syntax {
-  BlockStatement::BlockStatement(std::vector<VNode> statements)
-    : Node(std::move(statements)) {
+  ForStmt::ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body)
+    : ASTNodeBase({iterator, iterable, body}) {
   }
 
-  IdentifierDeclStatement::IdentifierDeclStatement(
-    std::vector<VNode> fragments, std::string mut
-  ) : Node(std::move(fragments)), m_mutibility(std::move(mut)) {
+  MatchStmt::MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases)
+    : ASTNodeBase({
+      [&]() {
+        // todo: move args
+        auto v = std::vector{matchedExpr, defaultBody};
+        v.insert(v.end(), cases.begin(), cases.end());
+        return v;
+      }()
+    }) {
   }
 
-  ReturnStatement::ReturnStatement(const VNode &expr)
-    : Node(isEmpty(expr) ? std::vector<VNode>{} : std::vector{expr}) {
+  MatchStmtCase::MatchStmtCase(ASTNode value, ASTNode condition, ASTNode body)
+    : ASTNodeBase({value, condition, body}) {
   }
 
-  AssignmentStatement::AssignmentStatement(
-    VNode left, VNode right, std::string op
-  ): Node({left, right}), m_op(std::move(op)) {
+  BlockStmt::BlockStmt(Vec<ASTNode> statements)
+    : ASTNodeBase(std::move(statements)) {
   }
 
-  IfStatement::IfStatement(
-    VNode decl, VNode cond,
-    VNode body, VNode elseBody
-  ): Node({decl, cond, body, elseBody}) {
+  LetStmt::LetStmt(ASTNode decl, ASTNode init)
+    : ASTNodeBase({decl, init}) {
   }
 
-  ForStatement::ForStatement(
-    VNode decl, VNode cond,
-    VNode postExpr, VNode loopBody
-  ): Node({decl, cond, postExpr, loopBody}) {
+  ReturnStmt::ReturnStmt(ASTNode expr)
+    : ASTNodeBase({expr}) {
   }
 
-  ForStatement::ForStatement(
-    VNode it, VNode collection, VNode loopBody
-  ): Node({it, collection, loopBody}) {
+  AssignStmt::AssignStmt(ASTNode left, ASTNode right, String op)
+    : ASTNodeBase({left, right}), m_op(std::move(op)) {
+  }
+
+  ExprStmt::ExprStmt(ASTNode expr)
+    : ASTNodeBase({expr}) {
   }
 }

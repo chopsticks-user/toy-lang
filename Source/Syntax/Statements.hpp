@@ -2,124 +2,118 @@
 #define  TOYLANG_SYNTAX_STATEMENTS_HPP
 
 #include "Base.hpp"
-#include "Expressions.hpp"
-
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class BlockStatement final : public Node {
+  class ForStmt final : public ASTNodeBase {
   public:
-    explicit BlockStatement(std::vector<VNode> statements);
+    ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body);
 
-  private:
-  };
-
-  class IdentifierDeclStatement final : public Node {
-  public:
-    IdentifierDeclStatement(std::vector<VNode> fragments, std::string mut);
-
-    auto mutibility() -> const String & {
-      return m_mutibility;
-    }
-
-  private:
-    std::string m_mutibility;
-  };
-
-  class ReturnStatement final : public Node {
-  public:
-    explicit ReturnStatement(const VNode &expr);
-
-    auto expression() -> const VNode & {
+    auto iterator() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-  private:
-  };
-
-  class AssignmentStatement final : public Node {
-  public:
-    AssignmentStatement(
-      VNode left, VNode right, std::string op
-    );
-
-    auto left() -> const VNode & {
-      return childAt(0);
-    }
-
-    auto right() -> const VNode & {
+    auto iterable() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
-    auto op() -> const String & {
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(2);
+    }
+  };
+
+  class MatchStmt final : public ASTNodeBase {
+  public:
+    MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases);
+
+    auto matchedExpr() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto defaultCase() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto caseAt(const u64 index) const noexcept -> CRef<ASTNode> {
+      return childAt(index + 2);
+    }
+  };
+
+  class MatchStmtCase final : public ASTNodeBase {
+  public:
+    MatchStmtCase(ASTNode value, ASTNode condition, ASTNode body);
+
+    auto value() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(2);
+    }
+  };
+
+  class BlockStmt final : public ASTNodeBase {
+  public:
+    explicit BlockStmt(Vec<ASTNode> statements);
+
+    auto stmt(const u64 index) -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
+
+  class LetStmt final : public ASTNodeBase {
+  public:
+    LetStmt(ASTNode decl, ASTNode init);
+
+    auto decl() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto init() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class ReturnStmt final : public ASTNodeBase {
+  public:
+    explicit ReturnStmt(ASTNode expr);
+
+    auto expr() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+
+  class AssignStmt final : public ASTNodeBase {
+  public:
+    AssignStmt(ASTNode left, ASTNode right, String op);
+
+    auto left() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto right() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto op() const noexcept -> const String & {
       return m_op;
     }
 
   private:
-    std::string m_op;
+    String m_op;
   };
 
-  class IfStatement final : public Node {
+  class ExprStmt final : public ASTNodeBase {
   public:
-    IfStatement(
-      VNode decl, VNode cond,
-      VNode body, VNode elseBody
-    );
+    explicit ExprStmt(ASTNode expr);
 
-    auto declStatement() -> const VNode & {
+    auto expr() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
-
-    auto condition() -> const VNode & {
-      return childAt(1);
-    }
-
-    auto body() -> const VNode & {
-      return childAt(2);
-    }
-
-    // may contain another if statement
-    auto elseNode() -> const VNode & {
-      return childAt(3);
-    }
-
-  private:
-  };
-
-  class ForStatement final : public Node {
-  public:
-    ForStatement(
-      VNode decl, VNode cond,
-      VNode postExpr, VNode loopBody
-    );
-
-    ForStatement(
-      VNode it, VNode collection, VNode loopBody
-    );
-
-    auto isForRange() const -> bool {
-      // ranged-for loops only contains 2 elements, an iterator and a collection
-      return nChildren() == 2;
-    }
-
-    auto iterator() -> const VNode & {
-      return firstChild();
-    }
-
-    auto conditionOrCollection() -> const VNode & {
-      return childAt(1);
-    }
-
-    auto postExpression() -> const VNode & {
-      return childAt(2);
-    }
-
-    // may contain another if statement
-    auto body() -> const VNode & {
-      return lastChild();
-    }
-
-  private:
   };
 }
 

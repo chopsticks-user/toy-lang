@@ -1,0 +1,61 @@
+export concept ClosedUnderAdd<T> {
+  operator +: (other: T) -> T;
+}
+
+export concept ClosedUnderAddWith<T, V> {
+  operator +: (other: V) -> T | V;
+}
+
+export concept ClosedUnderMul<T> {
+  operator *: (other: T) -> T;
+}
+
+export concept IsComplex<T<V>> satisfies
+  ClosedUnderAdd<T<V>> &
+  ClosedUnderAddWith<T<V>, V> &
+  ClosedUnderAdd<V> &
+  ClosedUnderMul<V>
+{
+  private field mutable real: V;
+  private field mutable img: V;
+
+  cast: (val: V) -> T<V> {
+    return {real: val, img: 0.0};
+  }
+
+  operator +: (other: T<V>) -> T<V> {
+    return {real: self.real + other.real, img: self.img + other.img};
+  }
+
+  operator ==: (other: T<V>) -> T<V> {
+    return self.real == other.real && self.img == other.img;
+  }
+
+  public method conjugate: () -> T<V> {
+    return {real: self.real, img: -self.img};
+  }
+
+  public method magnitude: () -> Float {
+    return math::sqrt((self.real * self.real + self.img * self.img) |> Float);
+  }
+}
+
+export type Complex<T> satisfies IsComplex {}
+
+export type HyperComplex<T> satisfies IsComplex {
+  private field mutable hyper: T;
+
+  cast: (val: T | Complex<T>) -> T {
+    return {
+      real: [[val]] == Complex<T> ? val.img : 0.0,
+      img: [[val]] == Complex<T> ? val.img : 0.0,
+      hyper: 0.0
+    };
+  }
+}
+
+fn isComplexTypeString: (type: IsComplex | (ClosedUnderAdd & ClosedUnderMul)) -> {
+  return type |> String;
+}
+
+export type Number = Float | Int | IsComplex<T>;

@@ -1,0 +1,52 @@
+export concept IsComplex {
+  fn real: () -> Float | Int;
+  fn img: () -> Float | Int;
+
+  fn real: (val: Float | Int) -> Void;
+  fn img: (val: Float | Int) -> Void;
+
+  fn +: (other: Complex) -> Complex;
+  fn ==: (other: Complex) -> Bool;
+
+  fn conjugate: () -> Complex;
+  fn magnitude: () -> Float;
+}
+
+export class Complex satisfies IsComplex {
+  prv let mutable real: Float | Int;
+  prv let mutable img: Float | Int;
+
+  pub fn real: () -> {}
+  pub fn img: () -> {}
+
+  pub fn real: (val: Float | Int) -> {}
+  pub fn img: (val: Float | Int) -> {}
+
+  pub fn self: (r: Float | Int, i: Float | Int) -> {
+    r |> self.real;
+    i |> self.img;
+  }
+
+  pub fn self: () -> String {
+    return match {
+      self.img < 0 => "{self.real} - {math::abs(self.img)}i",
+      _ => "{self.real} + {self.img}i",
+    }
+  }
+
+  pub fn +: (other: Complex) -> Complex {
+    return {real: self.real + other.real, img: self.img + other.img};
+  }
+
+  pub fn ==: (other: Complex) -> Bool {
+    return self.real == other.real && self.img == other.img;
+  }
+
+  pub fn conjugate: () -> Complex {
+    return {real: self.real, img: -self.img};
+  }
+
+  pub fn magnitude: () -> Float {
+    return math::sqrt((self.real * self.real + self.img * self.img) |> Float);
+  }
+}

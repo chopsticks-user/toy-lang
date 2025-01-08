@@ -7,18 +7,39 @@
 #include "Core/Core.hpp"
 
 namespace tl::fe {
+  struct ParserExpception final : ToyLangException {
+    ParserExpception(CRef<String> filepath, CRef<String> mesg)
+      : ToyLangException{filepath, mesg} {
+    }
+
+    ParserExpception(
+      CRef<String> filepath, CRef<Token> token, CRef<String> mesg
+    ): ToyLangException{filepath, token.line(), token.column(), "syntax error: " + mesg} {
+    }
+  };
+
   class Parser {
     using TokenIterator = Tokens::const_iterator;
 
+    enum class TupleDeclState {
+      Local, Param, Return,
+    };
+
+    enum class Context {
+      None, Global, Function, Concept, Class, Type, String,
+    };
+
   public:
-    auto operator()(Tokens tokens) -> syntax::TranslationUnit;
+    auto operator()(
+      ExpceptionCollector &eCollector, String filepath, Tokens tokens
+    ) -> syntax::TranslationUnit;
 
   private:
     auto revert() -> void;
 
     auto advance() -> void;
 
-    auto current() const -> Token;
+    auto current() const -> CRef<Token>;
 
     auto match(std::same_as<EToken> auto... expected) -> bool;
 
@@ -26,86 +47,80 @@ namespace tl::fe {
 
     auto peekPrev() -> Token;
 
-  private:
+    auto collectException(ToyLangException &&e) const -> void;
+
+    auto collectException(CRef<String> mesg) const -> void;
+
+    auto setStorage(syntax::Storage storage = syntax::Storage::Internal) -> void;
+
+    auto storage() const noexcept -> syntax::Storage;
+
+    auto setContext(Context context = Context::None) noexcept -> void;
+
+    auto enterContext(Context context = Context::None) noexcept -> void;
+
+    auto exitContext() noexcept -> void;
+
+    auto context() const noexcept -> Context;
+
+    auto markRevertPoint() noexcept -> void;
+
+    auto toRevertPoint() noexcept -> void;
+
+  protected:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
-    auto parseClassDefinition() -> syntax::VNode;
+    auto parseModuleDecl() -> syntax::ASTNode;
 
-    auto parseFunctionDefinition() -> syntax::VNode;
+    auto parseImportDecl() -> syntax::ASTNode;
 
-    auto parseFunctionPrototype() -> syntax::VNode;
+    auto parseTypeDecl() -> syntax::ASTNode;
 
-    auto parseIdentifierDeclStatement() -> syntax::VNode;
+    auto parseFunctionDef() -> syntax::ASTNode;
 
-    auto parseIdentifierDeclFragment() -> syntax::VNode;
+    auto parseClassDef() -> syntax::ASTNode;
 
-    auto parseModuleStatement() -> syntax::VNode;
+    auto parseConceptDef() -> syntax::ASTNode;
 
-    auto parseImportStatement() -> syntax::VNode;
+    auto parseFunctionPrototype() -> syntax::ASTNode;
 
-    auto parseSpecifier() -> std::string;
+    auto parseTupleDecl() -> syntax::ASTNode;
 
-    auto parseVisibilitySpecifier() -> std::string;
+    auto parseIdentifierDecl() -> syntax::ASTNode;
 
-    auto parseExpression() -> syntax::VNode;
+    auto parseTypeExpr() -> syntax::ASTNode;
 
-    auto parseSequenceExpression() -> syntax::VNode;
+    auto parseTypeIdentifier() -> syntax::ASTNode;
 
-    auto parseTernaryExpression() -> syntax::VNode;
+    auto parseIdentifier() -> syntax::ASTNode;
 
-    auto parseNullCoalescingExpression() -> syntax::VNode;
+    auto parseStmt() -> syntax::ASTNode;
 
-    auto parseLogicalOrExpression() -> syntax::VNode;
+    auto parseForStmt() -> syntax::ASTNode;
 
-    auto parseLogicalAndExpression() -> syntax::VNode;
+    auto parseMatchStmt() -> syntax::ASTNode;
 
-    auto parseInclusiveOrExpression() -> syntax::VNode;
+    auto parseBlockStmt() -> syntax::ASTNode;
 
-    auto parseExclusiveOrExpression() -> syntax::VNode;
+    auto parseAssignOrExprStmt() -> syntax::ASTNode;
 
-    auto parseAndExpression() -> syntax::VNode;
+    auto parseLetStmt() -> syntax::ASTNode;
 
-    auto parseEqualityExpression() -> syntax::VNode;
+    auto parseReturnStmt() -> syntax::ASTNode;
 
-    auto parseRelationalExpression() -> syntax::VNode;
+    auto parseExpr() -> syntax::ASTNode;
 
-    auto parseShiftExpression() -> syntax::VNode;
-
-    auto parseAdditiveExpression() -> syntax::VNode;
-
-    auto parseMultiplicativeExpression() -> syntax::VNode;
-
-    auto parsePrefixUnaryExpression() -> syntax::VNode;
-
-    auto parsePostfixExpression() -> syntax::VNode;
-
-    auto parsePrimaryExpression() -> syntax::VNode;
-
-    auto parseArgumentList() -> std::vector<syntax::VNode>;
-
-    auto parseBlockStatement() -> syntax::VNode;
-
-    auto parseTypeExpression() -> syntax::VNode;
-
-    auto parseParameterDeclFragment() -> syntax::VNode;
-
-    auto parseLambdaExpression() -> syntax::VNode;
-
-    auto parseStatement() -> syntax::VNode;
-
-    auto parseControlStatement() -> syntax::VNode;
-
-    auto parseIfStatement() -> syntax::VNode;
-
-    auto parseForStatement() -> syntax::VNode;
-
-    auto parseReturnStatement() -> syntax::VNode;
-
-    auto parseLambdaPrototype() -> syntax::VNode;
+    auto parseTupleExpr() -> syntax::ASTNode;
 
   private:
+    String m_filepath;
     TokenIterator m_tokenIt;
     TokenIterator m_tokenItEnd;
+    Opt<Token> m_currentToken;
+    Opt<TokenIterator> m_revertPoint;
+    syntax::Storage m_currentStorage = syntax::Storage::Internal;
+    Stack<Context> m_parseContext;
+    ExpceptionCollector *m_eCollector = nullptr; // todo: global singleton
   };
 }
 

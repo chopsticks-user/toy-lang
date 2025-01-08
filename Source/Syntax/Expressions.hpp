@@ -2,172 +2,15 @@
 #define  TOYLANG_SYNTAX_EXPRESSIONS_HPP
 
 #include "Base.hpp"
-
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class ParameterDeclFragment final : public Node {
-  public:
-    ParameterDeclFragment(
-      VNode identifierDeclFragment,
-      std::string mut
-    );
-
-    auto identifier() const -> const VNode & {
-      return childAt(0);
-    }
-
-    auto typeExpr() const -> const VNode & {
-      return childAt(1);
-    }
-
-    auto mutibility() const -> const String & {
-      return m_mutibility;
-    }
-
-  private:
-    std::string m_mutibility;
-  };
-
-  class IdentifierDeclFragment final : public Node {
-  public:
-    IdentifierDeclFragment(
-      VNode identifier,
-      VNode typeExpr,
-      VNode rhsExpr
-    );
-
-    auto identifier() -> const VNode & {
-      return childAt(0);
-    }
-
-    auto typeExpr() -> const VNode & {
-      return childAt(1);
-    }
-
-    auto rhsExpr() -> const VNode & {
-      return childAt(2);
-    }
-
-  private:
-  };
-
-  class Identifier final : public Node {
-  public:
-    explicit Identifier(std::string name);
-
-    auto name() const noexcept -> const String & {
-      return m_name;
-    }
-
-  private:
-    std::string m_name;
-  };
-
-  class TypeExpr final : public Node {
-  public:
-    explicit TypeExpr(std::string name);
-
-    auto name() const noexcept -> const String & {
-      return m_name;
-    }
-
-  private:
-    std::string m_name;
-  };
-
-  class BinaryExpr final : public Node {
-  public:
-    BinaryExpr(VNode lhs, VNode rhs, std::string op);
-
-    auto left() const noexcept -> const VNode & {
-      return childAt(0);
-    }
-
-    auto right() const noexcept -> const VNode & {
-      return childAt(1);
-    }
-
-    auto op() const noexcept -> const String & {
-      return m_op;
-    }
-
-  private:
-    std::string m_op;
-  };
-
-  class TernaryExpr final : public Node {
-  public:
-    TernaryExpr(
-      VNode operand1,
-      VNode operand2,
-      VNode operand3,
-      std::string op1, std::string op2
-    );
-
-    auto first() const noexcept -> const VNode & {
-      return childAt(0);
-    }
-
-    auto second() const noexcept -> const VNode & {
-      return childAt(1);
-    }
-
-    auto third() const noexcept -> const VNode & {
-      return childAt(2);
-    }
-
-    auto firstOp() const noexcept -> const String & {
-      return m_op1;
-    }
-
-    auto secondOp() const noexcept -> const String & {
-      return m_op2;
-    }
-
-  private:
-    std::string m_op1;
-    std::string m_op2;
-  };
-
-  class UnaryExpr final : public Node {
-  public:
-    UnaryExpr(VNode operand, std::string op);
-
-    auto operand() const noexcept -> const VNode & {
-      return childAt(0);
-    }
-
-    auto op() const noexcept -> const String & {
-      return m_op;
-    }
-
-  private:
-    std::string m_op;
-  };
-
-  class PostfixUnaryExpr final : public Node {
-  public:
-    PostfixUnaryExpr(VNode operand, std::string op);
-
-    auto operand() const noexcept -> const VNode & {
-      return childAt(0);
-    }
-
-    auto op() const noexcept -> const String & {
-      return m_op;
-    }
-
-  private:
-    std::string m_op;
-  };
-
   // Literals belong here to avoid circular dependencies
   // between Expression and Literals
 
-  class IntegerLiteral final : public Node {
+  class IntegerLiteral final : public ASTNodeBase {
   public:
-    explicit IntegerLiteral(const String &value);
+    explicit IntegerLiteral(i64 value);
 
     auto value() const noexcept -> i64 {
       return m_value;
@@ -177,9 +20,9 @@ namespace tl::syntax {
     i64 m_value;
   };
 
-  class FloatLiteral final : public Node {
+  class FloatLiteral final : public ASTNodeBase {
   public:
-    explicit FloatLiteral(const String &value);
+    explicit FloatLiteral(f64 value);
 
     auto value() const noexcept -> double {
       return m_value;
@@ -189,28 +32,28 @@ namespace tl::syntax {
     f64 m_value;
   };
 
-  class StringLiteral final : public Node {
+  class StringLiteral final : public ASTNodeBase {
   public:
     explicit StringLiteral(
-      std::string value,
-      std::vector<VNode> placeholders = {}
+      String value,
+      Vec<ASTNode> placeholders = {}
     );
 
-    auto value() const noexcept -> const String & {
+    auto value() const noexcept -> CRef<String> {
       return m_value;
     }
 
-    auto placeholder(const sz index) const noexcept -> const VNode & {
+    auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
 
   private:
-    std::string m_value;
+    String m_value;
   };
 
-  class BooleanLiteral final : public Node {
+  class BooleanLiteral final : public ASTNodeBase {
   public:
-    explicit BooleanLiteral(const String &value);
+    explicit BooleanLiteral(bool value);
 
     auto value() const noexcept -> bool {
       return m_value;
@@ -220,48 +63,196 @@ namespace tl::syntax {
     bool m_value;
   };
 
-  class FunctionCallExpr final : public Node {
+  class TernaryExpr final : public ASTNodeBase {
   public:
-    FunctionCallExpr(
-      const VNode &callee,
-      std::vector<VNode> args
+    TernaryExpr(
+      ASTNode operand1,
+      ASTNode operand2,
+      ASTNode operand3,
+      String op1, String op2
     );
 
-    auto callee() const noexcept -> VNode;
-  };
+    auto first() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
 
-  class SubScriptingExpr final : public Node {
-  public:
-    SubScriptingExpr(
-      VNode collection,
-      VNode subscript
-    );
+    auto second() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
 
-    auto collection() const noexcept -> VNode;
+    auto third() const noexcept -> CRef<ASTNode> {
+      return childAt(2);
+    }
 
-    auto subscript() const noexcept -> VNode;
-  };
+    auto firstOp() const noexcept -> CRef<String> {
+      return m_op1;
+    }
 
-  class ModuleExpr final : public Node {
-  public:
-    explicit ModuleExpr(std::vector<VNode> fragments);
-
-    auto fragment(sz index) -> const VNode & {
-      return childAt(index);
+    auto secondOp() const noexcept -> CRef<String> {
+      return m_op2;
     }
 
   private:
+    String m_op1;
+    String m_op2;
   };
 
-  class ImportExpr final : public Node {
+  class BinaryExpr final : public ASTNodeBase {
   public:
-    explicit ImportExpr(std::vector<VNode> fragments);
+    BinaryExpr(ASTNode lhs, ASTNode rhs, String op);
 
-    auto fragment(sz index) -> const VNode & {
-      return childAt(index);
+    auto left() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto right() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto op() const noexcept -> CRef<String> {
+      return m_op;
     }
 
   private:
+    String m_op;
+  };
+
+  class UnaryExpr final : public ASTNodeBase {
+  public:
+    UnaryExpr(ASTNode operand, String op);
+
+    auto operand() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto op() const noexcept -> CRef<String> {
+      return m_op;
+    }
+
+  private:
+    String m_op;
+  };
+
+  class PostfixUnaryExpr final : public ASTNodeBase {
+  public:
+    PostfixUnaryExpr(ASTNode operand, String op);
+
+    auto operand() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto op() const noexcept -> CRef<String> {
+      return m_op;
+    }
+
+  private:
+    String m_op;
+  };
+
+  class Identifier final : public ASTNodeBase {
+  public:
+    explicit Identifier(Vec<String> path);
+
+    auto name() const noexcept -> CRef<String> {
+      return m_path.back();
+    }
+
+    auto path() const noexcept -> String {
+      String pathStr = m_path.front();
+
+      if (m_path.size() == 1) {
+        return pathStr;
+      }
+
+      for (CRef<String> s: m_path | rv::drop(1)) {
+        pathStr += "::" + s;
+      }
+
+      return pathStr;
+    }
+
+    auto isImported() const noexcept -> bool {
+      return m_path.size() > 1;
+    }
+
+    auto isType() const noexcept -> bool {
+      const char c = name()[0];
+      return c >= 'A' && c <= 'Z';
+    }
+
+    auto isOverloadedOp() const noexcept -> bool {
+      return m_path.size() == 1 && overloadableOps.contains(m_path.back());
+    }
+
+    auto isAnonymous() const noexcept -> bool {
+      return m_path.size() == 1 && m_path.back() == "_";
+    }
+
+  private:
+    Vec<String> m_path;
+  };
+
+  class TupleExpr final : public ASTNodeBase {
+  public:
+    explicit TupleExpr(Vec<ASTNode> ids);
+
+    auto identifier(const u64 index) const noexcept -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
+
+  class FunctionCallExpr final : public ASTNodeBase {
+  public:
+    FunctionCallExpr(CRef<ASTNode> callee, Vec<ASTNode> args
+    );
+
+    auto callee() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+
+  class SubScriptingExpr final : public ASTNodeBase {
+  public:
+    SubScriptingExpr(ASTNode collection, ASTNode subscript);
+
+    auto collection() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto subscript() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class AccessExpr final : public ASTNodeBase {
+  public:
+    AccessExpr(ASTNode object, ASTNode field);
+
+    auto object() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto field() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class TypeOfExpr final : public ASTNodeBase {
+  public:
+    explicit TypeOfExpr(ASTNode identifier);
+
+    auto identifier() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+
+  class TypeExpr final : public ASTNodeBase {
+  public:
+    explicit TypeExpr(Vec<ASTNode> types);
+
+    auto type(const sz index) const -> CRef<ASTNode> {
+      return childAt(index);
+    }
   };
 }
 

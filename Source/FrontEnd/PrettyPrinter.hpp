@@ -6,51 +6,47 @@
 #include "Core/Core.hpp"
 
 namespace tl::fe {
-  class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, std::string> {
+  class PrettyPrinter : public syntax::SyntaxTreeVisitor<PrettyPrinter, String> {
   public:
-    using Super::operator();
+    using SyntaxTreeVisitor::operator();
 
-    // using Visitable = syntax::VNode;
+    auto operator()(CRef<syntax::TranslationUnit> node) -> String;
 
-    // using Visitable = std::variant<
-    //   syntax::TranslationUnit, syntax::ModuleExpr, syntax::Identifier, syntax::BinaryExpr,
-    //   syntax::UnaryExpr, syntax::IntegerLiteral, syntax::FloatLiteral, syntax::StringLiteral,
-    //   syntax::BooleanLiteral
-    // >;
+    auto operator()(CRef<syntax::ModuleDecl> node) -> String;
 
-    auto operator()(const syntax::TranslationUnit &node) -> String;
+    auto operator()(CRef<syntax::ImportDecl> node) -> String;
 
-    auto operator()(const syntax::ModuleExpr &node) -> String;
+    auto operator()(CRef<syntax::TypeDecl> node) -> String;
 
-    auto operator()(const syntax::ImportExpr &node) -> String;
+    auto operator()(CRef<syntax::TypeExpr> node) -> String;
 
-    auto operator()(const syntax::Function &node) -> String;
+    auto operator()(CRef<syntax::Identifier> node) -> String;
 
-    auto operator()(const syntax::FunctionPrototype &node) -> String;
-
-    auto operator()(const syntax::ParameterDeclFragment &node) -> String;
-
-    auto operator()(const syntax::IdentifierDeclFragment &node) -> String;
-
-    auto operator()(const syntax::TypeExpr &node) -> String;
-
-    auto operator()(const syntax::BlockStatement &node) -> String;
-
-    auto operator()(const syntax::ReturnStatement &node) -> String;
-
-    auto operator()(const syntax::Identifier &node) -> String;
-
-    auto operator()(const syntax::BinaryExpr &node) -> String;
-
-    auto operator()(const syntax::UnaryExpr &node) -> String;
-
-    auto operator()(const syntax::IntegerLiteral &node) -> String;
-
-    auto operator()(const syntax::FloatLiteral &node) -> String;
-
-    auto operator()(const syntax::StringLiteral &node) -> String;
-
-    auto operator()(const syntax::BooleanLiteral &node) -> String;
+    // auto operator()(CRef<syntax::Function> node) -> String;
+    //
+    // auto operator()(CRef<syntax::ParameterDeclFragment> node) -> String;
+    //
+    // auto operator()(CRef<syntax::IdentifierDeclFragment> node) -> String;
+    //
+    // auto operator()(CRef<syntax::TypeExpr> node) -> String;
+    //
+    // auto operator()(CRef<syntax::BlockStatement> node) -> String;
+    //
+    // auto operator()(CRef<syntax::ReturnStatement> node) -> String;
+    //
+    // auto operator()(CRef<syntax::Identifier> node) -> String;
+    //
+    // auto operator()(CRef<syntax::BinaryExpr> node) -> String;
+    //
+    // auto operator()(CRef<syntax::UnaryExpr> node) -> String;
+    //
+    // auto operator()(CRef<syntax::IntegerLiteral> node) -> String;
+    //
+    // auto operator()(CRef<syntax::FloatLiteral> node) -> String;
+    //
+    // auto operator()(CRef<syntax::StringLiteral> node) -> String;
+    //
+    // auto operator()(CRef<syntax::BooleanLiteral> node) -> String;
 
   private:
     auto enterScope() -> void {
@@ -63,6 +59,14 @@ namespace tl::fe {
 
     auto scopeString() -> String {
       return m_whiteSpaces;
+    }
+
+    static auto storageString(const syntax::Storage storage) -> String {
+      switch (storage) {
+        case syntax::Storage::Export: return "export";
+        case syntax::Storage::Local: return "local";
+        default: return "internal";
+      }
     }
 
   private:

@@ -1,0 +1,89 @@
+translationUnit @l0
+  : header definition*
+
+header @l1
+  : moduleStmt importStmt*
+  ;
+
+definition @l1
+  : functionDef
+  | classDef
+  | typeDef
+  | enumDef
+  | flagDef
+  | globalStmt
+  ;
+
+moduleStmt @l2
+  : Module Identifier (Colon2 Identifier)*
+  ;
+
+importStmt @l2
+  : Import Identifier (Colon2 Identifier)*
+  ;
+
+classDef @l2
+  : symbolVisibilitySpecifier Class
+    (accessVisibilitySpecifier Colon (fieldDef | methodDef)*)
+  | symbolVisibilitySpecifier Interface
+    (accessVisibilitySpecifier Colon methodDef*)
+  ;
+
+fieldDef @l3
+  : letStmt
+  ;
+
+methodDef @l3
+  : functionProto
+  ;
+
+functionDef @l2
+  : functionProto
+  ;
+
+functionProto @l4
+  : (symbolVisibilitySpecifier | ((Static | virtualSpecifier) @methodDef))
+    (Identifier | ((OverloadedOperator | Self) @methodDef)) Colon
+    tupleDecl MinusGreater
+    (tupleDecl | typeExpr | (LeftParen typeExpr (Comma typeExpr)* RightParen))?
+    (blockStmt | (Semicolon @methodDef))
+  ;
+
+tupleDecl @l5
+  : LeftParen variableDeclFragment (Comma variableDeclFragment)* RightParen
+  ;
+
+variableDeclFragment @l6
+  : Identifier Colon typeExpr (Equal Expr)? // x: Int = 5 or x: Int
+  | Identifier Equal Expr // x = 5
+  | AnonymousIdentifier @(tupleDecl -> !functionProto)
+  ;
+
+symbolVisibilitySpecifier @l7
+  : Export
+  | Internal
+  | Local
+  ;
+
+symbolVisibilitySpecifier @l7
+  : Export
+  | Internal
+  | Local
+  ;
+
+accessVisibilitySpecifier @l7
+  : Public
+  | Protected
+  | Private
+  ;
+
+virtualSpecifier @l7
+  : Abstract
+  | Final
+  ;
+
+typeExpr @l7
+  : UserDefinedType
+  | FundamentalType
+  | typeExpr (LeftBracket RightBracket)+
+  ;

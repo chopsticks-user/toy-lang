@@ -6,28 +6,47 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class Node {
+  class ASTNodeBase {
   public:
-    auto children() const noexcept -> const std::vector<VNode> &;
+    auto children() const noexcept -> const std::vector<ASTNode> &;
 
-    auto childAt(sz index) const -> const VNode &;
+    auto childAt(sz index) const -> CRef<ASTNode>;
+
+    auto firstChild() const -> CRef<ASTNode>;
+
+    auto lastChild() const -> CRef<ASTNode>;
 
     auto nChildren() const noexcept -> sz;
 
   protected:
-    explicit Node(std::vector<VNode> children) noexcept;
+    explicit ASTNodeBase(std::vector<ASTNode> children) noexcept;
 
-    auto childAt(sz index) -> VNode &;
+    auto childAt(sz index) -> ASTNode &;
 
-    auto firstChild() -> VNode &;
+    auto firstChild() -> ASTNode &;
 
-    auto lastChild() -> VNode &;
+    auto lastChild() -> ASTNode &;
 
   private:
-    std::vector<VNode> m_children;
+    std::vector<ASTNode> m_children;
   };
 
-  auto isEmpty(const VNode &node) -> bool;
+  auto isEmptyAst(CRef<ASTNode> node) -> bool;
+
+  template<std::derived_from<ASTNodeBase> TNode>
+  auto astCast(CRef<ASTNode> node, CRef<String> filepath = "") -> TNode {
+    if (!std::holds_alternative<TNode>(node)) {
+      throw filepath.empty()
+              ? InternalException(filepath, "invalid AST-node cast")
+              : InternalException("invalid AST-node cast");
+    }
+    return std::get<TNode>(node);
+  }
+
+  template<std::derived_from<ASTNodeBase>... TNode>
+  auto matchAstType(CRef<ASTNode> node) -> bool {
+    return !((std::holds_alternative<TNode>(node)) || ...);
+  }
 }
 
 #endif // TOYLANG_SYNTAX_BASE_HPP

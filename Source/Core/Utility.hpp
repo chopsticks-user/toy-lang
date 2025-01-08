@@ -6,7 +6,8 @@
 namespace tl::util {
   template<typename Callable, typename... Args>
   auto apply(Args &&... args) {
-    return std::apply(Callable{}, std::make_tuple(std::forward<Args>(args)...));
+    // forward_as_tuple as opposed to make_tuple to avoid copying
+    return std::apply(Callable{}, std::forward_as_tuple(std::forward<Args>(args)...));
   }
 }
 

@@ -4,44 +4,83 @@
 #include "Core/Core.hpp"
 
 namespace tl::syntax {
-  class TernaryExpr;
-  class BinaryExpr;
-  class UnaryExpr;
-  class PostfixUnaryExpr;
-  class Identifier;
-  class TypeExpr;
-  class FunctionCallExpr;
-  class SubScriptingExpr;
-  class IdentifierDeclFragment;
-  class ParameterDeclFragment;
-  class ModuleExpr;
-  class ImportExpr;
-
   class IntegerLiteral;
   class FloatLiteral;
   class StringLiteral;
   class BooleanLiteral;
 
-  class BlockStatement;
-  class IdentifierDeclStatement;
-  class ReturnStatement;
-  class AssignmentStatement;
-  class IfStatement;
-  class ForStatement;
+  class TernaryExpr;
+  class BinaryExpr;
+  class UnaryExpr;
+  class PostfixUnaryExpr;
+  class Identifier;
+  class TupleExpr;
+  class TypeIdentifier;
+  class FunctionCallExpr;
+  class SubScriptingExpr;
+  class AccessExpr;
+  class TypeOfExpr;
+  class TypeExpr;
+
+  class ModuleDecl;
+  class ImportDecl;
+  class TypeDecl;
+  class IdentifierDecl;
+  class TupleDecl;
+  class ParameterDecl;
+  class ReturnDecl;
+
+  class ForStmt;
+  class MatchStmt;
+  class MatchStmtCase;
+  class BlockStmt;
+  class LetStmt;
+  class ReturnStmt;
+  class AssignStmt;
+  class ExprStmt;
 
   class FunctionPrototype;
-  class Program;
-  class Function;
-  class Clazz;
+  class FunctionDef;
+  class ConceptDef;
+  // class ClassDef;
+  // class EnumDef;
+  // class FlagDef;
+
   class TranslationUnit;
 
-  using VNode = std::variant<
-    std::monostate, BinaryExpr, Identifier, UnaryExpr, IntegerLiteral, FloatLiteral, StringLiteral,
-    BooleanLiteral, TernaryExpr, FunctionCallExpr, SubScriptingExpr, TypeExpr,
-    BlockStatement, IdentifierDeclFragment, IdentifierDeclStatement, ParameterDeclFragment,
-    FunctionPrototype, Function, ModuleExpr, Clazz, TranslationUnit, ReturnStatement,
-    AssignmentStatement, IfStatement, ForStatement, ImportExpr, PostfixUnaryExpr
+  using ASTNode = Poly<
+    IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
+
+    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
+    FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr,
+
+    ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
+
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
+    FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
   >;
+
+  enum class Storage : u8 {
+    Export, Internal, Local,
+  };
+
+  enum class Visibility : u8 {
+    Public, Private,
+  };
+
+  enum class FnType : u8 {
+    Function, Method, Field, Operator, Constructor, Prototype,
+  };
+
+  const HashSet<String> overloadableOps = {
+    "+", "-", "*", "/",
+    "==", "!=",
+  };
+
+  const HashSet<String> assignmentOps = {
+    "=", "+=", "-=", "*=", "/=", "%=", "**=",
+    "&=", "|=", "^=", "<<=", ">>=",
+  };
 }
 
 #endif // TOYLANG_SYNTAX_FORWARD_HPP
