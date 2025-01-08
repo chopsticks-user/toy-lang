@@ -10,7 +10,11 @@ namespace tl::syntax {
   public:
     auto children() const noexcept -> const std::vector<ASTNode> &;
 
-    auto childAt(sz index) const -> const ASTNode &;
+    auto childAt(sz index) const -> CRef<ASTNode>;
+
+    auto firstChild() const -> CRef<ASTNode>;
+
+    auto lastChild() const -> CRef<ASTNode>;
 
     auto nChildren() const noexcept -> sz;
 

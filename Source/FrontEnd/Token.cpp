@@ -81,6 +81,7 @@ namespace tl::fe {
     {"-=", EToken::MinusEqual},
     {"|>", EToken::BarGreater},
     {"->", EToken::MinusGreater},
+    {"->", EToken::EqualGreater},
     // {"<-", EToken::LessMinus},
     {"::", EToken::Colon2},
     {"**", EToken::Star2},

@@ -8,15 +8,22 @@ declaration:
   returns:
     @nothing
     Int
+    a: Int
     (Int, Float)
+    (a: Int, b: Float)
+    (Int, b: Float)
 
   local:
+    a
     a: Int
     (a: Int) // simplified to 'a: Int'
     (a: Int, b: Float)
-    (Int, b: Float)
     (Int, Float)
+    (Int, b: Float)
+    (_: Int, b: Float)
+    (_: Int, _: Float)
     (_, b: Float)
+    (a, b)
 
 expression:
   ()

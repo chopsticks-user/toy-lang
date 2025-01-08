@@ -393,7 +393,13 @@ namespace tl::fe {
       collectException("missing colon after function identifier");
     }
 
-    const auto params = parseParameterDecl();
+    auto params = parseTupleDecl();
+    if (isEmptyAst(params)) {
+      params = parseIdentifierDecl();
+    }
+    if (isEmptyAst(params)) {
+      params = parseTypeExpr();
+    }
     if (isEmptyAst(params)) {
       collectException("missing function parameters");
     }
@@ -402,7 +408,13 @@ namespace tl::fe {
       collectException("missing -> after function parameters");
     }
 
-    const auto returns = parseReturnDecl();
+    auto returns = parseTypeExpr();
+    if (isEmptyAst(returns)) {
+      returns = parseTupleDecl();
+    }
+    if (isEmptyAst(returns)) {
+      returns = parseIdentifierDecl();
+    }
     if (isEmptyAst(returns)) {
       collectException("missing function returns");
     }
@@ -413,65 +425,50 @@ namespace tl::fe {
   }
 
   auto Parser::parseTupleDecl() -> ASTNode {
-  }
-
-  auto Parser::parseParameterDecl() -> ASTNode {
-    // a: Int
     if (!match(EToken::LeftParen)) {
-      const auto idDecl = parseIdentifierDecl();
-      if (isEmptyAst(idDecl)) {
-        collectException("missing parameter declaration");
-      }
-      return syntax::ParameterDecl{{idDecl}};
-    }
-
-    // ()
-    if (match(EToken::RightParen)) {
-      return syntax::ParameterDecl{{}};
-    }
-
-    // (a: Int) or (a: Int, ...)
-    Vec<ASTNode> idDecls;
-    do {
-      const auto idDecl = parseIdentifierDecl();
-      idDecls.emplace_back(idDecl);
-    } while (match(EToken::Comma));
-
-    if (!match(EToken::RightParen)) {
-      collectException("missing ')' for function parameter declaration");
-    }
-
-    return syntax::ParameterDecl{idDecls};
-  }
-
-  auto Parser::parseReturnDecl() -> ASTNode {
-    // Int
-    if (!match(EToken::LeftParen)) {
-      return syntax::ReturnDecl{{parseTypeExpr()}};
-    }
-
-    // ()
-    if (match(EToken::RightParen)) {
-      collectException("invalid return type");
       return {};
     }
 
-    // (Int) or (Int, ...)
-    Vec<ASTNode> typeExprs;
+    if (match(EToken::RightParen)) {
+      return syntax::TupleDecl{{}};
+    }
+
+    Vec<ASTNode> declNodes;
     do {
-      const auto typeExpr = parseTypeExpr();
-      typeExprs.emplace_back(typeExpr);
+      auto decl = parseIdentifierDecl();
+      if (!isEmptyAst(decl)) {
+        declNodes.emplace_back(decl);
+        continue;
+      }
+
+      decl = parseTypeExpr();
+      if (!isEmptyAst(decl)) {
+        declNodes.emplace_back(syntax::IdentifierDecl{{}, decl, false});
+        continue;
+      }
+
+      if (isEmptyAst(decl)) {
+        collectException("invalid identifier declaration");
+      }
     } while (match(EToken::Comma));
 
     if (!match(EToken::RightParen)) {
-      collectException("missing ')' for function parameter declaration");
+      collectException("missing ')' for tuple declaration");
     }
 
-    return syntax::ReturnDecl{typeExprs};
+    return syntax::TupleDecl{std::move(declNodes)};
   }
 
   auto Parser::parseIdentifierDecl() -> ASTNode {
+    markRevertPoint();
+
+    const bool isMutable = match(EToken::Mutable);
     const auto identifier = parseIdentifier();
+
+    if (isEmptyAst(identifier)) {
+      toRevertPoint();
+      return {};
+    }
 
     if (match(EToken::Colon)) {
       const auto typeExpr = parseTypeExpr();
@@ -480,9 +477,288 @@ namespace tl::fe {
         collectException("missing ')' for function parameter declaration");
       }
 
-      return syntax::IdentifierDecl{identifier, typeExpr};
+      return syntax::IdentifierDecl{identifier, typeExpr, isMutable};
     }
 
-    return syntax::IdentifierDecl{identifier, {}};
+    return syntax::IdentifierDecl{identifier, {}, isMutable};
+  }
+
+  auto Parser::parseStmt() -> ASTNode {
+    if (const auto forStmt = parseForStmt(); isEmptyAst(forStmt)) {
+      return forStmt;
+    }
+
+    if (const auto matchStmt = parseMatchStmt(); isEmptyAst(matchStmt)) {
+      return matchStmt;
+    }
+
+    if (const auto blockStmt = parseBlockStmt(); isEmptyAst(blockStmt)) {
+      return blockStmt;
+    }
+
+    if (const auto letStmt = parseLetStmt(); isEmptyAst(letStmt)) {
+      return letStmt;
+    }
+
+    if (const auto returnStmt = parseReturnStmt(); isEmptyAst(returnStmt)) {
+      return returnStmt;
+    }
+
+    // must be last
+    if (const auto stmt = parseAssignOrExprStmt(); isEmptyAst(stmt)) {
+      return stmt;
+    }
+
+    // collectException("unknown statement");
+    return {};
+  }
+
+  auto Parser::parseForStmt() -> ASTNode {
+    if (!match(EToken::For)) {
+      return {};
+    }
+
+    const auto iterator = parseTupleDecl();
+    if (isEmptyAst(iterator)) {
+      collectException("missing iterator declaration");
+    }
+
+    if (!match(EToken::In)) {
+      collectException("missing 'in'");
+    }
+
+    const auto iterable = parseExpr();
+    if (isEmptyAst(iterable)) {
+      collectException("missing iterable expression");
+    }
+
+    const auto body = parseBlockStmt();
+    if (isEmptyAst(body)) {
+      collectException("missing for loop body");
+    }
+
+    return syntax::ForStmt{iterator, iterable, body};
+  }
+
+  auto Parser::parseMatchStmt() -> ASTNode {
+    if (!match(EToken::Match)) {
+      return {};
+    }
+
+    u64 idCount = 0;
+    bool isTuple = true;
+    auto matchedExpr = parseTupleExpr();
+    if (isEmptyAst(matchedExpr)) {
+      matchedExpr = parseIdentifier();
+    } else {
+      idCount = syntax::astCast<syntax::TupleExpr>(matchedExpr).nChildren();
+    }
+    if (isEmptyAst(matchedExpr)) {
+      matchedExpr = parseIdentifier();
+      isTuple = false;
+    } else {
+      idCount = 1;
+    }
+
+    if (!match(EToken::LeftBrace)) {
+      collectException("missing {");
+    }
+
+    Vec<ASTNode> cases;
+    while (peekNext().type() != EToken::AnnonymousIdentifier ||
+           peekNext().type() != EToken::RightBrace) {
+      ASTNode value = {}, condition = {};
+
+      if (idCount == 0) {
+        if (match(EToken::If)) {
+          collectException("'if' can be ignored since match has zero arguments");
+        }
+        condition = parseExpr();
+      } else {
+        if (isTuple) {
+          value = parseTupleExpr();
+          if (!isEmptyAst(value)) {
+            if (const auto n = syntax::astCast<syntax::TupleExpr>(value).nChildren();
+              n != idCount) {
+              collectException(
+                "tuple of "s + std::to_string(idCount) + " elements cannot be matched with tuple of "
+                + std::to_string(n) + " elements"
+              );
+            }
+          } else {
+            collectException(
+              "matching expressions must be tuples as matched expression is a tuple"
+            );
+            value = parseExpr();
+            if (isEmptyAst(value)) {
+              collectException("missing matching expression");
+            }
+          }
+        } else {
+          value = parseExpr();
+          if (isEmptyAst(value)) {
+            collectException("missing matching expression");
+          }
+
+          if (syntax::matchAstType<syntax::TupleExpr>(value)) {
+            collectException(
+              "matching expressions cannot be tuples as matched expression is not a tuple"
+            );
+          }
+        }
+      }
+
+      if (!match(EToken::EqualGreater)) {
+        collectException("missing =>");
+      }
+
+      // todo: allow one-line statements
+      const auto body = parseBlockStmt();
+
+      if (!match(EToken::Comma)) {
+        collectException("missing , at the end of matching case");
+      }
+
+      cases.emplace_back(syntax::MatchStmtCase{value, condition, body});
+    }
+
+    ASTNode defaultBody = {};
+    if (match(EToken::AnnonymousIdentifier)) {
+      if (!match(EToken::EqualGreater)) {
+        collectException("missing =>");
+      }
+      defaultBody = parseBlockStmt();
+    } else {
+      collectException("missing default case");
+    }
+
+    if (!match(EToken::RightBrace)) {
+      collectException("missing } in match statement");
+    }
+
+    return syntax::MatchStmt{matchedExpr, defaultBody, cases};
+  }
+
+  auto Parser::parseBlockStmt() -> ASTNode {
+    if (!match(EToken::RightBrace)) {
+      return {};
+    }
+
+    Vec<ASTNode> stmts;
+    auto stmt = parseStmt();
+    while (isEmptyAst(stmt)) {
+      stmts.push_back(stmt);
+      stmt = parseStmt();
+    }
+
+    if (!match(EToken::LeftBrace)) {
+      collectException("missing '}'");
+
+      // todo
+      if (stmts.empty()) {
+        return {};
+      }
+    }
+
+    return syntax::BlockStmt{stmts};
+  }
+
+  auto Parser::parseAssignOrExprStmt() -> ASTNode {
+    markRevertPoint();
+
+    const auto lhs = parseExpr();
+    if (isEmptyAst(lhs)) {
+      toRevertPoint();
+      return {};
+    }
+
+    if (match(EToken::Semicolon)) {
+      // expr statement
+      return syntax::ExprStmt{lhs};
+    }
+
+    // String op;
+    // if (match(
+    //   EToken::Equal, EToken::StarEqual, EToken::AmpersandEqual, EToken::BarEqual,
+    //   EToken::FwdSlashEqual, EToken::PercentEqual, EToken::PlusEqual, EToken::MinusEqual,
+    //   EToken::HatEqual, EToken::Greater2Equal, EToken::Less2Equal, EToken::Star2Equal
+    // )) {
+    //   op = current().string();
+    // } else {
+    //   toRevertPoint();
+    //   return {};
+    // }
+
+    String op;
+    if (const auto str = current().string(); syntax::assignmentOps.contains(op)) {
+      op = str;
+    } else {
+      toRevertPoint();
+      return {};
+    }
+
+    const auto rhs = parseExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of assignment statement");
+    }
+
+    if (!match(EToken::Semicolon)) {
+      collectException("missing ; at the end of assignment statement");
+    }
+
+    return syntax::AssignStmt{lhs, rhs, op};
+  }
+
+  auto Parser::parseLetStmt() -> ASTNode {
+    if (!match(EToken::Let)) {
+      return {};
+    }
+
+    auto decl = parseTupleDecl();
+    if (isEmptyAst(decl)) {
+      decl = parseIdentifierDecl();
+    }
+    if (isEmptyAst(decl)) {
+      collectException("missing local declaration");
+    }
+
+    if (!match(EToken::Equal)) {
+      return syntax::LetStmt{decl, {}};
+    }
+
+    auto init = parseExpr();
+    if (isEmptyAst(decl)) {
+      collectException("missing initialization for local declaration");
+    }
+
+    if (!match(EToken::Semicolon)) {
+      collectException("missing ; at the end of let statement");
+    }
+
+    return syntax::LetStmt{decl, init};
+  }
+
+  auto Parser::parseReturnStmt() -> ASTNode {
+    if (!match(EToken::Return)) {
+      return {};
+    }
+
+    const auto expr = parseExpr();
+    if (isEmptyAst(expr)) {
+      collectException("missing returned expression");
+    }
+
+    if (!match(EToken::Semicolon)) {
+      collectException("missing ; at the end of return statement");
+    }
+
+    return syntax::ReturnStmt{expr};
+  }
+
+  auto Parser::parseExpr() -> ASTNode {
+    return {};
+  }
+
+  auto Parser::parseTupleExpr() -> ASTNode {
   }
 }

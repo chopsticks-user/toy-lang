@@ -48,7 +48,7 @@ namespace tl::syntax {
 
   class IdentifierDecl final : public ASTNodeBase {
   public:
-    IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr);
+    IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, bool isMutable);
 
     auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -57,6 +57,13 @@ namespace tl::syntax {
     auto typeExpr() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
+
+    auto isMutable() const noexcept -> bool {
+      return m_mutable;
+    }
+
+  private:
+    bool m_mutable;
   };
 
   class TupleDecl final : public ASTNodeBase {

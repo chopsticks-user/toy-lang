@@ -33,6 +33,30 @@ private:
 
 TEST_CASE_WITH_FIXTURE("PrettyPrinter: module, import and type declarations", "[PrettyPrinter]") {
   String source = R"(
+module    foo ::bar;
+import std  ::io ;
+import  std:: math;
+
+export type   Number = math ::Complex   | Int| Float  ;
+type Complex=math::Complex;
+)";
+
+  String expected = R"(
+module foo::bar;
+
+import std::io;
+import std::math;
+
+export type Number = math::Complex | Int | Float;
+
+internal type Complex = math::Complex;
+)";
+
+  REQUIRE_PRETTY_PRINTER(source, expected);
+}
+
+TEST_CASE_WITH_FIXTURE("PrettyPrinter: concept", "[PrettyPrinter]") {
+  String source = R"(
 module    foo;
 import std  ::io ;
 import  std:: math;
@@ -55,42 +79,26 @@ internal type Complex = math::Complex;
   REQUIRE_PRETTY_PRINTER(source, expected);
 }
 
-// TEST_CASE_WITH_FIXTURE("PrettyPrinter: concept", "[PrettyPrinter]") {
-//   String source = R"(
-// module foo;
-//
-// export concept IsComplex {
-//   fn real: () -> Float | Int;
-//   fn img: () -> Float | Int;
-//
-//   fn real: (val: Float | Int) -> Void;
-//   fn img: (val: Float | Int) -> Void;
-//
-//   fn +: (other: Complex) -> Complex;
-//   fn ==: (other: Complex) -> Bool;
-//
-//   fn conjugate: () -> Complex;
-//   fn magnitude: () -> Float;
-// }
-// )";
-//
-//   String expected = R"(
-// module foo;
-//
-// export concept IsComplex {
-//   fn real: () -> Float | Int;
-//   fn img: () -> Float | Int;
-//
-//   fn real: (val: Float | Int) -> Void;
-//   fn img: (val: Float | Int) -> Void;
-//
-//   fn +: (other: Complex) -> Complex;
-//   fn ==: (other: Complex) -> Bool;
-//
-//   fn conjugate: () -> Complex;
-//   fn magnitude: () -> Float;
-// }
-// )";
-//
-//   REQUIRE_PRETTY_PRINTER(source, expected);
-// }
+TEST_CASE_WITH_FIXTURE("PrettyPrinter: function", "[PrettyPrinter]") {
+  String source = R"(
+module    foo;
+import std  ::io ;
+import  std:: math;
+
+export type   Number = math ::Complex   | Int| Float  ;
+type Complex=math::Complex;
+)";
+
+  String expected = R"(
+module foo;
+
+import std::io;
+import std::math;
+
+export type Number = math::Complex | Int | Float;
+
+internal type Complex = math::Complex;
+)";
+
+  REQUIRE_PRETTY_PRINTER(source, expected);
+}

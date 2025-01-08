@@ -1,126 +1,120 @@
-// #ifndef  TOYLANG_SYNTAX_STATEMENTS_HPP
-// #define  TOYLANG_SYNTAX_STATEMENTS_HPP
-//
-// #include "Base.hpp"
-// #include "Expressions.hpp"
-//
-// #include "Core/Core.hpp"
-//
-// namespace tl::syntax {
-//   class BlockStatement final : public ASTNodeBase {
-//   public:
-//     explicit BlockStatement(Vec<ASTNode> statements);
-//
-//   private:
-//   };
-//
-//   class IdentifierDeclStatement final : public ASTNodeBase {
-//   public:
-//     IdentifierDeclStatement(Vec<ASTNode> fragments, String mut);
-//
-//     auto mutibility() -> const String & {
-//       return m_mutibility;
-//     }
-//
-//   private:
-//     String m_mutibility;
-//   };
-//
-//   class ReturnStatement final : public ASTNodeBase {
-//   public:
-//     explicit ReturnStatement(CRef<ASTNode> expr);
-//
-//     auto expression() -> CRef<ASTNode> {
-//       return childAt(0);
-//     }
-//
-//   private:
-//   };
-//
-//   class AssignmentStatement final : public ASTNodeBase {
-//   public:
-//     AssignmentStatement(
-//       ASTNode left, ASTNode right, String op
-//     );
-//
-//     auto left() -> CRef<ASTNode> {
-//       return childAt(0);
-//     }
-//
-//     auto right() -> CRef<ASTNode> {
-//       return childAt(1);
-//     }
-//
-//     auto op() -> const String & {
-//       return m_op;
-//     }
-//
-//   private:
-//     String m_op;
-//   };
-//
-//   class IfStatement final : public ASTNodeBase {
-//   public:
-//     IfStatement(
-//       ASTNode decl, ASTNode cond,
-//       ASTNode body, ASTNode elseBody
-//     );
-//
-//     auto declStatement() -> CRef<ASTNode> {
-//       return childAt(0);
-//     }
-//
-//     auto condition() -> CRef<ASTNode> {
-//       return childAt(1);
-//     }
-//
-//     auto body() -> CRef<ASTNode> {
-//       return childAt(2);
-//     }
-//
-//     // may contain another if statement
-//     auto elseNode() -> CRef<ASTNode> {
-//       return childAt(3);
-//     }
-//
-//   private:
-//   };
-//
-//   class ForStatement final : public ASTNodeBase {
-//   public:
-//     ForStatement(
-//       ASTNode decl, ASTNode cond,
-//       ASTNode postExpr, ASTNode loopBody
-//     );
-//
-//     ForStatement(
-//       ASTNode it, ASTNode collection, ASTNode loopBody
-//     );
-//
-//     auto isForRange() const -> bool {
-//       // ranged-for loops only contains 2 elements, an iterator and a collection
-//       return nChildren() == 2;
-//     }
-//
-//     auto iterator() -> CRef<ASTNode> {
-//       return firstChild();
-//     }
-//
-//     auto conditionOrCollection() -> CRef<ASTNode> {
-//       return childAt(1);
-//     }
-//
-//     auto postExpression() -> CRef<ASTNode> {
-//       return childAt(2);
-//     }
-//
-//     // may contain another if statement
-//     auto body() -> CRef<ASTNode> {
-//       return lastChild();
-//     }
-//
-//   private:
-//   };
-// }
-//
-// #endif // TOYLANG_SYNTAX_STATEMENTS_HPP
+#ifndef  TOYLANG_SYNTAX_STATEMENTS_HPP
+#define  TOYLANG_SYNTAX_STATEMENTS_HPP
+
+#include "Base.hpp"
+#include "Core/Core.hpp"
+
+namespace tl::syntax {
+  class ForStmt final : public ASTNodeBase {
+  public:
+    ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body);
+
+    auto iterator() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto iterable() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(2);
+    }
+  };
+
+  class MatchStmt final : public ASTNodeBase {
+  public:
+    MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases);
+
+    auto matchedExpr() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto defaultCase() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto caseAt(const u64 index) const noexcept -> CRef<ASTNode> {
+      return childAt(index + 2);
+    }
+  };
+
+  class MatchStmtCase final : public ASTNodeBase {
+  public:
+    MatchStmtCase(ASTNode value, ASTNode condition, ASTNode body);
+
+    auto value() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(2);
+    }
+  };
+
+  class BlockStmt final : public ASTNodeBase {
+  public:
+    explicit BlockStmt(Vec<ASTNode> statements);
+
+    auto stmt(const u64 index) -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
+
+  class LetStmt final : public ASTNodeBase {
+  public:
+    LetStmt(ASTNode decl, ASTNode init);
+
+    auto decl() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto init() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class ReturnStmt final : public ASTNodeBase {
+  public:
+    explicit ReturnStmt(ASTNode expr);
+
+    auto expr() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+
+  class AssignStmt final : public ASTNodeBase {
+  public:
+    AssignStmt(ASTNode left, ASTNode right, String op);
+
+    auto left() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto right() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto op() const noexcept -> const String & {
+      return m_op;
+    }
+
+  private:
+    String m_op;
+  };
+
+  class ExprStmt final : public ASTNodeBase {
+  public:
+    explicit ExprStmt(ASTNode expr);
+
+    auto expr() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+  };
+}
+
+#endif // TOYLANG_SYNTAX_STATEMENTS_HPP

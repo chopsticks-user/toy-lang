@@ -26,7 +26,7 @@ namespace tl::fe {
     };
 
     enum class Context {
-      None, Global, Function, Concept, Class, String,
+      None, Global, Function, Concept, Class, Type, String,
     };
 
   public:
@@ -67,7 +67,7 @@ namespace tl::fe {
 
     auto toRevertPoint() noexcept -> void;
 
-  private:
+  protected:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
     auto parseModuleDecl() -> syntax::ASTNode;
@@ -82,23 +82,35 @@ namespace tl::fe {
 
     auto parseConceptDef() -> syntax::ASTNode;
 
-    auto parseIdentifier() -> syntax::ASTNode;
-
-    auto parseTypeIdentifier() -> syntax::ASTNode;
-
-    auto parseTypeExpr() -> syntax::ASTNode;
-
     auto parseFunctionPrototype() -> syntax::ASTNode;
 
     auto parseTupleDecl() -> syntax::ASTNode;
 
-    auto parseParameterDecl() -> syntax::ASTNode;
-
-    auto parseReturnDecl() -> syntax::ASTNode;
-
     auto parseIdentifierDecl() -> syntax::ASTNode;
 
-    // auto parseExpr() -> syntax::ASTNode;
+    auto parseTypeExpr() -> syntax::ASTNode;
+
+    auto parseTypeIdentifier() -> syntax::ASTNode;
+
+    auto parseIdentifier() -> syntax::ASTNode;
+
+    auto parseStmt() -> syntax::ASTNode;
+
+    auto parseForStmt() -> syntax::ASTNode;
+
+    auto parseMatchStmt() -> syntax::ASTNode;
+
+    auto parseBlockStmt() -> syntax::ASTNode;
+
+    auto parseAssignOrExprStmt() -> syntax::ASTNode;
+
+    auto parseLetStmt() -> syntax::ASTNode;
+
+    auto parseReturnStmt() -> syntax::ASTNode;
+
+    auto parseExpr() -> syntax::ASTNode;
+
+    auto parseTupleExpr() -> syntax::ASTNode;
 
   private:
     String m_filepath;

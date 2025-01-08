@@ -16,6 +16,14 @@ namespace tl::syntax {
     return m_children.at(index);
   }
 
+  auto ASTNodeBase::firstChild() const -> CRef<ASTNode> {
+    return m_children.front();
+  }
+
+  auto ASTNodeBase::lastChild() const -> CRef<ASTNode> {
+    return m_children.back();
+  }
+
   auto ASTNodeBase::childAt(sz index) -> ASTNode & {
     return m_children.at(index);
   }

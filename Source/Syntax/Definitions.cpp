@@ -1,9 +1,8 @@
 #include "Definitions.hpp"
-
-#include <utility>
-
 #include "Expressions.hpp"
 #include "Statements.hpp"
+
+#include <utility>
 
 namespace tl::syntax {
   ModuleDecl::ModuleDecl(ASTNode nsIdentifier)
@@ -18,8 +17,9 @@ namespace tl::syntax {
     : ASTNodeBase({identifier, typeExpr}), m_storage(storage) {
   }
 
-  IdentifierDecl::IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr)
-    : ASTNodeBase({identifier, typeExpr}) {
+  IdentifierDecl::IdentifierDecl(
+    CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, const bool isMutable
+  ): ASTNodeBase({identifier, typeExpr}), m_mutable(isMutable) {
   }
 
   TupleDecl::TupleDecl(Vec<ASTNode> idDecls)

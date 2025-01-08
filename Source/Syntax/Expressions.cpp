@@ -51,6 +51,9 @@ namespace tl::syntax {
     : ASTNodeBase({}), m_path(std::move(path)) {
   }
 
+  TupleExpr::TupleExpr(Vec<ASTNode> ids) : ASTNodeBase(std::move(ids)) {
+  }
+
   FunctionCallExpr::FunctionCallExpr(
     CRef<ASTNode> callee,
     Vec<ASTNode> args

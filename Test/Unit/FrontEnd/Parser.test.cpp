@@ -41,7 +41,7 @@ private:
 
 TEST_CASE_WITH_FIXTURE("Parser: module, import and type declarations", "[Parser]") {
   REQUIRE_NOTHROW(parse(R"(
-module foo;
+module foo::bar;
 
 import std::io;
 import std::math;
@@ -51,9 +51,9 @@ type Complex = math::Complex;
   )"));
 
   auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
-  REQUIRE(moduleId.name() == "foo");
-  REQUIRE(moduleId.path() == "foo");
-  REQUIRE_FALSE(moduleId.isImported());
+  REQUIRE(moduleId.name() == "bar");
+  REQUIRE(moduleId.path() == "foo::bar");
+  REQUIRE(moduleId.isImported());
   REQUIRE_FALSE(moduleId.isType());
 
   auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
@@ -117,7 +117,7 @@ type Complex = math::Complex;
 
 TEST_CASE_WITH_FIXTURE("Parser: concept", "[Parser]") {
   REQUIRE_NOTHROW(parse(R"(
-module foo::bar;
+module foo;
 
 export concept IsComplex {
   fn real: () -> Float | Int;
@@ -133,10 +133,22 @@ export concept IsComplex {
   fn magnitude: () -> Float;
 }
   )"));
+}
 
-  auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
-  REQUIRE(moduleId.name() == "bar");
-  REQUIRE(moduleId.path() == "foo::bar");
-  REQUIRE(moduleId.isImported());
-  REQUIRE_FALSE(moduleId.isType());
+TEST_CASE_WITH_FIXTURE("Parser: function", "[Parser]") {
+  //   REQUIRE_NOTHROW(parse(R"(
+  // module foo;
+  //
+  // local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
+  //     sum = x + y;
+  //     return (sum, x * y);
+  // }
+  //
+  // export fn double: (x: Float) -> {
+  //     return (x: Float) -> Float {
+  //         let (_, dbl: Float) = eval(x, 2);
+  //         return dbl;
+  //     };
+  // }
+  //     )"));
 }

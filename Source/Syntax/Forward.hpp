@@ -14,6 +14,7 @@ namespace tl::syntax {
   class UnaryExpr;
   class PostfixUnaryExpr;
   class Identifier;
+  class TupleExpr;
   class TypeIdentifier;
   class FunctionCallExpr;
   class SubScriptingExpr;
@@ -29,12 +30,14 @@ namespace tl::syntax {
   class ParameterDecl;
   class ReturnDecl;
 
-  // class BlockStatement;
-  // class IdentifierDeclStatement;
-  // class ReturnStatement;
-  // class AssignmentStatement;
-  // class MatchStatement;
-  // class ForStatement;
+  class ForStmt;
+  class MatchStmt;
+  class MatchStmtCase;
+  class BlockStmt;
+  class LetStmt;
+  class ReturnStmt;
+  class AssignStmt;
+  class ExprStmt;
 
   class FunctionPrototype;
   class FunctionDef;
@@ -48,11 +51,10 @@ namespace tl::syntax {
   using ASTNode = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
-    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier,
+    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
     FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr,
 
-    // BlockStatement, IdentifierDeclStatement, ReturnStatement,
-    // AssignmentStatement, MatchStatement, ForStatement,
+    ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
     FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
@@ -73,6 +75,11 @@ namespace tl::syntax {
   const HashSet<String> overloadableOps = {
     "+", "-", "*", "/",
     "==", "!=",
+  };
+
+  const HashSet<String> assignmentOps = {
+    "=", "+=", "-=", "*=", "/=", "%=", "**=",
+    "&=", "|=", "^=", "<<=", ">>=",
   };
 }
 

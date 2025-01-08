@@ -1,39 +1,44 @@
-// #include "Statements.hpp"
-// #include "Definitions.hpp"
-//
-// namespace tl::syntax {
-//   BlockStatement::BlockStatement(Vec<ASTNode> statements)
-//     : ASTNodeBase(std::move(statements)) {
-//   }
-//
-//   IdentifierDeclStatement::IdentifierDeclStatement(
-//     Vec<ASTNode> fragments, String mut
-//   ) : ASTNodeBase(std::move(fragments)), m_mutibility(std::move(mut)) {
-//   }
-//
-//   ReturnStatement::ReturnStatement(const ASTNode &expr)
-//     : ASTNodeBase(isEmpty(expr) ? Vec<ASTNode>{} : std::vector{expr}) {
-//   }
-//
-//   AssignmentStatement::AssignmentStatement(
-//     ASTNode left, ASTNode right, String op
-//   ): ASTNodeBase({left, right}), m_op(std::move(op)) {
-//   }
-//
-//   IfStatement::IfStatement(
-//     ASTNode decl, ASTNode cond,
-//     ASTNode body, ASTNode elseBody
-//   ): ASTNodeBase({decl, cond, body, elseBody}) {
-//   }
-//
-//   ForStatement::ForStatement(
-//     ASTNode decl, ASTNode cond,
-//     ASTNode postExpr, ASTNode loopBody
-//   ): ASTNodeBase({decl, cond, postExpr, loopBody}) {
-//   }
-//
-//   ForStatement::ForStatement(
-//     ASTNode it, ASTNode collection, ASTNode loopBody
-//   ): ASTNodeBase({it, collection, loopBody}) {
-//   }
-// }
+#include "Statements.hpp"
+#include "Expressions.hpp"
+#include "Definitions.hpp"
+
+namespace tl::syntax {
+  ForStmt::ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body)
+    : ASTNodeBase({iterator, iterable, body}) {
+  }
+
+  MatchStmt::MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases)
+    : ASTNodeBase({
+      [&]() {
+        // todo: move args
+        auto v = std::vector{matchedExpr, defaultBody};
+        v.insert(v.end(), cases.begin(), cases.end());
+        return v;
+      }()
+    }) {
+  }
+
+  MatchStmtCase::MatchStmtCase(ASTNode value, ASTNode condition, ASTNode body)
+    : ASTNodeBase({value, condition, body}) {
+  }
+
+  BlockStmt::BlockStmt(Vec<ASTNode> statements)
+    : ASTNodeBase(std::move(statements)) {
+  }
+
+  LetStmt::LetStmt(ASTNode decl, ASTNode init)
+    : ASTNodeBase({decl, init}) {
+  }
+
+  ReturnStmt::ReturnStmt(ASTNode expr)
+    : ASTNodeBase({expr}) {
+  }
+
+  AssignStmt::AssignStmt(ASTNode left, ASTNode right, String op)
+    : ASTNodeBase({left, right}), m_op(std::move(op)) {
+  }
+
+  ExprStmt::ExprStmt(ASTNode expr)
+    : ASTNodeBase({expr}) {
+  }
+}

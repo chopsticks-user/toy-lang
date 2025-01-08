@@ -184,12 +184,21 @@ namespace tl::syntax {
       return m_path.size() == 1 && overloadableOps.contains(m_path.back());
     }
 
-    auto isAnnonymous() const noexcept -> bool {
+    auto isAnonymous() const noexcept -> bool {
       return m_path.size() == 1 && m_path.back() == "_";
     }
 
   private:
     Vec<String> m_path;
+  };
+
+  class TupleExpr final : public ASTNodeBase {
+  public:
+    explicit TupleExpr(Vec<ASTNode> ids);
+
+    auto identifier(const u64 index) const noexcept -> CRef<ASTNode> {
+      return childAt(index);
+    }
   };
 
   class FunctionCallExpr final : public ASTNodeBase {

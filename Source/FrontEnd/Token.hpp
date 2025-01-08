@@ -15,7 +15,7 @@ namespace tl::fe {
     Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2, Equal2,
     Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
     FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
-    MinusGreater, LessMinus, Dot2, HatEqual,
+    MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
 
     // Triple
     Dot3, Greater2Equal, Less2Equal, ColonEqualGreater, ColonTildeGreater, Star2Equal,
