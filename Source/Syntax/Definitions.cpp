@@ -40,9 +40,17 @@ namespace tl::syntax {
      m_type(fType) {
   }
 
+  auto FunctionPrototype::isAnonymous() const noexcept -> bool {
+    return isEmptyAst(identifier());
+  }
+
   FunctionDef::FunctionDef(
     const Storage fStorage, ASTNode fPrototype, ASTNode fBody
   ): ASTNodeBase({fPrototype, fBody}), m_storage(fStorage) {
+  }
+
+  auto FunctionDef::isLambda() const noexcept -> bool {
+    return astCast<FunctionPrototype>(prototype()).isAnonymous();
   }
 
   ConceptDef::ConceptDef(const Storage storage, ASTNode identifier, Vec<ASTNode> requirements)

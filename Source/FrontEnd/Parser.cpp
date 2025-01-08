@@ -3,6 +3,7 @@
 #include <utility>
 
 using tl::syntax::ASTNode;
+using tl::syntax::isEmptyAst;
 
 namespace tl::fe {
   auto Parser::current() const -> CRef<Token> {
@@ -252,12 +253,16 @@ namespace tl::fe {
 
   auto Parser::parseFunctionDef() -> ASTNode {
     const auto prototype = parseFunctionPrototype();
-
     if (isEmptyAst(prototype)) {
       return {};
     }
 
-    return {};
+    const auto body = parseBlockStmt();
+    if (isEmptyAst(body)) {
+      collectException("missing function body");
+    }
+
+    return syntax::FunctionDef{storage(), prototype, body};
   }
 
   auto Parser::parseClassDef() -> ASTNode {
@@ -372,25 +377,29 @@ namespace tl::fe {
   }
 
   auto Parser::parseFunctionPrototype() -> ASTNode {
-    if (!match(EToken::Fn)) {
-      return {};
-    }
-
-    auto identifier = parseIdentifier();
-
-    // todo
-    if (isEmptyAst(identifier)) {
-      if ((context() == Context::Concept || context() == Context::Class) &&
-          syntax::overloadableOps.contains(current().string())) {
-        identifier = syntax::Identifier{{current().string()}};
-        advance();
-      } else {
-        collectException("missing function identifier");
+    const bool parsingLambda = context() == Context::Lambda;
+    ASTNode identifier;
+    if (!parsingLambda) {
+      if (!match(EToken::Fn)) {
+        return {};
       }
-    }
 
-    if (!match(EToken::Colon)) {
-      collectException("missing colon after function identifier");
+      identifier = parseIdentifier();
+
+      // todo
+      if (isEmptyAst(identifier)) {
+        if ((context() == Context::Concept || context() == Context::Class) &&
+            syntax::overloadableOps.contains(current().string())) {
+          identifier = syntax::Identifier{{current().string()}};
+          advance();
+        } else {
+          collectException("missing function identifier");
+        }
+      }
+
+      if (!match(EToken::Colon)) {
+        collectException("missing colon after function identifier");
+      }
     }
 
     auto params = parseTupleDecl();
@@ -401,10 +410,16 @@ namespace tl::fe {
       params = parseTypeExpr();
     }
     if (isEmptyAst(params)) {
+      if (parsingLambda) {
+        return {};
+      }
       collectException("missing function parameters");
     }
 
     if (!match(EToken::MinusGreater)) {
+      if (parsingLambda) {
+        return {};
+      }
       collectException("missing -> after function parameters");
     }
 
@@ -756,9 +771,391 @@ namespace tl::fe {
   }
 
   auto Parser::parseExpr() -> ASTNode {
+    return parseTernaryExpr();
+  }
+
+  auto Parser::parseTernaryExpr() -> ASTNode {
+    const auto cond = parseSequenceExpr();
+
+    if (!match(EToken::QMark)) {
+      return cond;
+    }
+
+    const auto ifTrue = parseSequenceExpr();
+    if (isEmptyAst(ifTrue)) {
+      collectException("missing if-true expression of conditional ternary expression");
+    }
+
+    if (!match(EToken::Colon)) {
+      collectException("missing : of conditional ternary expression");
+    }
+
+    const auto ifFalse = parseSequenceExpr();
+    if (isEmptyAst(ifFalse)) {
+      collectException("missing if-false expression of conditional ternary expression");
+    }
+
+    return syntax::TernaryExpr{cond, ifTrue, ifFalse, "?", ":"};
+  }
+
+  auto Parser::parseSequenceExpr() -> ASTNode {
+    const auto from = parseNullCoalescingExpr();
+
+    if (!match(EToken::Dot2)) {
+      return from;
+    }
+
+    const auto to = parseNullCoalescingExpr();
+    if (isEmptyAst(to)) {
+      collectException("missing to expression of sequence expression");
+    }
+
+    if (match(EToken::By, EToken::At)) {
+      const auto by = parseNullCoalescingExpr();
+      if (isEmptyAst(by)) {
+        collectException("missing by expression of sequence expression");
+      }
+
+      return syntax::TernaryExpr{from, to, by, "..", "@"};
+    }
+
+    return syntax::TernaryExpr{from, to, syntax::IntegerLiteral{1}, "..", "@"};
+  }
+
+  auto Parser::parseNullCoalescingExpr() -> ASTNode {
+    const auto lhs = parseLogicalOrExpr();
+
+    if (!match(EToken::QMark2)) {
+      return lhs;
+    }
+
+    const auto rhs = parseLogicalOrExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of null coalescing expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "??"};
+  }
+
+  auto Parser::parseLogicalOrExpr() -> ASTNode {
+    const auto lhs = parseLogicalAndExpr();
+
+    if (!match(EToken::Bar2)) {
+      return lhs;
+    }
+
+    const auto rhs = parseLogicalAndExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of logical or expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "||"};
+  }
+
+  auto Parser::parseLogicalAndExpr() -> ASTNode {
+    const auto lhs = parseInclusiveOrExpr();
+
+    if (!match(EToken::Ampersand2)) {
+      return lhs;
+    }
+
+    const auto rhs = parseInclusiveOrExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of logical and expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "||"};
+  }
+
+  auto Parser::parseInclusiveOrExpr() -> ASTNode {
+    const auto lhs = parseExclusiveOrExpr();
+
+    if (!match(EToken::Bar)) {
+      return lhs;
+    }
+
+    const auto rhs = parseExclusiveOrExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of inclusive or expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "|"};
+  }
+
+  auto Parser::parseExclusiveOrExpr() -> ASTNode {
+    const auto lhs = parseAndExpr();
+
+    if (!match(EToken::Hat)) {
+      return lhs;
+    }
+
+    const auto rhs = parseAndExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of exclusive or expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "^"};
+  }
+
+  auto Parser::parseAndExpr() -> ASTNode {
+    const auto lhs = parseEqualityExpr();
+
+    if (!match(EToken::Ampersand)) {
+      return lhs;
+    }
+
+    const auto rhs = parseEqualityExpr();
+    if (isEmptyAst(rhs)) {
+      collectException("missing rhs expression of and expression");
+    }
+
+    return syntax::BinaryExpr{lhs, rhs, "&"};
+  }
+
+  auto Parser::parseEqualityExpr() -> ASTNode {
+    const auto lhs = parseRelationalExpr();
+
+    if (match(EToken::Equal2, EToken::ExclaimEqual)) {
+      const auto op = current().string();
+
+      const auto rhs = parseRelationalExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of equality expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, op};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parseRelationalExpr() -> ASTNode {
+    const auto lhs = parseShiftExpr();
+
+    if (match(EToken::Less, EToken::LessEqual, EToken::Greater, EToken::GreaterEqual)) {
+      const auto op = current().string();
+
+      const auto rhs = parseShiftExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of relational expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, op};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parseShiftExpr() -> ASTNode {
+    const auto lhs = parseAdditiveExpr();
+
+    if (match(EToken::Less2, EToken::Greater2)) {
+      const auto op = current().string();
+
+      const auto rhs = parseAdditiveExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of shift expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, op};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parseAdditiveExpr() -> ASTNode {
+    const auto lhs = parseMultiplicativeExpr();
+
+    if (match(EToken::Plus, EToken::Minus)) {
+      const auto op = current().string();
+
+      const auto rhs = parseMultiplicativeExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of additive expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, op};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parseMultiplicativeExpr() -> ASTNode {
+    const auto lhs = parseExponentialExpr();
+
+    if (match(EToken::Star, EToken::FwdSlash, EToken::Percent)) {
+      const auto op = current().string();
+
+      const auto rhs = parseExponentialExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of multiplicative expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, op};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parseExponentialExpr() -> ASTNode {
+    const auto lhs = parsePipeExpr();
+
+    if (match(EToken::Star2)) {
+      const auto rhs = parsePipeExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of exponential expression");
+      }
+
+      return syntax::BinaryExpr{lhs, rhs, "**"};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parsePipeExpr() -> ASTNode {
+    const auto lhs = parsePrefixUnaryExpr();
+
+    if (match(EToken::BarGreater)) {
+      const auto rhs = parsePostfixExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of pipe expression");
+      }
+
+      const auto funCallExpr = syntax::FunctionCallExpr::fromPipeExpr(lhs, rhs);
+      if (!funCallExpr.has_value()) {
+        collectException(
+          "rhs expression of pipe expression must be either function application, type identifier or identifier"
+        );
+      }
+      return funCallExpr.value();
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parsePrefixUnaryExpr() -> ASTNode {
+    auto operand = parsePostfixExpr();
+
+    if (match(EToken::Exclaim, EToken::Tilde, EToken::Plus, EToken::Minus, EToken::Hash)) {
+      return syntax::UnaryExpr(operand, current().string());
+    }
+
+    return operand;
+  }
+
+  auto Parser::parsePostfixExpr() -> ASTNode {
+    auto lhs = parsePrimaryExpr();
+
+    if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
+      return syntax::FunctionCallExpr(lhs, tuple);
+    }
+
+    if (match(EToken::LeftBracket)) {
+      const auto subscript = parseExpr();
+      if (isEmptyAst(subscript)) {
+        collectException("missing subscript expression of subscripting expression");
+      }
+
+      if (!match(EToken::RightBracket)) {
+        collectException("missing ] of subscripting expression");
+      }
+
+      return syntax::SubScriptingExpr{lhs, subscript};
+    }
+
+    if (match(EToken::Dot)) {
+      auto field = parseIdentifier();
+      if (isEmptyAst(field)) {
+        field = parseTypeIdentifier();
+      }
+      if (isEmptyAst(field)) {
+        collectException("missing field expression of access expression");
+      }
+      return syntax::AccessExpr{lhs, field};
+    }
+
+    return lhs;
+  }
+
+  auto Parser::parsePrimaryExpr() -> ASTNode {
+    if (match(EToken::IntegerLiteral)) {
+      // todo: stoll exceptions
+      return syntax::IntegerLiteral{std::stoll(current().string())};
+    }
+
+    if (match(EToken::FloatLiteral)) {
+      // todo: stod exceptions
+      return syntax::FloatLiteral{std::stod(current().string())};
+    }
+
+    if (match(EToken::StringLiteral)) {
+      // todo: placeholders
+      return syntax::StringLiteral{current().string()};
+    }
+
+    if (match(EToken::LeftBracket)) {
+      Vec<ASTNode> elements;
+      do {
+        ASTNode element = parseExpr();
+        if (isEmptyAst(element)) {
+          if (peekNext().type() == EToken::Comma) {
+            collectException("missing array element");
+          } else {
+            break;
+          }
+        }
+        elements.emplace_back(element);
+      } while (match(EToken::Comma));
+
+      if (!match(EToken::RightBracket)) {
+        collectException("missing ] of array expression");
+      }
+
+      return syntax::ArrayExpr{elements};
+    }
+
+    if (const auto identifier = parseIdentifier(); !isEmptyAst(identifier)) {
+      return identifier;
+    }
+
+    // todo: paren
+    if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
+      return tuple;
+    }
+
+    enterContext(Context::Lambda);
+    if (const auto lambda = parseFunctionDef(); !isEmptyAst(lambda)) {
+      return lambda;
+    }
+    exitContext();
+
+    // todo: types
+
     return {};
   }
 
   auto Parser::parseTupleExpr() -> ASTNode {
+    if (!match(EToken::LeftParen)) {
+      return {};
+    }
+
+    Vec<ASTNode> elements;
+    do {
+      ASTNode element = parseExpr();
+      if (isEmptyAst(element)) {
+        if (peekNext().type() == EToken::Comma) {
+          collectException("missing tuple element");
+        } else {
+          break;
+        }
+      }
+      elements.emplace_back(element);
+    } while (match(EToken::Comma));
+
+    if (!match(EToken::RightParen)) {
+      collectException("missing )");
+    }
+
+    return {};
   }
 }
