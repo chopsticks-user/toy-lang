@@ -4,6 +4,10 @@
 
 using tl::String;
 using tl::u64;
+using tl::sz;
+using tl::CRef;
+using tl::Opt;
+using tl::Vec;
 using namespace tl::syntax;
 
 #define TEST_CASE_WITH_FIXTURE(...) \
@@ -23,7 +27,7 @@ protected:
       m_eCollector, filepath, tl::util::apply<tl::fe::Lexer>(std::move(iss))
     );
     m_eCollector.throwAllIfExists();
-    REQUIRE_VTYPE_OF(m_ast, TranslationUnit);
+    REQUIRE(std::holds_alternative<TranslationUnit>(m_ast));
   }
 
   template<std::derived_from<ASTNodeBase> TNode>
@@ -40,7 +44,8 @@ private:
 };
 
 TEST_CASE_WITH_FIXTURE("Parser: module, import and type declarations", "[Parser]") {
-  REQUIRE_NOTHROW(parse(R"(
+  SECTION("Simple") {
+    REQUIRE_NOTHROW(parse(R"(
 module foo::bar;
 
 import std::io;
@@ -48,75 +53,165 @@ import std::math;
 
 export type Number = math::Complex | Int | Float;
 type Complex = math::Complex;
-  )"));
+    )"));
 
-  auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
-  REQUIRE(moduleId.name() == "bar");
-  REQUIRE(moduleId.path() == "foo::bar");
-  REQUIRE(moduleId.isImported());
-  REQUIRE_FALSE(moduleId.isType());
+    auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
+    REQUIRE(moduleId.name() == "bar");
+    REQUIRE(moduleId.path() == "foo::bar");
+    REQUIRE(moduleId.isImported());
+    REQUIRE_FALSE(moduleId.isType());
 
-  auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
-  REQUIRE(importId0.name() == "io");
-  REQUIRE(importId0.path() == "std::io");
-  REQUIRE(importId0.isImported());
-  REQUIRE_FALSE(importId0.isType());
+    auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
+    REQUIRE(importId0.name() == "io");
+    REQUIRE(importId0.path() == "std::io");
+    REQUIRE(importId0.isImported());
+    REQUIRE_FALSE(importId0.isType());
 
-  auto importId1 = astCast<Identifier>(nodeAt<ImportDecl>(2).identifier());
-  REQUIRE(importId1.name() == "math");
-  REQUIRE(importId1.path() == "std::math");
-  REQUIRE(importId1.isImported());
-  REQUIRE_FALSE(importId1.isType());
+    auto importId1 = astCast<Identifier>(nodeAt<ImportDecl>(2).identifier());
+    REQUIRE(importId1.name() == "math");
+    REQUIRE(importId1.path() == "std::math");
+    REQUIRE(importId1.isImported());
+    REQUIRE_FALSE(importId1.isType());
 
-  auto typeDecl0 = nodeAt<TypeDecl>(3);
-  REQUIRE(typeDecl0.nChildren() == 2);
+    auto typeDecl0 = nodeAt<TypeDecl>(3);
+    REQUIRE(typeDecl0.nChildren() == 2);
 
-  auto typeId0 = astCast<Identifier>(typeDecl0.identifier());
-  REQUIRE(typeId0.name() == "Number");
-  REQUIRE(typeId0.path() == "Number");
-  REQUIRE(typeId0.isType());
+    auto typeId0 = astCast<Identifier>(typeDecl0.identifier());
+    REQUIRE(typeId0.name() == "Number");
+    REQUIRE(typeId0.path() == "Number");
+    REQUIRE(typeId0.isType());
 
-  auto typeExpr0 = astCast<TypeExpr>(typeDecl0.typeExpr());
-  REQUIRE(typeExpr0.nChildren() == 3);
+    auto typeExpr0 = astCast<TypeExpr>(typeDecl0.typeExpr());
+    REQUIRE(typeExpr0.nChildren() == 3);
 
-  auto type00 = astCast<Identifier>(typeExpr0.type(0));
-  REQUIRE(type00.name() == "Complex");
-  REQUIRE(type00.path() == "math::Complex");
-  REQUIRE(type00.isImported());
-  REQUIRE(type00.isType());
+    auto type00 = astCast<Identifier>(typeExpr0.type(0));
+    REQUIRE(type00.name() == "Complex");
+    REQUIRE(type00.path() == "math::Complex");
+    REQUIRE(type00.isImported());
+    REQUIRE(type00.isType());
 
-  auto type01 = astCast<Identifier>(typeExpr0.type(1));
-  REQUIRE(type01.name() == "Int");
-  REQUIRE(type01.path() == "Int");
-  REQUIRE_FALSE(type01.isImported());
-  REQUIRE(type01.isType());
+    auto type01 = astCast<Identifier>(typeExpr0.type(1));
+    REQUIRE(type01.name() == "Int");
+    REQUIRE(type01.path() == "Int");
+    REQUIRE_FALSE(type01.isImported());
+    REQUIRE(type01.isType());
 
-  auto type02 = astCast<Identifier>(typeExpr0.type(2));
-  REQUIRE(type02.name() == "Float");
-  REQUIRE(type02.path() == "Float");
-  REQUIRE_FALSE(type02.isImported());
-  REQUIRE(type02.isType());
+    auto type02 = astCast<Identifier>(typeExpr0.type(2));
+    REQUIRE(type02.name() == "Float");
+    REQUIRE(type02.path() == "Float");
+    REQUIRE_FALSE(type02.isImported());
+    REQUIRE(type02.isType());
 
-  auto typeDecl1 = nodeAt<TypeDecl>(4);
-  REQUIRE(typeDecl1.nChildren() == 2);
+    auto typeDecl1 = nodeAt<TypeDecl>(4);
+    REQUIRE(typeDecl1.nChildren() == 2);
 
-  auto typeId1 = astCast<Identifier>(typeDecl1.identifier());
-  REQUIRE(typeId1.name() == "Complex");
-  REQUIRE(typeId1.path() == "Complex");
-  REQUIRE(typeId1.isType());
+    auto typeId1 = astCast<Identifier>(typeDecl1.identifier());
+    REQUIRE(typeId1.name() == "Complex");
+    REQUIRE(typeId1.path() == "Complex");
+    REQUIRE(typeId1.isType());
 
-  auto typeExpr1 = astCast<TypeExpr>(typeDecl1.typeExpr());
-  REQUIRE(typeExpr1.nChildren() == 1);
+    auto typeExpr1 = astCast<TypeExpr>(typeDecl1.typeExpr());
+    REQUIRE(typeExpr1.nChildren() == 1);
 
-  auto type10 = astCast<Identifier>(typeExpr1.type(0));
-  REQUIRE(type10.name() == "Complex");
-  REQUIRE(type10.path() == "math::Complex");
-  REQUIRE(type10.isImported());
-  REQUIRE(type10.isType());
+    auto type10 = astCast<Identifier>(typeExpr1.type(0));
+    REQUIRE(type10.name() == "Complex");
+    REQUIRE(type10.path() == "math::Complex");
+    REQUIRE(type10.isImported());
+    REQUIRE(type10.isType());
+  }
 }
 
-TEST_CASE_WITH_FIXTURE("Parser: concept", "[Parser]") {
-  REQUIRE_NOTHROW(parse(R"(
+TEST_CASE_WITH_FIXTURE("Parser: function definition", "[Parser]") {
+  SECTION("Simple") {
+    REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
+}
+
+export fn double: (mutable x: Float) -> {
+}
+    )"));
+
+    auto fn = nodeAt<FunctionDef>(1);
+    REQUIRE(fn.storage() == Storage::Local);
+    REQUIRE_FALSE(fn.isLambda());
+
+    auto prototype = astCast<FunctionPrototype>(fn.prototype());
+    REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "eval");
+
+    // (x: Float, y: Float)
+    auto tupleDecl = astCast<TupleDecl>(prototype.params());
+    REQUIRE(tupleDecl.size() == 2);
+
+    // x: Float
+    auto idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+    REQUIRE_FALSE(idDecl.isMutable());
+    auto identifier = astCast<Identifier>(idDecl.identifier());
+    REQUIRE(identifier.name() == "x");
+    auto typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+    REQUIRE(typeExpr.nTypes() == 1);
+    REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+    // y: Float
+    idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+    REQUIRE_FALSE(idDecl.isMutable());
+    identifier = astCast<Identifier>(idDecl.identifier());
+    REQUIRE(identifier.name() == "y");
+    typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+    REQUIRE(typeExpr.nTypes() == 1);
+    REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+    // (sum: Float, product: Float)
+    tupleDecl = astCast<TupleDecl>(prototype.returns());
+    REQUIRE(tupleDecl.size() == 2);
+
+    // sum: Float
+    idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+    REQUIRE_FALSE(idDecl.isMutable());
+    identifier = astCast<Identifier>(idDecl.identifier());
+    REQUIRE(identifier.name() == "sum");
+    typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+    REQUIRE(typeExpr.nTypes() == 1);
+    REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+    // product: Float
+    idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+    REQUIRE_FALSE(idDecl.isMutable());
+    identifier = astCast<Identifier>(idDecl.identifier());
+    REQUIRE(identifier.name() == "product");
+    typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+    REQUIRE(typeExpr.nTypes() == 1);
+    REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+    fn = nodeAt<FunctionDef>(2);
+    REQUIRE(fn.storage() == Storage::Export);
+    REQUIRE_FALSE(fn.isLambda());
+
+    prototype = astCast<FunctionPrototype>(fn.prototype());
+    REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "double");
+
+    // (mutable x: Float)
+    tupleDecl = astCast<TupleDecl>(prototype.params());
+    REQUIRE(tupleDecl.size() == 1);
+
+    // mutable x: Float
+    idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+    REQUIRE(idDecl.isMutable());
+    identifier = astCast<Identifier>(idDecl.identifier());
+    REQUIRE(identifier.name() == "x");
+    typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+    REQUIRE(typeExpr.nTypes() == 1);
+    REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+    // @nothing
+    REQUIRE(isEmptyAst(prototype.returns()));
+  }
+}
+
+TEST_CASE_WITH_FIXTURE("Parser: concept definition", "[Parser]") {\
+  SECTION("Simple") {
+    REQUIRE_NOTHROW(parse(R"(
 module foo;
 
 export concept IsComplex {
@@ -132,23 +227,281 @@ export concept IsComplex {
   fn conjugate: () -> Complex;
   fn magnitude: () -> Float;
 }
-  )"));
+    )"));
+  }
 }
 
-TEST_CASE_WITH_FIXTURE("Parser: function", "[Parser]") {
-  //   REQUIRE_NOTHROW(parse(R"(
-  // module foo;
-  //
-  // local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
-  //     sum = x + y;
-  //     return (sum, x * y);
-  // }
-  //
-  // export fn double: (x: Float) -> {
-  //     return (x: Float) -> Float {
-  //         let (_, dbl: Float) = eval(x, 2);
-  //         return dbl;
-  //     };
-  // }
-  //     )"));
+TEST_CASE_WITH_FIXTURE("Parser: let statement", "[Parser]") {
+  SECTION("Simple") {
+    REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+fn main: () -> {
+  let x: Int | Float = 10;
+  let x = 10.0;
+  let mutable x: Int | Float;
+  let (mutable x: Int, y: Int | Float) = (10, 5);
+  let (x, y) = (10, 5);
+  let (_, x) = (10, 5);
+  let (_: Int, mutable x) = (10, 5);
+  let (_: Int, _) = (10, 5);
+  let (Int, Int | Float) = (10, 5);
+}
+    )"));
+
+    const auto statements =
+        astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+          [](CRef<ASTNode> node) {
+            return astCast<LetStmt>(node);
+          }
+        );
+
+    // let x: Int | Float = 10;
+    {
+      const auto stmt = statements[0];
+
+      const auto decl = astCast<IdentifierDecl>(stmt.decl());
+      REQUIRE_FALSE(decl.isMutable());
+
+      REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+      auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 2);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      REQUIRE(astCast<Identifier>(typeExpr.type(1)).path() == "Float");
+
+      REQUIRE(astCast<IntegerLiteral>(stmt.init()).value() == 10);
+    }
+
+    // let x = 10.0;
+    {
+      const auto stmt = statements[1];
+
+      const auto decl = astCast<IdentifierDecl>(stmt.decl());
+      REQUIRE_FALSE(decl.isMutable());
+
+      REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+      REQUIRE(isEmptyAst(decl.typeExpr()));
+
+      REQUIRE(astCast<FloatLiteral>(stmt.init()).value() == 10.0);
+    }
+
+    // let mutable x: Int | Float;
+    {
+      const auto stmt = statements[2];
+
+      const auto decl = astCast<IdentifierDecl>(stmt.decl());
+      REQUIRE(decl.isMutable());
+
+      REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+      auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 2);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      REQUIRE(astCast<Identifier>(typeExpr.type(1)).path() == "Float");
+
+      REQUIRE(isEmptyAst(stmt.init()));
+    }
+
+    // let (mutable x: Int, y: Int | Float) = (10, 5);
+    {
+      const auto stmt = statements[3];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+        auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 1);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "y");
+
+        auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 2);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+        REQUIRE(astCast<Identifier>(typeExpr.type(1)).path() == "Float");
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+
+    // let (x, y) = (10, 5);
+    {
+      const auto stmt = statements[4];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "y");
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+
+    // let (_, x) = (10, 5);
+    {
+      const auto stmt = statements[5];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).isAnonymous());
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+
+    // let (_: Int, mutable x) = (10, 5);
+    {
+      const auto stmt = statements[6];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).isAnonymous());
+
+        const auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 1);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).path() == "x");
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+
+    // let (_: Int, _) = (10, 5);
+    {
+      const auto stmt = statements[7];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).isAnonymous());
+
+        const auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 1);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(astCast<Identifier>(decl.identifier()).isAnonymous());
+
+        REQUIRE(isEmptyAst(decl.typeExpr()));
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+
+    // let (Int, Int | Float) = (10, 5);
+    {
+      const auto stmt = statements[8];
+
+      const auto tupleDecl = astCast<TupleDecl>(stmt.decl());
+      REQUIRE(tupleDecl.size() == 2);
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(isEmptyAst(decl.identifier()));
+
+        const auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 1);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+      }
+
+      //
+      {
+        const auto decl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+        REQUIRE_FALSE(decl.isMutable());
+        REQUIRE(isEmptyAst(decl.identifier()));
+
+        const auto typeExpr = astCast<TypeExpr>(decl.typeExpr());
+        REQUIRE(typeExpr.nTypes() == 2);
+        REQUIRE(astCast<Identifier>(typeExpr.type(0)).path() == "Int");
+        REQUIRE(astCast<Identifier>(typeExpr.type(1)).path() == "Float");
+      }
+
+      const auto init = astCast<TupleExpr>(stmt.init());
+      REQUIRE(init.size() == 2);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(0)).value() == 10);
+      REQUIRE(astCast<IntegerLiteral>(init.expr(1)).value() == 5);
+    }
+  }
 }

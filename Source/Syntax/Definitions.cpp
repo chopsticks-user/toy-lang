@@ -26,14 +26,6 @@ namespace tl::syntax {
     : ASTNodeBase(std::move(idDecls)) {
   }
 
-  ParameterDecl::ParameterDecl(Vec<ASTNode> idDecls)
-    : ASTNodeBase(std::move(idDecls)) {
-  }
-
-  ReturnDecl::ReturnDecl(Vec<ASTNode> typeExprs)
-    : ASTNodeBase(std::move(typeExprs)) {
-  }
-
   FunctionPrototype::FunctionPrototype(
     const FnType fType, ASTNode fIdentifier, ASTNode fParamDecls, ASTNode fReturnDecls
   ): ASTNodeBase({fIdentifier, fParamDecls, fReturnDecls}),

@@ -27,8 +27,6 @@ namespace tl::syntax {
   class TypeDecl;
   class IdentifierDecl;
   class TupleDecl;
-  class ParameterDecl;
-  class ReturnDecl;
 
   class ForStmt;
   class MatchStmt;
@@ -56,7 +54,7 @@ namespace tl::syntax {
 
     ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
 
-    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
     FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
   >;
 

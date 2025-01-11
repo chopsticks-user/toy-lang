@@ -119,7 +119,6 @@ namespace tl::fe {
   auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
     std::vector<ASTNode> definitions;
 
-
     if (const auto moduleDecl = parseModuleDecl(); !isEmptyAst(moduleDecl)) {
       definitions.push_back(moduleDecl);
     } else {
@@ -251,6 +250,22 @@ namespace tl::fe {
     return syntax::TypeDecl{storage(), typeId, typeExpr};
   }
 
+  auto Parser::parseEnumDecl() -> ASTNode {
+    if (!match(EToken::Enum)) {
+      return {};
+    }
+
+    return {};
+  }
+
+  auto Parser::parseFlagDecl() -> ASTNode {
+    if (!match(EToken::Flag)) {
+      return {};
+    }
+
+    return {};
+  }
+
   auto Parser::parseFunctionDef() -> ASTNode {
     const auto prototype = parseFunctionPrototype();
     if (isEmptyAst(prototype)) {
@@ -364,8 +379,6 @@ namespace tl::fe {
     do {
       if (auto type = parseTypeIdentifier(); !isEmptyAst(type)) {
         types.emplace_back(type);
-      } else {
-        collectException("invalid type identifier");
       }
     } while (match(EToken::Bar));
 
@@ -430,9 +443,9 @@ namespace tl::fe {
     if (isEmptyAst(returns)) {
       returns = parseIdentifierDecl();
     }
-    if (isEmptyAst(returns)) {
-      collectException("missing function returns");
-    }
+    // if (isEmptyAst(returns)) {
+    //   collectException("missing function returns");
+    // }
 
     return syntax::FunctionPrototype{
       syntax::FnType::Function, identifier, params, returns
@@ -499,28 +512,28 @@ namespace tl::fe {
   }
 
   auto Parser::parseStmt() -> ASTNode {
-    if (const auto forStmt = parseForStmt(); isEmptyAst(forStmt)) {
+    if (const auto forStmt = parseForStmt(); !isEmptyAst(forStmt)) {
       return forStmt;
     }
 
-    if (const auto matchStmt = parseMatchStmt(); isEmptyAst(matchStmt)) {
+    if (const auto matchStmt = parseMatchStmt(); !isEmptyAst(matchStmt)) {
       return matchStmt;
     }
 
-    if (const auto blockStmt = parseBlockStmt(); isEmptyAst(blockStmt)) {
+    if (const auto blockStmt = parseBlockStmt(); !isEmptyAst(blockStmt)) {
       return blockStmt;
     }
 
-    if (const auto letStmt = parseLetStmt(); isEmptyAst(letStmt)) {
+    if (const auto letStmt = parseLetStmt(); !isEmptyAst(letStmt)) {
       return letStmt;
     }
 
-    if (const auto returnStmt = parseReturnStmt(); isEmptyAst(returnStmt)) {
+    if (const auto returnStmt = parseReturnStmt(); !isEmptyAst(returnStmt)) {
       return returnStmt;
     }
 
     // must be last
-    if (const auto stmt = parseAssignOrExprStmt(); isEmptyAst(stmt)) {
+    if (const auto stmt = parseAssignOrExprStmt(); !isEmptyAst(stmt)) {
       return stmt;
     }
 
@@ -655,18 +668,18 @@ namespace tl::fe {
   }
 
   auto Parser::parseBlockStmt() -> ASTNode {
-    if (!match(EToken::RightBrace)) {
+    if (!match(EToken::LeftBrace)) {
       return {};
     }
 
     Vec<ASTNode> stmts;
     auto stmt = parseStmt();
-    while (isEmptyAst(stmt)) {
+    while (!isEmptyAst(stmt)) {
       stmts.push_back(stmt);
       stmt = parseStmt();
     }
 
-    if (!match(EToken::LeftBrace)) {
+    if (!match(EToken::RightBrace)) {
       collectException("missing '}'");
 
       // todo
@@ -738,6 +751,10 @@ namespace tl::fe {
     }
 
     if (!match(EToken::Equal)) {
+      if (!match(EToken::Semicolon)) {
+        collectException("missing ; at the end of let statement");
+      }
+
       return syntax::LetStmt{decl, {}};
     }
 
@@ -1036,7 +1053,10 @@ namespace tl::fe {
   auto Parser::parsePrefixUnaryExpr() -> ASTNode {
     auto operand = parsePostfixExpr();
 
-    if (match(EToken::Exclaim, EToken::Tilde, EToken::Plus, EToken::Minus, EToken::Hash)) {
+    if (match(
+      EToken::Exclaim, EToken::Tilde, EToken::Plus,
+      EToken::Minus, EToken::Hash, EToken::Dot3
+    )) {
       return syntax::UnaryExpr(operand, current().string());
     }
 
@@ -1156,6 +1176,6 @@ namespace tl::fe {
       collectException("missing )");
     }
 
-    return {};
+    return syntax::TupleExpr{std::move(elements)};
   }
 }

@@ -8,7 +8,9 @@
 namespace tl::syntax {
   class ASTNodeBase {
   public:
-    auto children() const noexcept -> const std::vector<ASTNode> &;
+    auto children() const noexcept -> CRef<Vec<ASTNode> >;
+
+    auto view() const noexcept -> Vec<ASTNode>;
 
     auto childAt(sz index) const -> CRef<ASTNode>;
 

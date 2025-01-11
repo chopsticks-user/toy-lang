@@ -8,11 +8,15 @@ namespace tl::syntax {
     : m_children(std::move(children)) {
   }
 
-  auto ASTNodeBase::children() const noexcept -> const std::vector<ASTNode> & {
+  auto ASTNodeBase::children() const noexcept -> CRef<Vec<ASTNode> > {
     return m_children;
   }
 
-  auto ASTNodeBase::childAt(sz index) const -> const ASTNode & {
+  auto ASTNodeBase::view() const noexcept -> Vec<ASTNode> {
+    return m_children;
+  }
+
+  auto ASTNodeBase::childAt(const sz index) const -> const ASTNode & {
     return m_children.at(index);
   }
 

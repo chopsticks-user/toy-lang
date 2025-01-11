@@ -67,7 +67,7 @@ namespace tl::fe {
 
     auto toRevertPoint() noexcept -> void;
 
-  protected:
+  private:
     auto parseTranslationUnit() -> syntax::TranslationUnit;
 
     auto parseModuleDecl() -> syntax::ASTNode;
@@ -75,6 +75,10 @@ namespace tl::fe {
     auto parseImportDecl() -> syntax::ASTNode;
 
     auto parseTypeDecl() -> syntax::ASTNode;
+
+    auto parseEnumDecl() -> syntax::ASTNode;
+
+    auto parseFlagDecl() -> syntax::ASTNode;
 
     auto parseFunctionDef() -> syntax::ASTNode;
 
@@ -139,8 +143,6 @@ namespace tl::fe {
     auto parsePostfixExpr() -> syntax::ASTNode;
 
     auto parsePrimaryExpr() -> syntax::ASTNode;
-
-    auto parseLambdaExpr() -> syntax::ASTNode;
 
     auto parseTupleExpr() -> syntax::ASTNode;
 

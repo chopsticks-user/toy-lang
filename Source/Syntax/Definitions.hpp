@@ -69,16 +69,14 @@ namespace tl::syntax {
   class TupleDecl final : public ASTNodeBase {
   public:
     explicit TupleDecl(Vec<ASTNode> idDecls);
-  };
 
-  class ParameterDecl final : public ASTNodeBase {
-  public:
-    explicit ParameterDecl(Vec<ASTNode> idDecls);
-  };
+    auto size() const noexcept -> sz {
+      return nChildren();
+    }
 
-  class ReturnDecl final : public ASTNodeBase {
-  public:
-    explicit ReturnDecl(Vec<ASTNode> typeExprs);
+    auto idDecl(sz index) const noexcept -> CRef<ASTNode> {
+      return childAt(index);
+    }
   };
 
   class FunctionPrototype final : public ASTNodeBase {

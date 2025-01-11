@@ -185,7 +185,7 @@ namespace tl::syntax {
     }
 
     auto isAnonymous() const noexcept -> bool {
-      return m_path.size() == 1 && m_path.back() == "_";
+      return m_path.empty();
     }
 
   private:
@@ -196,7 +196,11 @@ namespace tl::syntax {
   public:
     explicit TupleExpr(Vec<ASTNode> ids);
 
-    auto identifier(const u64 index) const noexcept -> CRef<ASTNode> {
+    auto size() const noexcept -> sz {
+      return nChildren();
+    }
+
+    auto expr(const u64 index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
   };
@@ -254,6 +258,10 @@ namespace tl::syntax {
   class TypeExpr final : public ASTNodeBase {
   public:
     explicit TypeExpr(Vec<ASTNode> types);
+
+    auto nTypes() const noexcept -> sz {
+      return nChildren();
+    }
 
     auto type(const sz index) const -> CRef<ASTNode> {
       return childAt(index);
