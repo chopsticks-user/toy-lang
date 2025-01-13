@@ -43,196 +43,6 @@ private:
   tl::ExpceptionCollector m_eCollector;
 };
 
-namespace definition {
-  TEST_CASE_WITH_FIXTURE("Parser: module, import and type declarations", "[Parser]") {
-    SECTION("Simple") {
-      REQUIRE_NOTHROW(parse(R"(
-module foo::bar;
-
-import std::io;
-import std::math;
-
-export type Number = math::Complex | Int | Float;
-type Complex = math::Complex;
-      )"));
-
-      auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
-      REQUIRE(moduleId.name() == "bar");
-      REQUIRE(moduleId.path() == "foo::bar");
-      REQUIRE(moduleId.isImported());
-      REQUIRE_FALSE(moduleId.isType());
-
-      auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
-      REQUIRE(importId0.name() == "io");
-      REQUIRE(importId0.path() == "std::io");
-      REQUIRE(importId0.isImported());
-      REQUIRE_FALSE(importId0.isType());
-
-      auto importId1 = astCast<Identifier>(nodeAt<ImportDecl>(2).identifier());
-      REQUIRE(importId1.name() == "math");
-      REQUIRE(importId1.path() == "std::math");
-      REQUIRE(importId1.isImported());
-      REQUIRE_FALSE(importId1.isType());
-
-      auto typeDecl0 = nodeAt<TypeDecl>(3);
-      REQUIRE(typeDecl0.nChildren() == 2);
-
-      auto typeId0 = astCast<Identifier>(typeDecl0.identifier());
-      REQUIRE(typeId0.name() == "Number");
-      REQUIRE(typeId0.path() == "Number");
-      REQUIRE(typeId0.isType());
-
-      auto typeExpr0 = astCast<TypeExpr>(typeDecl0.typeExpr());
-      REQUIRE(typeExpr0.nChildren() == 3);
-
-      auto type00 = astCast<Identifier>(typeExpr0.type(0));
-      REQUIRE(type00.name() == "Complex");
-      REQUIRE(type00.path() == "math::Complex");
-      REQUIRE(type00.isImported());
-      REQUIRE(type00.isType());
-
-      auto type01 = astCast<Identifier>(typeExpr0.type(1));
-      REQUIRE(type01.name() == "Int");
-      REQUIRE(type01.path() == "Int");
-      REQUIRE_FALSE(type01.isImported());
-      REQUIRE(type01.isType());
-
-      auto type02 = astCast<Identifier>(typeExpr0.type(2));
-      REQUIRE(type02.name() == "Float");
-      REQUIRE(type02.path() == "Float");
-      REQUIRE_FALSE(type02.isImported());
-      REQUIRE(type02.isType());
-
-      auto typeDecl1 = nodeAt<TypeDecl>(4);
-      REQUIRE(typeDecl1.nChildren() == 2);
-
-      auto typeId1 = astCast<Identifier>(typeDecl1.identifier());
-      REQUIRE(typeId1.name() == "Complex");
-      REQUIRE(typeId1.path() == "Complex");
-      REQUIRE(typeId1.isType());
-
-      auto typeExpr1 = astCast<TypeExpr>(typeDecl1.typeExpr());
-      REQUIRE(typeExpr1.nChildren() == 1);
-
-      auto type10 = astCast<Identifier>(typeExpr1.type(0));
-      REQUIRE(type10.name() == "Complex");
-      REQUIRE(type10.path() == "math::Complex");
-      REQUIRE(type10.isImported());
-      REQUIRE(type10.isType());
-    }
-  }
-
-  TEST_CASE_WITH_FIXTURE("Parser: function definition", "[Parser]") {
-    SECTION("Simple") {
-      REQUIRE_NOTHROW(parse(R"(
-module foo;
-
-local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
-}
-
-export fn double: (mutable x: Float) -> {
-}
-      )"));
-
-      auto fn = nodeAt<FunctionDef>(1);
-      REQUIRE(fn.storage() == Storage::Local);
-      REQUIRE_FALSE(fn.isLambda());
-
-      auto prototype = astCast<FunctionPrototype>(fn.prototype());
-      REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "eval");
-
-      // (x: Float, y: Float)
-      auto tupleDecl = astCast<TupleDecl>(prototype.params());
-      REQUIRE(tupleDecl.size() == 2);
-
-      // x: Float
-      auto idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
-      REQUIRE_FALSE(idDecl.isMutable());
-      auto identifier = astCast<Identifier>(idDecl.identifier());
-      REQUIRE(identifier.name() == "x");
-      auto typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
-      REQUIRE(typeExpr.nTypes() == 1);
-      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
-
-      // y: Float
-      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
-      REQUIRE_FALSE(idDecl.isMutable());
-      identifier = astCast<Identifier>(idDecl.identifier());
-      REQUIRE(identifier.name() == "y");
-      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
-      REQUIRE(typeExpr.nTypes() == 1);
-      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
-
-      // (sum: Float, product: Float)
-      tupleDecl = astCast<TupleDecl>(prototype.returns());
-      REQUIRE(tupleDecl.size() == 2);
-
-      // sum: Float
-      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
-      REQUIRE_FALSE(idDecl.isMutable());
-      identifier = astCast<Identifier>(idDecl.identifier());
-      REQUIRE(identifier.name() == "sum");
-      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
-      REQUIRE(typeExpr.nTypes() == 1);
-      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
-
-      // product: Float
-      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
-      REQUIRE_FALSE(idDecl.isMutable());
-      identifier = astCast<Identifier>(idDecl.identifier());
-      REQUIRE(identifier.name() == "product");
-      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
-      REQUIRE(typeExpr.nTypes() == 1);
-      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
-
-      fn = nodeAt<FunctionDef>(2);
-      REQUIRE(fn.storage() == Storage::Export);
-      REQUIRE_FALSE(fn.isLambda());
-
-      prototype = astCast<FunctionPrototype>(fn.prototype());
-      REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "double");
-
-      // (mutable x: Float)
-      tupleDecl = astCast<TupleDecl>(prototype.params());
-      REQUIRE(tupleDecl.size() == 1);
-
-      // mutable x: Float
-      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
-      REQUIRE(idDecl.isMutable());
-      identifier = astCast<Identifier>(idDecl.identifier());
-      REQUIRE(identifier.name() == "x");
-      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
-      REQUIRE(typeExpr.nTypes() == 1);
-      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
-
-      // @nothing
-      REQUIRE(isEmptyAst(prototype.returns()));
-    }
-  }
-
-  TEST_CASE_WITH_FIXTURE("Parser: concept definition", "[Parser]") {
-    SECTION("Simple") {
-      REQUIRE_NOTHROW(parse(R"(
-module foo;
-
-export concept IsComplex {
-  fn real: () -> Float | Int;
-  fn img: () -> Float | Int;
-
-  fn real: (val: Float | Int) -> Void;
-  fn img: (val: Float | Int) -> Void;
-
-  fn +: (other: Complex) -> Complex;
-  fn ==: (other: Complex) -> Bool;
-
-  fn conjugate: () -> Complex;
-  fn magnitude: () -> Float;
-}
-      )"));
-    }
-  }
-}
-
 namespace expression {
 }
 
@@ -874,34 +684,310 @@ fn main: () -> {
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: for statement", "[Parser]") {
-    //     SECTION("For until") {
-    //       REQUIRE_NOTHROW(parse(R"(
-    // module foo;
-    //
-    // fn main: () -> {
-    //   for expr {}
-    //
-    //   for true {}
-    //
-    //   for x && y {}
-    // }
-    //       )"));
-    //     }
+    SECTION("For until") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
 
-    //     SECTION("For range") {
-    //       REQUIRE_NOTHROW(parse(R"(
-    // module foo;
-    //
-    // fn main: () -> {
-    //   for (index: Int, value) in ...[0 .. 11 @ 2] {}
-    //
-    //   for (index: Int, value) in 0 .. 11 @ 2 {}
-    //
-    //   for (index: Int, value) in ...coll {}
-    //
-    //   for (index: Int, value) in rng {}
-    // }
-    //       )"));
-    //     }
+fn main: () -> {
+  for expr {}
+
+  for true {}
+
+  for x && y {}
+}
+      )"));
+
+
+      const auto statements =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<ForStmt>(node);
+            }
+          );
+
+      //
+      {
+        REQUIRE_FALSE(statements[0].isForRange());
+        REQUIRE(astCast<Identifier>(statements[0].condition()).path() == "expr");
+        REQUIRE(matchAstType<BlockStmt>(statements[0].body()));
+      }
+
+      //
+      {
+        REQUIRE_FALSE(statements[1].isForRange());
+        REQUIRE(astCast<BooleanLiteral>(statements[1].condition()).value() == true);
+        REQUIRE(matchAstType<BlockStmt>(statements[2].body()));
+      }
+
+      //
+      {
+        REQUIRE_FALSE(statements[2].isForRange());
+        const auto cond = astCast<BinaryExpr>(statements[2].condition());
+        REQUIRE(cond.op() == "&&");
+        REQUIRE(astCast<Identifier>(cond.left()).path() == "x");
+        REQUIRE(astCast<Identifier>(cond.right()).path() == "y");
+        REQUIRE(matchAstType<BlockStmt>(statements[2].body()));
+      }
+    }
+
+    SECTION("For range") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+fn main: () -> {
+  for (index: Int, value) in ...[0 .. 11 @ 2] {}
+
+  for (_, value) in 0 .. 11 @ 2 {}
+
+  for (index: Int, value) in ...coll {}
+
+  for (_, (r: Int, l: Float)) in rng {}
+}
+      )"));
+
+      const auto statements =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<ForStmt>(node);
+            }
+          );
+
+      //
+      {
+        REQUIRE(statements[0].isForRange());
+        const auto fragment = astCast<ForRangeFragment>(statements[0].condition());
+        REQUIRE(astCast<TupleDecl>(fragment.iterator()).size() == 2);
+
+        const auto iterable = astCast<UnaryExpr>(fragment.iterable());
+        REQUIRE(iterable.op() == "...");
+        REQUIRE(matchAstType<ArrayExpr>(iterable.operand()));
+        REQUIRE(astCast<ArrayExpr>(iterable.operand()).size() == 1);
+        REQUIRE(matchAstType<TernaryExpr>(astCast<ArrayExpr>(iterable.operand()).element(0)));
+      }
+
+      //
+      {
+        REQUIRE(statements[1].isForRange());
+        const auto fragment = astCast<ForRangeFragment>(statements[1].condition());
+        REQUIRE(astCast<TupleDecl>(fragment.iterator()).size() == 2);
+
+        const auto iterable = astCast<TernaryExpr>(fragment.iterable());
+        REQUIRE(iterable.firstOp() == "..");
+        REQUIRE(iterable.secondOp() == "@");
+        REQUIRE(astCast<IntegerLiteral>(iterable.first()).value() == 0);
+        REQUIRE(astCast<IntegerLiteral>(iterable.second()).value() == 11);
+        REQUIRE(astCast<IntegerLiteral>(iterable.third()).value() == 2);
+      }
+
+      //
+      {
+        REQUIRE(statements[2].isForRange());
+        const auto fragment = astCast<ForRangeFragment>(statements[2].condition());
+        REQUIRE(astCast<TupleDecl>(fragment.iterator()).size() == 2);
+
+        const auto iterable = astCast<UnaryExpr>(fragment.iterable());
+        REQUIRE(iterable.op() == "...");
+        REQUIRE(astCast<Identifier>(iterable.operand()).path() == "coll");
+      }
+
+      //
+      {
+        REQUIRE(statements[3].isForRange());
+        const auto fragment = astCast<ForRangeFragment>(statements[3].condition());
+        REQUIRE(astCast<TupleDecl>(fragment.iterator()).size() == 2);
+
+        REQUIRE(astCast<Identifier>(fragment.iterable()).path() == "rng");
+      }
+    }
+  }
+}
+
+namespace definition {
+  TEST_CASE_WITH_FIXTURE("Parser: module, import and type declarations", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo::bar;
+
+import std::io;
+import std::math;
+
+export type Number = math::Complex | Int | Float;
+type Complex = math::Complex;
+      )"));
+
+      auto moduleId = astCast<Identifier>(nodeAt<ModuleDecl>(0).identifier());
+      REQUIRE(moduleId.name() == "bar");
+      REQUIRE(moduleId.path() == "foo::bar");
+      REQUIRE(moduleId.isImported());
+      REQUIRE_FALSE(moduleId.isType());
+
+      auto importId0 = astCast<Identifier>(nodeAt<ImportDecl>(1).identifier());
+      REQUIRE(importId0.name() == "io");
+      REQUIRE(importId0.path() == "std::io");
+      REQUIRE(importId0.isImported());
+      REQUIRE_FALSE(importId0.isType());
+
+      auto importId1 = astCast<Identifier>(nodeAt<ImportDecl>(2).identifier());
+      REQUIRE(importId1.name() == "math");
+      REQUIRE(importId1.path() == "std::math");
+      REQUIRE(importId1.isImported());
+      REQUIRE_FALSE(importId1.isType());
+
+      auto typeDecl0 = nodeAt<TypeDecl>(3);
+      REQUIRE(typeDecl0.nChildren() == 2);
+
+      auto typeId0 = astCast<Identifier>(typeDecl0.identifier());
+      REQUIRE(typeId0.name() == "Number");
+      REQUIRE(typeId0.path() == "Number");
+      REQUIRE(typeId0.isType());
+
+      auto typeExpr0 = astCast<TypeExpr>(typeDecl0.typeExpr());
+      REQUIRE(typeExpr0.nChildren() == 3);
+
+      auto type00 = astCast<Identifier>(typeExpr0.type(0));
+      REQUIRE(type00.name() == "Complex");
+      REQUIRE(type00.path() == "math::Complex");
+      REQUIRE(type00.isImported());
+      REQUIRE(type00.isType());
+
+      auto type01 = astCast<Identifier>(typeExpr0.type(1));
+      REQUIRE(type01.name() == "Int");
+      REQUIRE(type01.path() == "Int");
+      REQUIRE_FALSE(type01.isImported());
+      REQUIRE(type01.isType());
+
+      auto type02 = astCast<Identifier>(typeExpr0.type(2));
+      REQUIRE(type02.name() == "Float");
+      REQUIRE(type02.path() == "Float");
+      REQUIRE_FALSE(type02.isImported());
+      REQUIRE(type02.isType());
+
+      auto typeDecl1 = nodeAt<TypeDecl>(4);
+      REQUIRE(typeDecl1.nChildren() == 2);
+
+      auto typeId1 = astCast<Identifier>(typeDecl1.identifier());
+      REQUIRE(typeId1.name() == "Complex");
+      REQUIRE(typeId1.path() == "Complex");
+      REQUIRE(typeId1.isType());
+
+      auto typeExpr1 = astCast<TypeExpr>(typeDecl1.typeExpr());
+      REQUIRE(typeExpr1.nChildren() == 1);
+
+      auto type10 = astCast<Identifier>(typeExpr1.type(0));
+      REQUIRE(type10.name() == "Complex");
+      REQUIRE(type10.path() == "math::Complex");
+      REQUIRE(type10.isImported());
+      REQUIRE(type10.isType());
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: function definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
+}
+
+export fn double: (mutable x: Float) -> {
+}
+      )"));
+
+      auto fn = nodeAt<FunctionDef>(1);
+      REQUIRE(fn.storage() == Storage::Local);
+      REQUIRE_FALSE(fn.isLambda());
+
+      auto prototype = astCast<FunctionPrototype>(fn.prototype());
+      REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "eval");
+
+      // (x: Float, y: Float)
+      auto tupleDecl = astCast<TupleDecl>(prototype.params());
+      REQUIRE(tupleDecl.size() == 2);
+
+      // x: Float
+      auto idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+      REQUIRE_FALSE(idDecl.isMutable());
+      auto identifier = astCast<Identifier>(idDecl.identifier());
+      REQUIRE(identifier.name() == "x");
+      auto typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 1);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+      // y: Float
+      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+      REQUIRE_FALSE(idDecl.isMutable());
+      identifier = astCast<Identifier>(idDecl.identifier());
+      REQUIRE(identifier.name() == "y");
+      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 1);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+      // (sum: Float, product: Float)
+      tupleDecl = astCast<TupleDecl>(prototype.returns());
+      REQUIRE(tupleDecl.size() == 2);
+
+      // sum: Float
+      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+      REQUIRE_FALSE(idDecl.isMutable());
+      identifier = astCast<Identifier>(idDecl.identifier());
+      REQUIRE(identifier.name() == "sum");
+      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 1);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+      // product: Float
+      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(1));
+      REQUIRE_FALSE(idDecl.isMutable());
+      identifier = astCast<Identifier>(idDecl.identifier());
+      REQUIRE(identifier.name() == "product");
+      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 1);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+      fn = nodeAt<FunctionDef>(2);
+      REQUIRE(fn.storage() == Storage::Export);
+      REQUIRE_FALSE(fn.isLambda());
+
+      prototype = astCast<FunctionPrototype>(fn.prototype());
+      REQUIRE(astCast<Identifier>(prototype.identifier()).name() == "double");
+
+      // (mutable x: Float)
+      tupleDecl = astCast<TupleDecl>(prototype.params());
+      REQUIRE(tupleDecl.size() == 1);
+
+      // mutable x: Float
+      idDecl = astCast<IdentifierDecl>(tupleDecl.idDecl(0));
+      REQUIRE(idDecl.isMutable());
+      identifier = astCast<Identifier>(idDecl.identifier());
+      REQUIRE(identifier.name() == "x");
+      typeExpr = astCast<TypeExpr>(idDecl.typeExpr());
+      REQUIRE(typeExpr.nTypes() == 1);
+      REQUIRE(astCast<Identifier>(typeExpr.type(0)).name() == "Float");
+
+      // @nothing
+      REQUIRE(isEmptyAst(prototype.returns()));
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: concept definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+export concept IsComplex {
+  fn real: () -> Float | Int;
+  fn img: () -> Float | Int;
+
+  fn real: (val: Float | Int) -> Void;
+  fn img: (val: Float | Int) -> Void;
+
+  fn +: (other: Complex) -> Complex;
+  fn ==: (other: Complex) -> Bool;
+
+  fn conjugate: () -> Complex;
+  fn magnitude: () -> Float;
+}
+      )"));
+    }
   }
 }

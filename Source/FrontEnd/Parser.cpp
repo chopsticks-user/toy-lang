@@ -474,8 +474,14 @@ namespace tl::fe {
         continue;
       }
 
+      decl = parseTupleDecl();
+      if (!isEmptyAst(decl)) {
+        declNodes.emplace_back(decl);
+        continue;
+      }
+
       if (isEmptyAst(decl)) {
-        collectException("invalid identifier declaration");
+        collectException("invalid declaration");
       }
     } while (match(EToken::Comma));
 
@@ -1026,16 +1032,16 @@ namespace tl::fe {
   }
 
   auto Parser::parsePrefixUnaryExpr() -> ASTNode {
-    auto operand = parsePostfixExpr();
-
+    String op;
     if (match(
       EToken::Exclaim, EToken::Tilde, EToken::Plus,
       EToken::Minus, EToken::Hash, EToken::Dot3
     )) {
-      return syntax::UnaryExpr(operand, current().string());
+      op = current().string();
     }
 
-    return operand;
+    const auto operand = parsePostfixExpr();
+    return op.empty() ? operand : syntax::UnaryExpr(operand, op);
   }
 
   auto Parser::parsePostfixExpr() -> ASTNode {
@@ -1096,6 +1102,10 @@ namespace tl::fe {
     if (match(EToken::FloatLiteral)) {
       // todo: stod exceptions
       return syntax::FloatLiteral{std::stod(current().string())};
+    }
+
+    if (match(EToken::True, EToken::False)) {
+      return syntax::BooleanLiteral{current().type() == EToken::True};
     }
 
     if (match(EToken::StringLiteral)) {

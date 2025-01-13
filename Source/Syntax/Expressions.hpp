@@ -272,6 +272,10 @@ namespace tl::syntax {
   public:
     explicit ArrayExpr(Vec<ASTNode> elements);
 
+    auto size() const noexcept -> sz {
+      return nChildren();
+    }
+
     auto element(const sz index) const -> CRef<ASTNode> {
       return childAt(index);
     }
