@@ -29,6 +29,7 @@ namespace tl::syntax {
   class TupleDecl;
 
   class ForStmt;
+  class ForRangeFragment;
   class MatchStmt;
   class MatchStmtCase;
   class BlockStmt;
@@ -53,7 +54,7 @@ namespace tl::syntax {
     TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
     FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
 
-    ForStmt, MatchStmt, MatchStmtCase, BlockStmt,
+    ForStmt, ForRangeFragment, MatchStmt, MatchStmtCase, BlockStmt,
     LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,

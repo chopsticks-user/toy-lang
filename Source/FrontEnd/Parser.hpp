@@ -100,11 +100,9 @@ namespace tl::fe {
 
     auto parseBlockStmt() -> syntax::ASTNode;
 
-    auto parseAssignOrExprStmt() -> syntax::ASTNode;
+    auto parseExprPrefixStmt() -> syntax::ASTNode;
 
     auto parseLetStmt() -> syntax::ASTNode;
-
-    auto parseConditionalStmt() -> syntax::ASTNode;
 
     auto parseReturnStmt() -> syntax::ASTNode;
 
@@ -137,8 +135,6 @@ namespace tl::fe {
     auto parseMultiplicativeExpr() -> syntax::ASTNode;
 
     auto parseExponentialExpr() -> syntax::ASTNode;
-
-    auto parsePipeExpr() -> syntax::ASTNode;
 
     auto parsePrefixUnaryExpr() -> syntax::ASTNode;
 

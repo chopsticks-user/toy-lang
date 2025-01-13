@@ -233,6 +233,9 @@ export concept IsComplex {
   }
 }
 
+namespace expression {
+}
+
 namespace statement {
   TEST_CASE_WITH_FIXTURE("Parser: let statement", "[Parser]") {
     SECTION("Simple") {
@@ -665,7 +668,40 @@ fn main: () -> {
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: expression statement", "[Parser]") {
-    SECTION("Simple") {
+    SECTION("Function call") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+fn main: () -> {
+  func();
+  x |> func(y);
+}
+      )"));
+
+      const auto expressions =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<FunctionCallExpr>(astCast<ExprStmt>(node).expr());
+            }
+          );
+
+      //
+      {
+        REQUIRE(astCast<Identifier>(expressions[0].callee()).path() == "func");
+
+        const auto args = astCast<TupleExpr>(expressions[0].args());
+        REQUIRE(args.size() == 0);
+      }
+
+      //
+      {
+        REQUIRE(astCast<Identifier>(expressions[1].callee()).path() == "func");
+
+        const auto args = astCast<TupleExpr>(expressions[1].args());
+        REQUIRE(args.size() == 2);
+        REQUIRE(astCast<Identifier>(args.expr(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(args.expr(1)).path() == "y");
+      }
     }
   }
 
@@ -676,7 +712,7 @@ module foo;
 
 fn foo: () -> {
   return x;
-  return (x, y);
+  return (x, y, z);
 }
       )"));
 
@@ -689,7 +725,16 @@ fn foo: () -> {
 
       //
       {
-        // REQUIRE(astCast<Identifier>())
+        REQUIRE(astCast<Identifier>(statements[0].expr()).path() == "x");
+      }
+
+      //
+      {
+        const auto tuple = astCast<TupleExpr>(statements[1].expr());
+        REQUIRE(tuple.size() == 3);
+        REQUIRE(astCast<Identifier>(tuple.expr(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(tuple.expr(1)).path() == "y");
+        REQUIRE(astCast<Identifier>(tuple.expr(2)).path() == "z");
       }
     }
   }
@@ -829,10 +874,34 @@ fn main: () -> {
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: for statement", "[Parser]") {
-    SECTION("Simple") {
-    }
-  }
-}
+    //     SECTION("For until") {
+    //       REQUIRE_NOTHROW(parse(R"(
+    // module foo;
+    //
+    // fn main: () -> {
+    //   for expr {}
+    //
+    //   for true {}
+    //
+    //   for x && y {}
+    // }
+    //       )"));
+    //     }
 
-namespace expression {
+    //     SECTION("For range") {
+    //       REQUIRE_NOTHROW(parse(R"(
+    // module foo;
+    //
+    // fn main: () -> {
+    //   for (index: Int, value) in ...[0 .. 11 @ 2] {}
+    //
+    //   for (index: Int, value) in 0 .. 11 @ 2 {}
+    //
+    //   for (index: Int, value) in ...coll {}
+    //
+    //   for (index: Int, value) in rng {}
+    // }
+    //       )"));
+    //     }
+  }
 }

@@ -3,8 +3,16 @@
 #include "Definitions.hpp"
 
 namespace tl::syntax {
-  ForStmt::ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body)
-    : ASTNodeBase({iterator, iterable, body}) {
+  ForStmt::ForStmt(ASTNode condition, ASTNode body)
+    : ASTNodeBase({condition, body}) {
+  }
+
+  auto ForStmt::isForRange() const noexcept -> bool {
+    return matchAstType<ForRangeFragment>(condition());
+  }
+
+  ForRangeFragment::ForRangeFragment(ASTNode iterator, ASTNode iterable)
+    : ASTNodeBase({iterator, iterable}) {
   }
 
   MatchStmt::MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases)

@@ -531,12 +531,8 @@ namespace tl::fe {
       return returnStmt;
     }
 
-    if (const auto conditionalStmt = parseConditionalStmt(); !isEmptyAst(conditionalStmt)) {
-      return conditionalStmt;
-    }
-
     // must be last
-    if (const auto stmt = parseAssignOrExprStmt(); !isEmptyAst(stmt)) {
+    if (const auto stmt = parseExprPrefixStmt(); !isEmptyAst(stmt)) {
       return stmt;
     }
 
@@ -549,26 +545,33 @@ namespace tl::fe {
       return {};
     }
 
-    const auto iterator = parseTupleDecl();
-    if (isEmptyAst(iterator)) {
-      collectException("missing iterator declaration");
+    ASTNode condition = {};
+
+    if (const auto iterator = parseTupleDecl(); !isEmptyAst(iterator)) {
+      if (!match(EToken::In)) {
+        collectException("missing 'in'");
+      }
+
+      const auto iterable = parseExpr();
+      if (isEmptyAst(iterable)) {
+        collectException("missing iterable expression");
+      }
+
+      condition = syntax::ForRangeFragment{iterator, iterable};
+    } else {
+      condition = parseExpr();
+      if (isEmptyAst(condition)) {
+        collectException("missing conditional expression of for statement");
+      }
     }
 
-    if (!match(EToken::In)) {
-      collectException("missing 'in'");
-    }
-
-    const auto iterable = parseExpr();
-    if (isEmptyAst(iterable)) {
-      collectException("missing iterable expression");
-    }
 
     const auto body = parseBlockStmt();
     if (isEmptyAst(body)) {
       collectException("missing for loop body");
     }
 
-    return syntax::ForStmt{iterator, iterable, body};
+    return syntax::ForStmt{condition, body};
   }
 
   auto Parser::parseMatchStmt() -> ASTNode {
@@ -684,7 +687,7 @@ namespace tl::fe {
     return syntax::BlockStmt{stmts};
   }
 
-  auto Parser::parseAssignOrExprStmt() -> ASTNode {
+  auto Parser::parseExprPrefixStmt() -> ASTNode {
     markRevertPoint();
 
     const auto lhs = parseExpr();
@@ -698,17 +701,18 @@ namespace tl::fe {
       return syntax::ExprStmt{lhs};
     }
 
-    // String op;
-    // if (match(
-    //   EToken::Equal, EToken::StarEqual, EToken::AmpersandEqual, EToken::BarEqual,
-    //   EToken::FwdSlashEqual, EToken::PercentEqual, EToken::PlusEqual, EToken::MinusEqual,
-    //   EToken::HatEqual, EToken::Greater2Equal, EToken::Less2Equal, EToken::Star2Equal
-    // )) {
-    //   op = current().string();
-    // } else {
-    //   toRevertPoint();
-    //   return {};
-    // }
+    if (match(EToken::EqualGreater)) {
+      if (isEmptyAst(lhs)) {
+        collectException("missing expression before =>");
+      }
+
+      auto body = parseStmt();
+      if (isEmptyAst(body)) {
+        collectException("missing statement after =>");
+      }
+
+      return syntax::ConditionalStmt{lhs, body};
+    }
 
     if (!match(EToken::Equal, EToken::PlusEqual, EToken::MinusEqual, EToken::StarEqual,
                EToken::FwdSlashEqual, EToken::PercentEqual, EToken::Star2Equal,
@@ -763,28 +767,6 @@ namespace tl::fe {
     }
 
     return syntax::LetStmt{decl, init};
-  }
-
-  auto Parser::parseConditionalStmt() -> ASTNode {
-    markRevertPoint();
-
-    const auto condition = parseExpr();
-
-    if (!match(EToken::EqualGreater)) {
-      toRevertPoint();
-      return {};
-    }
-
-    if (isEmptyAst(condition)) {
-      collectException("missing expression before =>");
-    }
-
-    auto body = parseStmt();
-    if (isEmptyAst(body)) {
-      collectException("missing statement after =>");
-    }
-
-    return syntax::ConditionalStmt{condition, body};
   }
 
   auto Parser::parseReturnStmt() -> ASTNode {
@@ -1029,36 +1011,15 @@ namespace tl::fe {
   }
 
   auto Parser::parseExponentialExpr() -> ASTNode {
-    const auto lhs = parsePipeExpr();
+    const auto lhs = parsePrefixUnaryExpr();
 
     if (match(EToken::Star2)) {
-      const auto rhs = parsePipeExpr();
+      const auto rhs = parsePrefixUnaryExpr();
       if (isEmptyAst(rhs)) {
         collectException("missing rhs expression of exponential expression");
       }
 
       return syntax::BinaryExpr{lhs, rhs, "**"};
-    }
-
-    return lhs;
-  }
-
-  auto Parser::parsePipeExpr() -> ASTNode {
-    const auto lhs = parsePrefixUnaryExpr();
-
-    if (match(EToken::BarGreater)) {
-      const auto rhs = parsePostfixExpr();
-      if (isEmptyAst(rhs)) {
-        collectException("missing rhs expression of pipe expression");
-      }
-
-      const auto funCallExpr = syntax::FunctionCallExpr::fromPipeExpr(lhs, rhs);
-      if (!funCallExpr.has_value()) {
-        collectException(
-          "rhs expression of pipe expression must be either function application, type identifier or identifier"
-        );
-      }
-      return funCallExpr.value();
     }
 
     return lhs;
@@ -1082,6 +1043,21 @@ namespace tl::fe {
 
     if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
       return syntax::FunctionCallExpr(lhs, tuple);
+    }
+
+    if (match(EToken::BarGreater)) {
+      const auto rhs = parsePostfixExpr();
+      if (isEmptyAst(rhs)) {
+        collectException("missing rhs expression of pipe expression");
+      }
+
+      const auto funCallExpr = syntax::FunctionCallExpr::fromPipeExpr(lhs, rhs);
+      if (!funCallExpr.has_value()) {
+        collectException(
+          "rhs expression of pipe expression must be either function application, type identifier or identifier"
+        );
+      }
+      return funCallExpr.value();
     }
 
     if (match(EToken::LeftBracket)) {

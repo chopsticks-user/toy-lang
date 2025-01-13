@@ -7,7 +7,22 @@
 namespace tl::syntax {
   class ForStmt final : public ASTNodeBase {
   public:
-    ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body);
+    ForStmt(ASTNode condition, ASTNode body);
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto isForRange() const noexcept -> bool;
+  };
+
+  class ForRangeFragment final : public ASTNodeBase {
+  public:
+    ForRangeFragment(ASTNode iterator, ASTNode iterable);
 
     auto iterator() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -15,10 +30,6 @@ namespace tl::syntax {
 
     auto iterable() const noexcept -> CRef<ASTNode> {
       return childAt(1);
-    }
-
-    auto body() const noexcept -> CRef<ASTNode> {
-      return childAt(2);
     }
   };
 

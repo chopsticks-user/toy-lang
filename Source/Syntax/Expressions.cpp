@@ -60,8 +60,8 @@ namespace tl::syntax {
 
   auto FunctionCallExpr::fromPipeExpr(ASTNode lhs, ASTNode rhs) -> Opt<FunctionCallExpr> {
     if (matchAstType<FunctionCallExpr>(rhs)) {
-      auto args = astCast<FunctionCallExpr>(rhs).children();
-      args.front() = lhs;
+      auto args = astCast<TupleExpr>(astCast<FunctionCallExpr>(rhs).args()).children();
+      args.insert(args.begin(), lhs);
 
       return FunctionCallExpr{
         astCast<FunctionCallExpr>(rhs).callee(), TupleExpr{std::move(args)}
