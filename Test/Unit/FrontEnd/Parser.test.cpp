@@ -436,6 +436,32 @@ fn main: () -> {
   x ?? y;
 }
       )"));
+
+      const auto operators =
+          statementsInFnBodyAt<ExprStmt>(1) | rv::transform(
+            [](CRef<ExprStmt> stmt) { return astCast<BinaryExpr>(stmt.expr()).op(); }
+          );
+
+      REQUIRE(operators[0] == "**");
+      REQUIRE(operators[1] == "*");
+      REQUIRE(operators[2] == "/");
+      REQUIRE(operators[3] == "%");
+      REQUIRE(operators[4] == "+");
+      REQUIRE(operators[5] == "-");
+      REQUIRE(operators[6] == "<<");
+      REQUIRE(operators[7] == ">>");
+      REQUIRE(operators[8] == "<");
+      REQUIRE(operators[9] == ">");
+      REQUIRE(operators[10] == "<=");
+      REQUIRE(operators[11] == ">=");
+      REQUIRE(operators[12] == "==");
+      REQUIRE(operators[13] == "!=");
+      REQUIRE(operators[14] == "&");
+      REQUIRE(operators[15] == "^");
+      REQUIRE(operators[16] == "|");
+      REQUIRE(operators[17] == "&&");
+      REQUIRE(operators[18] == "||");
+      REQUIRE(operators[19] == "??");
     }
   }
 
