@@ -180,6 +180,55 @@ fn main: () -> {
   (_, _, _);
 }
       )"));
+
+      const auto expressions =
+          statementsInFnBodyAt<ExprStmt>(1) |
+          rv::transform(
+            [](CRef<ExprStmt> stmt) {
+              return astCast<TupleExpr>(stmt.expr());
+            }
+          );
+
+      //
+      {
+        REQUIRE(expressions[0].size() == 0);
+      }
+
+      //
+      {
+        REQUIRE(expressions[1].size() == 1);
+        REQUIRE(astCast<Identifier>(expressions[1].expr(0)).path() == "x");
+      }
+
+      //
+      {
+        REQUIRE(expressions[2].size() == 2);
+        REQUIRE(astCast<Identifier>(expressions[2].expr(0)).path() == "x");
+        REQUIRE(astCast<IntegerLiteral>(expressions[2].expr(1)).value() == 7);
+      }
+
+      //
+      {
+        REQUIRE(expressions[3].size() == 2);
+        REQUIRE(astCast<Identifier>(expressions[3].expr(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[3].expr(1)).isAnonymous());
+      }
+
+      //
+      {
+        REQUIRE(expressions[4].size() == 3);
+        REQUIRE(astCast<Identifier>(expressions[4].expr(0)).path() == "x");
+        REQUIRE(astCast<IntegerLiteral>(expressions[4].expr(1)).value() == 7);
+        REQUIRE(astCast<StringLiteral>(expressions[4].expr(2)).value() == "\"string\"");
+      }
+
+      //
+      {
+        REQUIRE(expressions[5].size() == 3);
+        REQUIRE(astCast<Identifier>(expressions[5].expr(0)).isAnonymous());
+        REQUIRE(astCast<Identifier>(expressions[5].expr(1)).isAnonymous());
+        REQUIRE(astCast<Identifier>(expressions[5].expr(2)).isAnonymous());
+      }
     }
 
     SECTION("Array") {
@@ -188,11 +237,73 @@ fn main: () -> {
   [];
   [x];
   [x, 7];
-  [x, ...[]];
+  [x, []];
   [x, y, ...arr];
-  [x, y, ...arr, 0 .. 5];
+  [x, y, ...[], 0 .. 7];
 }
       )"));
+
+      const auto expressions =
+          statementsInFnBodyAt<ExprStmt>(1) |
+          rv::transform(
+            [](CRef<ExprStmt> stmt) {
+              return astCast<ArrayExpr>(stmt.expr());
+            }
+          );
+
+      //
+      {
+        REQUIRE(expressions[0].size() == 0);
+      }
+
+      //
+      {
+        REQUIRE(expressions[1].size() == 1);
+        REQUIRE(astCast<Identifier>(expressions[1].element(0)).path() == "x");
+      }
+
+      //
+      {
+        REQUIRE(expressions[2].size() == 2);
+        REQUIRE(astCast<Identifier>(expressions[2].element(0)).path() == "x");
+        REQUIRE(astCast<IntegerLiteral>(expressions[2].element(1)).value() == 7);
+      }
+
+      //
+      {
+        REQUIRE(expressions[3].size() == 2);
+        REQUIRE(astCast<Identifier>(expressions[3].element(0)).path() == "x");
+        REQUIRE(astCast<ArrayExpr>(expressions[3].element(1)).size() == 0);
+      }
+
+      //
+      {
+        REQUIRE(expressions[4].size() == 3);
+        REQUIRE(astCast<Identifier>(expressions[4].element(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[4].element(1)).path() == "y");
+
+        const auto rng = astCast<UnaryExpr>(expressions[4].element(2));
+        REQUIRE(rng.op() == "...");
+        REQUIRE(astCast<Identifier>(rng.operand()).path() == "arr");
+      }
+
+      //
+      {
+        REQUIRE(expressions[5].size() == 4);
+        REQUIRE(astCast<Identifier>(expressions[5].element(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[5].element(1)).path() == "y");
+
+        const auto rng = astCast<UnaryExpr>(expressions[5].element(2));
+        REQUIRE(rng.op() == "...");
+        REQUIRE(astCast<ArrayExpr>(rng.operand()).size() == 0);
+
+        const auto seq = astCast<TernaryExpr>(expressions[5].element(3));
+        REQUIRE(seq.firstOp() == "..");
+        REQUIRE(seq.secondOp() == "@");
+        REQUIRE(astCast<IntegerLiteral>(seq.first()).value() == 0);
+        REQUIRE(astCast<IntegerLiteral>(seq.second()).value() == 7);
+        REQUIRE(astCast<IntegerLiteral>(seq.third()).value() == 1);
+      }
     }
   }
 
