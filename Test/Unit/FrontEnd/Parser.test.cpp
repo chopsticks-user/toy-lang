@@ -308,9 +308,65 @@ fn main: () -> {
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: postfix expression", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  func();
+  x |> func(y);
+  arr[0];
+  obj.field;
+}
+      )"));
+
+      const auto statements = statementsInFnBodyAt<ExprStmt>(1);
+
+      //
+      {
+        const auto expr = astCast<FunctionCallExpr>(statements[0].expr());
+        REQUIRE(astCast<Identifier>(expr.callee()).path() == "func");
+        REQUIRE(astCast<TupleExpr>(expr.args()).size() == 0);
+      }
+
+      //
+      {
+        const auto expr = astCast<FunctionCallExpr>(statements[1].expr());
+        REQUIRE(astCast<Identifier>(expr.callee()).path() == "func");
+
+        const auto args = astCast<TupleExpr>(expr.args());
+        REQUIRE(args.size() == 2);
+        REQUIRE(astCast<Identifier>(args.expr(0)).path() == "x");
+        REQUIRE(astCast<Identifier>(args.expr(1)).path() == "y");
+      }
+
+      //
+      {
+        const auto expr = astCast<SubScriptingExpr>(statements[2].expr());
+        REQUIRE(astCast<Identifier>(expr.collection()).path() == "arr");
+        REQUIRE(astCast<IntegerLiteral>(expr.subscript()).value() == 0);
+      }
+
+      //
+      {
+        const auto expr = astCast<AccessExpr>(statements[3].expr());
+        REQUIRE(astCast<Identifier>(expr.object()).path() == "obj");
+        REQUIRE(astCast<Identifier>(expr.field()).path() == "field");
+      }
+    }
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: prefix expression", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  !true;
+  ~x;
+  +5;
+  -10.0;
+  #[];
+  ...arr;
+}
+      )"));
+    }
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: binary expression", "[Parser]") {
