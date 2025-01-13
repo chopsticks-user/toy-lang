@@ -1138,6 +1138,11 @@ namespace tl::fe {
       return identifier;
     }
 
+    // todo:
+    if (const auto typeId = parseTypeIdentifier(); !isEmptyAst(typeId)) {
+      return typeId;
+    }
+
     // todo: paren
     if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
       return tuple;

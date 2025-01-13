@@ -137,14 +137,18 @@ namespace tl::syntax {
   public:
     explicit Identifier(Vec<String> path);
 
-    auto name() const noexcept -> CRef<String> {
-      return m_path.back();
+    auto name() const noexcept -> String {
+      return isAnonymous() ? "" : m_path.back();
     }
 
     auto path() const noexcept -> String {
+      if (isAnonymous()) {
+        return "";
+      }
+
       String pathStr = m_path.front();
 
-      if (m_path.size() == 1) {
+      if (!isImported()) {
         return pathStr;
       }
 
@@ -160,6 +164,9 @@ namespace tl::syntax {
     }
 
     auto isType() const noexcept -> bool {
+      if (isAnonymous()) {
+        return false;
+      }
       const char c = name()[0];
       return c >= 'A' && c <= 'Z';
     }

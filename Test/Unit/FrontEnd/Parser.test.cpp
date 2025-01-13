@@ -3,7 +3,6 @@
 #include "FrontEnd/Parser.hpp"
 
 using tl::String;
-using tl::u64;
 using tl::sz;
 using tl::CRef;
 using tl::Opt;
@@ -11,10 +10,7 @@ using tl::Vec;
 using namespace tl::syntax;
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-TEST_CASE_METHOD(ParserTestFixture, __VA_ARGS__)
-
-#define REQUIRE_VTYPE_OF(variant, Type) \
-  REQUIRE(std::holds_alternative<Type>(variant))
+  TEST_CASE_METHOD(ParserTestFixture, __VA_ARGS__)
 
 class ParserTestFixture {
 protected:
@@ -31,11 +27,22 @@ protected:
   }
 
   template<std::derived_from<ASTNodeBase> TNode>
-  auto nodeAt(const u64 index) -> TNode {
+  auto nodeAt(const sz index) -> TNode {
     CAPTURE(index);
     const auto ast = astCast<TranslationUnit>(m_ast);
     const auto node = ast.childAt(index);
     return astCast<TNode>(node);
+  }
+
+  template<std::derived_from<ASTNodeBase> TNode>
+  auto statementsInFnBodyAt(const sz index) -> Vec<TNode> {
+    auto view = astCast<BlockStmt>(nodeAt<FunctionDef>(index).body()).view() |
+                rv::transform(
+                  [](CRef<ASTNode> node) {
+                    return astCast<TNode>(node);
+                  }
+                );
+    return {view.begin(), view.end()};
   }
 
 private:
@@ -44,10 +51,149 @@ private:
 };
 
 namespace expression {
-  TEST_CASE_WITH_FIXTURE("Parser: primitive constructs", "[Parser]") {
-  }
-
   TEST_CASE_WITH_FIXTURE("Parser: primary expression", "[Parser]") {
+    SECTION("Number") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  7;
+  0;
+  3.14159;
+  0.0;
+  .25;
+  .0;
+}
+      )"));
+
+      const auto statements = statementsInFnBodyAt<ExprStmt>(1);
+      REQUIRE(astCast<IntegerLiteral>(statements[0].expr()).value() == 7);
+      REQUIRE(astCast<IntegerLiteral>(statements[1].expr()).value() == 0);
+      REQUIRE(astCast<FloatLiteral>(statements[2].expr()).value() == 3.14159);
+      REQUIRE(astCast<FloatLiteral>(statements[3].expr()).value() == 0.0);
+      REQUIRE(astCast<FloatLiteral>(statements[4].expr()).value() == 0.25);
+      REQUIRE(astCast<FloatLiteral>(statements[5].expr()).value() == 0.0);
+    }
+
+    SECTION("Boolean") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  false;
+  true;
+}
+      )"));
+
+      const auto statements = statementsInFnBodyAt<ExprStmt>(1);
+      REQUIRE(astCast<BooleanLiteral>(statements[0].expr()).value() == false);
+      REQUIRE(astCast<BooleanLiteral>(statements[1].expr()).value() == true);
+    }
+
+    SECTION("String") {
+      // todo: Lexer::lexStringLiteral
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  "string";
+  "other string \n";
+}
+      )"));
+
+      const auto statements = statementsInFnBodyAt<ExprStmt>(1);
+      REQUIRE(astCast<StringLiteral>(statements[0].expr()).value() == "\"string\"");
+      REQUIRE(astCast<StringLiteral>(statements[1].expr()).value() == "\"other string \\n\"");
+    }
+
+    SECTION("Identifier") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  variable;
+  foo::bar::x;
+  Type;
+  bar::Type;
+  _;
+}
+      )"));
+
+      const auto statements = statementsInFnBodyAt<ExprStmt>(1);
+
+      //
+      {
+        const auto id = astCast<Identifier>(statements[0].expr());
+        REQUIRE(id.name() == "variable");
+        REQUIRE(id.path() == "variable");
+        REQUIRE_FALSE(id.isAnonymous());
+        REQUIRE_FALSE(id.isImported());
+        REQUIRE_FALSE(id.isType());
+        REQUIRE_FALSE(id.isOverloadedOp());
+      }
+
+      //
+      {
+        const auto id = astCast<Identifier>(statements[1].expr());
+        REQUIRE(id.name() == "x");
+        REQUIRE(id.path() == "foo::bar::x");
+        REQUIRE_FALSE(id.isAnonymous());
+        REQUIRE(id.isImported());
+        REQUIRE_FALSE(id.isType());
+        REQUIRE_FALSE(id.isOverloadedOp());
+      }
+
+      //
+      {
+        const auto id = astCast<Identifier>(statements[2].expr());
+        REQUIRE(id.name() == "Type");
+        REQUIRE(id.path() == "Type");
+        REQUIRE_FALSE(id.isAnonymous());
+        REQUIRE_FALSE(id.isImported());
+        REQUIRE(id.isType());
+        REQUIRE_FALSE(id.isOverloadedOp());
+      }
+
+      //
+      {
+        const auto id = astCast<Identifier>(statements[3].expr());
+        REQUIRE(id.name() == "Type");
+        REQUIRE(id.path() == "bar::Type");
+        REQUIRE_FALSE(id.isAnonymous());
+        REQUIRE(id.isImported());
+        REQUIRE(id.isType());
+        REQUIRE_FALSE(id.isOverloadedOp());
+      }
+
+      //
+      {
+        const auto id = astCast<Identifier>(statements[4].expr());
+        REQUIRE(id.name() == "");
+        REQUIRE(id.path() == "");
+        REQUIRE(id.isAnonymous());
+        REQUIRE_FALSE(id.isImported());
+        REQUIRE_FALSE(id.isType());
+        REQUIRE_FALSE(id.isOverloadedOp());
+      }
+    }
+
+    SECTION("Tuple") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  ();
+  (x);
+  (x, 7);
+  (x, _);
+  (x, 7, "string");
+  (_, _, _);
+}
+      )"));
+    }
+
+    SECTION("Array") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  [];
+  [x];
+  [x, 7];
+  [x, ...[]];
+  [x, y, ...arr];
+  [x, y, ...arr, 0 .. 5];
+}
+      )"));
+    }
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: postfix expression", "[Parser]") {
