@@ -47,7 +47,7 @@ namespace tl::syntax {
 
   template<std::derived_from<ASTNodeBase>... TNode>
   auto matchAstType(CRef<ASTNode> node) -> bool {
-    return !((std::holds_alternative<TNode>(node)) || ...);
+    return (std::holds_alternative<TNode>(node) || ...);
   }
 }
 

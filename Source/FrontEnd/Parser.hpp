@@ -104,6 +104,8 @@ namespace tl::fe {
 
     auto parseLetStmt() -> syntax::ASTNode;
 
+    auto parseConditionalStmt() -> syntax::ASTNode;
+
     auto parseReturnStmt() -> syntax::ASTNode;
 
     auto parseExpr() -> syntax::ASTNode;

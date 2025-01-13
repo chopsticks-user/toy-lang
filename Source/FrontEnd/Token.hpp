@@ -27,7 +27,7 @@ namespace tl::fe {
     Module, Import, Export, Internal, Local, Extern, Static,
     Let, Mutable, Fn, Concept, Satisfies, Type, Global, Enum, Flag,
     For, Return, Match,
-    By, Of, In, If,
+    By, Of, In, When,
     True, False,
     Class, Self, Public, Private,
 

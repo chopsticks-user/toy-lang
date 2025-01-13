@@ -207,7 +207,7 @@ namespace tl::fe {
       if (m_currentChar == '"') {
         closed = true;
         advance();
-        consume();
+        // consume();
         break;
       }
     }

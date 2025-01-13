@@ -33,6 +33,7 @@ namespace tl::syntax {
   class MatchStmtCase;
   class BlockStmt;
   class LetStmt;
+  class ConditionalStmt;
   class ReturnStmt;
   class AssignStmt;
   class ExprStmt;
@@ -52,7 +53,8 @@ namespace tl::syntax {
     TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
     FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
 
-    ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
+    ForStmt, MatchStmt, MatchStmtCase, BlockStmt,
+    LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
     FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit

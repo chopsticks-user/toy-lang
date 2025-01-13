@@ -18,6 +18,20 @@ namespace tl::syntax {
     }) {
   }
 
+  auto MatchStmt::nExprs() const noexcept -> sz {
+    const auto expr = matchedExpr();
+
+    if (isEmptyAst(expr)) {
+      return 0;
+    }
+
+    if (matchAstType<TupleExpr>(expr)) {
+      return astCast<TupleExpr>(expr).size();
+    }
+
+    return 1;
+  }
+
   MatchStmtCase::MatchStmtCase(ASTNode value, ASTNode condition, ASTNode body)
     : ASTNodeBase({value, condition, body}) {
   }
@@ -28,6 +42,10 @@ namespace tl::syntax {
 
   LetStmt::LetStmt(ASTNode decl, ASTNode init)
     : ASTNodeBase({decl, init}) {
+  }
+
+  ConditionalStmt::ConditionalStmt(ASTNode condition, ASTNode body)
+    : ASTNodeBase({condition, body}) {
   }
 
   ReturnStmt::ReturnStmt(ASTNode expr)

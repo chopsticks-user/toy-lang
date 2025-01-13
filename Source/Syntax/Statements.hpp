@@ -26,6 +26,8 @@ namespace tl::syntax {
   public:
     MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases);
 
+    auto nExprs() const noexcept -> sz;
+
     auto matchedExpr() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
@@ -36,6 +38,10 @@ namespace tl::syntax {
 
     auto caseAt(const u64 index) const noexcept -> CRef<ASTNode> {
       return childAt(index + 2);
+    }
+
+    auto nCases() const noexcept -> sz {
+      return nChildren() - 1;
     }
   };
 
@@ -74,6 +80,19 @@ namespace tl::syntax {
     }
 
     auto init() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class ConditionalStmt final : public ASTNodeBase {
+  public:
+    ConditionalStmt(ASTNode condition, ASTNode body);
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
   };
