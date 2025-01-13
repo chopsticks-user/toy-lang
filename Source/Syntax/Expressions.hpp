@@ -133,22 +133,6 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class PostfixUnaryExpr final : public ASTNodeBase {
-  public:
-    PostfixUnaryExpr(ASTNode operand, String op);
-
-    auto operand() const noexcept -> CRef<ASTNode> {
-      return childAt(0);
-    }
-
-    auto op() const noexcept -> CRef<String> {
-      return m_op;
-    }
-
-  private:
-    String m_op;
-  };
-
   class Identifier final : public ASTNodeBase {
   public:
     explicit Identifier(Vec<String> path);

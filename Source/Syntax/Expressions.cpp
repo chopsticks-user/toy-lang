@@ -38,12 +38,7 @@ namespace tl::syntax {
     : ASTNodeBase({lhs, rhs}), m_op(std::move(op)) {
   }
 
-
   UnaryExpr::UnaryExpr(ASTNode operand, String op)
-    : ASTNodeBase({operand}), m_op(std::move(op)) {
-  }
-
-  PostfixUnaryExpr::PostfixUnaryExpr(ASTNode operand, String op)
     : ASTNodeBase({operand}), m_op(std::move(op)) {
   }
 

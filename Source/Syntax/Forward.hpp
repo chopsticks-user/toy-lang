@@ -12,7 +12,6 @@ namespace tl::syntax {
   class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
-  class PostfixUnaryExpr;
   class Identifier;
   class TupleExpr;
   class FunctionCallExpr;
@@ -51,7 +50,7 @@ namespace tl::syntax {
   using ASTNode = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
-    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
+    TernaryExpr, BinaryExpr, UnaryExpr, Identifier, TupleExpr,
     FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
 
     ForStmt, ForRangeFragment, MatchStmt, MatchStmtCase, BlockStmt,

@@ -44,6 +44,26 @@ private:
 };
 
 namespace expression {
+  TEST_CASE_WITH_FIXTURE("Parser: primitive constructs", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: primary expression", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: postfix expression", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: prefix expression", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: binary expression", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: ternary expression", "[Parser]") {
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: precedence", "[Parser]") {
+  }
 }
 
 namespace statement {
