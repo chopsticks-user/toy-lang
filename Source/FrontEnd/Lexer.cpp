@@ -207,7 +207,7 @@ namespace tl::fe {
       if (m_currentChar == '"') {
         closed = true;
         advance();
-        consume();
+        // consume();
         break;
       }
     }
@@ -248,7 +248,7 @@ namespace tl::fe {
       addToken(tokenType);
       lexed = true;
     } else if (isStartOfDecimalPart(m_currentChar) && isDigit(peek())) {
-      consume();
+      // consume();
 
       // accept both, then check if it is actually a number
       while (advance() && isDigit(m_currentChar)) {

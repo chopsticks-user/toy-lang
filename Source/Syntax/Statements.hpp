@@ -7,7 +7,22 @@
 namespace tl::syntax {
   class ForStmt final : public ASTNodeBase {
   public:
-    ForStmt(ASTNode iterator, ASTNode iterable, ASTNode body);
+    ForStmt(ASTNode condition, ASTNode body);
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+
+    auto isForRange() const noexcept -> bool;
+  };
+
+  class ForRangeFragment final : public ASTNodeBase {
+  public:
+    ForRangeFragment(ASTNode iterator, ASTNode iterable);
 
     auto iterator() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -16,15 +31,13 @@ namespace tl::syntax {
     auto iterable() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
-
-    auto body() const noexcept -> CRef<ASTNode> {
-      return childAt(2);
-    }
   };
 
   class MatchStmt final : public ASTNodeBase {
   public:
     MatchStmt(ASTNode matchedExpr, ASTNode defaultBody, Vec<ASTNode> cases);
+
+    auto nExprs() const noexcept -> sz;
 
     auto matchedExpr() const noexcept -> CRef<ASTNode> {
       return childAt(0);
@@ -36,6 +49,10 @@ namespace tl::syntax {
 
     auto caseAt(const u64 index) const noexcept -> CRef<ASTNode> {
       return childAt(index + 2);
+    }
+
+    auto nCases() const noexcept -> sz {
+      return nChildren() - 1;
     }
   };
 
@@ -74,6 +91,19 @@ namespace tl::syntax {
     }
 
     auto init() const noexcept -> CRef<ASTNode> {
+      return childAt(1);
+    }
+  };
+
+  class ConditionalStmt final : public ASTNodeBase {
+  public:
+    ConditionalStmt(ASTNode condition, ASTNode body);
+
+    auto condition() const noexcept -> CRef<ASTNode> {
+      return childAt(0);
+    }
+
+    auto body() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
   };

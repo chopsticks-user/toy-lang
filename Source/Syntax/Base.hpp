@@ -8,7 +8,9 @@
 namespace tl::syntax {
   class ASTNodeBase {
   public:
-    auto children() const noexcept -> const std::vector<ASTNode> &;
+    auto children() const noexcept -> CRef<Vec<ASTNode> >;
+
+    auto view() const noexcept -> Vec<ASTNode>;
 
     auto childAt(sz index) const -> CRef<ASTNode>;
 
@@ -45,7 +47,7 @@ namespace tl::syntax {
 
   template<std::derived_from<ASTNodeBase>... TNode>
   auto matchAstType(CRef<ASTNode> node) -> bool {
-    return !((std::holds_alternative<TNode>(node)) || ...);
+    return (std::holds_alternative<TNode>(node) || ...);
   }
 }
 

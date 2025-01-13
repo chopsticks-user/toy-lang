@@ -32,7 +32,7 @@ namespace tl::fe {
     {"by", EToken::By},
     {"of", EToken::Of},
     {"in", EToken::In},
-    {"if", EToken::If},
+    {"when", EToken::When},
 
     // boolean
     {"true", EToken::True},
@@ -81,7 +81,7 @@ namespace tl::fe {
     {"-=", EToken::MinusEqual},
     {"|>", EToken::BarGreater},
     {"->", EToken::MinusGreater},
-    {"->", EToken::EqualGreater},
+    {"=>", EToken::EqualGreater},
     // {"<-", EToken::LessMinus},
     {"::", EToken::Colon2},
     {"**", EToken::Star2},

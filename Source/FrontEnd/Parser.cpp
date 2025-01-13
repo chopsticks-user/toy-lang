@@ -38,8 +38,7 @@ namespace tl::fe {
   }
 
   auto Parser::peekNext() -> Token {
-    ++m_tokenIt;
-    return *(m_tokenIt--);
+    return *m_tokenIt;
   }
 
   auto Parser::peekPrev() -> Token {
@@ -118,7 +117,6 @@ namespace tl::fe {
 
   auto Parser::parseTranslationUnit() -> syntax::TranslationUnit {
     std::vector<ASTNode> definitions;
-
 
     if (const auto moduleDecl = parseModuleDecl(); !isEmptyAst(moduleDecl)) {
       definitions.push_back(moduleDecl);
@@ -251,6 +249,22 @@ namespace tl::fe {
     return syntax::TypeDecl{storage(), typeId, typeExpr};
   }
 
+  auto Parser::parseEnumDecl() -> ASTNode {
+    if (!match(EToken::Enum)) {
+      return {};
+    }
+
+    return {};
+  }
+
+  auto Parser::parseFlagDecl() -> ASTNode {
+    if (!match(EToken::Flag)) {
+      return {};
+    }
+
+    return {};
+  }
+
   auto Parser::parseFunctionDef() -> ASTNode {
     const auto prototype = parseFunctionPrototype();
     if (isEmptyAst(prototype)) {
@@ -364,8 +378,6 @@ namespace tl::fe {
     do {
       if (auto type = parseTypeIdentifier(); !isEmptyAst(type)) {
         types.emplace_back(type);
-      } else {
-        collectException("invalid type identifier");
       }
     } while (match(EToken::Bar));
 
@@ -430,9 +442,9 @@ namespace tl::fe {
     if (isEmptyAst(returns)) {
       returns = parseIdentifierDecl();
     }
-    if (isEmptyAst(returns)) {
-      collectException("missing function returns");
-    }
+    // if (isEmptyAst(returns)) {
+    //   collectException("missing function returns");
+    // }
 
     return syntax::FunctionPrototype{
       syntax::FnType::Function, identifier, params, returns
@@ -462,8 +474,14 @@ namespace tl::fe {
         continue;
       }
 
+      decl = parseTupleDecl();
+      if (!isEmptyAst(decl)) {
+        declNodes.emplace_back(decl);
+        continue;
+      }
+
       if (isEmptyAst(decl)) {
-        collectException("invalid identifier declaration");
+        collectException("invalid declaration");
       }
     } while (match(EToken::Comma));
 
@@ -499,28 +517,28 @@ namespace tl::fe {
   }
 
   auto Parser::parseStmt() -> ASTNode {
-    if (const auto forStmt = parseForStmt(); isEmptyAst(forStmt)) {
+    if (const auto forStmt = parseForStmt(); !isEmptyAst(forStmt)) {
       return forStmt;
     }
 
-    if (const auto matchStmt = parseMatchStmt(); isEmptyAst(matchStmt)) {
+    if (const auto matchStmt = parseMatchStmt(); !isEmptyAst(matchStmt)) {
       return matchStmt;
     }
 
-    if (const auto blockStmt = parseBlockStmt(); isEmptyAst(blockStmt)) {
+    if (const auto blockStmt = parseBlockStmt(); !isEmptyAst(blockStmt)) {
       return blockStmt;
     }
 
-    if (const auto letStmt = parseLetStmt(); isEmptyAst(letStmt)) {
+    if (const auto letStmt = parseLetStmt(); !isEmptyAst(letStmt)) {
       return letStmt;
     }
 
-    if (const auto returnStmt = parseReturnStmt(); isEmptyAst(returnStmt)) {
+    if (const auto returnStmt = parseReturnStmt(); !isEmptyAst(returnStmt)) {
       return returnStmt;
     }
 
     // must be last
-    if (const auto stmt = parseAssignOrExprStmt(); isEmptyAst(stmt)) {
+    if (const auto stmt = parseExprPrefixStmt(); !isEmptyAst(stmt)) {
       return stmt;
     }
 
@@ -533,26 +551,33 @@ namespace tl::fe {
       return {};
     }
 
-    const auto iterator = parseTupleDecl();
-    if (isEmptyAst(iterator)) {
-      collectException("missing iterator declaration");
+    ASTNode condition = {};
+
+    if (const auto iterator = parseTupleDecl(); !isEmptyAst(iterator)) {
+      if (!match(EToken::In)) {
+        collectException("missing 'in'");
+      }
+
+      const auto iterable = parseExpr();
+      if (isEmptyAst(iterable)) {
+        collectException("missing iterable expression");
+      }
+
+      condition = syntax::ForRangeFragment{iterator, iterable};
+    } else {
+      condition = parseExpr();
+      if (isEmptyAst(condition)) {
+        collectException("missing conditional expression of for statement");
+      }
     }
 
-    if (!match(EToken::In)) {
-      collectException("missing 'in'");
-    }
-
-    const auto iterable = parseExpr();
-    if (isEmptyAst(iterable)) {
-      collectException("missing iterable expression");
-    }
 
     const auto body = parseBlockStmt();
     if (isEmptyAst(body)) {
       collectException("missing for loop body");
     }
 
-    return syntax::ForStmt{iterator, iterable, body};
+    return syntax::ForStmt{condition, body};
   }
 
   auto Parser::parseMatchStmt() -> ASTNode {
@@ -560,19 +585,13 @@ namespace tl::fe {
       return {};
     }
 
-    u64 idCount = 0;
-    bool isTuple = true;
+    bool hasArguments = true;
     auto matchedExpr = parseTupleExpr();
     if (isEmptyAst(matchedExpr)) {
       matchedExpr = parseIdentifier();
-    } else {
-      idCount = syntax::astCast<syntax::TupleExpr>(matchedExpr).nChildren();
     }
     if (isEmptyAst(matchedExpr)) {
-      matchedExpr = parseIdentifier();
-      isTuple = false;
-    } else {
-      idCount = 1;
+      hasArguments = false;
     }
 
     if (!match(EToken::LeftBrace)) {
@@ -580,47 +599,28 @@ namespace tl::fe {
     }
 
     Vec<ASTNode> cases;
-    while (peekNext().type() != EToken::AnnonymousIdentifier ||
-           peekNext().type() != EToken::RightBrace) {
+    ASTNode defaultBody = {};
+    while (!match(EToken::RightBrace)) {
       ASTNode value = {}, condition = {};
 
-      if (idCount == 0) {
-        if (match(EToken::If)) {
-          collectException("'if' can be ignored since match has zero arguments");
+      if (!hasArguments) {
+        if (match(EToken::When)) {
+          collectException("'when' can be ignored since match has zero arguments");
         }
+
         condition = parseExpr();
       } else {
-        if (isTuple) {
-          value = parseTupleExpr();
-          if (!isEmptyAst(value)) {
-            if (const auto n = syntax::astCast<syntax::TupleExpr>(value).nChildren();
-              n != idCount) {
-              collectException(
-                "tuple of "s + std::to_string(idCount) + " elements cannot be matched with tuple of "
-                + std::to_string(n) + " elements"
-              );
-            }
-          } else {
-            collectException(
-              "matching expressions must be tuples as matched expression is a tuple"
-            );
-            value = parseExpr();
-            if (isEmptyAst(value)) {
-              collectException("missing matching expression");
-            }
-          }
-        } else {
+        value = parseTupleExpr();
+        if (isEmptyAst(value)) {
           value = parseExpr();
-          if (isEmptyAst(value)) {
-            collectException("missing matching expression");
-          }
-
-          if (syntax::matchAstType<syntax::TupleExpr>(value)) {
-            collectException(
-              "matching expressions cannot be tuples as matched expression is not a tuple"
-            );
-          }
         }
+        if (isEmptyAst(value)) {
+          collectException("missing matching expression");
+        }
+      }
+
+      if (hasArguments && match(EToken::When)) {
+        condition = parseExpr();
       }
 
       if (!match(EToken::EqualGreater)) {
@@ -630,6 +630,26 @@ namespace tl::fe {
       // todo: allow one-line statements
       const auto body = parseBlockStmt();
 
+      if (!hasArguments && syntax::matchAstType<syntax::Identifier>(condition)) {
+        if (const auto condExpr = syntax::astCast<syntax::Identifier>(condition);
+          condExpr.isAnonymous()) {
+          defaultBody = body;
+
+          // optional comma
+          match(EToken::Comma);
+          break;
+        }
+      } else if (isEmptyAst(condition) && syntax::matchAstType<syntax::Identifier>(value)) {
+        if (const auto valueExpr = syntax::astCast<syntax::Identifier>(value);
+          valueExpr.isAnonymous()) {
+          defaultBody = body;
+
+          // optional comma
+          match(EToken::Comma);
+          break;
+        }
+      }
+
       if (!match(EToken::Comma)) {
         collectException("missing , at the end of matching case");
       }
@@ -637,17 +657,9 @@ namespace tl::fe {
       cases.emplace_back(syntax::MatchStmtCase{value, condition, body});
     }
 
-    ASTNode defaultBody = {};
-    if (match(EToken::AnnonymousIdentifier)) {
-      if (!match(EToken::EqualGreater)) {
-        collectException("missing =>");
-      }
-      defaultBody = parseBlockStmt();
-    } else {
+    if (isEmptyAst(defaultBody)) {
       collectException("missing default case");
-    }
-
-    if (!match(EToken::RightBrace)) {
+    } else if (!match(EToken::RightBrace)) {
       collectException("missing } in match statement");
     }
 
@@ -655,18 +667,18 @@ namespace tl::fe {
   }
 
   auto Parser::parseBlockStmt() -> ASTNode {
-    if (!match(EToken::RightBrace)) {
+    if (!match(EToken::LeftBrace)) {
       return {};
     }
 
     Vec<ASTNode> stmts;
     auto stmt = parseStmt();
-    while (isEmptyAst(stmt)) {
+    while (!isEmptyAst(stmt)) {
       stmts.push_back(stmt);
       stmt = parseStmt();
     }
 
-    if (!match(EToken::LeftBrace)) {
+    if (!match(EToken::RightBrace)) {
       collectException("missing '}'");
 
       // todo
@@ -675,10 +687,13 @@ namespace tl::fe {
       }
     }
 
+    // optional ';'
+    match(EToken::Semicolon);
+
     return syntax::BlockStmt{stmts};
   }
 
-  auto Parser::parseAssignOrExprStmt() -> ASTNode {
+  auto Parser::parseExprPrefixStmt() -> ASTNode {
     markRevertPoint();
 
     const auto lhs = parseExpr();
@@ -692,25 +707,28 @@ namespace tl::fe {
       return syntax::ExprStmt{lhs};
     }
 
-    // String op;
-    // if (match(
-    //   EToken::Equal, EToken::StarEqual, EToken::AmpersandEqual, EToken::BarEqual,
-    //   EToken::FwdSlashEqual, EToken::PercentEqual, EToken::PlusEqual, EToken::MinusEqual,
-    //   EToken::HatEqual, EToken::Greater2Equal, EToken::Less2Equal, EToken::Star2Equal
-    // )) {
-    //   op = current().string();
-    // } else {
-    //   toRevertPoint();
-    //   return {};
-    // }
+    if (match(EToken::EqualGreater)) {
+      if (isEmptyAst(lhs)) {
+        collectException("missing expression before =>");
+      }
 
-    String op;
-    if (const auto str = current().string(); syntax::assignmentOps.contains(op)) {
-      op = str;
-    } else {
+      auto body = parseStmt();
+      if (isEmptyAst(body)) {
+        collectException("missing statement after =>");
+      }
+
+      return syntax::ConditionalStmt{lhs, body};
+    }
+
+    if (!match(EToken::Equal, EToken::PlusEqual, EToken::MinusEqual, EToken::StarEqual,
+               EToken::FwdSlashEqual, EToken::PercentEqual, EToken::Star2Equal,
+               EToken::AmpersandEqual, EToken::BarEqual, EToken::HatEqual, EToken::Less2Equal,
+               EToken::Greater2Equal)) {
       toRevertPoint();
       return {};
     }
+
+    const String op = current().string();
 
     const auto rhs = parseExpr();
     if (isEmptyAst(rhs)) {
@@ -738,6 +756,10 @@ namespace tl::fe {
     }
 
     if (!match(EToken::Equal)) {
+      if (!match(EToken::Semicolon)) {
+        collectException("missing ; at the end of let statement");
+      }
+
       return syntax::LetStmt{decl, {}};
     }
 
@@ -759,9 +781,6 @@ namespace tl::fe {
     }
 
     const auto expr = parseExpr();
-    if (isEmptyAst(expr)) {
-      collectException("missing returned expression");
-    }
 
     if (!match(EToken::Semicolon)) {
       collectException("missing ; at the end of return statement");
@@ -864,7 +883,7 @@ namespace tl::fe {
       collectException("missing rhs expression of logical and expression");
     }
 
-    return syntax::BinaryExpr{lhs, rhs, "||"};
+    return syntax::BinaryExpr{lhs, rhs, "&&"};
   }
 
   auto Parser::parseInclusiveOrExpr() -> ASTNode {
@@ -998,10 +1017,10 @@ namespace tl::fe {
   }
 
   auto Parser::parseExponentialExpr() -> ASTNode {
-    const auto lhs = parsePipeExpr();
+    const auto lhs = parsePrefixUnaryExpr();
 
     if (match(EToken::Star2)) {
-      const auto rhs = parsePipeExpr();
+      const auto rhs = parsePrefixUnaryExpr();
       if (isEmptyAst(rhs)) {
         collectException("missing rhs expression of exponential expression");
       }
@@ -1012,8 +1031,25 @@ namespace tl::fe {
     return lhs;
   }
 
-  auto Parser::parsePipeExpr() -> ASTNode {
-    const auto lhs = parsePrefixUnaryExpr();
+  auto Parser::parsePrefixUnaryExpr() -> ASTNode {
+    String op;
+    if (match(
+      EToken::Exclaim, EToken::Tilde, EToken::Plus,
+      EToken::Minus, EToken::Hash, EToken::Dot3
+    )) {
+      op = current().string();
+    }
+
+    const auto operand = parsePostfixExpr();
+    return op.empty() ? operand : syntax::UnaryExpr(operand, op);
+  }
+
+  auto Parser::parsePostfixExpr() -> ASTNode {
+    auto lhs = parsePrimaryExpr();
+
+    if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
+      return syntax::FunctionCallExpr(lhs, tuple);
+    }
 
     if (match(EToken::BarGreater)) {
       const auto rhs = parsePostfixExpr();
@@ -1028,26 +1064,6 @@ namespace tl::fe {
         );
       }
       return funCallExpr.value();
-    }
-
-    return lhs;
-  }
-
-  auto Parser::parsePrefixUnaryExpr() -> ASTNode {
-    auto operand = parsePostfixExpr();
-
-    if (match(EToken::Exclaim, EToken::Tilde, EToken::Plus, EToken::Minus, EToken::Hash)) {
-      return syntax::UnaryExpr(operand, current().string());
-    }
-
-    return operand;
-  }
-
-  auto Parser::parsePostfixExpr() -> ASTNode {
-    auto lhs = parsePrimaryExpr();
-
-    if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
-      return syntax::FunctionCallExpr(lhs, tuple);
     }
 
     if (match(EToken::LeftBracket)) {
@@ -1088,6 +1104,10 @@ namespace tl::fe {
       return syntax::FloatLiteral{std::stod(current().string())};
     }
 
+    if (match(EToken::True, EToken::False)) {
+      return syntax::BooleanLiteral{current().type() == EToken::True};
+    }
+
     if (match(EToken::StringLiteral)) {
       // todo: placeholders
       return syntax::StringLiteral{current().string()};
@@ -1118,6 +1138,11 @@ namespace tl::fe {
       return identifier;
     }
 
+    // todo:
+    if (const auto typeId = parseTypeIdentifier(); !isEmptyAst(typeId)) {
+      return typeId;
+    }
+
     // todo: paren
     if (const auto tuple = parseTupleExpr(); !isEmptyAst(tuple)) {
       return tuple;
@@ -1139,6 +1164,11 @@ namespace tl::fe {
       return {};
     }
 
+    // ()
+    if (match(EToken::RightParen)) {
+      return syntax::TupleExpr{{}};
+    }
+
     Vec<ASTNode> elements;
     do {
       ASTNode element = parseExpr();
@@ -1156,6 +1186,6 @@ namespace tl::fe {
       collectException("missing )");
     }
 
-    return {};
+    return syntax::TupleExpr{std::move(elements)};
   }
 }

@@ -78,7 +78,7 @@ namespace tl {
 
       // todo: handle out of memory
       for (auto &e: m_collected) {
-        combinedMesg += e->what();
+        combinedMesg += e->what() + "\n"s;
         e.reset();
       }
       m_collected.clear();

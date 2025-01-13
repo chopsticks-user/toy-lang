@@ -133,34 +133,22 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class PostfixUnaryExpr final : public ASTNodeBase {
-  public:
-    PostfixUnaryExpr(ASTNode operand, String op);
-
-    auto operand() const noexcept -> CRef<ASTNode> {
-      return childAt(0);
-    }
-
-    auto op() const noexcept -> CRef<String> {
-      return m_op;
-    }
-
-  private:
-    String m_op;
-  };
-
   class Identifier final : public ASTNodeBase {
   public:
     explicit Identifier(Vec<String> path);
 
-    auto name() const noexcept -> CRef<String> {
-      return m_path.back();
+    auto name() const noexcept -> String {
+      return isAnonymous() ? "" : m_path.back();
     }
 
     auto path() const noexcept -> String {
+      if (isAnonymous()) {
+        return "";
+      }
+
       String pathStr = m_path.front();
 
-      if (m_path.size() == 1) {
+      if (!isImported()) {
         return pathStr;
       }
 
@@ -176,6 +164,9 @@ namespace tl::syntax {
     }
 
     auto isType() const noexcept -> bool {
+      if (isAnonymous()) {
+        return false;
+      }
       const char c = name()[0];
       return c >= 'A' && c <= 'Z';
     }
@@ -185,7 +176,7 @@ namespace tl::syntax {
     }
 
     auto isAnonymous() const noexcept -> bool {
-      return m_path.size() == 1 && m_path.back() == "_";
+      return m_path.empty();
     }
 
   private:
@@ -196,7 +187,11 @@ namespace tl::syntax {
   public:
     explicit TupleExpr(Vec<ASTNode> ids);
 
-    auto identifier(const u64 index) const noexcept -> CRef<ASTNode> {
+    auto size() const noexcept -> sz {
+      return nChildren();
+    }
+
+    auto expr(const u64 index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
   };
@@ -255,6 +250,10 @@ namespace tl::syntax {
   public:
     explicit TypeExpr(Vec<ASTNode> types);
 
+    auto nTypes() const noexcept -> sz {
+      return nChildren();
+    }
+
     auto type(const sz index) const -> CRef<ASTNode> {
       return childAt(index);
     }
@@ -263,6 +262,10 @@ namespace tl::syntax {
   class ArrayExpr final : public ASTNodeBase {
   public:
     explicit ArrayExpr(Vec<ASTNode> elements);
+
+    auto size() const noexcept -> sz {
+      return nChildren();
+    }
 
     auto element(const sz index) const -> CRef<ASTNode> {
       return childAt(index);

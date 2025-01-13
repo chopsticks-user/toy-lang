@@ -12,7 +12,6 @@ namespace tl::syntax {
   class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
-  class PostfixUnaryExpr;
   class Identifier;
   class TupleExpr;
   class FunctionCallExpr;
@@ -27,14 +26,14 @@ namespace tl::syntax {
   class TypeDecl;
   class IdentifierDecl;
   class TupleDecl;
-  class ParameterDecl;
-  class ReturnDecl;
 
   class ForStmt;
+  class ForRangeFragment;
   class MatchStmt;
   class MatchStmtCase;
   class BlockStmt;
   class LetStmt;
+  class ConditionalStmt;
   class ReturnStmt;
   class AssignStmt;
   class ExprStmt;
@@ -51,12 +50,13 @@ namespace tl::syntax {
   using ASTNode = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
-    TernaryExpr, BinaryExpr, UnaryExpr, PostfixUnaryExpr, Identifier, TupleExpr,
+    TernaryExpr, BinaryExpr, UnaryExpr, Identifier, TupleExpr,
     FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
 
-    ForStmt, MatchStmt, MatchStmtCase, BlockStmt, LetStmt, ReturnStmt, AssignStmt, ExprStmt,
+    ForStmt, ForRangeFragment, MatchStmt, MatchStmtCase, BlockStmt,
+    LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
 
-    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, ParameterDecl, ReturnDecl,
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
     FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
   >;
 
