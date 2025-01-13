@@ -360,19 +360,94 @@ fn main: () -> {
 fn main: () -> {
   !true;
   ~x;
-  +5;
-  -10.0;
+  +7;
+  -3.14;
   #[];
   ...arr;
+}
+      )"));
+
+      const auto expressions =
+          statementsInFnBodyAt<ExprStmt>(1) | rv::transform(
+            [](CRef<ExprStmt> stmt) { return astCast<UnaryExpr>(stmt.expr()); }
+          );
+
+      //
+      {
+        REQUIRE(expressions[0].op() == "!");
+        REQUIRE(astCast<BooleanLiteral>(expressions[0].operand()).value() == true);
+      }
+
+      //
+      {
+        REQUIRE(expressions[1].op() == "~");
+        REQUIRE(astCast<Identifier>(expressions[1].operand()).path() == "x");
+      }
+
+      //
+      {
+        REQUIRE(expressions[2].op() == "+");
+        REQUIRE(astCast<IntegerLiteral>(expressions[2].operand()).value() == 7);
+      }
+
+      //
+      {
+        REQUIRE(expressions[3].op() == "-");
+        REQUIRE(astCast<FloatLiteral>(expressions[3].operand()).value() == 3.14);
+      }
+
+      //
+      {
+        REQUIRE(expressions[4].op() == "#");
+        REQUIRE(astCast<ArrayExpr>(expressions[4].operand()).size() == 0);
+      }
+
+      //
+      {
+        REQUIRE(expressions[5].op() == "...");
+        REQUIRE(astCast<Identifier>(expressions[5].operand()).path() == "arr");
+      }
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: binary expression", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  x ** y;
+  x * y;
+  x / y;
+  x % y;
+  x + y;
+  x - y;
+  x << y;
+  x >> y;
+  x < y;
+  x > y;
+  x <= y;
+  x >= y;
+  x == y;
+  x != y;
+  x & y;
+  x ^ y;
+  x | y;
+  x && y;
+  x || y;
+  x ?? y;
 }
       )"));
     }
   }
 
-  TEST_CASE_WITH_FIXTURE("Parser: binary expression", "[Parser]") {
-  }
-
   TEST_CASE_WITH_FIXTURE("Parser: ternary expression", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(module foo;
+fn main: () -> {
+  x ? y : z;
+  x .. y @ z;
+}
+      )"));
+    }
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: precedence", "[Parser]") {
