@@ -531,6 +531,10 @@ namespace tl::fe {
       return returnStmt;
     }
 
+    if (const auto conditionalStmt = parseConditionalStmt(); !isEmptyAst(conditionalStmt)) {
+      return conditionalStmt;
+    }
+
     // must be last
     if (const auto stmt = parseAssignOrExprStmt(); !isEmptyAst(stmt)) {
       return stmt;
@@ -674,6 +678,9 @@ namespace tl::fe {
       }
     }
 
+    // optional ';'
+    match(EToken::Semicolon);
+
     return syntax::BlockStmt{stmts};
   }
 
@@ -703,13 +710,15 @@ namespace tl::fe {
     //   return {};
     // }
 
-    String op;
-    if (const auto str = current().string(); syntax::assignmentOps.contains(op)) {
-      op = str;
-    } else {
+    if (!match(EToken::Equal, EToken::PlusEqual, EToken::MinusEqual, EToken::StarEqual,
+               EToken::FwdSlashEqual, EToken::PercentEqual, EToken::Star2Equal,
+               EToken::AmpersandEqual, EToken::BarEqual, EToken::HatEqual, EToken::Less2Equal,
+               EToken::Greater2Equal)) {
       toRevertPoint();
       return {};
     }
+
+    const String op = current().string();
 
     const auto rhs = parseExpr();
     if (isEmptyAst(rhs)) {
@@ -760,17 +769,19 @@ namespace tl::fe {
     markRevertPoint();
 
     const auto condition = parseExpr();
-    if (isEmptyAst(condition) || !match(EToken::EqualGreater)) {
+
+    if (!match(EToken::EqualGreater)) {
       toRevertPoint();
       return {};
     }
 
-    auto body = parseBlockStmt();
-    if (isEmptyAst(body)) {
-      body = parseAssignOrExprStmt();
+    if (isEmptyAst(condition)) {
+      collectException("missing expression before =>");
     }
+
+    auto body = parseStmt();
     if (isEmptyAst(body)) {
-      collectException("missing assignment, block, or expression statement after =>");
+      collectException("missing statement after =>");
     }
 
     return syntax::ConditionalStmt{condition, body};
@@ -1160,6 +1171,11 @@ namespace tl::fe {
   auto Parser::parseTupleExpr() -> ASTNode {
     if (!match(EToken::LeftParen)) {
       return {};
+    }
+
+    // ()
+    if (match(EToken::RightParen)) {
+      return syntax::TupleExpr{{}};
     }
 
     Vec<ASTNode> elements;

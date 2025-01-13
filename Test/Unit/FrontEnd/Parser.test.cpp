@@ -510,22 +510,79 @@ fn main: () -> {
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: conditional statement", "[Parser]") {
-    SECTION("Assignment statement as body") {
+    SECTION("Simple") {
       REQUIRE_NOTHROW(parse(R"(
 module foo;
-      )"));
-    }
 
-    SECTION("Expression statement as body") {
-      REQUIRE_NOTHROW(parse(R"(
-module foo;
-      )"));
-    }
+fn main: () -> {
+  x => {}
 
-    SECTION("Block statement as body") {
-      REQUIRE_NOTHROW(parse(R"(
-module foo;
+  x => func();
+
+  x => y = 7;
+
+  x => return;
+
+  x => y => {}
+}
       )"));
+
+      const auto statements =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<ConditionalStmt>(node);
+            }
+          );
+
+      // x => {}
+      {
+        const auto stmt = statements[0];
+
+        REQUIRE(astCast<Identifier>(stmt.condition()).path() == "x");
+        REQUIRE(matchAstType<BlockStmt>(stmt.body()));
+      }
+
+      // x => func();
+      {
+        const auto stmt = statements[1];
+
+        REQUIRE(astCast<Identifier>(stmt.condition()).path() == "x");
+
+        const auto callExpr = astCast<FunctionCallExpr>(
+          astCast<ExprStmt>(stmt.body()).expr()
+        );
+        REQUIRE(astCast<TupleExpr>(callExpr.args()).size() == 0);
+        REQUIRE(astCast<Identifier>(callExpr.callee()).path() == "func");
+      }
+
+      // x => y = 7;
+      {
+        const auto stmt = statements[2];
+
+        REQUIRE(astCast<Identifier>(stmt.condition()).path() == "x");
+
+        const auto assignStmt = astCast<AssignStmt>(stmt.body());
+        REQUIRE(assignStmt.op() == "=");
+        REQUIRE(astCast<Identifier>(assignStmt.left()).path() == "y");
+        REQUIRE(astCast<IntegerLiteral>(assignStmt.right()).value() == 7);
+      }
+
+      // x => return;
+      {
+        const auto stmt = statements[3];
+        REQUIRE(astCast<Identifier>(stmt.condition()).path() == "x");
+        REQUIRE(isEmptyAst(astCast<ReturnStmt>(stmt.body()).expr()));
+      }
+
+      // x => y => {}
+      {
+        const auto stmt = statements[4];
+        REQUIRE(astCast<Identifier>(stmt.condition()).path() == "x");
+
+        const auto innerCondStmt = astCast<ConditionalStmt>(stmt.body());
+        REQUIRE(astCast<Identifier>(innerCondStmt.condition()).path() == "y");
+        REQUIRE(matchAstType<BlockStmt>(innerCondStmt.body()));
+      }
     }
   }
 
