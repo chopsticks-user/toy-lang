@@ -588,11 +588,109 @@ fn main: () -> {
 
   TEST_CASE_WITH_FIXTURE("Parser: assignment statement", "[Parser]") {
     SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+fn main: () -> {
+  x = 7;
+  x += 7;
+  x -= 7;
+  x *= 7;
+  x /= 7;
+  x %= 7;
+  x **= 7;
+  x &= 7;
+  x |= 7;
+  x ^= 7;
+  x <<= 7;
+  x >>= 7;
+}
+      )"));
+
+      const auto statements =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<AssignStmt>(node);
+            }
+          );
+
+      REQUIRE(astCast<Identifier>(statements[0].left()).path() == "x");
+      REQUIRE(statements[0].op() == "=");
+      REQUIRE(astCast<IntegerLiteral>(statements[0].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[1].left()).path() == "x");
+      REQUIRE(statements[1].op() == "+=");
+      REQUIRE(astCast<IntegerLiteral>(statements[1].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[2].left()).path() == "x");
+      REQUIRE(statements[2].op() == "-=");
+      REQUIRE(astCast<IntegerLiteral>(statements[2].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[3].left()).path() == "x");
+      REQUIRE(statements[3].op() == "*=");
+      REQUIRE(astCast<IntegerLiteral>(statements[3].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[4].left()).path() == "x");
+      REQUIRE(statements[4].op() == "/=");
+      REQUIRE(astCast<IntegerLiteral>(statements[4].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[5].left()).path() == "x");
+      REQUIRE(statements[5].op() == "%=");
+      REQUIRE(astCast<IntegerLiteral>(statements[5].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[6].left()).path() == "x");
+      REQUIRE(statements[6].op() == "**=");
+      REQUIRE(astCast<IntegerLiteral>(statements[6].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[7].left()).path() == "x");
+      REQUIRE(statements[7].op() == "&=");
+      REQUIRE(astCast<IntegerLiteral>(statements[7].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[8].left()).path() == "x");
+      REQUIRE(statements[8].op() == "|=");
+      REQUIRE(astCast<IntegerLiteral>(statements[8].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[9].left()).path() == "x");
+      REQUIRE(statements[9].op() == "^=");
+      REQUIRE(astCast<IntegerLiteral>(statements[9].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[10].left()).path() == "x");
+      REQUIRE(statements[10].op() == "<<=");
+      REQUIRE(astCast<IntegerLiteral>(statements[10].right()).value() == 7);
+
+      REQUIRE(astCast<Identifier>(statements[11].left()).path() == "x");
+      REQUIRE(statements[11].op() == ">>=");
+      REQUIRE(astCast<IntegerLiteral>(statements[11].right()).value() == 7);
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: expression statement", "[Parser]") {
+    SECTION("Simple") {
     }
   }
 
   TEST_CASE_WITH_FIXTURE("Parser: return statement", "[Parser]") {
     SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+fn foo: () -> {
+  return x;
+  return (x, y);
+}
+      )"));
+
+      const auto statements =
+          astCast<BlockStmt>(nodeAt<FunctionDef>(1).body()).view() | rv::transform(
+            [](CRef<ASTNode> node) {
+              return astCast<ReturnStmt>(node);
+            }
+          );
+
+      //
+      {
+        // REQUIRE(astCast<Identifier>())
+      }
     }
   }
 
