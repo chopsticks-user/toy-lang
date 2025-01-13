@@ -470,9 +470,42 @@ fn main: () -> {
       REQUIRE_NOTHROW(parse(R"(module foo;
 fn main: () -> {
   x ? y : z;
+  x .. y;
   x .. y @ z;
 }
       )"));
+
+      const auto expressions =
+          statementsInFnBodyAt<ExprStmt>(1) | rv::transform(
+            [](CRef<ExprStmt> stmt) { return astCast<TernaryExpr>(stmt.expr()); }
+          );
+
+      //
+      {
+        REQUIRE(expressions[0].firstOp() == "?");
+        REQUIRE(expressions[0].secondOp() == ":");
+        REQUIRE(astCast<Identifier>(expressions[0].first()).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[0].second()).path() == "y");
+        REQUIRE(astCast<Identifier>(expressions[0].third()).path() == "z");
+      }
+
+      //
+      {
+        REQUIRE(expressions[1].firstOp() == "..");
+        REQUIRE(expressions[1].secondOp() == "@");
+        REQUIRE(astCast<Identifier>(expressions[1].first()).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[1].second()).path() == "y");
+        REQUIRE(astCast<IntegerLiteral>(expressions[1].third()).value() == 1);
+      }
+
+      //
+      {
+        REQUIRE(expressions[2].firstOp() == "..");
+        REQUIRE(expressions[2].secondOp() == "@");
+        REQUIRE(astCast<Identifier>(expressions[2].first()).path() == "x");
+        REQUIRE(astCast<Identifier>(expressions[2].second()).path() == "y");
+        REQUIRE(astCast<Identifier>(expressions[2].third()).path() == "z");
+      }
     }
   }
 
