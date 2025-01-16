@@ -1,0 +1,4 @@
+module rng;
+
+export fn concat: (Range<T> r1, Range<T> r2) -> (r: Range<T>) {
+}

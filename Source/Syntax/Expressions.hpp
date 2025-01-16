@@ -135,7 +135,7 @@ namespace tl::syntax {
 
   class Identifier final : public ASTNodeBase {
   public:
-    explicit Identifier(Vec<String> path);
+    explicit Identifier(Vec<String> path = {});
 
     auto name() const noexcept -> String {
       return isAnonymous() ? "" : m_path.back();

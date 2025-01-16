@@ -9,7 +9,7 @@ namespace tl::fe {
     LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace, Hash,
     Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
     Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde, Dollar, At,
-    AnnonymousIdentifier,
+    AnonymousIdentifier,
 
     // Double
     Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2, Equal2,

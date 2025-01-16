@@ -433,7 +433,7 @@ let obj2 = {};
 
     {EToken::Let, "let", 5, 0},
     {EToken::LeftParen, "(", 5, 4},
-    {EToken::AnnonymousIdentifier, "_", 5, 5},
+    {EToken::AnonymousIdentifier, "_", 5, 5},
     {EToken::Comma, ",", 5, 6},
     {EToken::Identifier, "product", 5, 8},
     {EToken::Colon, ":", 5, 15},

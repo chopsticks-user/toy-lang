@@ -47,6 +47,8 @@ namespace tl::syntax {
 
   class TranslationUnit;
 
+  class TokenNode;
+
   using ASTNode = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
@@ -57,7 +59,9 @@ namespace tl::syntax {
     LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
 
     ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
-    FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit
+    FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit,
+
+    TokenNode
   >;
 
   enum class Storage : u8 {

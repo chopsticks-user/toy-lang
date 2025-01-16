@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "FrontEnd/Parser.hpp"
+#include "FrontEnd/CombParser.hpp"
 
 using tl::String;
 using tl::sz;
@@ -1441,12 +1442,18 @@ export fn double: (mutable x: Float) -> {
       REQUIRE_NOTHROW(parse(R"(
 module foo;
 
-export concept IsComplex {
+concept IsComplex {
   fn real: () -> Float | Int;
   fn img: () -> Float | Int;
 
   fn real: (val: Float | Int) -> Void;
   fn img: (val: Float | Int) -> Void;
+
+  fn _: () -> String;
+  fn _: () -> Int;
+
+  fn +: () -> Complex;
+  fn -: () -> Complex;
 
   fn +: (other: Complex) -> Complex;
   fn ==: (other: Complex) -> Bool;
@@ -1454,6 +1461,46 @@ export concept IsComplex {
   fn conjugate: () -> Complex;
   fn magnitude: () -> Float;
 }
+      )"));
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: class definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+
+      )"));
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: enum definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+
+      )"));
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: flag definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+
+      )"));
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Parser: global definition", "[Parser]") {
+    SECTION("Simple") {
+      REQUIRE_NOTHROW(parse(R"(
+module foo;
+
+
       )"));
     }
   }

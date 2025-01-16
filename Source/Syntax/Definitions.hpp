@@ -1,6 +1,8 @@
 #ifndef  TOYLANG_SYNTAX_DEFINITIONS_HPP
 #define  TOYLANG_SYNTAX_DEFINITIONS_HPP
 
+#include "FrontEnd/Token.hpp"
+
 #include "Base.hpp"
 #include "Core/Core.hpp"
 
@@ -169,6 +171,18 @@ namespace tl::syntax {
     auto definition(const sz index) const noexcept -> CRef<ASTNode> {
       return childAt(index);
     }
+  };
+
+  class TokenNode final : public ASTNodeBase {
+  public:
+    explicit TokenNode(fe::Token token);
+
+    auto token() const noexcept -> CRef<fe::Token> {
+      return m_token;
+    }
+
+  private:
+    fe::Token m_token;
   };
 }
 

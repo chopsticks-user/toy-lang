@@ -1,0 +1,42 @@
+module math;
+
+interface HyperComplex {
+  fn length: () -> Float;
+  fn String: () -> String;
+}
+
+class Complex impl HyperComplex {
+  let real: Float with {
+    get: () -> { return real; },
+    set: (r: Float) -> { real = r; }
+  }
+  let img: Float with {
+    get: () -> { return img; },
+    set: (i: Float) -> { img = i; }
+  }
+
+  fn Complex: (value: Float) -> {
+    return {real: value} |> Complex;
+  }
+
+  fn length: () -> Float {
+    return math::sqrt(real ** 2 + img ** 2);
+  }
+
+  fn String: () -> {
+    return real |> String + (
+      img == 0 ? "" : ((img < 0 ? " - " : " + ") + img |> String + "i")
+    );
+  }
+}
+
+class Quaternion impl HyperComplex {
+  let r: Float with {set, get}
+  let i: Float with {set, get}
+  let j: Int with {set, get}
+  let k: Int with {set, get}
+
+  fn length: () -> Float {
+    return math::sqrt(r ** 2 + i ** 2 + j ** 2 + k ** 2);
+  }
+}

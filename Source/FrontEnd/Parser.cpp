@@ -327,7 +327,7 @@ namespace tl::fe {
   auto Parser::parseIdentifier() -> ASTNode {
     markRevertPoint();
 
-    if (match(EToken::AnnonymousIdentifier)) {
+    if (match(EToken::AnonymousIdentifier)) {
       return syntax::Identifier{{}};
     }
 

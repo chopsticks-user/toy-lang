@@ -70,4 +70,8 @@ namespace tl::syntax {
   TranslationUnit::TranslationUnit(Vec<ASTNode> definitions)
     : ASTNodeBase(std::move(definitions)) {
   }
+
+  TokenNode::TokenNode(fe::Token token)
+    : ASTNodeBase({}), m_token(std::move(token)) {
+  }
 }

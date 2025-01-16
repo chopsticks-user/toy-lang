@@ -274,7 +274,7 @@ namespace tl::fe {
       }
 
       advance();
-      addToken(EToken::AnnonymousIdentifier);
+      addToken(EToken::AnonymousIdentifier);
       return true;
     }
 

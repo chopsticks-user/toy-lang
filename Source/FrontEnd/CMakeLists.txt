@@ -7,6 +7,8 @@ target_sources(
     ToyLang_FrontEnd
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/FrontEnd.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CombParser.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CombParser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Token.hpp
