@@ -1,7 +1,8 @@
 #ifndef TOY_LANG_CORE_EXCEPTIONS_HPP
 #define TOY_LANG_CORE_EXCEPTIONS_HPP
 
-#include "Types.hpp"
+#include "TypeDef.hpp"
+#include "Utility.hpp"
 
 namespace tl {
   // todo: show block of code causing the error
@@ -54,7 +55,7 @@ namespace tl {
     }
   };
 
-  class ExpceptionCollector {
+  class GlobalExpceptionCollector : public Singleton<GlobalExpceptionCollector> {
   public:
     auto size() const -> sz {
       return m_collected.size();
@@ -64,8 +65,8 @@ namespace tl {
       return m_collected.empty();
     }
 
-    // todo: handle out of memory
-    auto add(ToyLangException &&e) -> void {
+    // todo: handle out of memory, !InternalException
+    auto add(ToyLangException e) -> void {
       m_collected.emplace_back(std::make_unique<ToyLangException>(std::move(e)));
     }
 
@@ -85,6 +86,9 @@ namespace tl {
 
       throw ToyLangException(combinedMesg);
     }
+
+  protected:
+    GlobalExpceptionCollector() = default;
 
   private:
     Vec<Ptr<ToyLangException> > m_collected;

@@ -25,9 +25,12 @@
 #include <filesystem>
 #include <sstream>
 
-namespace rv = std::ranges::views;
 namespace rng = std::ranges;
 namespace fs = std::filesystem;
+
+namespace rv {
+  using namespace std::ranges::views;
+}
 
 namespace tl {
   using i64 = std::int64_t;
@@ -96,6 +99,9 @@ namespace tl {
 
   template<typename T>
   using TreeSet = std::set<T>;
+
+  template<typename... T>
+  using Tuple = std::tuple<T...>;
 }
 
 #endif // TOY_LANG_CORE_TYPES_HPP

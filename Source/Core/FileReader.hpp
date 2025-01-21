@@ -1,7 +1,7 @@
 #ifndef TOYLANG_LEXER_READER_HPP
 #define TOYLANG_LEXER_READER_HPP
 
-#include "Types.hpp"
+#include "TypeDef.hpp"
 
 namespace tl {
   class FileReader final {

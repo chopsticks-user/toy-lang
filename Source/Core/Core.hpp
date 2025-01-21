@@ -1,11 +1,11 @@
 #ifndef TOY_LANG_CORE_HPP
 #define TOY_LANG_CORE_HPP
 
-#include "Exceptions.hpp"
+#include "Exception.hpp"
 #include "Logger.hpp"
-#include "Platforms.hpp"
-#include "Types.hpp"
-#include "Concepts.hpp"
+#include "Platform.hpp"
+#include "TypeDef.hpp"
+#include "Concept.hpp"
 #include "FileReader.hpp"
 #include "Utility.hpp"
 #include "Visitor.hpp"

@@ -1,7 +1,5 @@
 #include "PrettyPrinter.hpp"
 
-namespace rv = std::ranges::views;
-
 namespace tl::fe {
   auto PrettyPrinter::operator()(CRef<syntax::TranslationUnit> node) -> String {
     Strings results = visitChildren(node);

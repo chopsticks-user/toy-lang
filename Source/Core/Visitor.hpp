@@ -1,7 +1,7 @@
 #ifndef  TOYLANG_CORE_VISITOR_HPP
 #define  TOYLANG_CORE_VISITOR_HPP
 
-#include "Types.hpp"
+#include "TypeDef.hpp"
 
 namespace tl {
   template<typename TVisitable, typename TReturn = void>

@@ -46,8 +46,9 @@ namespace tl::fe {
     return *(m_tokenIt++);
   }
 
-  auto Parser::collectException(ToyLangException &&e) const -> void {
-    m_eCollector->add(std::move(e));
+  auto Parser::collectException(ToyLangException &&e) -> void {
+    static auto &gec = GlobalExpceptionCollector::instance();
+    gec.add(std::move(e));
   }
 
   auto Parser::collectException(CRef<String> mesg) const -> void {
@@ -98,13 +99,10 @@ namespace tl::fe {
     m_revertPoint = {};
   }
 
-  auto Parser::operator()(
-    ExpceptionCollector &eCollector, String filepath, Tokens tokens
-  ) -> syntax::TranslationUnit {
+  auto Parser::operator()(String filepath, Tokens tokens) -> syntax::TranslationUnit {
     m_filepath = std::move(filepath);
     m_tokenIt = tokens.begin();
     m_tokenItEnd = tokens.end();
-    m_eCollector = &eCollector;
 
     if (m_tokenIt == m_tokenItEnd) {
       collectException(

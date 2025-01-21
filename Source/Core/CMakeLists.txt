@@ -8,12 +8,12 @@ target_sources(
     ToyLang_Core
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Core.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Exceptions.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Platforms.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Exception.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Types.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Concepts.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TypeDef.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Concept.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Visitor.hpp

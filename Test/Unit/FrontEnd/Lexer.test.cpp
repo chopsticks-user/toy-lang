@@ -13,7 +13,7 @@ protected:
   auto lex(String source) -> void {
     std::istringstream iss;
     iss.str(std::move(source));
-    m_tokens = tl::util::apply<tl::fe::Lexer>(std::move(iss));
+    m_tokens = tl::apply<tl::fe::Lexer>(std::move(iss));
   }
 
   auto nTokens() const -> u64 {

@@ -101,7 +101,7 @@ namespace tl::fe {
     sz m_current = 0;
     Opt<sz> m_revertPoint;
     syntax::Storage m_currentStorage = syntax::Storage::Internal;
-    ExpceptionCollector *m_eCollector = nullptr; // todo: global singleton
+    GlobalExpceptionCollector *m_eCollector = nullptr; // todo: global singleton
   };
 
   class UnitParser {
@@ -139,13 +139,15 @@ namespace tl::fe {
 
   auto sequence(std::same_as<UnitParser> auto... parsers) -> UnitParser;
 
-  auto maybe(UnitParser parser) -> UnitParser;
+  auto maybe(const UnitParser &parser) -> UnitParser;
 
-  auto many0(UnitParser parser) -> UnitParser;
+  auto many0(const UnitParser &parser) -> UnitParser;
 
-  auto many1(UnitParser parser) -> UnitParser;
+  auto many1(const UnitParser &parser) -> UnitParser;
 
-  auto list(UnitParser parser, EToken separator = EToken::Comma) -> UnitParser;
+  auto list(
+    const UnitParser &parser, EToken separator = EToken::Comma, bool trailing = true
+  ) -> UnitParser;
 
   // auto map(std::same_as<UnitParser> auto parser) -> UnitParser;
 
@@ -157,7 +159,11 @@ namespace tl::fe {
 
   auto stringExpr() -> UnitParser;
 
-  auto identifierExpr() -> UnitParser;
+  auto variableIdExpr() -> UnitParser;
+
+  auto typeIdExpr() -> UnitParser;
+
+  auto typeExpr() -> UnitParser;
 
   auto arrayExpr() -> UnitParser;
 

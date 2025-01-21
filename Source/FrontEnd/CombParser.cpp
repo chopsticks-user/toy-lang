@@ -75,7 +75,7 @@ namespace tl::fe {
     };
   }
 
-  auto maybe(UnitParser parser) -> UnitParser {
+  auto maybe(CRef<UnitParser> parser) -> UnitParser {
     return UnitParser{
       [parser](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [resultNodes, errors] = parser(driver);
@@ -88,7 +88,7 @@ namespace tl::fe {
     };
   }
 
-  auto many0(UnitParser parser) -> UnitParser {
+  auto many0(CRef<UnitParser> parser) -> UnitParser {
     return UnitParser{
       [parser](CParsingDriver &driver) -> UnitParser::TReturn {
         Vec<syntax::ASTNode> nodes;
@@ -106,17 +106,21 @@ namespace tl::fe {
     };
   }
 
-  auto many1(UnitParser parser) -> UnitParser {
+  auto many1(CRef<UnitParser> parser) -> UnitParser {
     return sequence(parser, many0(parser));
   }
 
-  auto list(UnitParser parser, EToken separator) -> UnitParser {
-    return many0(sequence(parser, match(separator)));
+  auto list(CRef<UnitParser> parser, const EToken separator, const bool trailing) -> UnitParser {
+    return maybe(
+      trailing
+        ? sequence(parser, many0(sequence(match(separator), parser)), maybe(match(separator)))
+        : sequence(parser, many0(sequence(match(separator), parser)))
+    );
   }
 
   auto integerExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = match(EToken::IntegerLiteral)(driver);
 
         if (!nodes.empty()) {
@@ -134,7 +138,7 @@ namespace tl::fe {
 
   auto floatExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = match(EToken::IntegerLiteral)(driver);
 
         if (!nodes.empty()) {
@@ -152,7 +156,7 @@ namespace tl::fe {
 
   auto booleanExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = match(EToken::IntegerLiteral)(driver);
 
         if (!nodes.empty()) {
@@ -170,7 +174,7 @@ namespace tl::fe {
 
   auto stringExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = match(EToken::IntegerLiteral)(driver);
 
         if (!nodes.empty()) {
@@ -186,9 +190,9 @@ namespace tl::fe {
     };
   }
 
-  auto identifierExpr() -> UnitParser {
+  auto variableIdExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = any(
           match(EToken::AnonymousIdentifier),
           sequence(
@@ -215,18 +219,64 @@ namespace tl::fe {
     };
   }
 
+  auto typeIdExpr() -> UnitParser {
+    return UnitParser{
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
+        auto [nodes, errors] = sequence(
+          many0(sequence(match(EToken::Identifier), match(EToken::Colon2))),
+          match(EToken::UserDefinedType, EToken::FundamentalType)
+        )(driver);
+
+        if (nodes.size() == 1 && syntax::matchAstType<syntax::TokenNode>(nodes.front())) {
+          if (syntax::astCast<syntax::TokenNode>(nodes.front()).token().type()
+              == EToken::AnonymousIdentifier)
+            return {{syntax::Identifier{}}, errors};
+        }
+
+        auto pathView =
+            nodes | rv::filter([](CRef<syntax::ASTNode> node) {
+              return syntax::astCast<syntax::TokenNode>(node).token().type() != EToken::Colon2;
+            }) |
+            rv::transform([](CRef<syntax::ASTNode> node) {
+              return syntax::astCast<syntax::TokenNode>(node).token().string();
+            });
+        return {{syntax::Identifier{{pathView.begin(), pathView.end()}}}, errors};
+      }
+    };
+  }
+
+  auto typeExpr() -> UnitParser {
+    return UnitParser{
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
+        auto [nodes, errors] = sequence(
+          list(variableIdExpr(), EToken::Bar, false)
+        )(driver);
+
+        if (!nodes.empty()) {
+          auto view = nodes | rv::filter([](CRef<syntax::ASTNode> node) {
+            return !syntax::matchAstType<syntax::TokenNode>(node);
+          });
+
+          nodes = {
+            syntax::TypeExpr{{view.begin(), view.end()}}
+          };
+        }
+
+        return {std::move(nodes), std::move(errors)};
+      }
+    };
+  }
+
   auto arrayExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           match(EToken::LeftBracket), list(expr()), match(EToken::RightBracket)
         )(driver);
 
         if (!nodes.empty()) {
           nodes = {
-            syntax::StringLiteral{
-              syntax::astCast<syntax::TokenNode>(nodes.front()).token().string()
-            }
+            syntax::ArrayExpr{{nodes.begin() + 1, nodes.end() - 1}}
           };
         }
 
@@ -237,16 +287,14 @@ namespace tl::fe {
 
   auto tupleExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           match(EToken::LeftParen), list(expr()), match(EToken::RightParen)
         )(driver);
 
         if (!nodes.empty()) {
           nodes = {
-            syntax::StringLiteral{
-              syntax::astCast<syntax::TokenNode>(nodes.front()).token().string()
-            }
+            syntax::TupleExpr{{nodes.begin() + 1, nodes.end() - 1}}
           };
         }
 
@@ -257,7 +305,7 @@ namespace tl::fe {
 
   auto lambdaExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         return {{}, {}};
       }
     };
@@ -265,7 +313,7 @@ namespace tl::fe {
 
   auto fnCallExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           primaryExpr(), tupleExpr()
         )(driver);
@@ -277,7 +325,7 @@ namespace tl::fe {
 
   auto subscriptExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           primaryExpr(), match(EToken::LeftBracket), expr(), match(EToken::RightBracket)
         )(driver);
@@ -289,9 +337,9 @@ namespace tl::fe {
 
   auto accessExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
-          primaryExpr(), match(EToken::Dot), identifierExpr()
+          primaryExpr(), match(EToken::Dot), variableIdExpr()
         )(driver);
 
         return {std::move(nodes), std::move(errors)};
@@ -301,9 +349,9 @@ namespace tl::fe {
 
   auto primaryExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = any(
-          integerExpr(), floatExpr(), booleanExpr(), stringExpr(), identifierExpr(),
+          integerExpr(), floatExpr(), booleanExpr(), stringExpr(), variableIdExpr(),
           arrayExpr(), tupleExpr(), lambdaExpr()
         )(driver);
 
@@ -314,7 +362,7 @@ namespace tl::fe {
 
   auto postfixExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = any(
           fnCallExpr(), subscriptExpr(), accessExpr()
         )(driver);
@@ -326,7 +374,7 @@ namespace tl::fe {
 
   auto prefixExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = any(
           match(EToken::Exclaim, EToken::Tilde, EToken::Plus,
                 EToken::Minus, EToken::Hash, EToken::Dot3),
@@ -340,7 +388,7 @@ namespace tl::fe {
 
   auto exponentialExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           prefixExpr(), maybe(sequence(match(EToken::Star2), prefixExpr()))
         )(driver);
@@ -356,7 +404,7 @@ namespace tl::fe {
 
   auto multiplicativeExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           exponentialExpr(),
           maybe(sequence(match(EToken::Star, EToken::FwdSlash, EToken::Percent),
@@ -374,7 +422,7 @@ namespace tl::fe {
 
   auto additiveExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           multiplicativeExpr(),
           maybe(sequence(match(EToken::Plus, EToken::Minus), multiplicativeExpr()))
@@ -391,7 +439,7 @@ namespace tl::fe {
 
   auto shiftExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           additiveExpr(),
           maybe(sequence(match(EToken::Less2, EToken::Greater2), additiveExpr()))
@@ -408,7 +456,7 @@ namespace tl::fe {
 
   auto relationalExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           shiftExpr(),
           maybe(
@@ -430,7 +478,7 @@ namespace tl::fe {
 
   auto equalityExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           relationalExpr(),
           maybe(sequence(match(EToken::Equal2, EToken::ExclaimEqual), relationalExpr()))
@@ -447,7 +495,7 @@ namespace tl::fe {
 
   auto andExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           equalityExpr(),
           maybe(sequence(match(EToken::Ampersand), equalityExpr()))
@@ -464,7 +512,7 @@ namespace tl::fe {
 
   auto exclusiveOrExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           andExpr(),
           maybe(sequence(match(EToken::Hat), andExpr()))
@@ -481,7 +529,7 @@ namespace tl::fe {
 
   auto inclusiveOrExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           exclusiveOrExpr(),
           maybe(sequence(match(EToken::Bar), exclusiveOrExpr()))
@@ -498,7 +546,7 @@ namespace tl::fe {
 
   auto logicalAndExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           inclusiveOrExpr(),
           maybe(sequence(match(EToken::Ampersand2), inclusiveOrExpr()))
@@ -515,7 +563,7 @@ namespace tl::fe {
 
   auto logicalOrExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           logicalAndExpr(),
           maybe(sequence(match(EToken::Bar2), logicalAndExpr()))
@@ -532,7 +580,7 @@ namespace tl::fe {
 
   auto nullCoalescingExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           logicalOrExpr(),
           maybe(sequence(match(EToken::QMark2), logicalOrExpr()))
@@ -549,7 +597,7 @@ namespace tl::fe {
 
   auto sequenceExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           nullCoalescingExpr(),
           maybe(
@@ -571,7 +619,7 @@ namespace tl::fe {
 
   auto ternaryExpr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
           sequenceExpr(),
           maybe(
@@ -593,7 +641,7 @@ namespace tl::fe {
 
   auto expr() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         return ternaryExpr()(driver);
       }
     };
@@ -601,9 +649,10 @@ namespace tl::fe {
 
   auto identifierDecl() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
-        auto [nodes, errors] = sequence(
-          identifierExpr(), maybe(sequence(match(EToken::Colon), identifierExpr()))
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
+        auto [nodes, errors] = any(
+          sequence(variableIdExpr(), maybe(sequence(match(EToken::Colon), typeExpr()))),
+          typeExpr()
         )(driver);
 
         return {std::move(nodes), std::move(errors)};
@@ -613,9 +662,9 @@ namespace tl::fe {
 
   auto tupleDecl() -> UnitParser {
     return UnitParser{
-      [](CParsingDriver &driver)-> UnitParser::TReturn {
+      [](CParsingDriver &driver) -> UnitParser::TReturn {
         auto [nodes, errors] = sequence(
-          match(EToken::LeftParen), many0(identifierDecl()), match(EToken::RightParen)
+          match(EToken::LeftParen), list(identifierDecl()), match(EToken::RightParen)
         )(driver);
 
         return {std::move(nodes), std::move(errors)};

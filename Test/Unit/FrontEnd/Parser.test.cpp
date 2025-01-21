@@ -20,10 +20,9 @@ protected:
   auto parse(String source) -> void {
     std::istringstream iss;
     iss.str(std::move(source));
-    m_ast = tl::util::apply<tl::fe::Parser>(
-      m_eCollector, filepath, tl::util::apply<tl::fe::Lexer>(std::move(iss))
+    this->m_ast = tl::apply<tl::fe::Parser>(
+      filepath, tl::apply<tl::fe::Lexer>(std::move(iss))
     );
-    m_eCollector.throwAllIfExists();
     REQUIRE(std::holds_alternative<TranslationUnit>(m_ast));
   }
 
@@ -48,7 +47,6 @@ protected:
 
 private:
   ASTNode m_ast;
-  tl::ExpceptionCollector m_eCollector;
 };
 
 namespace expression {

@@ -30,9 +30,7 @@ namespace tl::fe {
     };
 
   public:
-    auto operator()(
-      ExpceptionCollector &eCollector, String filepath, Tokens tokens
-    ) -> syntax::TranslationUnit;
+    auto operator()(String filepath, Tokens tokens) -> syntax::TranslationUnit;
 
   private:
     auto revert() -> void;
@@ -47,7 +45,7 @@ namespace tl::fe {
 
     auto peekPrev() -> Token;
 
-    auto collectException(ToyLangException &&e) const -> void;
+    static auto collectException(ToyLangException &&e) -> void;
 
     auto collectException(CRef<String> mesg) const -> void;
 
@@ -158,7 +156,6 @@ namespace tl::fe {
     Opt<TokenIterator> m_revertPoint;
     syntax::Storage m_currentStorage = syntax::Storage::Internal;
     Stack<Context> m_parseContext;
-    ExpceptionCollector *m_eCollector = nullptr; // todo: global singleton
   };
 }
 

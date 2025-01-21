@@ -1,4 +1,6 @@
+#include <iostream>
 #include <catch2/catch_test_macros.hpp>
+#include <utility>
 
 #include "FrontEnd/CombParser.hpp"
 
@@ -24,7 +26,7 @@ protected:
     std::istringstream iss;
     iss.str(std::move(source));
     auto driver = CParsingDriver{
-      filepath, tl::util::apply<Lexer>(std::move(iss))
+      filepath, tl::apply<Lexer>(std::move(iss))
     };
 
     auto [nodes, errors] = parser(driver);
@@ -37,10 +39,10 @@ protected:
 };
 
 namespace expression {
-  TEST_CASE_WITH_FIXTURE("Combinatory Parser: identifier", "[CombinatoryParser]") {
+  TEST_CASE_WITH_FIXTURE("Combinatory Parser: variable identifier", "[CombinatoryParser]") {
     SECTION("Anonymous") {
       auto [id, errors, driver] = parse<Identifier>(
-        R"(_ )", identifierExpr()
+        R"(_ )", variableIdExpr()
       );
       REQUIRE(driver.done());
       REQUIRE(errors.empty());
@@ -55,7 +57,39 @@ namespace expression {
 
     SECTION("Imported") {
       auto [id, errors, driver] = parse<Identifier>(
-        R"(foo::bar::Int )", identifierExpr()
+        R"(foo::bar::Int )", variableIdExpr()
+      );
+      REQUIRE(driver.done());
+      REQUIRE(errors.empty());
+
+      REQUIRE(id.name() == "Int");
+      REQUIRE(id.path() == "foo::bar::Int");
+      REQUIRE_FALSE(id.isAnonymous());
+      REQUIRE(id.isImported());
+      REQUIRE(id.isType());
+      REQUIRE_FALSE(id.isOverloadedOp());
+    }
+  }
+
+  TEST_CASE_WITH_FIXTURE("Combinatory Parser: type identifier", "[CombinatoryParser]") {
+    SECTION("Anonymous") {
+      auto [id, errors, driver] = parse<Identifier>(
+        R"(_ )", variableIdExpr()
+      );
+      REQUIRE(driver.done());
+      REQUIRE(errors.empty());
+
+      REQUIRE(id.name().empty());
+      REQUIRE(id.path().empty());
+      REQUIRE(id.isAnonymous());
+      REQUIRE_FALSE(id.isImported());
+      REQUIRE_FALSE(id.isType());
+      REQUIRE_FALSE(id.isOverloadedOp());
+    }
+
+    SECTION("Imported") {
+      auto [id, errors, driver] = parse<Identifier>(
+        R"(foo::bar::Int )", variableIdExpr()
       );
       REQUIRE(driver.done());
       REQUIRE(errors.empty());
