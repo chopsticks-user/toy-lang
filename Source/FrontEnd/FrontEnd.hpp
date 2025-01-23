@@ -5,6 +5,5 @@
 #include "Parser.hpp"
 #include "Token.hpp"
 #include "PrettyPrinter.hpp"
-#include "CombParser.hpp"
 
 #endif // TOYLANG_FRONTEND_HPP

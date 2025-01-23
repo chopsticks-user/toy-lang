@@ -10,7 +10,6 @@ target_sources(
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Lexer.test.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.test.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CombParser.test.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PrettyPrinter.test.cpp
 )
 

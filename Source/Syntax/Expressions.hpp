@@ -43,9 +43,9 @@ namespace tl::syntax {
       return m_value;
     }
 
-    auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
-      return childAt(index);
-    }
+    // auto placeholder(const sz index) const noexcept -> CRef<ASTNode> {
+    //   return childAt(index);
+    // }
 
   private:
     String m_value;
@@ -133,16 +133,16 @@ namespace tl::syntax {
     String m_op;
   };
 
-  class Identifier final : public ASTNodeBase {
+  class IdentifierBase : public ASTNodeBase {
   public:
-    explicit Identifier(Vec<String> path = {});
+    explicit IdentifierBase(Vec<String> path = {});
 
     auto name() const noexcept -> String {
-      return isAnonymous() ? "" : m_path.back();
+      return m_path.empty() ? "" : m_path.back();
     }
 
     auto path() const noexcept -> String {
-      if (isAnonymous()) {
+      if (m_path.empty()) {
         return "";
       }
 
@@ -163,24 +163,37 @@ namespace tl::syntax {
       return m_path.size() > 1;
     }
 
-    auto isType() const noexcept -> bool {
-      if (isAnonymous()) {
-        return false;
-      }
-      const char c = name()[0];
-      return c >= 'A' && c <= 'Z';
-    }
+  protected:
+    Vec<String> m_path;
+  };
 
-    auto isOverloadedOp() const noexcept -> bool {
-      return m_path.size() == 1 && overloadableOps.contains(m_path.back());
+  class VarId final : public IdentifierBase {
+  public:
+    explicit VarId(Vec<String> path = {})
+      : IdentifierBase(std::move(path)) {
     }
 
     auto isAnonymous() const noexcept -> bool {
       return m_path.empty();
     }
+  };
 
-  private:
-    Vec<String> m_path;
+  class TypeId final : public IdentifierBase {
+  public:
+    explicit TypeId(Vec<String> path)
+      : IdentifierBase(std::move(path)) {
+    }
+  };
+
+  class OpId final : public IdentifierBase {
+  public:
+    explicit OpId(String op)
+      : IdentifierBase({std::move(op)}) {
+    }
+
+    auto op() const noexcept -> CRef<String> {
+      return m_path.back();
+    }
   };
 
   class TupleExpr final : public ASTNodeBase {
@@ -237,27 +250,27 @@ namespace tl::syntax {
     }
   };
 
-  class TypeOfExpr final : public ASTNodeBase {
-  public:
-    explicit TypeOfExpr(ASTNode identifier);
-
-    auto identifier() const noexcept -> CRef<ASTNode> {
-      return childAt(0);
-    }
-  };
-
-  class TypeExpr final : public ASTNodeBase {
-  public:
-    explicit TypeExpr(Vec<ASTNode> types);
-
-    auto nTypes() const noexcept -> sz {
-      return nChildren();
-    }
-
-    auto type(const sz index) const -> CRef<ASTNode> {
-      return childAt(index);
-    }
-  };
+  // class TypeOfExpr final : public ASTNodeBase {
+  // public:
+  //   explicit TypeOfExpr(ASTNode identifier);
+  //
+  //   auto identifier() const noexcept -> CRef<ASTNode> {
+  //     return childAt(0);
+  //   }
+  // };
+  //
+  // class TypeExpr final : public ASTNodeBase {
+  // public:
+  //   explicit TypeExpr(Vec<ASTNode> types);
+  //
+  //   auto nTypes() const noexcept -> sz {
+  //     return nChildren();
+  //   }
+  //
+  //   auto type(const sz index) const -> CRef<ASTNode> {
+  //     return childAt(index);
+  //   }
+  // };
 
   class ArrayExpr final : public ASTNodeBase {
   public:

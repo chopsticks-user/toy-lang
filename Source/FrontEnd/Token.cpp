@@ -12,13 +12,10 @@ namespace tl::fe {
 
     // definition
     {"let", EToken::Let},
-    {"mutable", EToken::Mutable},
+    {"mut", EToken::Mut},
     {"fn", EToken::Fn},
-    {"static", EToken::Static},
-    {"concept", EToken::Concept},
-    {"satisfies", EToken::Satisfies},
+    {"trait", EToken::Trait},
     {"type", EToken::Type},
-    {"global", EToken::Global},
     {"enum", EToken::Enum},
     {"flag", EToken::Flag},
     // {"pure", EToken::Pure},
@@ -40,9 +37,9 @@ namespace tl::fe {
 
     // object-oriented
     {"self", EToken::Self},
-    {"public", EToken::Public},
-    {"private", EToken::Private},
-    {"class", EToken::Class},
+    {"pub", EToken::Pub},
+    {"prv", EToken::Prv},
+    {"impl", EToken::Impl},
     // {"super", EToken::Super},
     // {"protected", EToken::Protected},
     // {"interface", EToken::Interface},

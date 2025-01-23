@@ -18,9 +18,9 @@ namespace tl::fe {
 
     auto operator()(CRef<syntax::TypeDecl> node) -> String;
 
-    auto operator()(CRef<syntax::TypeExpr> node) -> String;
+    // auto operator()(CRef<syntax::TypeExpr> node) -> String;
 
-    auto operator()(CRef<syntax::Identifier> node) -> String;
+    auto operator()(CRef<syntax::VarId> node) -> String;
 
     // auto operator()(CRef<syntax::Function> node) -> String;
     //

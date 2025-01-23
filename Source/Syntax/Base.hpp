@@ -35,8 +35,12 @@ namespace tl::syntax {
 
   auto isEmptyAst(CRef<ASTNode> node) -> bool;
 
-  template<std::derived_from<ASTNodeBase> TNode>
+  template<IsASTNode TNode>
   auto astCast(CRef<ASTNode> node, CRef<String> filepath = "") -> TNode {
+    if constexpr (std::same_as<TNode, ASTNode>) {
+      return node;
+    }
+
     if (!std::holds_alternative<TNode>(node)) {
       throw filepath.empty()
               ? InternalException(filepath, "invalid AST-node cast")

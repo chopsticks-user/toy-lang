@@ -18,12 +18,16 @@ namespace tl::syntax {
   }
 
   IdentifierDecl::IdentifierDecl(
-    CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, const bool isMutable
+    const bool isMutable, CRef<ASTNode> identifier, CRef<ASTNode> typeExpr
   ): ASTNodeBase({identifier, typeExpr}), m_mutable(isMutable) {
   }
 
   TupleDecl::TupleDecl(Vec<ASTNode> idDecls)
     : ASTNodeBase(std::move(idDecls)) {
+  }
+
+  GenericDecl::GenericDecl(Vec<ASTNode> typeIds)
+    : ASTNodeBase(std::move(typeIds)) {
   }
 
   FunctionPrototype::FunctionPrototype(

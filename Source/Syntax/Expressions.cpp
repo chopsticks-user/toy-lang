@@ -42,7 +42,7 @@ namespace tl::syntax {
     : ASTNodeBase({operand}), m_op(std::move(op)) {
   }
 
-  Identifier::Identifier(Vec<String> path)
+  IdentifierBase::IdentifierBase(Vec<String> path)
     : ASTNodeBase({}), m_path(std::move(path)) {
   }
 
@@ -63,7 +63,7 @@ namespace tl::syntax {
       };
     }
 
-    if (matchAstType<Identifier>(rhs)) {
+    if (matchAstType<VarId>(rhs)) {
       return FunctionCallExpr{rhs, {lhs}};
     }
 
@@ -80,13 +80,13 @@ namespace tl::syntax {
     : ASTNodeBase({object, field}) {
   }
 
-  TypeOfExpr::TypeOfExpr(ASTNode identifier)
-    : ASTNodeBase({identifier}) {
-  }
-
-  TypeExpr::TypeExpr(Vec<ASTNode> types)
-    : ASTNodeBase(std::move(types)) {
-  }
+  // TypeOfExpr::TypeOfExpr(ASTNode identifier)
+  //   : ASTNodeBase({identifier}) {
+  // }
+  //
+  // TypeExpr::TypeExpr(Vec<ASTNode> types)
+  //   : ASTNodeBase(std::move(types)) {
+  // }
 
   ArrayExpr::ArrayExpr(Vec<ASTNode> elements) : ASTNodeBase(std::move(elements)) {
   }

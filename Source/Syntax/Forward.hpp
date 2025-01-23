@@ -12,18 +12,19 @@ namespace tl::syntax {
   class TernaryExpr;
   class BinaryExpr;
   class UnaryExpr;
-  class Identifier;
+  class VarId;
+  class TypeId;
+  class OpId;
   class TupleExpr;
   class FunctionCallExpr;
   class SubScriptingExpr;
   class AccessExpr;
-  class TypeOfExpr;
-  class TypeExpr;
   class ArrayExpr;
 
   class ModuleDecl;
   class ImportDecl;
   class TypeDecl;
+  class GenericDecl;
   class IdentifierDecl;
   class TupleDecl;
 
@@ -52,17 +53,31 @@ namespace tl::syntax {
   using ASTNode = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
-    TernaryExpr, BinaryExpr, UnaryExpr, Identifier, TupleExpr,
-    FunctionCallExpr, SubScriptingExpr, AccessExpr, TypeOfExpr, TypeExpr, ArrayExpr,
+    TernaryExpr, BinaryExpr, UnaryExpr, VarId, TypeId, OpId, TupleExpr,
+    FunctionCallExpr, SubScriptingExpr, AccessExpr, ArrayExpr,
 
     ForStmt, ForRangeFragment, MatchStmt, MatchStmtCase, BlockStmt,
     LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
 
-    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl,
+    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, GenericDecl,
     FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit,
 
     TokenNode
   >;
+
+  class ASTNodeBase;
+
+  template<typename T>
+  concept IsStrictlyASTNode = std::derived_from<T, ASTNodeBase> && !std::same_as<ASTNodeBase, T>;
+
+  template<typename T>
+  concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<ASTNode, T>;
+
+  template<typename T, typename... U>
+  concept MatchASTNode = IsStrictlyASTNode<T> &&
+                         (IsStrictlyASTNode<U> && ...) &&
+                         (std::same_as<T, U> || ...)
+                         || std::same_as<ASTNode, T>;
 
   enum class Storage : u8 {
     Export, Internal, Local,

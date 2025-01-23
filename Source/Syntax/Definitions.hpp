@@ -50,13 +50,13 @@ namespace tl::syntax {
 
   class IdentifierDecl final : public ASTNodeBase {
   public:
-    IdentifierDecl(CRef<ASTNode> identifier, CRef<ASTNode> typeExpr, bool isMutable);
+    IdentifierDecl(bool isMutable, CRef<ASTNode> identifier, CRef<ASTNode> typeExpr);
 
     auto identifier() const noexcept -> CRef<ASTNode> {
       return childAt(0);
     }
 
-    auto typeExpr() const noexcept -> CRef<ASTNode> {
+    auto type() const noexcept -> CRef<ASTNode> {
       return childAt(1);
     }
 
@@ -77,6 +77,15 @@ namespace tl::syntax {
     }
 
     auto idDecl(sz index) const noexcept -> CRef<ASTNode> {
+      return childAt(index);
+    }
+  };
+
+  class GenericDecl final : public ASTNodeBase {
+  public:
+    explicit GenericDecl(Vec<ASTNode> typeIds);
+
+    auto typeDecl(const sz index) -> CRef<ASTNode> {
       return childAt(index);
     }
   };

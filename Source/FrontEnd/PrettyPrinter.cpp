@@ -12,11 +12,11 @@ namespace tl::fe {
   }
 
   auto PrettyPrinter::operator()(CRef<syntax::ModuleDecl> node) -> String {
-    return "module " + syntax::astCast<syntax::Identifier>(node.identifier()).path() + ";\n";
+    return "module " + syntax::astCast<syntax::VarId>(node.identifier()).path() + ";\n";
   }
 
   auto PrettyPrinter::operator()(CRef<syntax::ImportDecl> node) -> String {
-    return "import " + syntax::astCast<syntax::Identifier>(node.identifier()).path() + ";";
+    return "import " + syntax::astCast<syntax::VarId>(node.identifier()).path() + ";";
   }
 
   auto PrettyPrinter::operator()(CRef<syntax::TypeDecl> node) -> String {
@@ -24,22 +24,22 @@ namespace tl::fe {
     return "\n" + storageString(node.storage()) + " type " + results[0] + " = " + results[1] + ";";
   }
 
-  auto PrettyPrinter::operator()(CRef<syntax::TypeExpr> node) -> String {
-    Strings results = visitChildren(node);
+  // auto PrettyPrinter::operator()(CRef<syntax::TypeExpr> node) -> String {
+  //   Strings results = visitChildren(node);
+  //
+  //   if (results.size() == 1) {
+  //     return results.front();
+  //   }
+  //
+  //   return results.front() + std::accumulate(
+  //            results.begin() + 1, results.end(), ""s,
+  //            [](CRef<String> a, CRef<String> b) {
+  //              return a + " | " + b;
+  //            }
+  //          );
+  // }
 
-    if (results.size() == 1) {
-      return results.front();
-    }
-
-    return results.front() + std::accumulate(
-             results.begin() + 1, results.end(), ""s,
-             [](CRef<String> a, CRef<String> b) {
-               return a + " | " + b;
-             }
-           );
-  }
-
-  auto PrettyPrinter::operator()(CRef<syntax::Identifier> node) -> String {
+  auto PrettyPrinter::operator()(CRef<syntax::VarId> node) -> String {
     return node.path();
   }
 
