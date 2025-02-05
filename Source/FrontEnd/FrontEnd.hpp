@@ -2,7 +2,9 @@
 #define  TOYLANG_FRONTEND_HPP
 
 #include "Lexer.hpp"
+#include "CombinatoryParser.hpp"
 #include "Parser.hpp"
+#include "ParsingDriver.hpp"
 #include "Token.hpp"
 #include "PrettyPrinter.hpp"
 

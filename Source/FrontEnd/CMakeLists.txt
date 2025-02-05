@@ -9,6 +9,9 @@ target_sources(
     ${CMAKE_CURRENT_SOURCE_DIR}/FrontEnd.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Parser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CombinatoryParser.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/CombinatoryParser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Parser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Token.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Token.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Lexer.hpp
