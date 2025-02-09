@@ -1,7 +1,7 @@
 #include "token.hpp"
 
 namespace tl::fe {
-  static const HashMap<StringView, EToken> nonTypeKeywordTable = {
+  static const HashMap<StrV, EToken> nonTypeKeywordTable = {
     // visibility
     {"module", EToken::Module},
     {"import", EToken::Import},
@@ -42,16 +42,16 @@ namespace tl::fe {
     {"impl", EToken::Impl},
   };
 
-  static const HashSet<StringView> fundamentalTypes{
+  static const HashSet<StrV> fundamentalTypes{
     "Int", "Float", "Bool", "Char", "Void", "String", "Any",
     // "Rxt", "Atm", "Rng"
   };
 
-  static const HashSet<StringView> reservedKeywords{
+  static const HashSet<StrV> reservedKeywords{
     // "int", "float", "bool", "char", "void", "string", "any"
   };
 
-  static const HashMap<StringView, EToken> operatorTable{
+  static const HashMap<StrV, EToken> operatorTable{
     {":=>", EToken::ColonEqualGreater},
     {":~>", EToken::ColonTildeGreater},
     {">>=", EToken::Greater2Equal},
@@ -116,7 +116,7 @@ namespace tl::fe {
     {"@", EToken::At},
   };
 
-  static const auto identifierType(const StringView idStr) noexcept -> EToken {
+  static const auto identifierType(const StrV idStr) noexcept -> EToken {
     if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
       if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
         return EToken::FundamentalType;
@@ -136,7 +136,7 @@ namespace tl::fe {
     return EToken::Identifier;
   }
 
-  static const auto operatorType(const StringView opStr) noexcept -> EToken {
+  static const auto operatorType(const StrV opStr) noexcept -> EToken {
     if (const auto it = operatorTable.find(opStr); it != operatorTable.end()) {
       return it->second;
     }
@@ -153,7 +153,7 @@ namespace tl::fe {
     }
   }
 
-  auto Token::isValidOperator(const StringView symbol) -> bool {
+  auto Token::isValidOperator(const StrV symbol) -> bool {
     return operatorType(symbol) != EToken::Invalid;
   }
 }
