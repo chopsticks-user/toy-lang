@@ -1,0 +1,11 @@
+include(GNUInstallDirs)
+
+option(TLC_BUILD_EXAMPLES "Build examples" ON)
+option(TLC_BUILD_TESTS "Build tests" ON)
+
+set(TLC_AS_SUBPROJECT OFF)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  set(TLC_AS_SUBPROJECT ON)
+endif ()
+
+set(TLC_LLVM_VERSION 17)

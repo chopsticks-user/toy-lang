@@ -1,0 +1,4 @@
+#ifndef TLC_CORE_CONFIG_HPP
+#define TLC_CORE_CONFIG_HPP
+
+#endif // TLC_CORE_CONFIG_HPP
