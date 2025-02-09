@@ -76,7 +76,7 @@ bin/
 [Bb]uilds/
 
 # Resources:
-Resources/Antlr/*
+resources/Antlr/*
 !Resources/Antlr/*.g4
 
 # Antlr4
