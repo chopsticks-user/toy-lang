@@ -48,7 +48,7 @@ namespace tlc::token {
       return m_type;
     }
 
-    auto string() const noexcept -> StrV{
+    auto string() const noexcept -> StrV {
       return m_str;
     }
 
@@ -66,8 +66,6 @@ namespace tlc::token {
     sz m_line;
     sz m_column;
   };
-
-  using Tokens = std::vector<Token>;
 }
 
 #endif // TLC_TOKEN_HPP

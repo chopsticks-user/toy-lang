@@ -1,6 +1,5 @@
 #include "driver/driver.hpp"
 #include "lex/lex.hpp"
-#include "token/token.hpp"
 
 #include <iostream>
 
