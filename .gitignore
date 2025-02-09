@@ -3,7 +3,6 @@
 .vscode
 
 # Build
-Build
 build
 cmake-build-debug
 
@@ -67,13 +66,6 @@ __pycache__/
 
 # For Go:
 bin/
-
-# For Unity:
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uild/
-[Bb]uilds/
 
 # Resources:
 resources/Antlr/*
