@@ -1,6 +1,6 @@
 #include "token.hpp"
 
-namespace tl::fe {
+namespace tlc::token {
   static const HashMap<StrV, EToken> nonTypeKeywordTable = {
     // visibility
     {"module", EToken::Module},
@@ -116,7 +116,7 @@ namespace tl::fe {
     {"@", EToken::At},
   };
 
-  static const auto identifierType(const StrV idStr) noexcept -> EToken {
+  static auto identifierType(const StrV idStr) noexcept -> EToken {
     if (idStr.front() >= 'A' && idStr.front() <= 'Z') {
       if (const auto it = fundamentalTypes.find(idStr); it != fundamentalTypes.end()) {
         return EToken::FundamentalType;
@@ -136,14 +136,14 @@ namespace tl::fe {
     return EToken::Identifier;
   }
 
-  static const auto operatorType(const StrV opStr) noexcept -> EToken {
+  static auto operatorType(const StrV opStr) noexcept -> EToken {
     if (const auto it = operatorTable.find(opStr); it != operatorTable.end()) {
       return it->second;
     }
     return EToken::Invalid;
   }
 
-  Token::Token(const EToken type, String str, const sz line, const sz column)
+  Token::Token(const EToken type, Str str, const sz line, const sz column)
     : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
     if (m_type == EToken::Identifier) {
       m_type = identifierType(m_str);

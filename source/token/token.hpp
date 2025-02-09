@@ -1,9 +1,9 @@
-#ifndef TOYLANG_FRONTEND_TOKEN_HPP
-#define TOYLANG_FRONTEND_TOKEN_HPP
+#ifndef TLC_TOKEN_HPP
+#define TLC_TOKEN_HPP
 
 #include "core/core.hpp"
 
-namespace tl::fe {
+namespace tlc::token {
   enum class EToken {
     // Single
     LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace, Hash,
@@ -40,15 +40,15 @@ namespace tl::fe {
 
   class Token final {
   public:
-    Token(EToken type, String str, sz line, sz column);
+    Token(EToken type, Str str, sz line, sz column);
 
-    static auto isValidOperator(StringView symbol) -> bool;
+    static auto isValidOperator(StrV symbol) -> bool;
 
     auto type() const noexcept -> EToken {
       return m_type;
     }
 
-    auto string() const noexcept -> CRef<String> {
+    auto string() const noexcept -> StrV{
       return m_str;
     }
 
@@ -62,7 +62,7 @@ namespace tl::fe {
 
   private:
     EToken m_type;
-    String m_str;
+    Str m_str;
     sz m_line;
     sz m_column;
   };
@@ -70,4 +70,4 @@ namespace tl::fe {
   using Tokens = std::vector<Token>;
 }
 
-#endif // TOYLANG_FRONTEND_TOKEN_HPP
+#endif // TLC_TOKEN_HPP

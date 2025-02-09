@@ -1,16 +1,9 @@
-//
-// Created by frost on 2/8/25.
-//
+#ifndef TLC_LEX_STREAM_HPP
+#define TLC_LEX_STREAM_HPP
 
-#ifndef STREAM_HPP
-#define STREAM_HPP
+#include "core/core.hpp"
 
+namespace tlc::lex {
+}
 
-
-class stream {
-
-};
-
-
-
-#endif //STREAM_HPP
+#endif // TLC_LEX_STREAM_HPP

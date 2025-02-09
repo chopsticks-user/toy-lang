@@ -1,17 +1,29 @@
 llvm_map_components_to_libnames(llvm_libs support core irreader)
 
+add_library(tlc_driver SHARED)
+add_library(tlc::driver ALIAS tlc_driver)
+target_sources(
+    tlc_driver PRIVATE
+    args.hpp args.cpp
+)
+target_include_directories(
+    tlc_driver PRIVATE
+    ${LLVM_INCLUDE_DIRS}
+)
+target_link_libraries(
+    tlc_driver
+    PUBLIC tlc::core
+    PRIVATE ${llvm_libs}
+)
+
 add_executable(tlc)
 target_sources(
     tlc PRIVATE
     driver.cpp args.hpp args.cpp
 )
-target_include_directories(
-    tlc PRIVATE
-    ${LLVM_INCLUDE_DIRS}
-)
 target_link_libraries(
     tlc PRIVATE
-    ${llvm_libs} tlc::core
+    tlc::core tlc::token tlc::lex
 )
 set_target_properties(
     tlc PROPERTIES

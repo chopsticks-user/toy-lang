@@ -9,6 +9,5 @@ target_sources(
 target_include_directories(tlc_core INTERFACE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(
     tlc_core
-    INTERFACE tlc_cflags
-    #    PUBLIC spdlog::spdlog_header_only
+    PUBLIC tlc::cflags
 )

@@ -1,16 +1,9 @@
-//
-// Created by frost on 2/8/25.
-//
+#ifndef TLC_LEX_CONTEXT_HPP
+#define TLC_LEX_CONTEXT_HPP
 
-#ifndef CONTEXT_HPP
-#define CONTEXT_HPP
+#include "core/core.hpp"
 
+namespace tlc::lex {
+}
 
-
-class context {
-
-};
-
-
-
-#endif //CONTEXT_HPP
+#endif // TLC_LEX_CONTEXT_HPP
