@@ -4,7 +4,7 @@ add_library(tlc_driver SHARED)
 add_library(tlc::driver ALIAS tlc_driver)
 target_sources(
     tlc_driver PRIVATE
-    args.hpp args.cpp
+    command.hpp command.cpp project.hpp project.cpp driver.hpp driver.cpp
 )
 target_include_directories(
     tlc_driver PRIVATE
@@ -19,11 +19,11 @@ target_link_libraries(
 add_executable(tlc)
 target_sources(
     tlc PRIVATE
-    driver.cpp args.hpp args.cpp
+    tlc.cpp
 )
 target_link_libraries(
     tlc PRIVATE
-    tlc::core tlc::token tlc::lex
+    tlc::core tlc::token tlc::lex tlc::driver
 )
 set_target_properties(
     tlc PROPERTIES

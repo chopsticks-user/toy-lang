@@ -1,0 +1,4 @@
+add_subdirectory(analyze)
+add_subdirectory(type)
+add_subdirectory(consteval)
+add_subdirectory(transform)
