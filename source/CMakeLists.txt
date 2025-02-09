@@ -20,13 +20,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nlohmann_json)
 
 add_subdirectory(core)
-add_subdirectory(FrontEnd) # todo: remove
+add_subdirectory(utility)
+add_subdirectory(token)
+add_subdirectory(syntax)
 add_subdirectory(lex)
 add_subdirectory(parse)
-add_subdirectory(syntax)
 add_subdirectory(semantic)
-add_subdirectory(backend/cpp)
-add_subdirectory(backend/llvm)
-add_subdirectory(backend/vm)
+add_subdirectory(backend)
 add_subdirectory(runtime)
 add_subdirectory(driver)

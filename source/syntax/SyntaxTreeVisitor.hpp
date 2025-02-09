@@ -1,7 +1,7 @@
 #ifndef  TOYLANG_SYNTAX_TREE_VISITOR_HPP
 #define  TOYLANG_SYNTAX_TREE_VISITOR_HPP
 
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   template<typename TDerived, typename TReturn = void>

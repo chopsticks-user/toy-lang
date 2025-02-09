@@ -3,7 +3,7 @@
 
 #include "Forward.hpp"
 
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   class ASTNodeBase {

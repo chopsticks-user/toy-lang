@@ -2,7 +2,7 @@
 #define  TOYLANG_SYNTAX_STATEMENTS_HPP
 
 #include "Base.hpp"
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   class ForStmt final : public ASTNodeBase {

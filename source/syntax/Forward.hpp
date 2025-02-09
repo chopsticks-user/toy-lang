@@ -1,7 +1,7 @@
 #ifndef  TOYLANG_SYNTAX_FORWARD_HPP
 #define  TOYLANG_SYNTAX_FORWARD_HPP
 
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   class IntegerLiteral;

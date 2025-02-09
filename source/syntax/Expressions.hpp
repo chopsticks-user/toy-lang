@@ -2,7 +2,7 @@
 #define  TOYLANG_SYNTAX_EXPRESSIONS_HPP
 
 #include "Base.hpp"
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   // Literals belong here to avoid circular dependencies

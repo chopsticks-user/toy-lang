@@ -1,27 +1,14 @@
-add_library(ToyLang_Core SHARED)
-add_library(
-    ${ToyLang_PROJECT_NAME}::Core
-    ALIAS ToyLang_Core
-)
-
+add_library(tlc_core SHARED)
+add_library(tlc::core ALIAS tlc_core)
 target_sources(
-    ToyLang_Core
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Exception.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TypeDef.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Concept.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/FileReader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Visitor.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Utility.hpp
+    tlc_core PRIVATE
+    core.hpp platform.hpp type.hpp log.hpp log.cpp file.hpp file.cpp
+    exception.hpp constant.hpp concept.hpp visitor.hpp singleton.hpp
+    utility.hpp range.hpp config.hpp
 )
-target_include_directories(ToyLang_Core INTERFACE ${PROJECT_SOURCE_DIR}/source)
+target_include_directories(tlc_core INTERFACE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(
-    ToyLang_Core
-    PUBLIC spdlog::spdlog_header_only
-    #    INTERFACE ${ToyLang_PROJECT_NAME}::CFlags
+    tlc_core
+    INTERFACE tlc_cflags
+    #    PUBLIC spdlog::spdlog_header_only
 )

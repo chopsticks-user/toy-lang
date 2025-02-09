@@ -4,7 +4,7 @@
 #include "FrontEnd/Token.hpp"
 
 #include "Base.hpp"
-#include "core/Core.hpp"
+#include "core/core.hpp"
 
 namespace tl::syntax {
   // declarations belong here to avoid circular dependencies
