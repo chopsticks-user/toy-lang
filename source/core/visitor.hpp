@@ -3,7 +3,7 @@
 
 #include "type.hpp"
 
-namespace tl {
+namespace tlc {
   template<typename TVisitable, typename TReturn = void>
     requires std::is_default_constructible_v<TReturn> || std::same_as<TReturn, void>
   class Visitor {

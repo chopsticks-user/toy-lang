@@ -1,5 +1,6 @@
 #include "driver/driver.hpp"
 #include "lex/lex.hpp"
+#include "syntax/syntax.hpp"
 
 #include <iostream>
 

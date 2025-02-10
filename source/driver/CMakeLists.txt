@@ -23,7 +23,7 @@ target_sources(
 )
 target_link_libraries(
     tlc PRIVATE
-    tlc::core tlc::token tlc::lex tlc::driver
+    tlc::core tlc::token tlc::lex tlc::syntax tlc::driver
 )
 set_target_properties(
     tlc PROPERTIES

@@ -1,26 +1,9 @@
-#add_library(ToyLang_Syntax SHARED)
-#add_library(
-#    ${ToyLang_PROJECT_NAME}::Syntax
-#    ALIAS ToyLang_Syntax
-#)
-#
-#target_sources(
-#    ToyLang_Syntax
-#    PRIVATE
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Forward.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Base.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Base.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Expressions.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Expressions.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Statements.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Statements.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Definitions.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Definitions.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/SyntaxTreeVisitor.hpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Syntax.hpp
-#)
-#target_link_libraries(
-#    ToyLang_Syntax
-#    PRIVATE
-#    ${ToyLang_PROJECT_NAME}::Core
-#)
+add_library(tlc_syntax SHARED)
+add_library(tlc::syntax ALIAS tlc_syntax)
+target_sources(
+    tlc_syntax PRIVATE
+    syntax.hpp ast_base.hpp ast_base.cpp ast_visitor.hpp forward.hpp
+    definition_nodes.hpp definition_nodes.cpp expr_nodes.hpp expr_nodes.cpp
+    stmt_nodes.hpp stmt_nodes.cpp
+)
+target_link_libraries(tlc_syntax PRIVATE tlc::core)

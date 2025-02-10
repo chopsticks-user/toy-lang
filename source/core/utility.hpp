@@ -1,5 +1,5 @@
-#ifndef TLC_CORE_VISITOR_HPP
-#define TLC_CORE_VISITOR_HPP
+#ifndef TLC_CORE_UTILITY_HPP
+#define TLC_CORE_UTILITY_HPP
 
 #include <functional>
 #include <algorithm>
@@ -12,4 +12,4 @@ namespace tlc {
   }
 }
 
-#endif // TLC_CORE_VISITOR_HPP
+#endif // TLC_CORE_UTILITY_HPP

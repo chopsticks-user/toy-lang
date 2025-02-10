@@ -1,9 +1,9 @@
-#ifndef  TOYLANG_SYNTAX_FORWARD_HPP
-#define  TOYLANG_SYNTAX_FORWARD_HPP
+#ifndef  TLC_SYNTAX_FORWARD_HPP
+#define  TLC_SYNTAX_FORWARD_HPP
 
 #include "core/core.hpp"
 
-namespace tl::syntax {
+namespace tlc::syntax {
   class IntegerLiteral;
   class FloatLiteral;
   class StringLiteral;
@@ -50,7 +50,7 @@ namespace tl::syntax {
 
   class TokenNode;
 
-  using ASTNode = Poly<
+  using Node = Poly<
     IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
 
     TernaryExpr, BinaryExpr, UnaryExpr, VarId, TypeId, OpId, TupleExpr,
@@ -65,19 +65,19 @@ namespace tl::syntax {
     TokenNode
   >;
 
-  class ASTNodeBase;
+  class NodeBase;
 
   template<typename T>
-  concept IsStrictlyASTNode = std::derived_from<T, ASTNodeBase> && !std::same_as<ASTNodeBase, T>;
+  concept IsStrictlyASTNode = std::derived_from<T, NodeBase> && !std::same_as<NodeBase, T>;
 
   template<typename T>
-  concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<ASTNode, T>;
+  concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
 
   template<typename T, typename... U>
   concept MatchASTNode = IsStrictlyASTNode<T> &&
                          (IsStrictlyASTNode<U> && ...) &&
                          (std::same_as<T, U> || ...)
-                         || std::same_as<ASTNode, T>;
+                         || std::same_as<Node, T>;
 
   enum class Storage : u8 {
     Export, Internal, Local,
@@ -91,15 +91,15 @@ namespace tl::syntax {
     Function, Method, Field, Operator, Constructor, Prototype,
   };
 
-  const HashSet<String> overloadableOps = {
+  const HashSet<Str> overloadableOps = {
     "+", "-", "*", "/",
     "==", "!=",
   };
 
-  const HashSet<String> assignmentOps = {
+  const HashSet<Str> assignmentOps = {
     "=", "+=", "-=", "*=", "/=", "%=", "**=",
     "&=", "|=", "^=", "<<=", ">>=",
   };
 }
 
-#endif // TOYLANG_SYNTAX_FORWARD_HPP
+#endif // TLC_SYNTAX_FORWARD_HPP
