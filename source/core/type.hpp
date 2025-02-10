@@ -90,6 +90,9 @@ namespace tlc {
   template<typename T>
   using TreeSet = std::set<T>;
 
+  template<typename F, typename S>
+  using Pair = std::pair<F, S>;
+
   template<typename... T>
   using Tuple = std::tuple<T...>;
 }

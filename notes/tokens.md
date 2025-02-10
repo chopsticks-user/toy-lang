@@ -1,0 +1,1 @@
+Attributes are prefixed with '@'. For example, @shared, @alloc, etc.
