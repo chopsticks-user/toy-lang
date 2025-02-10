@@ -5,42 +5,45 @@
 #include "forward.hpp"
 
 namespace tlc::syntax {
+  template<typename TParentNode, typename TDerived>
+  concept AstVisitorCallableWithChildNode =
+      std::convertible_to<TParentNode, Node> &&
+      std::is_invocable_v<TDerived, Node>;
+
+  template<typename TParentNode, typename TDerived, typename TReturn>
+  concept AstVisitorVoidOverload =
+      AstVisitorCallableWithChildNode<TParentNode, TDerived> &&
+      std::is_void_v<TReturn>;
+
+  template<typename TParentNode, typename TDerived, typename TReturn>
+  concept AstVisitorNonVoidOverload =
+      AstVisitorCallableWithChildNode<TParentNode, TDerived> &&
+      !std::is_void_v<TReturn>;
+
   template<typename TDerived, typename TReturn = void>
   class SyntaxTreeVisitor : public Visitor<Node, TReturn> {
     template<typename TParentNode>
     static constexpr bool CallableWithChildNode =
         std::convertible_to<TParentNode, Node> &&
-        requires
-        {
-          [] {
-            static_assert(
-              std::is_invocable_v<TDerived, Node>,
-              "Requires adding 'public: using SyntaxTreeVisitor::operator();'"
-              " to the visitor class body"
-            );
-          }();
-        };
+        std::is_invocable_v<TDerived, Node>;
 
   protected:
     using Visitor<Node, TReturn>::operator();
 
-    template<typename T>
-      requires (CallableWithChildNode<T> && !std::is_void_v<TReturn>)
+    template<AstVisitorNonVoidOverload<TDerived, TReturn> T>
     auto visitChildren(T const &node) -> Vec<TReturn> {
-      Vec<TReturn> results;
-      results.reserve(node.nChildren());
-      for (const auto &child: node.children()) {
-        results.push_back(std::visit(*static_cast<TDerived *>(this), child));
-      }
-      return results;
+      return node.children() |
+             rv::transform([this](auto const &child) {
+               return std::visit(*static_cast<TDerived *>(this), child);
+             }) |
+             rng::to<Vec<TReturn> >();
     }
 
-    template<typename T>
-      requires CallableWithChildNode<T> && std::is_void_v<TReturn>
+    template<AstVisitorVoidOverload<TDerived, TReturn> T>
     auto visitChildren(T const &node) -> void {
-      for (const auto &child: node.children()) {
+      node.children() | rng::for_each([this](auto const &child) {
         std::visit(*static_cast<TDerived *>(this), child);
-      }
+      });
     }
   };
 }

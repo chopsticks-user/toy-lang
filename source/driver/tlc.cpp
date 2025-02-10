@@ -4,6 +4,12 @@
 
 #include <iostream>
 
+class PrettyPrinter
+    : public tlc::syntax::SyntaxTreeVisitor<PrettyPrinter, tlc::Str> {
+public:
+  using SyntaxTreeVisitor::operator();
+};
+
 int protected_main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
   std::cout << "tlc\n";
   return EXIT_SUCCESS;
