@@ -4,6 +4,8 @@
 #include "core/core.hpp"
 
 namespace tlc::lex {
+  class Context {
+  };
 }
 
 #endif // TLC_LEX_CONTEXT_HPP

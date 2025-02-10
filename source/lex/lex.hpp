@@ -2,10 +2,11 @@
 #define TLC_LEX_HPP
 
 #include "core/core.hpp"
+#include "token/token.hpp"
 
 #include "context.hpp"
 #include "stream.hpp"
-#include "token/token.hpp"
+#include "util.hpp"
 
 namespace tlc::lex {
   class Lexer {
@@ -49,48 +50,7 @@ namespace tlc::lex {
 
     auto reset() -> void;
 
-  private:
-    static auto isDigit(char c) -> bool {
-      return !(c < '0' || c > '9');
-    }
-
-    static auto isUpperCaseLetter(char c) -> bool {
-      return !(c < 'A' || c > 'Z');
-    }
-
-    static auto isLowerCaseLetter(char c) -> bool {
-      return !(c < 'a' || c > 'z');
-    }
-
-    static auto isLetter(char c) -> bool {
-      return isLowerCaseLetter(c) || isUpperCaseLetter(c);
-    }
-
-    static auto isDigitOrLetter(char c) -> bool {
-      return isDigit(c) || isLetter(c);
-    }
-
-    static auto isStartOfInteger(char c) {
-      return isDigit(c);
-    }
-
-    static auto isUnnamedIdentifier(char c) {
-      return c == '_';
-    }
-
-    static auto isStartOfDecimalPart(char c) {
-      return c == '.';
-    }
-
-    static auto maybeOperatorCharacter(char c) -> bool {
-      return !isDigitOrLetter(c) && !isUnnamedIdentifier(c);
-    }
-
-    static auto isSpacingCharacter(char c) -> bool {
-      return c == ' ' || c == '\n' || c == '\t' || c == '\r';
-    }
-
-  private:
+  protected:
     auto lexStringLiteral() -> bool;
 
     auto lexNumericLiteral() -> bool;
