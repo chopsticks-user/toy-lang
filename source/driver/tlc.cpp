@@ -2,16 +2,10 @@
 #include "lex/lex.hpp"
 #include "syntax/syntax.hpp"
 
-#include <iostream>
-
-class PrettyPrinter
-    : public tlc::syntax::SyntaxTreeVisitor<PrettyPrinter, tlc::Str> {
-public:
-  using SyntaxTreeVisitor::operator();
-};
+#include <print>
 
 int protected_main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
-  std::cout << "tlc\n";
+  std::print("tlc\n");
   return EXIT_SUCCESS;
 }
 
@@ -19,9 +13,9 @@ int main(int argc, char **argv) {
   try {
     return protected_main(argc, argv);
   } catch (std::exception &e) {
-    std::cerr << e.what() << '\n';
+    std::print(stderr, "{}\n", e.what());
   } catch (...) {
-    std::cerr << "Uncaught exception" << '\n';
+    std::print(stderr, "Uncaught exception\n");
   }
   return EXIT_FAILURE;
 }

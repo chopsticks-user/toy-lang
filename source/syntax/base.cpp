@@ -1,10 +1,8 @@
-#include "ast_base.hpp"
-#include "expr_nodes.hpp"
-#include "stmt_nodes.hpp"
-#include "definition_nodes.hpp"
+#include "base.hpp"
+#include "nodes.hpp"
 
-namespace tlc::syntax {
-  NodeBase::NodeBase(std::vector<Node> children) noexcept
+namespace tlc::syntax::detail {
+  NodeBase::NodeBase(Vec<Node> children) noexcept
     : m_children(std::move(children)) {
   }
 
@@ -12,7 +10,7 @@ namespace tlc::syntax {
     return m_children;
   }
 
-  auto NodeBase::view() const noexcept -> Span<Node const> {
+  auto NodeBase::children() noexcept -> Span<Node> {
     return m_children;
   }
 
@@ -28,7 +26,7 @@ namespace tlc::syntax {
     return m_children.back();
   }
 
-  auto NodeBase::childAt(sz index) -> Node & {
+  auto NodeBase::childAt(sz const index) -> Node & {
     return m_children.at(index);
   }
 
@@ -42,9 +40,5 @@ namespace tlc::syntax {
 
   auto NodeBase::nChildren() const noexcept -> sz {
     return m_children.size();
-  }
-
-  auto isEmptyAst(const Node &node) -> bool {
-    return std::holds_alternative<std::monostate>(node);
   }
 }

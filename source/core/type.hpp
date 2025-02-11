@@ -94,7 +94,7 @@ namespace tlc {
   using Pair = std::pair<F, S>;
 
   template<typename... T>
-  using Tuple = std::tuple<T...>;
+  using Tpl = std::tuple<T...>;
 }
 
 #endif // TLC_CORE_TYPE_HPP

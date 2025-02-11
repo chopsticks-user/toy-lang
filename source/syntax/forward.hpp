@@ -4,102 +4,78 @@
 #include "core/core.hpp"
 
 namespace tlc::syntax {
-  class IntegerLiteral;
-  class FloatLiteral;
-  class StringLiteral;
-  class BooleanLiteral;
+  namespace expr {
+    struct TokenNode;
 
-  class TernaryExpr;
-  class BinaryExpr;
-  class UnaryExpr;
-  class VarId;
-  class TypeId;
-  class OpId;
-  class TupleExpr;
-  class FunctionCallExpr;
-  class SubScriptingExpr;
-  class AccessExpr;
-  class ArrayExpr;
+    struct Integer;
+    struct Float;
+    struct String;
+    struct Boolean;
 
-  class ModuleDecl;
-  class ImportDecl;
-  class TypeDecl;
-  class GenericDecl;
-  class IdentifierDecl;
-  class TupleDecl;
+    struct VarId;
+    struct TypeId;
+    struct OpId;
 
-  class ForStmt;
-  class ForRangeFragment;
-  class MatchStmt;
-  class MatchStmtCase;
-  class BlockStmt;
-  class LetStmt;
-  class ConditionalStmt;
-  class ReturnStmt;
-  class AssignStmt;
-  class ExprStmt;
+    struct Ternary;
+    struct Binary;
+    struct Unary;
+    struct Tuple;
+    struct FunApp;
+    struct SubScript;
+    struct Access;
+    struct Array;
+  }
 
-  class FunctionPrototype;
-  class FunctionDef;
-  class ConceptDef;
-  // class ClassDef;
-  // class EnumDef;
-  // class FlagDef;
+  namespace stmt {
+    struct ForStmt;
+    struct ForRangeFragment;
+    struct MatchStmt;
+    struct MatchStmtCase;
+    struct BlockStmt;
+    struct LetStmt;
+    struct ConditionalStmt;
+    struct ReturnStmt;
+    struct AssignStmt;
+    struct ExprStmt;
+  }
 
-  class TranslationUnit;
+  namespace decl {
+    struct ModuleDecl;
+    struct ImportDecl;
+    struct TypeDecl;
+    struct GenericDecl;
+    struct IdentifierDecl;
+    struct TupleDecl;
+  }
 
-  class TokenNode;
+  namespace def {
+    struct FunctionPrototype;
+    struct FunctionDef;
+    struct ConceptDef;
+    // struct ClassDef;
+    // struct EnumDef;
+    // struct FlagDef;
+  }
+
+  struct TranslationUnit;
 
   using Node = Poly<
-    IntegerLiteral, FloatLiteral, StringLiteral, BooleanLiteral,
+    expr::TokenNode,
+    expr::Integer, expr::Float, expr::String, expr::Boolean,
+    expr::VarId, expr::TypeId, expr::OpId,
+    expr::Ternary, expr::Binary, expr::Unary, expr::Tuple,
+    expr::FunApp, expr::SubScript, expr::Access, expr::Array,
 
-    TernaryExpr, BinaryExpr, UnaryExpr, VarId, TypeId, OpId, TupleExpr,
-    FunctionCallExpr, SubScriptingExpr, AccessExpr, ArrayExpr,
+    stmt::ForStmt, stmt::ForRangeFragment, stmt::MatchStmt, stmt::MatchStmtCase,
+    stmt::BlockStmt, stmt::LetStmt, stmt::ConditionalStmt, stmt::ReturnStmt,
+    stmt::AssignStmt, stmt::ExprStmt,
 
-    ForStmt, ForRangeFragment, MatchStmt, MatchStmtCase, BlockStmt,
-    LetStmt, ConditionalStmt, ReturnStmt, AssignStmt, ExprStmt,
+    // decl::ModuleDecl, decl::ImportDecl, decl::TypeDecl,
+    // decl::IdentifierDecl, decl::TupleDecl, decl::GenericDecl,
+    // def::FunctionPrototype, def::FunctionDef, def::ConceptDef,
 
-    ModuleDecl, ImportDecl, TypeDecl, IdentifierDecl, TupleDecl, GenericDecl,
-    FunctionPrototype, FunctionDef, ConceptDef, TranslationUnit,
-
-    TokenNode
+    TranslationUnit
   >;
-
-  class NodeBase;
-
-  template<typename T>
-  concept IsStrictlyASTNode = std::derived_from<T, NodeBase> && !std::same_as<NodeBase, T>;
-
-  template<typename T>
-  concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
-
-  template<typename T, typename... U>
-  concept MatchASTNode = IsStrictlyASTNode<T> &&
-                         (IsStrictlyASTNode<U> && ...) &&
-                         (std::same_as<T, U> || ...)
-                         || std::same_as<Node, T>;
-
-  enum class Storage : u8 {
-    Export, Internal, Local,
-  };
-
-  enum class Visibility : u8 {
-    Public, Private,
-  };
-
-  enum class FnType : u8 {
-    Function, Method, Field, Operator, Constructor, Prototype,
-  };
-
-  const HashSet<Str> overloadableOps = {
-    "+", "-", "*", "/",
-    "==", "!=",
-  };
-
-  const HashSet<Str> assignmentOps = {
-    "=", "+=", "-=", "*=", "/=", "%=", "**=",
-    "&=", "|=", "^=", "<<=", ">>=",
-  };
 }
 
 #endif // TLC_SYNTAX_FORWARD_HPP

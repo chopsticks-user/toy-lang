@@ -11,12 +11,10 @@ namespace tlc {
     using Visitable = TVisitable;
 
     auto operator()(std::convertible_to<TVisitable> auto const &)
-      -> void requires std::is_void_v<TReturn> {
-    }
-
-    auto operator()(std::convertible_to<TVisitable> auto const &)
-      -> TReturn requires (!std::is_void_v<TReturn>) {
-      return {};
+      -> auto {
+      if constexpr (!std::is_void_v<TReturn>) {
+        return TReturn{};
+      }
     }
 
   protected:
@@ -27,7 +25,8 @@ namespace tlc {
   concept IsVisitor =
       requires(T t) // inherits from Visitor<...>
       {
-        []<typename TVisitable, typename TReturn = void>(Visitor<TVisitable, TReturn>) {
+        []<typename TVisitable, typename TReturn = void>(
+      Visitor<TVisitable, TReturn>) {
         }(t);
       } &&
       requires(T) // the typename field Visitable is accessible
