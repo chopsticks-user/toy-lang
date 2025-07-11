@@ -7,71 +7,51 @@
 #include <filesystem>
 
 namespace tlc {
-  namespace fs = std::filesystem;
+    namespace fs = std::filesystem;
 
-  class FileReader final {
-  public:
-    explicit FileReader(std::filesystem::path filepath)
-      : m_filepath(std::move(filepath)) {
-      m_fs.open(m_filepath);
+    class FileReader final {
+    public:
+        FileReader() = default;
 
-      if (!m_fs.is_open()) {
-        throw std::runtime_error("Failed to open " + filepath.string());
-      }
-    }
+        explicit FileReader(fs::path const& filepath) {
+            auto m_ifs = std::make_unique<std::ifstream>();
+            m_ifs->open(filepath);
 
-    auto skipLine() {
-      std::string dummy;
-      m_fs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
+            // todo: specific exception
+            if (!m_ifs->is_open()) {
+                throw std::runtime_error("Failed to open " + filepath.string());
+            }
 
-    auto advance() -> c8 {
-      return static_cast<c8>(m_fs.get());
-    }
+            m_is = std::move(m_ifs);
+        }
 
-    auto revert() -> void {
-      m_fs.unget();
-    }
+        explicit FileReader(std::istringstream iss)
+            : m_is(std::make_unique<std::istringstream>(std::move(iss))) {}
 
-    auto peek() -> c8 {
-      return static_cast<c8>(m_fs.peek());
-    }
+        auto skipLine() const {
+            std::string dummy;
+            m_is->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
 
-    auto match(c8 expected) -> bool {
-      if (eof() || m_fs.peek() != expected) {
-        return false;
-      }
-      advance();
-      return true;
-    }
+        auto advance() const -> c8 {
+            return static_cast<c8>(m_is->get());
+        }
 
-    auto match(c8 expected1, c8 expected2) -> bool {
-      auto firstMatched = match(expected1);
-      auto secondMatched = match(expected2);
+        auto revert() const -> void {
+            m_is->unget();
+        }
 
-      if (firstMatched && secondMatched) {
-        return true;
-      }
+        auto peek() const -> c8 {
+            return static_cast<c8>(m_is->peek());
+        }
 
-      if (firstMatched || secondMatched) {
-        m_fs.unget();
-      }
+        auto eof() const -> bool {
+            return m_is->eof();
+        }
 
-      return false;
-    }
-
-    auto isOpen() -> bool {
-      return m_fs.is_open();
-    }
-
-    auto eof() -> bool {
-      return m_fs.eof();
-    }
-
-  private:
-    std::filesystem::path m_filepath;
-    std::fstream m_fs;
-  };
+    private:
+        Ptr<std::istream> m_is;
+    };
 };
 
 

@@ -14,7 +14,7 @@ namespace tlc::syntax::detail {
     return m_children;
   }
 
-  auto NodeBase::childAt(const sz index) const -> const Node & {
+  auto NodeBase::childAt(const szt index) const -> const Node & {
     return m_children.at(index);
   }
 
@@ -26,7 +26,7 @@ namespace tlc::syntax::detail {
     return m_children.back();
   }
 
-  auto NodeBase::childAt(sz const index) -> Node & {
+  auto NodeBase::childAt(szt const index) -> Node & {
     return m_children.at(index);
   }
 
@@ -38,7 +38,7 @@ namespace tlc::syntax::detail {
     return m_children.back();
   }
 
-  auto NodeBase::nChildren() const noexcept -> sz {
+  auto NodeBase::nChildren() const noexcept -> szt {
     return m_children.size();
   }
 }

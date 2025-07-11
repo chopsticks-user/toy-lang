@@ -143,7 +143,7 @@ namespace tlc::token {
     return EToken::Invalid;
   }
 
-  Token::Token(const EToken type, Str str, const sz line, const sz column)
+  Token::Token(const EToken type, Str str, const szt line, const szt column)
     : m_type(type), m_str(std::move(str)), m_line(line), m_column(column) {
     if (m_type == EToken::Identifier) {
       m_type = identifierType(m_str);

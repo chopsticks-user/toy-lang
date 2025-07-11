@@ -3,6 +3,7 @@ add_executable(tlc::test::unit::frontend ALIAS tlc_test_unit_frontend)
 target_sources(
     tlc_test_unit_frontend PRIVATE
     lex.test.cpp
+    lex-stream.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_frontend PRIVATE

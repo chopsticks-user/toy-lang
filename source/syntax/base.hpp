@@ -11,18 +11,18 @@ namespace tlc::syntax::detail {
 
     [[nodiscard]] auto children() noexcept -> Span<Node>;
 
-    [[nodiscard]] auto childAt(sz index) const -> Node const &;
+    [[nodiscard]] auto childAt(szt index) const -> Node const &;
 
     [[nodiscard]] auto firstChild() const -> Node const &;
 
     [[nodiscard]] auto lastChild() const -> Node const &;
 
-    [[nodiscard]] auto nChildren() const noexcept -> sz;
+    [[nodiscard]] auto nChildren() const noexcept -> szt;
 
   protected:
     explicit NodeBase(Vec<Node> children) noexcept;
 
-    auto childAt(sz index) -> Node &;
+    auto childAt(szt index) -> Node &;
 
     auto firstChild() -> Node &;
 
