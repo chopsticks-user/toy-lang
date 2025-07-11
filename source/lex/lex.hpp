@@ -20,7 +20,6 @@ namespace tlc::lex {
         auto lexNondecimalNumeric() -> void;
         auto lexNumeric() -> void;
         auto lexSymbol() -> void;
-        auto lexString() -> void;
 
         auto appendLexeme() -> void {
             m_currentLexeme += m_stream.current();

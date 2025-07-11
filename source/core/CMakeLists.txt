@@ -4,7 +4,7 @@ target_sources(
     tlc_core PRIVATE
     core.hpp platform.hpp type.hpp log.hpp log.cpp file.hpp file.cpp
     exception.hpp constant.hpp concept.hpp visitor.hpp singleton.hpp
-    utility.hpp range.hpp config.hpp
+    utility.hpp range.hpp config.hpp graph.hpp graph.cpp
 )
 target_include_directories(tlc_core INTERFACE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(

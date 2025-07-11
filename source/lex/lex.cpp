@@ -23,11 +23,6 @@ namespace tlc::lex {
                 lexComment();
                 continue;
             }
-            if (m_stream.match(isStringOuter)) {
-                appendLexeme();
-                lexString();
-                continue;
-            }
             if (m_stream.match(isDigit)) {
                 appendLexeme();
                 lexNumeric();

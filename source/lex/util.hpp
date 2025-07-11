@@ -44,12 +44,8 @@ namespace tlc::lex {
         return c == ' ' || c == '\n' || c == '\t' || c == '\r';
     }
 
-    constexpr auto isStringOuter(char const c) -> bool {
-        return c == '\"' || c == '\'';
-    }
-
     constexpr auto isCommentOuter(char const c) -> bool {
-        return c == '\"' || c == '\'';
+        return c == '\\';
     }
 
     constexpr auto isBinaryDigit(char const c) -> bool {

@@ -1,5 +1,0 @@
-#include "lex.hpp"
-
-namespace tlc::lex {
-    auto Lexer::lexString() -> void {}
-}
