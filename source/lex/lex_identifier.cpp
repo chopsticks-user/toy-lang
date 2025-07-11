@@ -85,7 +85,7 @@ namespace tlc::lex {
 
     auto Lexer::lexIdentifier() -> void {
         while (m_stream.match(isDigitOrLetter)) {
-            m_currentLexeme += m_stream.current();
+            appendLexeme();
         }
         classifyIdentifier(m_currentLexeme);
         appendToken();

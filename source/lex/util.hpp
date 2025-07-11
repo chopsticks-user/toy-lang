@@ -51,6 +51,18 @@ namespace tlc::lex {
     constexpr auto isCommentOuter(char const c) -> bool {
         return c == '\"' || c == '\'';
     }
+
+    constexpr auto isBinaryDigit(char const c) -> bool {
+        return c == '0' || c == '1';
+    }
+
+    constexpr auto isOctalDigit(char const c) -> bool {
+        return c >= '0' && c <= '7';
+    }
+
+    constexpr auto isHexadecimalDigit(char const c) -> bool {
+        return isDigit(c) || (c >= 'a' && c <= 'f');
+    }
 }
 
 #endif // TLC_LEX_UTIL_HPP
