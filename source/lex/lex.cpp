@@ -14,30 +14,33 @@ namespace tlc::lex {
     }
 
     auto Lexer::lex() -> Vec<token::Token> {
-        Vec<token::Token> tokens;
-
         while (!m_stream.done()) {
             m_stream.consumeSpaces();
-
             m_currentLexeme = "";
-            if (m_stream.match('\"', '\'')) {
+
+            if (m_stream.match(isCommentOuter)) {
+                appendLexeme();
+                lexComment();
+                continue;
+            }
+            if (m_stream.match(isStringOuter)) {
                 appendLexeme();
                 lexString();
+                continue;
             }
-
             if (m_stream.match(isDigit)) {
                 appendLexeme();
                 lexNumeric();
+                continue;
             }
-
             if (m_stream.match(isLetter)) {
                 appendLexeme();
                 lexIdentifier();
+                continue;
             }
-
             lexSymbol();
         }
 
-        return {};
+        return m_tokens;
     }
 }

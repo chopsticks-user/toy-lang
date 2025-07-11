@@ -5,6 +5,7 @@ target_sources(
     lex.hpp lex.cpp
     stream.hpp stream.cpp
     util.hpp
+    lex_comment.cpp
     lex_identifier.cpp
     lex_numeric.cpp
     lex_symbol.cpp

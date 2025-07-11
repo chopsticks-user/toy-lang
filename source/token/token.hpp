@@ -39,9 +39,9 @@ namespace tlc::token {
 
     class Token final {
     public:
-        Token(EToken type, Str str, szt line, szt column);
-
-        static auto isValidOperator(StrV symbol) -> bool;
+        Token(EToken type, Str str, szt line, szt column)
+            : m_type{std::move(type)}, m_str{std::move(str)},
+              m_line{std::move(line)}, m_column{std::move(column)} {}
 
         [[nodiscard]] auto type() const noexcept -> EToken {
             return m_type;

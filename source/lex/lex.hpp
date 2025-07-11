@@ -15,6 +15,7 @@ namespace tlc::lex {
 
     private:
         auto lex() -> Vec<token::Token>;
+        auto lexComment() -> void;
         auto lexIdentifier() -> void;
         auto lexNumeric() -> void;
         auto lexSymbol() -> void;
@@ -24,10 +25,18 @@ namespace tlc::lex {
             m_currentLexeme += m_stream.current();
         }
 
+        auto appendToken() -> void {
+            m_tokens.emplace_back(
+                m_currentTokenType, m_currentLexeme,
+                m_stream.line(), m_stream.column()
+            );
+        }
+
     private:
         Stream m_stream{};
+        token::EToken m_currentTokenType{};
         Str m_currentLexeme{};
-        Opt<token::Token> m_lastToken{};
+        Vec<token::Token> m_tokens{};
     };
 }
 

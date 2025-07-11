@@ -23,7 +23,10 @@ namespace tlc::lex {
             m_currentChar = m_filereader.advance();
         }
 
-        auto match(std::same_as<c8> auto... expected) -> bool {
+        auto line() const -> szt { return m_line; }
+        auto column() const -> szt { return m_column; }
+
+        auto match(std::same_as<char> auto... expected) -> bool {
             if (m_filereader.eof() || ((m_filereader.peek() != expected) && ...)) {
                 return false;
             }
@@ -32,7 +35,7 @@ namespace tlc::lex {
             return true;
         }
 
-        auto match(bool (*cond)(c8)) -> bool {
+        auto match(bool (*cond)(char)) -> bool {
             if (m_filereader.eof() || !cond(m_filereader.peek())) {
                 return false;
             }
@@ -43,16 +46,18 @@ namespace tlc::lex {
 
         auto advance() -> void;
 
+        [[nodiscard]] auto peek() const -> char { return m_filereader.peek(); }
+
         auto consumeSpaces() -> void {}
 
         [[nodiscard]] auto done() const -> bool { return m_filereader.eof(); }
 
-        [[nodiscard]] auto current() const -> c8 { return m_currentChar; }
+        [[nodiscard]] auto current() const -> char { return m_currentChar; }
 
     private:
         FileReader m_filereader;
         szt m_pos{}, m_line{}, m_column{};
-        c8 m_currentChar{};
+        char m_currentChar{};
     };
 }
 
