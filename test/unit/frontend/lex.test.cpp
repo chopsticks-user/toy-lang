@@ -57,13 +57,69 @@ int
 }
 
 TEST_CASE_WITH_FIXTURE("Lex: Identifiers and keywords", "[Lex]") {
-    SECTION("Fundamental types") {}
+    SECTION("Fundamental types") {
+        lex(R"(
+Int
+Float
+Bool
+Char
+Void
+String
+Any
+Opt
+        )");
 
-    SECTION("Reserved keywords") {}
+        assertTokenCount(8);
+        assertTokenAt(0, EToken::FundamentalType, "Int", 1, 0);
+        assertTokenAt(1, EToken::FundamentalType, "Float", 2, 0);
+        assertTokenAt(2, EToken::FundamentalType, "Bool", 3, 0);
+        assertTokenAt(3, EToken::FundamentalType, "Char", 4, 0);
+        assertTokenAt(4, EToken::FundamentalType, "Void", 5, 0);
+        assertTokenAt(5, EToken::FundamentalType, "String", 6, 0);
+        assertTokenAt(6, EToken::FundamentalType, "Any", 7, 0);
+        assertTokenAt(7, EToken::FundamentalType, "Opt", 8, 0);
+    }
 
-    SECTION("Identifiers") {}
+    SECTION("Reserved keywords") {
+        lex(R"(
+int
+float
+bool
+char
+void
+string
+any
+opt
+        )");
 
-    SECTION("UserDefinedType") {}
+        assertTokenCount(0);
+    }
+
+    SECTION("Identifiers") {
+        lex(R"(
+foo
+f0o
+fo0
+        )");
+
+        assertTokenCount(3);
+        assertTokenAt(0, EToken::Identifier, "foo", 1, 0);
+        assertTokenAt(1, EToken::Identifier, "f0o", 2, 0);
+        assertTokenAt(2, EToken::Identifier, "fo0", 3, 0);
+    }
+
+    SECTION("UserDefinedType") {
+        lex(R"(
+Foo
+F0o
+Fo0
+        )");
+
+        assertTokenCount(3);
+        assertTokenAt(0, EToken::UserDefinedType, "Foo", 1, 0);
+        assertTokenAt(1, EToken::UserDefinedType, "F0o", 2, 0);
+        assertTokenAt(2, EToken::UserDefinedType, "Fo0", 3, 0);
+    }
 
     SECTION("Keywords") {
         SECTION("Visibility") {

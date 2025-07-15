@@ -76,12 +76,12 @@ namespace tlc::token {
     };
 
     static const HashSet<StrV> fundamentalTypes{
-        "Int", "Float", "Bool", "Char", "Void", "String", "Any",
+        "Int", "Float", "Bool", "Char", "Void", "String", "Any", "Opt",
         // "Rxt", "Atm", "Rng"
     };
 
     static const HashSet<StrV> reservedKeywords{
-        "int", "float", "bool", "char", "void", "string", "any"
+        "int", "float", "bool", "char", "void", "string", "any", "opt",
     };
 
     using OpGraph3 = HashMap<char, HashMap<char, HashSet<char>>>;
