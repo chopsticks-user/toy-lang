@@ -28,12 +28,12 @@ namespace tlc {
         explicit FileReader(std::istringstream iss)
             : m_is(std::make_unique<std::istringstream>(std::move(iss))) {}
 
-        auto skipLine() const {
+        auto skipLine() const -> void {
             std::string dummy;
             m_is->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
-        auto advance() const -> c8 {
+        [[nodiscard]] auto advance() const -> c8 {
             return static_cast<c8>(m_is->get());
         }
 
@@ -41,11 +41,11 @@ namespace tlc {
             m_is->unget();
         }
 
-        auto peek() const -> c8 {
+        [[nodiscard]] auto peek() const -> c8 {
             return static_cast<c8>(m_is->peek());
         }
 
-        auto eof() const -> bool {
+        [[nodiscard]] auto eof() const -> bool {
             return m_is->eof();
         }
 

@@ -4,11 +4,13 @@
 
 namespace tlc::lex {
     auto Lexer::operator()(fs::path const& filepath) -> Vec<token::Token> {
+        reset();
         m_stream = Stream{filepath};
         return lex();
     }
 
     auto Lexer::operator()(std::istringstream iss) -> Vec<token::Token> {
+        reset();
         m_stream = Stream{std::move(iss)};
         return lex();
     }

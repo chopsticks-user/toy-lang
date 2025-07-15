@@ -21,6 +21,14 @@ namespace tlc::lex {
         auto lexNumeric() -> void;
         auto lexSymbol() -> void;
 
+    private:
+        auto reset() -> void {
+            m_stream = {};
+            m_currentTokenType = {};
+            m_currentLexeme = {};
+            m_tokens = {};
+        }
+
         auto appendLexeme() -> void {
             m_currentLexeme += m_stream.current();
         }

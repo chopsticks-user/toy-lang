@@ -2,7 +2,7 @@
 #include "util.hpp"
 
 namespace tlc::lex {
-    using OpGraph3 = HashMap<char, HashMap<char, HashSet<char>>>; // todo: trait
+    using OpGraph3 = HashMap<char, HashMap<char, HashSet<char>>>;
 
     static const HashMap<StrV, token::EToken> operatorTable{
         {":=>", token::EToken::ColonEqualGreater},
@@ -69,7 +69,7 @@ namespace tlc::lex {
         {"@", token::EToken::At},
     };
 
-    static const OpGraph3 opGraph = []() -> OpGraph3 {
+    static const OpGraph3 opGraph = [] {
         OpGraph3 graph;
         rng::for_each(
             operatorTable
@@ -92,6 +92,12 @@ namespace tlc::lex {
     }();
 
     auto Lexer::lexSymbol() -> void {
+        if (isUnnamedIdentifier(m_stream.current())) {
+            m_currentTokenType = token::EToken::AnonymousIdentifier;
+            appendToken();
+            return;
+        }
+
         if (auto const entry = opGraph.find(m_stream.current());
             entry != opGraph.end()) {
             if (auto const entry2 = entry->second.find(m_stream.peek());

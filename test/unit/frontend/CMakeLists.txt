@@ -13,4 +13,7 @@ target_link_libraries(
 add_compile_definitions(
     TLC_TEST_SAMPLE_DIR="${PROJECT_SOURCE_DIR}/test/samples"
 )
+add_compile_definitions(
+    TLC_TMP_FILE_DIR="${PROJECT_SOURCE_DIR}/test/tmp"
+)
 add_test(NAME tlc_test_unit_frontend COMMAND tlc_test_unit_frontend)
