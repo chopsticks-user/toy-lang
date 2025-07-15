@@ -52,35 +52,29 @@ namespace tlc::lex {
         "int", "float", "bool", "char", "void", "string", "any"
     };
 
-    static auto classifyLowercaseIdentifier(StrV const lexeme)
-        -> token::EToken {
+    auto Lexer::classifyIdentifier(StrV const lexeme)
+        -> void {
         using enum token::EToken;
 
-        if (reservedKeywords.contains(lexeme)) {
-            return Reserved;
-        }
-        if (nonTypeKeywordTable.contains(lexeme)) {
-            return nonTypeKeywordTable.at(lexeme);
-        }
-        return Identifier;
-    }
-
-    static auto classifyUppercaseIdentifier(StrV const lexeme)
-        -> token::EToken {
-        using enum token::EToken;
-
-        if (fundamentalTypes.contains(lexeme)) {
-            return FundamentalType;
-        }
-        return UserDefinedType;
-    }
-
-    static auto classifyIdentifier(StrV lexeme)
-        -> token::EToken {
         if (isLowerCaseLetter(lexeme.front())) {
-            return classifyLowercaseIdentifier(std::move(lexeme));
+            if (reservedKeywords.contains(lexeme)) {
+                m_currentTokenType = Invalid;
+            }
+            else if (nonTypeKeywordTable.contains(lexeme)) {
+                m_currentTokenType = nonTypeKeywordTable.at(lexeme);
+            }
+            else {
+                m_currentTokenType = Identifier;
+            }
         }
-        return classifyUppercaseIdentifier(std::move(lexeme));
+        else {
+            if (fundamentalTypes.contains(lexeme)) {
+                m_currentTokenType = FundamentalType;
+            }
+            else {
+                m_currentTokenType = UserDefinedType;
+            }
+        }
     }
 
     auto Lexer::lexIdentifier() -> void {

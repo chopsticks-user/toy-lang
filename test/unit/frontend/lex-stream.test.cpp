@@ -14,7 +14,7 @@ protected:
         m_stream = Stream{std::move(iss)};
     }
 
-    auto assertCurrent(
+    auto assertCurrentThenAdvance(
         char const c, szt const line, szt const column
     ) -> void {
         CAPTURE(c, line, column);
@@ -41,19 +41,19 @@ TEST_CASE_WITH_FIXTURE("LexStream: Peek and match", "[Lex]") {
 str eam)");
 
     // "lex"
-    assertCurrent('l', 0, 0);
-    assertCurrent('e', 0, 1);
-    assertCurrent('x', 0, 2);
-    assertCurrent('\n', 0, 3);
+    assertCurrentThenAdvance('l', 0, 0);
+    assertCurrentThenAdvance('e', 0, 1);
+    assertCurrentThenAdvance('x', 0, 2);
+    assertCurrentThenAdvance('\n', 0, 3);
 
     // "stream"
-    assertCurrent('s', 1, 0);
-    assertCurrent('t', 1, 1);
-    assertCurrent('r', 1, 2);
-    assertCurrent(' ', 1, 3);
-    assertCurrent('e', 1, 4);
-    assertCurrent('a', 1, 5);
-    assertCurrent('m', 1, 6);
+    assertCurrentThenAdvance('s', 1, 0);
+    assertCurrentThenAdvance('t', 1, 1);
+    assertCurrentThenAdvance('r', 1, 2);
+    assertCurrentThenAdvance(' ', 1, 3);
+    assertCurrentThenAdvance('e', 1, 4);
+    assertCurrentThenAdvance('a', 1, 5);
+    assertCurrentThenAdvance('m', 1, 6);
 
     REQUIRE(done());
 }

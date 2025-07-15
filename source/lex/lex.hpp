@@ -29,14 +29,26 @@ namespace tlc::lex {
             m_tokens = {};
         }
 
+        auto classifyIdentifier(StrV lexeme) -> void;
+
+        auto markTokenCoords() -> void {
+            m_tokenLine = m_stream.line();
+            m_tokenColumn = m_stream.column();
+        }
+
         auto appendLexeme() -> void {
             m_currentLexeme += m_stream.current();
         }
 
         auto appendToken() -> void {
+            if (m_currentTokenType == token::EToken::Invalid) {
+                // todo: throw
+                return;
+            }
+
             m_tokens.emplace_back(
                 m_currentTokenType, m_currentLexeme,
-                m_stream.line(), m_stream.column()
+                m_tokenLine, m_tokenColumn
             );
         }
 
@@ -44,6 +56,7 @@ namespace tlc::lex {
         Stream m_stream{};
         token::EToken m_currentTokenType{};
         Str m_currentLexeme{};
+        szt m_tokenLine{}, m_tokenColumn{};
         Vec<token::Token> m_tokens{};
     };
 }

@@ -16,26 +16,32 @@ namespace tlc::lex {
     }
 
     auto Lexer::lex() -> Vec<token::Token> {
+        m_stream.consumeSpaces();
         while (!m_stream.done()) {
-            m_stream.consumeSpaces();
             m_currentLexeme = "";
+            m_currentTokenType = token::EToken::Invalid;
 
             if (m_stream.match(isCommentOuter)) {
+                markTokenCoords();
                 appendLexeme();
                 lexComment();
-                continue;
             }
-            if (m_stream.match(isDigit)) {
+            else if (m_stream.match(isDigit)) {
+                markTokenCoords();
                 appendLexeme();
                 lexNumeric();
-                continue;
             }
-            if (m_stream.match(isLetter)) {
+            else if (m_stream.match(isLetter)) {
+                markTokenCoords();
                 appendLexeme();
                 lexIdentifier();
-                continue;
             }
-            lexSymbol();
+            else {
+                markTokenCoords();
+                lexSymbol();
+            }
+
+            m_stream.consumeSpaces();
         }
 
         return m_tokens;

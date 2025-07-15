@@ -5,6 +5,8 @@
 
 namespace tlc::token {
     enum class EToken {
+        Invalid,
+
         // Single
         LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace, RightBrace, Hash,
         Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus, FwdSlash, Percent,
@@ -30,33 +32,30 @@ namespace tlc::token {
         By, Of, In, When,
         True, False,
         Self, Pub, Prv, Impl,
-
-        // Misc
-        Empty, MaybeOperator, Reserved, Invalid,
     };
 
     enum class EKeyword {};
 
     class Token final {
     public:
-        Token(EToken type, Str str, szt line, szt column)
-            : m_type{std::move(type)}, m_str{std::move(str)},
-              m_line{std::move(line)}, m_column{std::move(column)} {}
+        Token(EToken const type, StrV const str, szt const line, szt const column)
+            : m_type{type}, m_str{str},
+              m_line{line}, m_column{column} {}
 
         [[nodiscard]] auto type() const noexcept -> EToken {
             return m_type;
         }
 
-        [[nodiscard]] auto string() const noexcept -> StrV {
+        [[nodiscard]] auto str() const noexcept -> StrV {
             return m_str;
         }
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_line + 1;
+            return m_line;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_column + 1;
+            return m_column;
         }
 
     private:
