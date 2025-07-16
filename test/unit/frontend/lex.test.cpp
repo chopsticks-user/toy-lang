@@ -220,6 +220,145 @@ impl
 
 TEST_CASE_WITH_FIXTURE("Lex: Numbers", "[Lex]") {}
 
-TEST_CASE_WITH_FIXTURE("Lex: Strings", "[Lex]") {}
+TEST_CASE_WITH_FIXTURE("Lex: Symbols", "[Lex]") {
+    SECTION("Single character") {
+        lex(R"(
+(
+)
+[
+]
+{
+}
+.
+,
+:
+;
+*
+&
+#
+|
+^
++
+-
+/
+%
+!
+=
+>
+<
+'
+"
+?
+~
+$
+@
+        )");
 
-TEST_CASE_WITH_FIXTURE("Lex: Symbols", "[Lex]") {}
+        assertTokenCount(29);
+        assertTokenAt(0, EToken::LeftParen, "(", 1, 0);
+        assertTokenAt(1, EToken::RightParen, ")", 2, 0);
+        assertTokenAt(2, EToken::LeftBracket, "[", 3, 0);
+        assertTokenAt(3, EToken::RightBracket, "]", 4, 0);
+        assertTokenAt(4, EToken::LeftBrace, "{", 5, 0);
+        assertTokenAt(5, EToken::RightBrace, "}", 6, 0);
+        assertTokenAt(6, EToken::Dot, ".", 7, 0);
+        assertTokenAt(7, EToken::Comma, ",", 8, 0);
+        assertTokenAt(8, EToken::Colon, ":", 9, 0);
+        assertTokenAt(9, EToken::Semicolon, ";", 10, 0);
+        assertTokenAt(10, EToken::Star, "*", 11, 0);
+        assertTokenAt(11, EToken::Ampersand, "&", 12, 0);
+        assertTokenAt(12, EToken::Hash, "#", 13, 0);
+        assertTokenAt(13, EToken::Bar, "|", 14, 0);
+        assertTokenAt(14, EToken::Hat, "^", 15, 0);
+        assertTokenAt(15, EToken::Plus, "+", 16, 0);
+        assertTokenAt(16, EToken::Minus, "-", 17, 0);
+        assertTokenAt(17, EToken::FwdSlash, "/", 18, 0);
+        assertTokenAt(18, EToken::Percent, "%", 19, 0);
+        assertTokenAt(19, EToken::Exclaim, "!", 20, 0);
+        assertTokenAt(20, EToken::Equal, "=", 21, 0);
+        assertTokenAt(21, EToken::Greater, ">", 22, 0);
+        assertTokenAt(22, EToken::Less, "<", 23, 0);
+        assertTokenAt(23, EToken::SQuote, "'", 24, 0);
+        assertTokenAt(24, EToken::DQuote, "\"", 25, 0);
+        assertTokenAt(25, EToken::QMark, "?", 26, 0);
+        assertTokenAt(26, EToken::Tilde, "~", 27, 0);
+        assertTokenAt(27, EToken::Dollar, "$", 28, 0);
+        assertTokenAt(28, EToken::At, "@", 29, 0);
+    }
+
+    SECTION("Double characters") {
+        lex(R"(
+!=
+*=
+&=
+|=
+^=
+/=
+%=
+>=
+<=
++=
+-=
+|>
+->
+=>
+::
+**
+&&
+||
+++
+--
+==
+>>
+<<
+??
+..
+        )");
+
+        assertTokenCount(25);
+        assertTokenAt(0, EToken::ExclaimEqual, "!=", 1, 0);
+        assertTokenAt(1, EToken::StarEqual, "*=", 2, 0);
+        assertTokenAt(2, EToken::AmpersandEqual, "&=", 3, 0);
+        assertTokenAt(3, EToken::BarEqual, "|=", 4, 0);
+        assertTokenAt(4, EToken::HatEqual, "^=", 5, 0);
+        assertTokenAt(5, EToken::FwdSlashEqual, "/=", 6, 0);
+        assertTokenAt(6, EToken::PercentEqual, "%=", 7, 0);
+        assertTokenAt(7, EToken::GreaterEqual, ">=", 8, 0);
+        assertTokenAt(8, EToken::LessEqual, "<=", 9, 0);
+        assertTokenAt(9, EToken::PlusEqual, "+=", 10, 0);
+        assertTokenAt(10, EToken::MinusEqual, "-=", 11, 0);
+        assertTokenAt(11, EToken::BarGreater, "|>", 12, 0);
+        assertTokenAt(12, EToken::MinusGreater, "->", 13, 0);
+        assertTokenAt(13, EToken::EqualGreater, "=>", 14, 0);
+        assertTokenAt(14, EToken::Colon2, "::", 15, 0);
+        assertTokenAt(15, EToken::Star2, "**", 16, 0);
+        assertTokenAt(16, EToken::Ampersand2, "&&", 17, 0);
+        assertTokenAt(17, EToken::Bar2, "||", 18, 0);
+        assertTokenAt(18, EToken::Plus2, "++", 19, 0);
+        assertTokenAt(19, EToken::Minus2, "--", 20, 0);
+        assertTokenAt(20, EToken::Equal2, "==", 21, 0);
+        assertTokenAt(21, EToken::Greater2, ">>", 22, 0);
+        assertTokenAt(22, EToken::Less2, "<<", 23, 0);
+        assertTokenAt(23, EToken::QMark2, "??", 24, 0);
+        assertTokenAt(24, EToken::Dot2, "..", 25, 0);
+    }
+
+    SECTION("Triple characters") {
+        lex(R"(
+:=>
+:~>
+>>=
+<<=
+**=
+...
+        )");
+
+        assertTokenCount(6);
+        assertTokenAt(0, EToken::ColonEqualGreater, ":=>", 1, 0);
+        assertTokenAt(1, EToken::ColonTildeGreater, ":~>", 2, 0);
+        assertTokenAt(2, EToken::Greater2Equal, ">>=", 3, 0);
+        assertTokenAt(3, EToken::Less2Equal, "<<=", 4, 0);
+        assertTokenAt(4, EToken::Star2Equal, "**=", 5, 0);
+        assertTokenAt(5, EToken::Dot3, "...", 6, 0);
+    }
+}

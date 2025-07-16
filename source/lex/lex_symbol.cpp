@@ -3,13 +3,12 @@
 
 namespace tlc::lex {
     auto Lexer::lexSymbol() -> void {
+        appendLexeme();
         if (isUnnamedIdentifier(m_stream.current())) {
             m_currentTokenType = token::EToken::AnonymousIdentifier;
             appendToken();
             return;
         }
-
-        // todo: string
 
         if (auto const entry = token::opGraph.find(m_stream.current());
             entry != token::opGraph.end()) {
@@ -23,6 +22,13 @@ namespace tlc::lex {
                 }
             }
         }
+
+        if (m_currentLexeme.empty()) {
+            // todo: error
+            m_stream.advance();
+            return;
+        }
+
         m_currentTokenType = token::operatorTable.at(m_currentLexeme);
         appendToken();
     }

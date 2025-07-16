@@ -4,6 +4,8 @@
 #include "core/core.hpp"
 
 namespace tlc::token {
+    using OpGraph3 = HashMap<char, HashMap<char, HashSet<char>>>;
+
     enum class EToken {
         Invalid,
 
@@ -22,15 +24,15 @@ namespace tlc::token {
         IntegerLiteral, FloatLiteral, StringLiteral,
 
         // Symbols
-        /* Single-character */ LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace,
+        /* Single character */ LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace,
         RightBrace, Hash, Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus,
         FwdSlash, Percent, Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde,
         Dollar, At, AnonymousIdentifier,
-        /* Double-character */ Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
+        /* Double characters */ Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
         Equal2, Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
         FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
         MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
-        /* Triple-character */ Dot3, Greater2Equal, Less2Equal, ColonEqualGreater,
+        /* Triple characters */ Dot3, Greater2Equal, Less2Equal, ColonEqualGreater,
         ColonTildeGreater, Star2Equal,
     };
 
@@ -84,15 +86,16 @@ namespace tlc::token {
         "int", "float", "bool", "char", "void", "string", "any", "opt",
     };
 
-    using OpGraph3 = HashMap<char, HashMap<char, HashSet<char>>>;
-
     static const HashMap<StrV, EToken> operatorTable{
+        // Triple characters
         {":=>", EToken::ColonEqualGreater},
         {":~>", EToken::ColonTildeGreater},
         {">>=", EToken::Greater2Equal},
         {"<<=", EToken::Less2Equal},
         {"**=", EToken::Star2Equal},
         {"...", EToken::Dot3},
+
+        // Double characters
         {"!=", EToken::ExclaimEqual},
         {"*=", EToken::StarEqual},
         {"&=", EToken::AmpersandEqual},
@@ -120,6 +123,8 @@ namespace tlc::token {
         {"<<", EToken::Less2},
         {"??", EToken::QMark2},
         {"..", EToken::Dot2},
+
+        // Single character
         {"(", EToken::LeftParen},
         {")", EToken::RightParen},
         {"[", EToken::LeftBracket},

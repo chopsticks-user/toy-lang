@@ -37,6 +37,7 @@ namespace tlc::lex {
                 lexIdentifier();
             }
             else {
+                m_stream.advance();
                 markTokenCoords();
                 lexSymbol();
             }
