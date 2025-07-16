@@ -17,6 +17,7 @@ namespace tlc::lex {
         auto lex() -> Vec<token::Token>;
         auto lexComment() -> void;
         auto lexIdentifier() -> void;
+        auto lexFloatingPoint() -> void;
         auto lexNondecimalNumeric() -> void;
         auto lexNumeric() -> void;
         auto lexSymbol() -> void;

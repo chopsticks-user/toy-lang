@@ -21,7 +21,8 @@ namespace tlc::token {
         Identifier, FundamentalType, UserDefinedType,
 
         // Literals
-        IntegerLiteral, FloatLiteral, StringLiteral,
+        Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
+        FloatLiteral, StringLiteral,
 
         // Symbols
         /* Single character */ LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace,

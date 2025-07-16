@@ -56,6 +56,8 @@ int
     assertTokenAt(3, EToken::Module, "module", 3, 4);
 }
 
+TEST_CASE_WITH_FIXTURE("Lex: Comments", "[Lex]") {}
+
 TEST_CASE_WITH_FIXTURE("Lex: Identifiers and keywords", "[Lex]") {
     SECTION("Fundamental types") {
         lex(R"(
@@ -218,7 +220,32 @@ impl
     }
 }
 
-TEST_CASE_WITH_FIXTURE("Lex: Numbers", "[Lex]") {}
+TEST_CASE_WITH_FIXTURE("Lex: Numbers", "[Lex]") {
+    SECTION("Valid") {
+        lex(R"(
+31415
+
+3.1415
+31.415
+03.1415
+
+0b10101010
+
+0x123456789abcdef
+
+01234567
+        )");
+
+        assertTokenCount(7);
+        assertTokenAt(0, EToken::Integer10Literal, "31415", 1, 0);
+        assertTokenAt(1, EToken::FloatLiteral, "3.1415", 3, 0);
+        assertTokenAt(2, EToken::FloatLiteral, "31.415", 4, 0);
+        assertTokenAt(3, EToken::FloatLiteral, "03.1415", 5, 0);
+        assertTokenAt(4, EToken::Integer2Literal, "0b10101010", 7, 0);
+        assertTokenAt(5, EToken::Integer16Literal, "0x123456789abcdef", 9, 0);
+        assertTokenAt(6, EToken::Integer8Literal, "01234567", 11, 0);
+    }
+}
 
 TEST_CASE_WITH_FIXTURE("Lex: Symbols", "[Lex]") {
     SECTION("Single character") {
