@@ -1,2 +1,5 @@
-add_subdirectory(frontend)
+add_subdirectory(lex)
+add_subdirectory(parse)
+add_subdirectory(syntax)
+add_subdirectory(token)
 add_subdirectory(static)

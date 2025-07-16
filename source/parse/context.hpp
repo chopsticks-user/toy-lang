@@ -1,16 +1,10 @@
-//
-// Created by frost on 2/8/25.
-//
+#ifndef TLC_PARSE_PANIC_HPP
+#define TLC_PARSE_PANIC_HPP
 
-#ifndef PARSE_CONTEXT_HPP
-#define PARSE_CONTEXT_HPP
+#include "core/core.hpp"
+#include "syntax/syntax.hpp"
+#include "lex/lex.hpp"
 
+namespace tlc::parse {}
 
-
-class parse_context {
-
-};
-
-
-
-#endif //PARSE_CONTEXT_HPP
+#endif // TLC_PARSE_PANIC_HPP

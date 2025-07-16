@@ -10,12 +10,14 @@ using tlc::szt;
 using tlc::token::Token;
 using tlc::token::EToken;
 
+// todo: test cases for lexing errors
+
 class LexTestFixture {
 protected:
     auto lex(Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_tokens = tlc::apply<Lexer>(std::move(iss));
+        m_tokens = Lexer::operator()(std::move(iss));
     }
 
     auto assertTokenAt(

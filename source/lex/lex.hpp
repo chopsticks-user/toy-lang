@@ -9,12 +9,18 @@
 namespace tlc::lex {
     class Lexer {
     public:
-        // todo: reset before using
-        auto operator()(fs::path const& filepath) -> Vec<token::Token>;
-        auto operator()(std::istringstream iss) -> Vec<token::Token>;
+        static auto operator()(fs::path const& filepath) -> Vec<token::Token>;
+        static auto operator()(std::istringstream iss) -> Vec<token::Token>;
+
+        explicit Lexer(fs::path const& filepath)
+            : m_stream{filepath} {}
+
+        explicit Lexer(std::istringstream iss)
+            : m_stream{std::move(iss)} {}
+
+        auto operator()() -> Vec<token::Token>;
 
     private:
-        auto lex() -> Vec<token::Token>;
         auto lexComment() -> void;
         auto lexIdentifier() -> void;
         auto lexFloatingPoint() -> void;
@@ -23,13 +29,6 @@ namespace tlc::lex {
         auto lexSymbol() -> void;
 
     private:
-        auto reset() -> void {
-            m_stream = {};
-            m_currentTokenType = {};
-            m_currentLexeme = {};
-            m_tokens = {};
-        }
-
         auto classifyIdentifier(StrV lexeme) -> void;
 
         auto markTokenCoords() -> void {
@@ -54,7 +53,7 @@ namespace tlc::lex {
         }
 
     private:
-        Stream m_stream{};
+        Stream m_stream;
         token::EToken m_currentTokenType{};
         Str m_currentLexeme{};
         szt m_tokenLine{}, m_tokenColumn{};
