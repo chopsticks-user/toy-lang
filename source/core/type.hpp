@@ -25,6 +25,7 @@
 #include <numeric>
 #include <sstream>
 #include <memory>
+#include <functional>
 
 namespace tlc {
     using i64 = std::int64_t;

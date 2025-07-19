@@ -181,9 +181,11 @@ namespace tlc::token {
 
     class Token final {
     public:
-        Token(EToken const type, StrV const str, szt const line, szt const column)
-            : m_type{type}, m_str{str},
-              m_line{line}, m_column{column} {}
+        using Coords = Pair<szt, szt>;
+
+    public:
+        Token(EToken const type, StrV const str, Coords coords)
+            : m_type{type}, m_str{str}, m_coords{std::move(coords)} {}
 
         [[nodiscard]] auto type() const noexcept -> EToken {
             return m_type;
@@ -193,19 +195,22 @@ namespace tlc::token {
             return m_str;
         }
 
+        [[nodiscard]] auto coords() const noexcept -> Coords {
+            return m_coords;
+        }
+
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_line;
+            return m_coords.first;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_column;
+            return m_coords.second;
         }
 
     private:
         EToken m_type;
         Str m_str;
-        szt m_line;
-        szt m_column;
+        Coords m_coords;
     };
 }
 

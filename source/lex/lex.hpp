@@ -7,7 +7,7 @@
 #include "stream.hpp"
 
 namespace tlc::lex {
-    class Lexer {
+    class Lexer final {
     public:
         static auto operator()(fs::path const& filepath) -> Vec<token::Token>;
         static auto operator()(std::istringstream iss) -> Vec<token::Token>;
@@ -48,7 +48,7 @@ namespace tlc::lex {
 
             m_tokens.emplace_back(
                 m_currentTokenType, m_currentLexeme,
-                m_tokenLine, m_tokenColumn
+                token::Token::Coords{m_tokenLine, m_tokenColumn}
             );
         }
 

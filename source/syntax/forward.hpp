@@ -5,8 +5,6 @@
 
 namespace tlc::syntax {
     namespace expr {
-        struct TokenNode;
-
         struct Integer;
         struct Float;
         struct String;
@@ -40,7 +38,7 @@ namespace tlc::syntax {
     }
 
     namespace decl {
-        struct ModuleDecl;
+        struct Module;
         struct ImportDecl;
         struct TypeDecl;
         struct GenericDecl;
@@ -57,10 +55,10 @@ namespace tlc::syntax {
         // struct FlagDef;
     }
 
+    class TokenWrapper;
     struct TranslationUnit;
 
     using Node = Poly<
-        expr::TokenNode,
         expr::Integer, expr::Float, expr::String, expr::Boolean,
         expr::VarId, expr::TypeId, expr::OpId,
         expr::Ternary, expr::Binary, expr::Unary, expr::Tuple,
@@ -74,7 +72,7 @@ namespace tlc::syntax {
         // decl::IdentifierDecl, decl::TupleDecl, decl::GenericDecl,
         // def::FunctionPrototype, def::FunctionDef, def::ConceptDef,
 
-        TranslationUnit
+        TokenWrapper, TranslationUnit
     >;
 }
 

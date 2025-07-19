@@ -5,7 +5,7 @@
 #include "base.hpp"
 
 namespace tlc::syntax {
-  auto isEmptyAst(Node const &node) -> bool;
+  auto isEmptyNode(Node const &node) -> bool;
 
   template<typename T>
   concept IsStrictlyASTNode =

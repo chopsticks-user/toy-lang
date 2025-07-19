@@ -6,17 +6,18 @@ target_sources(
     parse.hpp parse.cpp
     context.hpp context.cpp
     token_stream.hpp token_stream.cpp
+    combinators.hpp combinators.cpp
     panic.hpp panic.cpp
     pretty_print.hpp pretty_print.cpp
-    handle_enum.cpp
-    handle_flag.cpp
-    handle_function.cpp
-    handle_module.cpp
-    handle_stmt.cpp
-    handle_trait.cpp
-    handle_type.cpp
-    handle_type_expr.cpp
-    handle_value_expr.cpp
+    parse_enum.cpp
+    parse_flag.cpp
+    parse_function.cpp
+    parse_module.cpp
+    parse_stmt.cpp
+    parse_trait.cpp
+    parse_type.cpp
+    parse_type_expr.cpp
+    parse_value_expr.cpp
 )
 target_link_libraries(
     tlc_parse

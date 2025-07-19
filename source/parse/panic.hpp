@@ -5,6 +5,8 @@
 #include "syntax/syntax.hpp"
 #include "lex/lex.hpp"
 
-namespace tlc::parse {}
+namespace tlc::parse {
+    class Panic {};
+}
 
 #endif // TLC_PARSE_PANIC_HPP
