@@ -13,10 +13,6 @@ namespace tlc::parse {
         };
     }
 
-    auto operator~(token::EToken const type) -> ParserCombinator {
-        return match(type);
-    }
-
     auto zeroOrMany(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             ParserCombinatorResult result{true, {}};
@@ -25,10 +21,6 @@ namespace tlc::parse {
             }
             return result;
         };
-    }
-
-    auto operator*(token::EToken const type) -> ParserCombinator {
-        return zeroOrMany(type);
     }
 
     auto oneOrMany(std::same_as<token::EToken> auto... types) -> ParserCombinator {
@@ -42,38 +34,47 @@ namespace tlc::parse {
         };
     }
 
-    auto operator+(token::EToken const type) -> ParserCombinator {
-        return oneOrMany(type);
-    }
-
-    auto operator|(
-        ParserCombinator const& pc1, ParserCombinator const& pc2
+    auto pcOr(
+        std::same_as<ParserCombinator> auto const&... pc
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            if (auto result = pc1(context, stream, panic);
-                result.success) {
+            auto v = Vec<std::reference_wrapper<const ParserCombinator>>{pc...};
+
+            if (ParserCombinatorResult result{};
+                rng::any_of(std::execution::seq, [&](auto r) {
+                    result = r(context, stream, panic);
+                    return result.success;
+                })) {
                 return result;
             }
-            return pc2(context, stream, panic);
+
+            return {};
         };
     }
 
-    ParserCombinator operator&(
-        ParserCombinator const& pc1, ParserCombinator const& pc2
-    ) {
-        ParserCombinator pc3(pc1);
+    auto pcAnd(
+        std::same_as<ParserCombinator> auto const&... pc
+    ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            if (auto result1 = pc1(context, stream, panic);
-                result1.success) {
-                if (auto&& [success2, nodes2] = pc2(context, stream, panic);
-                    success2) {
-                    result1.nodes.append_range(nodes2);
-                    return result1;
-                }
+            auto v = Vec<std::reference_wrapper<const ParserCombinator>>{pc...};
+
+            if (ParserCombinatorResult result{};
+                rng::all_of(std::execution::seq, [&](auto r) {
+                    auto&& [success, nodes] = r(context, stream, panic);
+                    if (!success) {
+                        // todo: revert to the original state
+                        result = {};
+                        return false;
+                    }
+
+                    result.nodes.append_range(nodes);
+                    return true;
+                })) {
+                result.success = true;
+                return result;
             }
 
-            // todo: revert states if pc2 fails
-            return {false, {}};
+            return {};
         };
     }
 }

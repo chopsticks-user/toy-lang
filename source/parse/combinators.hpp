@@ -1,13 +1,14 @@
 #ifndef TLC_PARSE_COMBINATORS_HPP
 #define TLC_PARSE_COMBINATORS_HPP
 
+#include "core/core.hpp"
 #include "context.hpp"
 #include "panic.hpp"
 #include "token_stream.hpp"
 
 namespace tlc::parse {
     struct ParserCombinatorResult {
-        bool success;
+        bool success = false;
         Vec<syntax::Node> nodes;
     };
 
@@ -24,22 +25,16 @@ namespace tlc::parse {
     auto match(std::same_as<token::EToken> auto... types)
         -> ParserCombinator;
 
-    auto operator~(token::EToken type) -> ParserCombinator;
-
     auto zeroOrMany(std::same_as<token::EToken> auto... types)
         -> ParserCombinator;
-
-    auto operator*(token::EToken type) -> ParserCombinator;
 
     auto oneOrMany(std::same_as<token::EToken> auto... types)
         -> ParserCombinator;
 
-    auto operator+(token::EToken type) -> ParserCombinator;
-
-    auto operator|(ParserCombinator const& pc1, ParserCombinator const& pc2)
+    auto pcOr(std::same_as<ParserCombinator> auto const&... pc)
         -> ParserCombinator;
 
-    auto operator&(ParserCombinator const& pc1, ParserCombinator const& pc2)
+    auto pcAnd(std::same_as<ParserCombinator> auto const&... pc)
         -> ParserCombinator;
 }
 
