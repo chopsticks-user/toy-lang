@@ -55,7 +55,7 @@ namespace tlc::syntax {
         // struct FlagDef;
     }
 
-    class TokenWrapper;
+    struct TokenWrapper;
     struct TranslationUnit;
 
     using Node = Poly<

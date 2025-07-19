@@ -2,17 +2,13 @@
 
 #include "parse/parse.hpp"
 
-using tlc::Str;
-using tlc::parse::Parser;
-using tlc::lex::Lexer;
-
 class ParseTestFixture {
 protected:
-    auto parse(Str source) -> void {
+    auto parse(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_ast = Parser::operator()(
-            Lexer::operator()(std::move(iss))
+        m_ast = tlc::parse::Parser::operator()(
+            tlc::lex::Lexer::operator()(std::move(iss))
         );
     }
 

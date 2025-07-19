@@ -12,6 +12,5 @@ target_sources(
 )
 target_link_libraries(
     tlc_lex
-    PUBLIC tlc::core
-    PRIVATE tlc::token
+    PUBLIC tlc::core tlc::token
 )

@@ -1,21 +1,17 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "lex/lex.hpp"
-
-using tlc::lex::Stream;
-using tlc::Str;
-using tlc::szt;
+#include "lex/stream.hpp"
 
 class LexStreamTestFixture {
 protected:
-    auto readFromSource(Str source) -> void {
+    auto readFromSource(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_stream = Stream{std::move(iss)};
+        m_stream = tlc::lex::Stream{std::move(iss)};
     }
 
     auto assertCurrentThenAdvance(
-        char const c, szt const line, szt const column
+        tlc::c8 const c, tlc::szt const line, tlc::szt const column
     ) -> void {
         CAPTURE(c, line, column);
         REQUIRE(m_stream.peek() == c);
@@ -30,7 +26,7 @@ protected:
     }
 
 private:
-    Stream m_stream;
+    tlc::lex::Stream m_stream;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

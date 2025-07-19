@@ -302,9 +302,12 @@ namespace tlc::syntax {
         };
     }
 
-    class TokenWrapper final : detail::NodeBase {
-    public:
+    struct TokenWrapper final : detail::NodeBase {
         explicit TokenWrapper(token::Token token);
+
+        auto token() const noexcept -> token::Token {
+            return m_token;
+        }
 
     private:
         token::Token m_token;

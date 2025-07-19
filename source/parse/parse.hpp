@@ -4,8 +4,8 @@
 #include "context.hpp"
 #include "panic.hpp"
 #include "pretty_print.hpp"
-#include "token_stream.hpp"
-#include "combinators.hpp"
+#include "stream.hpp"
+#include "combinator.hpp"
 
 namespace tlc::parse {
     class Parser final {
@@ -33,7 +33,7 @@ namespace tlc::parse {
         auto parseModule() -> syntax::Node;
 
     private:
-        TokenStream m_stream;
+        Stream m_stream;
         Context m_context{};
     };
 }

@@ -9,4 +9,4 @@ target_sources(
     nodes.hpp nodes.cpp
     util.hpp util.cpp
 )
-target_link_libraries(tlc_syntax PRIVATE tlc::core)
+target_link_libraries(tlc_syntax PUBLIC tlc::core)

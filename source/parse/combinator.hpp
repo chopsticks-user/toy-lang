@@ -1,10 +1,32 @@
-#include "combinators.hpp"
+#ifndef TLC_PARSE_COMBINATOR_HPP
+#define TLC_PARSE_COMBINATOR_HPP
+
+#include "core/core.hpp"
+#include "context.hpp"
+#include "panic.hpp"
+#include "stream.hpp"
 
 namespace tlc::parse {
+    struct ParserCombinatorResult {
+        bool success = false;
+        Vec<syntax::Node> nodes;
+    };
+
+    using ParserCombinator = std::function<
+        ParserCombinatorResult(
+            Context& context, Stream& stream, Panic& panic
+        )
+    >;
+
+#define TLC_PARSER_COMBINATOR_PROTOTYPE \
+    [=]([[maybe_unused]] Context& context, [[maybe_unused]] Stream& stream, [[maybe_unused]] Panic& panic) \
+        -> ParserCombinatorResult
+
     auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
+            auto const v = Vec{types...};
             if (!stream.match(types...)) {
-                return {false, {}};
+                return {};
             }
             return {
                 true,
@@ -78,3 +100,5 @@ namespace tlc::parse {
         };
     }
 }
+
+#endif // TLC_PARSE_COMBINATOR_HPP
