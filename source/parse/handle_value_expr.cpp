@@ -1,6 +1,8 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
+    using enum token::EToken;
+
     auto handlePrimaryExpr() -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             return {};
@@ -10,8 +12,7 @@ namespace tlc::parse {
     auto handleExpr() -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             return any(
-                seq(match(token::EToken::Plus2, token::EToken::Minus2),
-                    match(token::EToken::Plus2, token::EToken::Minus2))
+                seq(handlePrimaryExpr(), match(Plus2, Minus2))
             )(context, stream, panic);
         };
     }

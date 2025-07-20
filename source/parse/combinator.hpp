@@ -10,6 +10,7 @@ namespace tlc::parse {
     struct ParserCombinatorResult {
         bool success = false;
         token::TokenizedBuffer nodes;
+        Opt<szt> rule;
     };
 
     using ParserCombinator = std::function<
@@ -44,7 +45,7 @@ namespace tlc::parse {
     auto many1(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             // return (match(type) & (*type))(context, stream, panic);
-            auto result = (*(types, ...))(context, stream, panic);
+            auto result = many0(types...)(context, stream, panic);
             if (result.nodes.empty()) {
                 result.success = false;
             }
@@ -56,13 +57,14 @@ namespace tlc::parse {
         std::same_as<ParserCombinator> auto&&... pc
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            for (auto&& p : {pc...}) {
-                if (auto const result = p(context, stream, panic);
+            for (szt rule = 0; auto&& p : {pc...}) {
+                if (auto result = p(context, stream, panic);
                     result.success) {
+                    result.rule = rule;
                     return result;
                 }
+                ++rule;
             }
-
             return {};
         };
     }
@@ -72,8 +74,8 @@ namespace tlc::parse {
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             ParserCombinatorResult result{true, {}};
-            for (auto&& p : {pc...}) {
-                const auto [success, nodes] =
+            for (szt rule = 0; auto&& p : {pc...}) {
+                const auto [success, nodes, _] =
                     p(context, stream, panic);
                 if (!success) {
                     // todo: revert to the original state

@@ -36,42 +36,47 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
     initialize("x=5;");
 
     {
-        auto [success, nodes] = invoke(
+        auto [success, nodes, rule] = invoke(
             tlc::parse::match(Integer10Literal, Identifier, Semicolon)
         );
         REQUIRE(success);
+        REQUIRE_FALSE(rule.has_value());
         REQUIRE(nodes.size() == 1);
         REQUIRE(nodes[0].type() == tlc::token::EToken::Identifier);
     }
     {
-        auto [success, nodes] = invoke(
+        auto [success, nodes, rule] = invoke(
             tlc::parse::match(Equal)
         );
         REQUIRE(success);
+        REQUIRE_FALSE(rule.has_value());
         REQUIRE(nodes.size() == 1);
         REQUIRE(nodes[0].type() == tlc::token::EToken::Equal);
     }
     {
-        auto [success, nodes] = invoke(
+        auto [success, nodes, rule] = invoke(
             tlc::parse::match(Integer10Literal, Identifier, Semicolon)
         );
         REQUIRE(success);
+        REQUIRE_FALSE(rule.has_value());
         REQUIRE(nodes.size() == 1);
         REQUIRE(nodes[0].type() == tlc::token::EToken::Integer10Literal);
     }
     {
-        auto [success, nodes] = invoke(
+        auto [success, nodes, rule] = invoke(
             tlc::parse::match(Integer10Literal, Semicolon)
         );
         REQUIRE(success);
+        REQUIRE_FALSE(rule.has_value());
         REQUIRE(nodes.size() == 1);
         REQUIRE(nodes[0].type() == tlc::token::EToken::Semicolon);
     }
     {
-        auto [success, nodes] = invoke(
+        auto [success, nodes, rule] = invoke(
             tlc::parse::match(Integer10Literal, Semicolon)
         );
         REQUIRE_FALSE(success);
+        REQUIRE_FALSE(rule.has_value());
         REQUIRE(nodes.empty());
     }
 }
