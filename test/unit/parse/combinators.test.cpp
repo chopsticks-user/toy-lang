@@ -16,19 +16,19 @@ protected:
         return pc(m_context, m_stream.value(), m_panic);
     }
 
-    static auto tokenType(tlc::syntax::Node const& node) -> tlc::token::EToken {
-        return tlc::syntax::astCast<tlc::syntax::TokenWrapper>(node)
-               .token().type();
-    }
+    // static auto tokenType(tlc::syntax::Node const& node) -> tlc::token::EToken {
+    //     return tlc::syntax::astCast<tlc::syntax::TokenWrapper>(node)
+    //            .token().type();
+    // }
 
-protected:
+private:
     tlc::parse::Context m_context{};
     tlc::parse::Panic m_panic{};
     tlc::Opt<tlc::parse::Stream> m_stream;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-TEST_CASE_METHOD(ParserCombinatorTestFixture, __VA_ARGS__)
+    TEST_CASE_METHOD(ParserCombinatorTestFixture, __VA_ARGS__)
 
 TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
     using enum tlc::token::EToken;
@@ -41,7 +41,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
         );
         REQUIRE(success);
         REQUIRE(nodes.size() == 1);
-        REQUIRE(tokenType(nodes[0]) == tlc::token::EToken::Identifier);
+        REQUIRE(nodes[0].type() == tlc::token::EToken::Identifier);
     }
     {
         auto [success, nodes] = invoke(
@@ -49,7 +49,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
         );
         REQUIRE(success);
         REQUIRE(nodes.size() == 1);
-        REQUIRE(tokenType(nodes[0]) == tlc::token::EToken::Equal);
+        REQUIRE(nodes[0].type() == tlc::token::EToken::Equal);
     }
     {
         auto [success, nodes] = invoke(
@@ -57,7 +57,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
         );
         REQUIRE(success);
         REQUIRE(nodes.size() == 1);
-        REQUIRE(tokenType(nodes[0]) == tlc::token::EToken::Integer10Literal);
+        REQUIRE(nodes[0].type() == tlc::token::EToken::Integer10Literal);
     }
     {
         auto [success, nodes] = invoke(
@@ -65,13 +65,13 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse]") {
         );
         REQUIRE(success);
         REQUIRE(nodes.size() == 1);
-        REQUIRE(tokenType(nodes[0]) == tlc::token::EToken::Semicolon);
+        REQUIRE(nodes[0].type() == tlc::token::EToken::Semicolon);
     }
     {
         auto [success, nodes] = invoke(
             tlc::parse::match(Integer10Literal, Semicolon)
         );
         REQUIRE_FALSE(success);
-        REQUIRE(nodes.size() == 0);
+        REQUIRE(nodes.empty());
     }
 }

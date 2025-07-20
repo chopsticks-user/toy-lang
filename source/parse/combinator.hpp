@@ -9,7 +9,7 @@
 namespace tlc::parse {
     struct ParserCombinatorResult {
         bool success = false;
-        Vec<syntax::Node> nodes;
+        Vec<token::Token> nodes;
     };
 
     using ParserCombinator = std::function<
@@ -24,13 +24,12 @@ namespace tlc::parse {
 
     auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            auto const v = Vec{types...};
             if (!stream.match(types...)) {
                 return {};
             }
             return {
                 true,
-                {syntax::TokenWrapper{stream.current()}}
+                {stream.current()}
             };
         };
     }
@@ -39,7 +38,7 @@ namespace tlc::parse {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             ParserCombinatorResult result{true, {}};
             while (stream.match(types...)) {
-                result.nodes.emplace_back(syntax::TokenWrapper{stream.current()});
+                result.nodes.emplace_back(stream.current());
             }
             return result;
         };
