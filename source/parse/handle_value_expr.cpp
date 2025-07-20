@@ -11,6 +11,27 @@ namespace tlc::parse {
 
     auto handleExpr() -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
+            token::TokenizedBuffer lhsNodes;
+            if (stream.match(Plus2, Minus2)) {
+                // todo: get op precedence
+                auto [success, nodes, _] =
+                    handleExpr()(context, stream, panic);
+                if (!success) {
+                    return {};
+                }
+                lhsNodes = std::move(nodes);
+            }
+            else {
+                auto [success, nodes, _] =
+                    handleExpr()(context, stream, panic);
+                if (!success) {
+                    return {};
+                }
+                lhsNodes = std::move(nodes);
+            }
+
+            while (true) {}
+
             return any(
                 seq(handlePrimaryExpr(), match(Plus2, Minus2))
             )(context, stream, panic);

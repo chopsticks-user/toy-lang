@@ -32,6 +32,15 @@ namespace tlc::parse {
         };
     }
 
+    inline auto match(TokenStream::MatchFn const cond) -> ParserCombinator {
+        return TLC_PARSER_COMBINATOR_PROTOTYPE {
+            if (!stream.match(cond)) {
+                return {};
+            }
+            return {true, {stream.current()}};
+        };
+    }
+
     auto many0(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             ParserCombinatorResult result{true, {}};

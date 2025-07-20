@@ -1,6 +1,14 @@
 #include "token_stream.hpp"
 
 namespace tlc::parse {
+    auto TokenStream::match(MatchFn const cond) -> bool {
+        if (done() || !cond(peek().type())) {
+            return false;
+        }
+        advance();
+        return true;
+    }
+
     auto TokenStream::advance() -> void {
         if (!m_started) {
             m_started = true;
@@ -16,12 +24,12 @@ namespace tlc::parse {
         if (auto const nextIt = std::next(m_tokenIt);
             nextIt != m_tokens.end()) {
             return *nextIt;
-            }
+        }
         return makeInvalidToken();
     }
 
     auto TokenStream::unmarkAndReturnCoords()
-    -> token::Token::Coords {
+        -> token::Token::Coords {
         if (m_markedTokens.empty()) {
             return makeInvalidToken().coords();
         }

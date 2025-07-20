@@ -7,6 +7,9 @@
 namespace tlc::parse {
     class TokenStream final {
     public:
+        using MatchFn = bool (*)(token::EToken);
+
+    public:
         explicit TokenStream(token::TokenizedBuffer tokens)
             : m_tokens{std::move(tokens)},
               m_tokenIt{m_tokens.begin()} {}
@@ -19,6 +22,8 @@ namespace tlc::parse {
             advance();
             return true;
         }
+
+        auto match(MatchFn cond) -> bool;
 
         auto advance() -> void;
 
