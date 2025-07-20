@@ -11,8 +11,6 @@ namespace tlc::parse {
     class Context final {
     public:
     private:
-        Stack<token::Token> m_states{};
-        Vec<syntax::Node> m_nodes{};
     };
 }
 

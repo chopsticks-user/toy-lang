@@ -29,7 +29,7 @@ protected:
     }
 
 private:
-    tlc::Vec<tlc::token::Token> m_tokens;
+    tlc::token::TokenizedBuffer m_tokens;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
