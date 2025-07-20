@@ -5,7 +5,7 @@ target_sources(
     PRIVATE
     parse.hpp parse.cpp
     context.hpp context.cpp
-    stream.hpp stream.cpp
+    token_stream.hpp token_stream.cpp
     combinator.hpp
     panic.hpp panic.cpp
     pretty_print.hpp pretty_print.cpp

@@ -1,7 +1,7 @@
-#include "stream.hpp"
+#include "token_stream.hpp"
 
 namespace tlc::parse {
-    auto Stream::advance() -> void {
+    auto TokenStream::advance() -> void {
         if (!m_started) {
             m_started = true;
             return;
@@ -9,7 +9,7 @@ namespace tlc::parse {
         ++m_tokenIt;
     }
 
-    auto Stream::peek() const -> token::Token {
+    auto TokenStream::peek() const -> token::Token {
         if (!m_started) {
             return *m_tokenIt;
         }
@@ -20,7 +20,7 @@ namespace tlc::parse {
         return makeInvalidToken();
     }
 
-    auto Stream::unmarkAndReturnCoords()
+    auto TokenStream::unmarkAndReturnCoords()
     -> token::Token::Coords {
         if (m_markedTokens.empty()) {
             return makeInvalidToken().coords();
@@ -31,7 +31,7 @@ namespace tlc::parse {
         return coords;
     }
 
-    auto Stream::current() const -> token::Token {
+    auto TokenStream::current() const -> token::Token {
         if (done() || !m_started) {
             return makeInvalidToken();
         }

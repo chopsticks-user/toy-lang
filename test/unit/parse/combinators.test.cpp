@@ -24,7 +24,7 @@ protected:
 private:
     tlc::parse::Context m_context{};
     tlc::parse::Panic m_panic{};
-    tlc::Opt<tlc::parse::Stream> m_stream;
+    tlc::Opt<tlc::parse::TokenStream> m_stream;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

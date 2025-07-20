@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "lex/lex.hpp"
-#include "parse/stream.hpp"
+#include "parse/token_stream.hpp"
 
 class ParseStreamTestFixture {
 protected:

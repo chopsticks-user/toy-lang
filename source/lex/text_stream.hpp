@@ -4,17 +4,17 @@
 #include "core/core.hpp"
 
 namespace tlc::lex {
-    class Stream {
+    class TextStream {
         // todo: dynamic tabsize
         static constexpr szt tabSize = 4;
 
     public:
-        Stream() = default;
+        TextStream() = default;
 
-        explicit Stream(fs::path const& filepath)
+        explicit TextStream(fs::path const& filepath)
             : m_filereader(filepath) {}
 
-        explicit Stream(std::istringstream iss)
+        explicit TextStream(std::istringstream iss)
             : m_filereader(std::move(iss)) {}
 
         [[nodiscard]] auto line() const -> szt { return m_line; }

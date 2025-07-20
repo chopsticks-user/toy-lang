@@ -1,14 +1,13 @@
 #ifndef TLC_PARSE_STREAM_HPP
 #define TLC_PARSE_STREAM_HPP
 
-#include "syntax/syntax.hpp"
 #include "token/token.hpp"
 #include "core/core.hpp"
 
 namespace tlc::parse {
-    class Stream final {
+    class TokenStream final {
     public:
-        explicit Stream(token::TokenizedBuffer tokens)
+        explicit TokenStream(token::TokenizedBuffer tokens)
             : m_tokens{std::move(tokens)},
               m_tokenIt{m_tokens.begin()} {}
 

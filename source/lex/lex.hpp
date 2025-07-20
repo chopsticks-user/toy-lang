@@ -4,7 +4,7 @@
 #include "core/core.hpp"
 #include "token/token.hpp"
 
-#include "stream.hpp"
+#include "text_stream.hpp"
 
 namespace tlc::lex {
     class Lexer final {
@@ -53,7 +53,7 @@ namespace tlc::lex {
         }
 
     private:
-        Stream m_stream;
+        TextStream m_stream;
         token::EToken m_currentTokenType{};
         Str m_currentLexeme{};
         szt m_tokenLine{}, m_tokenColumn{};
