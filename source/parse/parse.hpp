@@ -24,13 +24,7 @@ namespace tlc::parse {
             return {};
         }
 
-        // for testing
-    protected:
-        // auto parseExpr() -> syntax::Node;
-        // auto parseStmt() -> syntax::Node;
-
     private:
-        auto parseModule() -> syntax::Node;
 
     private:
         TokenStream m_stream;

@@ -234,16 +234,16 @@ namespace tlc::syntax {
             explicit ImportDecl(Node nsIdentifier);
         };
 
-        struct TypeDecl final : detail::NodeBase {
-            explicit TypeDecl(Storage storage, Node identifier, Node typeExpr);
-
-            auto storage() const noexcept -> Storage {
-                return m_storage;
-            }
-
-        private:
-            Storage m_storage;
-        };
+        // struct TypeDecl final : detail::NodeBase {
+        //     explicit TypeDecl(Storage storage, Node identifier, Node typeExpr);
+        //
+        //     auto storage() const noexcept -> Storage {
+        //         return m_storage;
+        //     }
+        //
+        // private:
+        //     Storage m_storage;
+        // };
 
         struct IdentifierDecl final : detail::NodeBase {
             IdentifierDecl(bool isMutable, Node const& identifier, Node const& typeExpr);
@@ -265,42 +265,42 @@ namespace tlc::syntax {
         };
     }
 
-    namespace def {
-        struct FunctionPrototype final : detail::NodeBase {
-            FunctionPrototype(
-                FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
-            );
-
-            auto type() const noexcept -> FnType {
-                return m_type;
-            }
-
-        private:
-            FnType m_type;
-        };
-
-        struct FunctionDef final : detail::NodeBase {
-            FunctionDef(Storage fStorage, Node fPrototype, Node fBody);
-
-            auto storage() const noexcept -> Storage {
-                return m_storage;
-            }
-
-        private:
-            Storage m_storage;
-        };
-
-        struct ConceptDef final : detail::NodeBase {
-            ConceptDef(Storage storage, Node identifier, Vec<Node> requirements);
-
-            auto storage() const noexcept -> Storage {
-                return m_storage;
-            }
-
-        private:
-            Storage m_storage;
-        };
-    }
+    // namespace def {
+    //     struct FunctionPrototype final : detail::NodeBase {
+    //         FunctionPrototype(
+    //             FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
+    //         );
+    //
+    //         auto type() const noexcept -> FnType {
+    //             return m_type;
+    //         }
+    //
+    //     private:
+    //         FnType m_type;
+    //     };
+    //
+    //     struct FunctionDef final : detail::NodeBase {
+    //         FunctionDef(Storage fStorage, Node fPrototype, Node fBody);
+    //
+    //         auto storage() const noexcept -> Storage {
+    //             return m_storage;
+    //         }
+    //
+    //     private:
+    //         Storage m_storage;
+    //     };
+    //
+    //     struct ConceptDef final : detail::NodeBase {
+    //         ConceptDef(Storage storage, Node identifier, Vec<Node> requirements);
+    //
+    //         auto storage() const noexcept -> Storage {
+    //             return m_storage;
+    //         }
+    //
+    //     private:
+    //         Storage m_storage;
+    //     };
+    // }
 
     struct TokenWrapper final : detail::NodeBase {
         explicit TokenWrapper(token::Token token);
@@ -313,9 +313,9 @@ namespace tlc::syntax {
         token::Token m_token;
     };
 
-    struct TranslationUnit final : detail::NodeBase {
-        explicit TranslationUnit(Vec<Node> definitions);
-    };
+    // struct TranslationUnit final : detail::NodeBase {
+    //     explicit TranslationUnit(Vec<Node> definitions);
+    // };
 }
 
 #endif // TLC_SYNTAX_NODES_HPP

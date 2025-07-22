@@ -14,6 +14,7 @@ protected:
 
 private:
     tlc::syntax::Node m_ast;
+    tlc::token::TokenizedBuffer m_tokens;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

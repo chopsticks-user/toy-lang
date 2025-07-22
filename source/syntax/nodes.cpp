@@ -129,8 +129,8 @@ namespace tlc::syntax {
         ImportDecl::ImportDecl(Node nsIdentifier)
             : NodeBase({nsIdentifier}) {}
 
-        TypeDecl::TypeDecl(const Storage storage, Node identifier, Node typeExpr)
-            : NodeBase({identifier, typeExpr}), m_storage(storage) {}
+        // TypeDecl::TypeDecl(const Storage storage, Node identifier, Node typeExpr)
+        //     : NodeBase({identifier, typeExpr}), m_storage(storage) {}
 
         IdentifierDecl::IdentifierDecl(
             const bool isMutable, Node const& identifier, Node const& typeExpr
@@ -143,27 +143,27 @@ namespace tlc::syntax {
             : NodeBase(std::move(typeIds)) {}
     }
 
-    namespace def {
-        FunctionPrototype::FunctionPrototype(
-            const FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
-        ): NodeBase({fIdentifier, fParamDecls, fReturnDecls}),
-           m_type(fType) {}
-
-        FunctionDef::FunctionDef(
-            const Storage fStorage, Node fPrototype, Node fBody
-        ): NodeBase({fPrototype, fBody}), m_storage(fStorage) {}
-
-        ConceptDef::ConceptDef(const Storage storage, Node identifier, Vec<Node> requirements)
-            : NodeBase(
-                  rv::concat(
-                      Vec{std::move(identifier)}, std::move(requirements)
-                  ) | rng::to<Vec<Node>>()
-              ), m_storage(storage) {}
-    }
+    // namespace def {
+    //     FunctionPrototype::FunctionPrototype(
+    //         const FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
+    //     ): NodeBase({fIdentifier, fParamDecls, fReturnDecls}),
+    //        m_type(fType) {}
+    //
+    //     FunctionDef::FunctionDef(
+    //         const Storage fStorage, Node fPrototype, Node fBody
+    //     ): NodeBase({fPrototype, fBody}), m_storage(fStorage) {}
+    //
+    //     ConceptDef::ConceptDef(const Storage storage, Node identifier, Vec<Node> requirements)
+    //         : NodeBase(
+    //               rv::concat(
+    //                   Vec{std::move(identifier)}, std::move(requirements)
+    //               ) | rng::to<Vec<Node>>()
+    //           ), m_storage(storage) {}
+    //     }
 
     TokenWrapper::TokenWrapper(token::Token token)
         : NodeBase{{}}, m_token{std::move(token)} {}
 
-    TranslationUnit::TranslationUnit(Vec<Node> definitions)
-        : NodeBase(std::move(definitions)) {}
+    // TranslationUnit::TranslationUnit(Vec<Node> definitions)
+    //     : NodeBase(std::move(definitions)) {}
 }

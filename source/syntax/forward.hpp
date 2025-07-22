@@ -40,23 +40,23 @@ namespace tlc::syntax {
     namespace decl {
         struct Module;
         struct ImportDecl;
-        struct TypeDecl;
+        // struct TypeDecl;
         struct GenericDecl;
         struct IdentifierDecl;
         struct TupleDecl;
     }
 
-    namespace def {
-        struct FunctionPrototype;
-        struct FunctionDef;
-        struct ConceptDef;
-        // struct ClassDef;
-        // struct EnumDef;
-        // struct FlagDef;
-    }
+    // namespace def {
+    //     struct FunctionPrototype;
+    //     struct FunctionDef;
+    //     struct ConceptDef;
+    //     // struct ClassDef;
+    //     // struct EnumDef;
+    //     // struct FlagDef;
+    // }
 
     struct TokenWrapper;
-    struct TranslationUnit;
+    // struct TranslationUnit;
 
     using Node = Poly<
         expr::Integer, expr::Float, expr::String, expr::Boolean,
@@ -72,7 +72,8 @@ namespace tlc::syntax {
         // decl::IdentifierDecl, decl::TupleDecl, decl::GenericDecl,
         // def::FunctionPrototype, def::FunctionDef, def::ConceptDef,
 
-        TokenWrapper, TranslationUnit
+        TokenWrapper
+        // TranslationUnit
     >;
 }
 
