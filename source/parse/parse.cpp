@@ -8,4 +8,5 @@ namespace tlc::parse {
     auto Parser::operator()() -> syntax::Node {
         return {};
     }
+
 }

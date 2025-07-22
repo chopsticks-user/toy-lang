@@ -41,8 +41,8 @@ namespace tlc::syntax {
             b8 m_value;
         };
 
-        struct IdentifierBase : detail::NodeBase {
-            explicit IdentifierBase(Vec<Str> path, token::Token::Coords coords);
+        struct Identifier : detail::NodeBase {
+            Identifier(Vec<Str> path, token::EToken type, token::Token::Coords coords);
 
             [[nodiscard]] auto name() const noexcept -> Str {
                 return m_path.empty() ? "" : m_path.back();
@@ -66,24 +66,65 @@ namespace tlc::syntax {
                 return pathStr;
             }
 
+            [[nodiscard]] auto type() const noexcept -> token::EToken {
+                return m_type;
+            }
+
             [[nodiscard]] auto isImported() const noexcept -> bool {
                 return m_path.size() > 1;
             }
 
         protected:
             Vec<Str> m_path;
+            token::EToken m_type;
         };
 
-        struct VarId final : IdentifierBase {
-            explicit VarId(Vec<Str> path, token::Token::Coords coords);
+        struct Array final : detail::NodeBase {
+            Array(Vec<Node> elements, token::Token::Coords coords);
+        };
 
-            [[nodiscard]] auto isAnonymous() const noexcept -> bool {
-                return m_path.empty();
+        struct Tuple final : detail::NodeBase {
+            Tuple(Vec<Node> elements, token::Token::Coords coords);
+        };
+
+        struct FnApp final : detail::NodeBase {
+            FnApp(Node callee, Node args, token::Token::Coords coords);
+        };
+
+        struct Subscript final : detail::NodeBase {
+            Subscript(
+                Node collection, Node subscript, token::Token::Coords coords
+            );
+        };
+
+        struct Access final : detail::NodeBase {
+            Access(Node object, Node field, token::Token::Coords coords);
+        };
+
+        struct Unary final : detail::NodeBase {
+            Unary(
+                Node operand, token::EToken op, token::Token::Coords coords
+            );
+
+            [[nodiscard]] auto op() const noexcept -> token::EToken {
+                return m_op;
             }
+
+        private:
+            token::EToken m_op;
         };
 
-        struct TypeId final : IdentifierBase {
-            explicit TypeId(Vec<Str> path, token::Token::Coords coords);
+        struct Binary final : detail::NodeBase {
+            Binary(
+                Node lhs, Node rhs, token::EToken op, token::Token::Coords coords
+            );
+
+            [[nodiscard]] auto op() const noexcept -> token::EToken {
+                return m_op;
+            }
+
+        private:
+            token::EToken m_op;
         };
 
         // struct String final : detail::NodeBase {
@@ -104,26 +145,6 @@ namespace tlc::syntax {
         //     Str m_value;
         // };
         //
-        // struct Boolean final : detail::NodeBase {
-        //     explicit Boolean(bool value);
-        //
-        //     [[nodiscard]] auto value() const noexcept -> bool {
-        //         return m_value;
-        //     }
-        //
-        // private:
-        //     bool m_value;
-        // };
-        //
-
-        //
-        // struct OpId final : IdentifierBase {
-        //     explicit OpId(Str op);
-        //
-        //     [[nodiscard]] auto op() const noexcept -> StrV {
-        //         return m_path.back();
-        //     }
-        // };
         //
         // struct Ternary final : detail::NodeBase {
         //     Ternary(
@@ -146,47 +167,7 @@ namespace tlc::syntax {
         //     Str m_op2;
         // };
         //
-        // struct Binary final : detail::NodeBase {
-        //     Binary(Node lhs, Node rhs, Str op);
         //
-        //     [[nodiscard]] auto op() const noexcept -> StrV {
-        //         return m_op;
-        //     }
-        //
-        // private:
-        //     Str m_op;
-        // };
-        //
-        // struct Unary final : detail::NodeBase {
-        //     Unary(Node operand, Str op);
-        //
-        //     [[nodiscard]] auto op() const noexcept -> StrV {
-        //         return m_op;
-        //     }
-        //
-        // private:
-        //     Str m_op;
-        // };
-        //
-        // struct Tuple final : detail::NodeBase {
-        //     explicit Tuple(Vec<Node> ids);
-        // };
-        //
-        // struct FunApp final : detail::NodeBase {
-        //     FunApp(Node callee, Node args);
-        // };
-        //
-        // struct SubScript final : detail::NodeBase {
-        //     SubScript(Node collection, Node subscript);
-        // };
-        //
-        // struct Access final : detail::NodeBase {
-        //     Access(Node&& object, Node&& field);
-        // };
-        //
-        // struct Array final : detail::NodeBase {
-        //     explicit Array(Vec<Node> elements);
-        // };
     }
 
     // namespace stmt {

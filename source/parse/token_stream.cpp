@@ -28,17 +28,6 @@ namespace tlc::parse {
         return makeInvalidToken();
     }
 
-    auto TokenStream::unmarkAndReturnCoords()
-        -> token::Token::Coords {
-        if (m_markedTokens.empty()) {
-            return makeInvalidToken().coords();
-        }
-
-        auto const coords = m_markedTokens.top().coords();
-        m_markedTokens.pop();
-        return coords;
-    }
-
     auto TokenStream::current() const -> token::Token {
         if (done() || !m_started) {
             return makeInvalidToken();

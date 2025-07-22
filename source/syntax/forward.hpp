@@ -5,26 +5,23 @@
 
 namespace tlc::syntax {
     namespace expr {
+        // primary
         struct Integer;
         struct Float;
         struct Boolean;
-
-        struct VarId;
-        struct TypeId;
-
+        struct Identifier;
         // struct String;
-        //
+        struct Array;
+        struct Tuple;
 
-        // struct OpId;
-        //
+        // postfix
+        struct FnApp;
+        struct Subscript;
+        struct Access;
+
+        struct Unary;
+        struct Binary;
         // struct Ternary;
-        // struct Binary;
-        // struct Unary;
-        // struct Tuple;
-        // struct FunApp;
-        // struct SubScript;
-        // struct Access;
-        // struct Array;
     }
 
     // namespace stmt {
@@ -62,8 +59,9 @@ namespace tlc::syntax {
     // // struct TranslationUnit;
 
     using Node = Poly<
-        expr::Integer, expr::Float, expr::Boolean,
-        expr::VarId, expr::TypeId
+        expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
+        expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Unary,
+        expr::Binary
     >;
 }
 

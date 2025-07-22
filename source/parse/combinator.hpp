@@ -7,13 +7,8 @@
 #include "token_stream.hpp"
 
 namespace tlc::parse {
+    // todo: move error.hpp
     struct Error {};
-
-    // struct ParserCombinatorResult {
-    //     bool success = false;
-    //     Vec<syntax::Node> nodes;
-    //     Opt<szt> rule;
-    // };
 
     using Result = Expected<
         token::TokenizedBuffer, Error
@@ -101,13 +96,6 @@ namespace tlc::parse {
             return tokens;
         };
     }
-
-    auto handlePrimaryExpr() -> ParserCombinator;
-    auto handlePostfixExpr() -> ParserCombinator;
-    auto handlePrefixExpr() -> ParserCombinator;
-    auto handleBinaryExpr() -> ParserCombinator;
-    auto handleTernaryExpr() -> ParserCombinator;
-    auto handleExpr(syntax::OpPrecedence minPrecedence = 0) -> ParserCombinator;
 }
 
 #endif // TLC_PARSE_COMBINATOR_HPP

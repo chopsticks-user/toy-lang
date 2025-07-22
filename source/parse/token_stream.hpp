@@ -29,13 +29,6 @@ namespace tlc::parse {
 
         [[nodiscard]] auto peek() const -> token::Token;
 
-        auto markCurrentToken() -> void {
-            m_markedTokens.push(current());
-        }
-
-        [[nodiscard]] auto unmarkAndReturnCoords()
-            -> token::Token::Coords;
-
         auto markBacktrack() -> void {
             m_backtrack.push(m_tokenIt);
         }
@@ -62,7 +55,6 @@ namespace tlc::parse {
     private:
         token::TokenizedBuffer const m_tokens;
         token::TokenizedBuffer::const_iterator m_tokenIt;
-        Stack<token::Token> m_markedTokens{};
         Stack<token::TokenizedBuffer::const_iterator> m_backtrack{};
         bool m_started{};
     };

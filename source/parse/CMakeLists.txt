@@ -10,6 +10,8 @@ target_sources(
     panic.hpp panic.cpp
     pretty_print.hpp pretty_print.cpp
     handle_stmt.cpp
+    handle_primary_expr.cpp
+    handle_postfix_expr.cpp
     handle_expr.cpp
 )
 target_link_libraries(
