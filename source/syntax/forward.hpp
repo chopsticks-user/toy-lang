@@ -7,73 +7,63 @@ namespace tlc::syntax {
     namespace expr {
         struct Integer;
         struct Float;
-        struct String;
         struct Boolean;
 
         struct VarId;
         struct TypeId;
-        struct OpId;
 
-        struct Ternary;
-        struct Binary;
-        struct Unary;
-        struct Tuple;
-        struct FunApp;
-        struct SubScript;
-        struct Access;
-        struct Array;
+        // struct String;
+        //
+
+        // struct OpId;
+        //
+        // struct Ternary;
+        // struct Binary;
+        // struct Unary;
+        // struct Tuple;
+        // struct FunApp;
+        // struct SubScript;
+        // struct Access;
+        // struct Array;
     }
 
-    namespace stmt {
-        struct ForStmt;
-        struct ForRangeFragment;
-        struct MatchStmt;
-        struct MatchStmtCase;
-        struct BlockStmt;
-        struct LetStmt;
-        struct ConditionalStmt;
-        struct ReturnStmt;
-        struct AssignStmt;
-        struct ExprStmt;
-    }
-
-    namespace decl {
-        struct Module;
-        struct ImportDecl;
-        // struct TypeDecl;
-        struct GenericDecl;
-        struct IdentifierDecl;
-        struct TupleDecl;
-    }
-
-    // namespace def {
-    //     struct FunctionPrototype;
-    //     struct FunctionDef;
-    //     struct ConceptDef;
-    //     // struct ClassDef;
-    //     // struct EnumDef;
-    //     // struct FlagDef;
+    // namespace stmt {
+    //     struct ForStmt;
+    //     struct ForRangeFragment;
+    //     struct MatchStmt;
+    //     struct MatchStmtCase;
+    //     struct BlockStmt;
+    //     struct LetStmt;
+    //     struct ConditionalStmt;
+    //     struct ReturnStmt;
+    //     struct AssignStmt;
+    //     struct ExprStmt;
     // }
-
-    struct TokenWrapper;
-    // struct TranslationUnit;
+    //
+    // namespace decl {
+    //     struct Module;
+    //     struct ImportDecl;
+    //     // struct TypeDecl;
+    //     struct GenericDecl;
+    //     struct IdentifierDecl;
+    //     struct TupleDecl;
+    // }
+    //
+    // // namespace def {
+    // //     struct FunctionPrototype;
+    // //     struct FunctionDef;
+    // //     struct ConceptDef;
+    // //     // struct ClassDef;
+    // //     // struct EnumDef;
+    // //     // struct FlagDef;
+    // // }
+    //
+    // struct TokenWrapper;
+    // // struct TranslationUnit;
 
     using Node = Poly<
-        expr::Integer, expr::Float, expr::String, expr::Boolean,
-        expr::VarId, expr::TypeId, expr::OpId,
-        expr::Ternary, expr::Binary, expr::Unary, expr::Tuple,
-        expr::FunApp, expr::SubScript, expr::Access, expr::Array,
-
-        stmt::ForStmt, stmt::ForRangeFragment, stmt::MatchStmt, stmt::MatchStmtCase,
-        stmt::BlockStmt, stmt::LetStmt, stmt::ConditionalStmt, stmt::ReturnStmt,
-        stmt::AssignStmt, stmt::ExprStmt,
-
-        // decl::ModuleDecl, decl::ImportDecl, decl::TypeDecl,
-        // decl::IdentifierDecl, decl::TupleDecl, decl::GenericDecl,
-        // def::FunctionPrototype, def::FunctionDef, def::ConceptDef,
-
-        TokenWrapper
-        // TranslationUnit
+        expr::Integer, expr::Float, expr::Boolean,
+        expr::VarId, expr::TypeId
     >;
 }
 

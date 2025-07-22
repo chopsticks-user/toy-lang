@@ -103,6 +103,9 @@ namespace tlc {
 
     template <typename E>
     using Unexpected = std::unexpected<E>;
+
+    template <typename S>
+    using Fn = std::function<S>;
 }
 
 #endif // TLC_CORE_TYPE_HPP

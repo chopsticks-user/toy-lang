@@ -17,7 +17,7 @@ namespace tlc::token {
             return m_type;
         }
 
-        [[nodiscard]] auto str() const noexcept -> StrV {
+        [[nodiscard]] auto str() const noexcept -> Str {
             return m_str;
         }
 

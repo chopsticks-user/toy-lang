@@ -3,6 +3,7 @@
 
 #include "core/core.hpp"
 #include "forward.hpp"
+#include "token/token.hpp"
 
 namespace tlc::syntax::detail {
     class NodeBase {
@@ -20,15 +21,15 @@ namespace tlc::syntax::detail {
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_line;
+            return m_coords.first;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_column;
+            return m_coords.second;
         }
 
     protected:
-        explicit NodeBase(Vec<Node> children, szt line = 0, szt column = 0) noexcept;
+        NodeBase(Vec<Node> children, token::Token::Coords coords) noexcept;
 
         auto childAt(szt index) -> Node&;
 
@@ -38,7 +39,7 @@ namespace tlc::syntax::detail {
 
     private:
         Vec<Node> m_children;
-        szt m_line{}, m_column{};
+        token::Token::Coords m_coords;
     };
 }
 

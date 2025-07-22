@@ -12,7 +12,7 @@ protected:
     }
 
     auto invoke(tlc::parse::ParserCombinator const& pc)
-        -> tlc::parse::ParserCombinatorResult {
+        -> tlc::parse::Result {
         // todo: no value error
         return pc(m_context, m_stream.value(), m_panic);
     }

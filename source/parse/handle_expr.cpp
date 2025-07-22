@@ -5,10 +5,23 @@ namespace tlc::parse {
 
     auto handlePrimaryExpr() -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            return match(
-                Identifier, Integer2Literal, Integer8Literal, Integer10Literal,
-                Integer16Literal
-            )(context, stream, panic);
+            if (auto result = match(
+                Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
+                FloatLiteral, True, False
+            )(context, stream, panic); result) {
+                context.push(EState::Literal1);
+                context.append(std::move(result.value()));
+                context.pop();
+            }
+
+            if (auto result = seq(
+                many0(seq(match(Identifier), match(Colon2))),
+                match(Identifier, FundamentalType, UserDefinedType)
+            )(context, stream, panic); result) {
+                context.push(EState::NamespaceId);
+                context.append(std::move(result.value()));
+                context.pop();
+            }
         };
     }
 

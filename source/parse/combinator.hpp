@@ -7,7 +7,7 @@
 #include "token_stream.hpp"
 
 namespace tlc::parse {
-    struct ParserCombinatorError {};
+    struct Error {};
 
     // struct ParserCombinatorResult {
     //     bool success = false;
@@ -15,24 +15,24 @@ namespace tlc::parse {
     //     Opt<szt> rule;
     // };
 
-    using ParserCombinatorResult = Expected<
-        token::TokenizedBuffer, ParserCombinatorError
+    using Result = Expected<
+        token::TokenizedBuffer, Error
     >;
 
-    using ParserCombinator = std::function<
-        ParserCombinatorResult(
+    using ParserCombinator = Fn<
+        Result(
             Context& context, TokenStream& stream, Panic& panic
         )
     >;
 
 #define TLC_PARSER_COMBINATOR_PROTOTYPE \
     [=]([[maybe_unused]] Context& context, [[maybe_unused]] TokenStream& stream, [[maybe_unused]] Panic& panic) \
-        -> ParserCombinatorResult
+        -> Result
 
     auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             if (!stream.match(types...)) {
-                return Unexpected{ParserCombinatorError{}};
+                return Unexpected{Error{}};
             }
             return {{stream.current()}};
         };
@@ -41,33 +41,32 @@ namespace tlc::parse {
     inline auto match(TokenStream::MatchFn const cond) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             if (!stream.match(cond)) {
-                return Unexpected{ParserCombinatorError{}};
+                return Unexpected{Error{}};
             }
             return {{stream.current()}};
         };
     }
 
-    auto many0(std::same_as<token::EToken> auto... types) -> ParserCombinator {
+    inline auto many0(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             token::TokenizedBuffer tokens;
-            while (stream.match(types...)) {
-                tokens.emplace_back(stream.current());
-            }
+            while (pc(context, stream, panic)
+                   .transform([&tokens](auto v)-> void {
+                       tokens.append_range(v);
+                   }).has_value()) {}
             return tokens;
         };
     }
 
-    auto many1(std::same_as<token::EToken> auto... types) -> ParserCombinator {
+    inline auto many1(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             // return (match(type) & (*type))(context, stream, panic);
-            ParserCombinatorResult result = many0(types...)(context, stream, panic);
-            return result.and_then(
-                [](auto const& tokens) {
-                    return tokens.empty()
-                               ? Unexpected{ParserCombinatorError{}}
-                               : tokens;
-                }
-            );
+
+            if (Result const result = many0(pc)(context, stream, panic);
+                !result.value().empty()) {
+                return result;
+            }
+            return Unexpected{Error{}};
         };
     }
 
@@ -80,7 +79,7 @@ namespace tlc::parse {
                     return result;
                 }
             }
-            return Unexpected{ParserCombinatorError{}};
+            return Unexpected{Error{}};
         };
     }
 
@@ -94,7 +93,7 @@ namespace tlc::parse {
                 auto const result = p(context, stream, panic);
                 if (!result) {
                     stream.backtrack();
-                    return Unexpected{ParserCombinatorError{}};
+                    return Unexpected{Error{}};
                 }
                 tokens.append_range(result.value());
             }
