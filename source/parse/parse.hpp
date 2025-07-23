@@ -11,7 +11,8 @@
 #include "combinator.hpp"
 
 namespace tlc::parse {
-    class Parser final {
+    class Parser {
+    public:
         using TokenIt = Vec<token::Token>::const_iterator;
         using ParseResult = Expected<syntax::Node, Error>;
 
@@ -23,11 +24,13 @@ namespace tlc::parse {
 
         auto operator()() -> syntax::Node;
 
+        // for testing
+        auto parseExpr() -> ParseResult {
+            return handleExpr();
+        }
+
     protected:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handleTernaryExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handleBinaryExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handlePrefixExpr() -> ParseResult;
         auto handlePostfixExpr() -> ParseResult;
         auto handleTupleExpr() -> ParseResult;
         auto handleArrayExpr() -> ParseResult;

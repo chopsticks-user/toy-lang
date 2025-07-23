@@ -31,12 +31,12 @@ namespace tlc::syntax {
     }
 
     static HashMap<token::EToken, OpPrecedence> prefixOpPrecedenceTable = {
-        {token::EToken::Exclaim, 20},
-        {token::EToken::Tilde, 21},
-        {token::EToken::Plus, 22},
-        {token::EToken::Minus, 23},
-        {token::EToken::Hash, 24},
-        {token::EToken::Dot3, 25},
+        {token::EToken::Exclaim, 30},
+        {token::EToken::Tilde, 31},
+        {token::EToken::Plus, 32},
+        {token::EToken::Minus, 33},
+        {token::EToken::Hash, 34},
+        {token::EToken::Dot3, 35},
     };
 
     static HashMap<token::EToken, OpPrecedence> binaryOpPrecedenceTable = {
@@ -46,7 +46,9 @@ namespace tlc::syntax {
         {token::EToken::FwdSlash, 12},
     };
 
-    auto opPrecedence(token::EToken const tokenType, EOperator const opType) -> OpPrecedence {
+    auto opPrecedence(
+        token::EToken const tokenType, EOperator const opType
+    ) -> OpPrecedence {
         switch (opType) {
         case EOperator::Prefix: return prefixOpPrecedenceTable.at(tokenType);
         case EOperator::Binary: return binaryOpPrecedenceTable.at(tokenType);

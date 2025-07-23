@@ -12,12 +12,25 @@ protected:
         );
     }
 
+    static auto parseExpr(tlc::Str source)
+        -> tlc::parse::Parser::ParseResult {
+        std::istringstream iss;
+        iss.str(std::move(source));
+        return tlc::parse::Parser{
+            tlc::lex::Lexer::operator()(std::move(iss))
+        }.parseExpr();
+    }
+
 private:
-    tlc::syntax::Node m_ast;
-    tlc::token::TokenizedBuffer m_tokens;
+    tlc::parse::Parser::ParseResult m_ast;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
     TEST_CASE_METHOD(ParseTestFixture, __VA_ARGS__)
 
-TEST_CASE_WITH_FIXTURE("Parse: Expressions", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Single-token literals", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Expr", "[Parse]") {
+    auto expr = parseExpr("-x-3");
+    REQUIRE(expr);
+}
