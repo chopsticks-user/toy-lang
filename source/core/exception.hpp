@@ -5,48 +5,58 @@
 #include "singleton.hpp"
 
 namespace tlc {
-    // todo: show block of code causing the error
     class Exception : public std::runtime_error {
     public:
-        explicit Exception(Str const& mesg): std::runtime_error(mesg) {}
+        explicit Exception(Str const& message): std::runtime_error(message) {}
 
-        explicit Exception(Str const& filepath, Str const& mesg)
-            : std::runtime_error("[" + filepath + " @0:0]" + mesg) {}
+        explicit Exception(Str const& filepath, Str const& message)
+            : std::runtime_error("[" + filepath + " @0:0]" + message) {}
 
         Exception(
-            Str const& filepath, const u64 line, const u64 column, Str const& mesg
+            Str const& filepath, const u64 line, const u64 column,
+            Str const& message
         ): std::runtime_error(
                "[" + filepath + " @" + std::to_string(line) + ":" +
-               std::to_string(column) + "] " + mesg
+               std::to_string(column) + "] " + message
            ), m_filepath(filepath), m_line(line), m_column(column) {}
 
         [[nodiscard]] auto filepath() const -> StrV {
             return m_filepath;
         }
 
-        [[nodiscard]] auto line() const -> u64 {
+        [[nodiscard]] auto line() const -> szt {
             return m_line;
         }
 
-        [[nodiscard]] auto column() const -> u64 {
+        [[nodiscard]] auto column() const -> szt {
             return m_column;
         }
 
-    private:
+    protected:
         Str m_filepath;
         u64 m_line = 0;
         u64 m_column = 0;
     };
 
-    struct InternalException final : Exception {
-        explicit InternalException(Str const& mesg) : Exception(mesg) {}
+    struct InternalError final : Exception {
+        explicit InternalError(Str const& message) : Exception(message) {}
 
-        InternalException(Str const& filepath, Str const& mesg)
-            : Exception(filepath, mesg) {}
+        InternalError(Str const& filepath, Str const& message)
+            : Exception(filepath, message) {}
 
-        InternalException(
-            Str const& filepath, const u64 line, const u64 column, Str const& mesg
-        ): Exception{filepath, line, column, "internal error: " + mesg} {}
+        InternalError(
+            Str const& filepath, const u64 line, const u64 column,
+            Str const& message
+        ): Exception{filepath, line, column, "Internal error: " + message} {}
+    };
+
+    struct CompileError final : Exception {
+        CompileError(
+            Str const& filepath, const u64 line, const u64 column,
+            Str const& message, Str const& code
+        ): Exception{
+            filepath, line, column, message + "\n" + code
+        } {}
     };
 
     class GlobalExceptionCollector : public Singleton<GlobalExceptionCollector> {

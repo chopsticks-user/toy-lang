@@ -52,7 +52,7 @@ namespace tlc::parse {
 
         auto currentCoords() -> token::Token::Coords {
             if (m_coords.empty()) {
-                throw InternalException{
+                throw InternalError{
                     "Parser::popCoords: m_markedCoords.empty()"
                 };
             }
