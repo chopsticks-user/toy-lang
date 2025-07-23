@@ -8,12 +8,13 @@ namespace tlc::parse {
         pushCoords();
 
         if (m_stream.match(syntax::isPrefixOperator)) {
+            auto const op = m_stream.current().type();
+            auto const coords = m_stream.current().coords();
             if (auto const result = handleExpr(
                 syntax::opPrecedence(
-                    m_stream.current().type(),
-                    syntax::EOperator::Prefix
+                    op, syntax::EOperator::Prefix
                 )); result) {
-                lhs = *result;
+                lhs = syntax::expr::Unary{*result, op, coords};
             }
             else {
                 // todo: error

@@ -42,7 +42,7 @@ namespace tlc::syntax {
         } {}
 
         Unary::Unary(
-            Node operand, token::EToken op, token::Token::Coords coords
+            Node operand, token::EToken const op, token::Token::Coords coords
         ): NodeBase{{std::move(operand)}, std::move(coords)},
            m_op{op} {}
 

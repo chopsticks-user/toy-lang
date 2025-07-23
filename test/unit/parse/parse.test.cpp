@@ -31,6 +31,15 @@ private:
 TEST_CASE_WITH_FIXTURE("Parse: Single-token literals", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Expr", "[Parse]") {
-    auto expr = parseExpr("-x-3");
-    REQUIRE(expr);
+    auto ast = parseExpr("-x-3");
+    REQUIRE(ast);
+    auto const expr =
+        tlc::syntax::astCast<tlc::syntax::expr::Binary>(*ast);
+    REQUIRE(expr.op() == tlc::token::EToken::Minus);
+    auto const left =
+        tlc::syntax::astCast<tlc::syntax::expr::Unary>(expr.firstChild());
+    REQUIRE(left.op() == tlc::token::EToken::Minus);
+    auto const right =
+        tlc::syntax::astCast<tlc::syntax::expr::Integer>(expr.lastChild());
+    REQUIRE(right.value() == 3);
 }
