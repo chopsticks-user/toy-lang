@@ -8,7 +8,5 @@ target_sources(
     base.hpp base.cpp
     nodes.hpp nodes.cpp
     util.hpp util.cpp
-    pretty_printer.hpp pretty_printer.cpp
-    ast_printer.hpp ast_printer.cpp
 )
 target_link_libraries(tlc_syntax PUBLIC tlc::core tlc::token)

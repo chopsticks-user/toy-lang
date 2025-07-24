@@ -4,9 +4,11 @@
 #include "core/core.hpp"
 #include "token/token.hpp"
 #include "syntax/syntax.hpp"
+
 #include "context.hpp"
 #include "panic.hpp"
-#include "../syntax/pretty_printer.hpp"
+#include "ast_printer.hpp"
+#include "pretty_printer.hpp"
 #include "token_stream.hpp"
 #include "combinator.hpp"
 

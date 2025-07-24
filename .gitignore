@@ -75,4 +75,4 @@ resources/Antlr/*
 gen
 
 # Misc
-src/utility/dump
+dump

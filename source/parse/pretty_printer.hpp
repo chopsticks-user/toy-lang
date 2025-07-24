@@ -2,7 +2,7 @@
 #define  TLC_SYNTAX_PRETTY_PRINTER_HPP
 
 #include "core/core.hpp"
-#include "nodes.hpp"
+#include "../syntax/nodes.hpp"
 
 namespace tlc::parse {}
 

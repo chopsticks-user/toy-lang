@@ -12,6 +12,8 @@ target_sources(
     handle_primary_expr.cpp
     handle_postfix_expr.cpp
     handle_expr.cpp
+    pretty_printer.hpp pretty_printer.cpp
+    ast_printer.hpp ast_printer.cpp
 )
 target_link_libraries(
     tlc_parse
