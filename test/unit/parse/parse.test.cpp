@@ -146,27 +146,27 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
     }
 
     SECTION("Prioritize left") {
-        // auto const expr =
-        //     parseExpr<tlc::syntax::expr::Binary>("x*-y+z");
-        // REQUIRE(expr.op() == tlc::token::EToken::Plus);
-        //
-        // auto const left =
-        //     cast<tlc::syntax::expr::Binary>(expr.left());
-        // REQUIRE(left.op() == tlc::token::EToken::Star);
-        // assertIdentifier(
-        //     left.left(), tlc::token::EToken::Identifier, "x"
-        // );
-        // auto const leftRight =
-        //     cast<tlc::syntax::expr::Unary>(left.right());
-        // REQUIRE(leftRight.op() == tlc::token::EToken::Minus);
-        // assertIdentifier(
-        //     leftRight.operand(),
-        //     tlc::token::EToken::Identifier, "y"
-        // );
-        //
-        // assertIdentifier(
-        //     expr.right(), tlc::token::EToken::Identifier, "z"
-        // );
+        auto const expr =
+            parseExpr<tlc::syntax::expr::Binary>("x*-y+z");
+        REQUIRE(expr.op() == tlc::token::EToken::Plus);
+
+        auto const left =
+            cast<tlc::syntax::expr::Binary>(expr.left());
+        REQUIRE(left.op() == tlc::token::EToken::Star);
+        assertIdentifier(
+            left.left(), tlc::token::EToken::Identifier, "x"
+        );
+        auto const leftRight =
+            cast<tlc::syntax::expr::Unary>(left.right());
+        REQUIRE(leftRight.op() == tlc::token::EToken::Minus);
+        assertIdentifier(
+            leftRight.operand(),
+            tlc::token::EToken::Identifier, "y"
+        );
+
+        assertIdentifier(
+            expr.right(), tlc::token::EToken::Identifier, "z"
+        );
     }
 }
 
