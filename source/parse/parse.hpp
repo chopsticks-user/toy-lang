@@ -6,7 +6,7 @@
 #include "syntax/syntax.hpp"
 #include "context.hpp"
 #include "panic.hpp"
-#include "pretty_print.hpp"
+#include "../syntax/pretty_printer.hpp"
 #include "token_stream.hpp"
 #include "combinator.hpp"
 

@@ -5,7 +5,7 @@ target_sources(
     parse.test.cpp
     token_stream.test.cpp
     combinators.test.cpp
-    pretty_print.test.cpp
+    pretty_printer.test.cpp
     context.test.cpp
     panic.test.cpp
 )

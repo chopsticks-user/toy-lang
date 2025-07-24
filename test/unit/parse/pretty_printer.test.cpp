@@ -2,7 +2,7 @@
 
 #include "parse/parse.hpp"
 
-class PrettyPrintTestFixture {
+class PrettyPrinterTestFixture {
 protected:
     auto parse(tlc::Str source) -> void {
         std::istringstream iss;
@@ -17,6 +17,6 @@ private:
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-    TEST_CASE_METHOD(PrettyPrintTestFixture, __VA_ARGS__)
+    TEST_CASE_METHOD(PrettyPrinterTestFixture, __VA_ARGS__)
 
-TEST_CASE_WITH_FIXTURE("PrettyPrint: ", "[Parse][PrettyPrint]") {}
+TEST_CASE_WITH_FIXTURE("PrettyPrinter: ", "[Parse][PrettyPrinter]") {}
