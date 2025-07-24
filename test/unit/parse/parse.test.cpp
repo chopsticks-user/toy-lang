@@ -53,21 +53,16 @@ protected:
     }
 
     static auto assertInteger(
-        Node const& node,
-        tlc::i64 const value
+        Node const& node, tlc::i64 const value
     ) -> void {
         auto const integer = cast<expr::Integer>(node);
         REQUIRE(integer.value() == value);
     }
 
     static auto assertInteger(
-        tlc::Str source,
-        tlc::i64 const value
+        tlc::Str source, tlc::i64 const value
     ) -> void {
-        return assertInteger(
-            parseExpr<expr::Integer>(std::move(source)),
-            value
-        );
+        return assertInteger(parseExpr<expr::Integer>(std::move(source)), value);
     }
 
     static auto assertFloat(
@@ -78,12 +73,23 @@ protected:
     }
 
     static auto assertFloat(
-        tlc::Str source,
-        tlc::f64 const value
+        tlc::Str source, tlc::f64 const value
     ) -> void {
-        return assertFloat(
-            parseExpr<expr::Float>(std::move(source)),
-            value
+        return assertFloat(parseExpr<expr::Float>(std::move(source)), value);
+    }
+
+    static auto assertBoolean(
+        Node const& node, tlc::f64 const value
+    ) -> void {
+        auto const f = cast<expr::Boolean>(node);
+        REQUIRE(f.value() == value);
+    }
+
+    static auto assertBoolean(
+        tlc::Str source, tlc::b8 const value
+    ) -> void {
+        return assertBoolean(
+            parseExpr<expr::Boolean>(std::move(source)), value
         );
     }
 
@@ -116,9 +122,21 @@ TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
     }
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Parse]") {
+    assertFloat("0.0314159", 0.0314159);
+    assertFloat("3145.1926", 3145.1926);
+    assertFloat("0.314159", 0.314159);
+    assertFloat("00.31415", 0.31415);
+    assertFloat("000.3141", 0.3141);
+    assertFloat("0.000", 0.0);
+    assertFloat("00.00", 0.0);
+    assertFloat("000.0", 0.0);
+}
 
-TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {
+    assertBoolean("true", true);
+    assertBoolean("false", false);
+}
 
 TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {}
 

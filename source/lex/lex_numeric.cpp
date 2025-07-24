@@ -52,7 +52,7 @@ namespace tlc::lex {
             }
         }
 
-        if (count == 0) {
+        if (count == 0 && m_currentTokenType != token::EToken::FloatLiteral) {
             // simply "0"
             m_currentTokenType = token::EToken::Integer10Literal;
         }

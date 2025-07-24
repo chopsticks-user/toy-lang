@@ -218,26 +218,111 @@ TEST_CASE_WITH_FIXTURE("Lex: Numbers", "[Lex]") {
     SECTION("Valid") {
         lex(R"(
 31415
+0
 
 3.1415
 31.415
 03.1415
+0.0314
+00.0314
+0.0
+0.00
+00.00
 
 0b10101010
+0b0
+0b00
 
 0x123456789abcdef
+0x0
+0x00
 
 01234567
+00
+000
         )");
 
-        assertTokenCount(7);
-        assertTokenAt(0, tlc::token::EToken::Integer10Literal, "31415", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::FloatLiteral, "3.1415", 3, 0);
-        assertTokenAt(2, tlc::token::EToken::FloatLiteral, "31.415", 4, 0);
-        assertTokenAt(3, tlc::token::EToken::FloatLiteral, "03.1415", 5, 0);
-        assertTokenAt(4, tlc::token::EToken::Integer2Literal, "0b10101010", 7, 0);
-        assertTokenAt(5, tlc::token::EToken::Integer16Literal, "0x123456789abcdef", 9, 0);
-        assertTokenAt(6, tlc::token::EToken::Integer8Literal, "01234567", 11, 0);
+        assertTokenCount(19);
+
+        assertTokenAt(
+            0, tlc::token::EToken::Integer10Literal, "31415",
+            1, 0
+        );
+        assertTokenAt(
+            1, tlc::token::EToken::Integer10Literal, "0",
+            2, 0
+        );
+
+        assertTokenAt(
+            2, tlc::token::EToken::FloatLiteral, "3.1415",
+            4, 0);
+        assertTokenAt(
+            3, tlc::token::EToken::FloatLiteral,
+            "31.415", 5, 0
+        );
+        assertTokenAt(
+            4, tlc::token::EToken::FloatLiteral,
+            "03.1415", 6, 0
+        );
+        assertTokenAt(
+            5, tlc::token::EToken::FloatLiteral,
+            "0.0314", 7, 0
+        );
+        assertTokenAt(
+            6, tlc::token::EToken::FloatLiteral,
+            "00.0314", 8, 0
+        );
+        assertTokenAt(
+            7, tlc::token::EToken::FloatLiteral,
+            "0.0", 9, 0
+        );
+        assertTokenAt(
+            8, tlc::token::EToken::FloatLiteral,
+            "0.00", 10, 0
+        );
+        assertTokenAt(
+            9, tlc::token::EToken::FloatLiteral,
+            "00.00", 11, 0
+        );
+
+        assertTokenAt(
+            10, tlc::token::EToken::Integer2Literal,
+            "0b10101010", 13, 0
+        );
+        assertTokenAt(
+            11, tlc::token::EToken::Integer2Literal,
+            "0b0", 14, 0
+        );
+        assertTokenAt(
+            12, tlc::token::EToken::Integer2Literal,
+            "0b00", 15, 0
+        );
+
+        assertTokenAt(
+            13, tlc::token::EToken::Integer16Literal,
+            "0x123456789abcdef", 17, 0
+        );
+        assertTokenAt(
+            14, tlc::token::EToken::Integer16Literal,
+            "0x0", 18, 0
+        );
+        assertTokenAt(
+            15, tlc::token::EToken::Integer16Literal,
+            "0x00", 19, 0
+        );
+
+        assertTokenAt(
+            16, tlc::token::EToken::Integer8Literal,
+            "01234567", 21, 0
+        );
+        assertTokenAt(
+            17, tlc::token::EToken::Integer8Literal,
+            "00", 22, 0
+        );
+        assertTokenAt(
+            18, tlc::token::EToken::Integer8Literal,
+            "000", 23, 0
+        );
     }
 }
 
