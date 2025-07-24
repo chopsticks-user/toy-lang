@@ -19,7 +19,7 @@ namespace tlc::syntax {
         struct Subscript;
         struct Access;
 
-        struct Unary;
+        struct Prefix;
         struct Binary;
         // struct Ternary;
     }
@@ -60,7 +60,7 @@ namespace tlc::syntax {
 
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
-        expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Unary,
+        expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
         expr::Binary
     >;
 }

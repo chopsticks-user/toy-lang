@@ -19,6 +19,17 @@ namespace tlc::syntax {
         return prefixOps.contains(type);
     }
 
+    static HashSet postfixStart = {
+        token::EToken::Dot,
+        token::EToken::LeftParen,
+        token::EToken::LeftBracket,
+        // token::EToken::LeftBrace,
+    };
+
+    auto isPostfixStart(token::EToken const type) -> bool {
+        return postfixStart.contains(type);
+    }
+
     static HashSet binaryOps = {
         token::EToken::Plus,
         token::EToken::Minus,

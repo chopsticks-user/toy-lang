@@ -88,20 +88,32 @@ namespace tlc::syntax {
 
         struct FnApp final : detail::NodeBase {
             FnApp(Node callee, Node args, token::Token::Coords coords);
+
+            [[nodiscard]] auto callee() const noexcept -> Node;
+
+            [[nodiscard]] auto args() const noexcept -> Node;
         };
 
         struct Subscript final : detail::NodeBase {
             Subscript(
                 Node collection, Node subscript, token::Token::Coords coords
             );
+
+            [[nodiscard]] auto collection() const noexcept -> Node;
+
+            [[nodiscard]] auto subscript() const noexcept -> Node;
         };
 
         struct Access final : detail::NodeBase {
             Access(Node object, Node field, token::Token::Coords coords);
+
+            [[nodiscard]] auto object() const noexcept -> Node;
+
+            [[nodiscard]] auto field() const noexcept -> Node;
         };
 
-        struct Unary final : detail::NodeBase {
-            Unary(
+        struct Prefix final : detail::NodeBase {
+            Prefix(
                 Node operand, token::EToken op, token::Token::Coords coords
             );
 

@@ -2,7 +2,8 @@ add_executable(tlc_test_unit_parse)
 add_executable(tlc::test::unit::parse ALIAS tlc_test_unit_parse)
 target_sources(
     tlc_test_unit_parse PRIVATE
-    parse.test.cpp
+    parse.test.hpp
+    parse_expr.test.cpp
     token_stream.test.cpp
     combinators.test.cpp
     pretty_printer.test.cpp

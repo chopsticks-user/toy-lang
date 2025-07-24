@@ -9,8 +9,6 @@ target_sources(
     combinator.hpp
     panic.hpp panic.cpp
     handle_stmt.cpp
-    handle_primary_expr.cpp
-    handle_postfix_expr.cpp
     handle_expr.cpp
     pretty_printer.hpp pretty_printer.cpp
     ast_printer.hpp ast_printer.cpp

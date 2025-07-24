@@ -28,12 +28,28 @@ namespace tlc::syntax {
                 std::move(coords)
             } {}
 
+        auto FnApp::callee() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto FnApp::args() const noexcept -> Node {
+            return childAt(1);
+        }
+
         Subscript::Subscript(
             Node collection, Node subscript, token::Token::Coords coords
         ): NodeBase{
             {std::move(collection), std::move(subscript)},
             std::move(coords)
         } {}
+
+        auto Subscript::collection() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto Subscript::subscript() const noexcept -> Node {
+            return childAt(1);
+        }
 
         Access::Access(
             Node object, Node field, token::Token::Coords coords
@@ -42,12 +58,20 @@ namespace tlc::syntax {
             std::move(coords)
         } {}
 
-        Unary::Unary(
+        auto Access::object() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto Access::field() const noexcept -> Node {
+            return childAt(1);
+        }
+
+        Prefix::Prefix(
             Node operand, token::EToken const op, token::Token::Coords coords
         ): NodeBase{{std::move(operand)}, std::move(coords)},
            m_op{op} {}
 
-        auto Unary::operand() const noexcept -> Node {
+        auto Prefix::operand() const noexcept -> Node {
             return firstChild();
         }
 

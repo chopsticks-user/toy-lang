@@ -48,7 +48,7 @@ namespace tlc::syntax {
     };
 
     auto isPrefixOperator(token::EToken type) -> bool;
-    auto isPostfixOperator(token::EToken type) -> bool;
+    auto isPostfixStart(token::EToken type) -> bool;
     auto isBinaryOperator(token::EToken type) -> bool;
     auto opPrecedence(token::EToken tokenType, EOperator opType) -> OpPrecedence;
     auto isLeftAssociative(token::EToken type) -> bool;
