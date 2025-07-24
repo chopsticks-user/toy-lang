@@ -69,13 +69,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {}
 TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
-    // SECTION("Local identifier") {
-    //     auto const id =
-    //         parseExpr<tlc::syntax::expr::Identifier>("baz");
-    //     assertIdentifier(
-    //         id, tlc::token::EToken::Identifier, "baz"
-    //     );
-    // }
+    SECTION("Local identifier") {
+        auto const id =
+            parseExpr<tlc::syntax::expr::Identifier>("baz");
+        assertIdentifier(
+            id, tlc::token::EToken::Identifier, "baz"
+        );
+    }
 
     SECTION("Imported identifier") {
         auto const id =
