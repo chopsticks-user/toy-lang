@@ -22,6 +22,10 @@ namespace tlc::parse {
     }
 
     auto Parser::handleSingleTokenLiteral() -> ParseResult {
+        static const HashMap<token::EToken, i32> baseTable = {
+            {Integer2Literal, 2}, {Integer8Literal, 8},
+            {Integer10Literal, 10}, {Integer16Literal, 16},
+        };
         if (auto const result = match(
             Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
             FloatLiteral, True, False
@@ -39,7 +43,11 @@ namespace tlc::parse {
                 };
             default:
                 return syntax::expr::Integer{
-                    std::stoll(tokens.front().str()), tokens.front().coords()
+                    std::stoll(
+                        tokens.front().str(), nullptr,
+                        baseTable.at(tokens.front().type())
+                    ),
+                    tokens.front().coords()
                 };
             }
         }
