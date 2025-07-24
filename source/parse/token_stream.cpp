@@ -28,10 +28,22 @@ namespace tlc::parse {
         return makeInvalidToken();
     }
 
+    auto TokenStream::backtrack() -> void {
+        if (m_backtrack.empty()) {
+            return;
+        }
+        auto [it, started] = m_backtrack.top();
+        m_tokenIt = it;
+        m_started = started;
+        m_backtrack.pop();
+    }
+
     auto TokenStream::current() const -> token::Token {
         if (done() || !m_started) {
             return makeInvalidToken();
         }
         return *m_tokenIt;
     }
+
+
 }

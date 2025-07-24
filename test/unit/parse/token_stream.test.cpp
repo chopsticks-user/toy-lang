@@ -3,12 +3,12 @@
 #include "lex/lex.hpp"
 #include "parse/token_stream.hpp"
 
-class ParseStreamTestFixture {
+class TokenStreamTestFixture {
 protected:
 private:
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-TEST_CASE_METHOD(ParseStreamTestFixture, __VA_ARGS__)
+TEST_CASE_METHOD(TokenStreamTestFixture, __VA_ARGS__)
 
-TEST_CASE_WITH_FIXTURE("ParseStream:", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("TokenStream:", "[Parse][TokenStream]") {}

@@ -21,10 +21,10 @@ namespace tlc::parse {
         }
         else {
             lhs = handlePostfixExpr();
-            popCoords();
         }
 
         if (!lhs) {
+            popCoords();
             return Unexpected{Error{}};
         }
 
@@ -38,6 +38,7 @@ namespace tlc::parse {
 
                 if (p <= minP) {
                     m_stream.backtrack();
+                    popCoords();
                     break;
                 }
 

@@ -12,8 +12,9 @@ namespace tlc::syntax {
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
         Identifier::Identifier(
-            Vec<Str> path, token::EToken type, token::Token::Coords coords
-        ) : NodeBase{{}, std::move(coords)}, m_path(std::move(path)) {}
+            Vec<Str> path, token::EToken const type, token::Token::Coords coords
+        ) : NodeBase{{}, std::move(coords)}, m_path{std::move(path)},
+            m_type{type} {}
 
         Array::Array(Vec<Node> elements, token::Token::Coords coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
@@ -46,9 +47,21 @@ namespace tlc::syntax {
         ): NodeBase{{std::move(operand)}, std::move(coords)},
            m_op{op} {}
 
+        auto Unary::operand() const noexcept -> Node {
+            return firstChild();
+        }
+
         Binary::Binary(
             Node lhs, Node rhs, token::EToken const op, token::Token::Coords coords
         ) : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
             m_op{op} {}
+
+        auto Binary::left() const noexcept -> Node {
+            return firstChild();
+        }
+
+        auto Binary::right() const noexcept -> Node {
+            return lastChild();
+        }
     }
 }

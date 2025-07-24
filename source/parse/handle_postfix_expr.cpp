@@ -20,7 +20,6 @@ namespace tlc::parse {
                 return node;
             }
 
-
             if (auto const result = handleTupleExpr(); result) {
                 return syntax::expr::FnApp{
                     node, *result, currentCoords()

@@ -3,7 +3,7 @@ add_executable(tlc::test::unit::lex ALIAS tlc_test_unit_lex)
 target_sources(
     tlc_test_unit_lex PRIVATE
     lex.test.cpp
-    stream.test.cpp
+    text_stream.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_lex PRIVATE

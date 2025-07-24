@@ -46,11 +46,15 @@ namespace tlc::lex {
                 ++count;
             }
             lexFloatingPoint();
+
+            if (m_currentLexeme.length() > count + 1) {
+                m_currentTokenType = token::EToken::FloatLiteral;
+            }
         }
 
         if (count == 0) {
-            // todo: throw
-            m_currentTokenType = token::EToken::Invalid;
+            // simply "0"
+            m_currentTokenType = token::EToken::Integer10Literal;
         }
 
         appendToken();

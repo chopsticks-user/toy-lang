@@ -2,7 +2,7 @@
 
 #include "lex/text_stream.hpp"
 
-class LexStreamTestFixture {
+class TextStreamTestFixture {
 protected:
     auto readFromSource(tlc::Str source) -> void {
         std::istringstream iss;
@@ -30,9 +30,9 @@ private:
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
-    TEST_CASE_METHOD(LexStreamTestFixture, __VA_ARGS__)
+    TEST_CASE_METHOD(TextStreamTestFixture, __VA_ARGS__)
 
-TEST_CASE_WITH_FIXTURE("LexStream: Peek and match", "[Lex]") {
+TEST_CASE_WITH_FIXTURE("TextStream: Peek and match", "[Lex][TextStream]") {
     readFromSource(R"(lex
 str eam)");
 

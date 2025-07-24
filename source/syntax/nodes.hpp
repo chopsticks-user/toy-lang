@@ -4,7 +4,6 @@
 #include "core/core.hpp"
 #include "base.hpp"
 #include "token/token.hpp"
-#include "util.hpp"
 
 namespace tlc::syntax {
     namespace expr {
@@ -74,7 +73,7 @@ namespace tlc::syntax {
                 return m_path.size() > 1;
             }
 
-        protected:
+        private:
             Vec<Str> m_path;
             token::EToken m_type;
         };
@@ -110,6 +109,8 @@ namespace tlc::syntax {
                 return m_op;
             }
 
+            [[nodiscard]] auto operand() const noexcept -> Node;
+
         private:
             token::EToken m_op;
         };
@@ -122,6 +123,10 @@ namespace tlc::syntax {
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
             }
+
+            [[nodiscard]] auto left() const noexcept -> Node;
+
+            [[nodiscard]] auto right() const noexcept -> Node;
 
         private:
             token::EToken m_op;

@@ -59,6 +59,8 @@ namespace tlc {
         } {}
     };
 
+    // todo: use deducing this
+    // How C++23 Changes the Way We Write Code - Timur Doumler - CppCon 2022
     class GlobalExceptionCollector : public Singleton<GlobalExceptionCollector> {
     public:
         [[nodiscard]] auto size() const -> szt {
