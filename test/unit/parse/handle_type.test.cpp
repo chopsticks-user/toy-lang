@@ -42,8 +42,16 @@ auto ParseTestFixture::AssertType::tuple(
     GENERATE_CHILD_NODE_ASSERTION(children);
 }
 
+auto ParseTestFixture::AssertType::infer(
+    Node const& node, InferInfo info
+) -> void {
+    auto const& ast = cast<type::Infer>(node);
+    GENERATE_CHILD_NODE_ASSERTION(expr);
+}
+
 GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(identifier, Identifier);
 GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(tuple, Tuple);
+GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(infer, Infer);
 
 TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
     AssertType::identifier(
@@ -108,6 +116,24 @@ TEST_CASE_WITH_FIXTURE("Parse: Type tuples", "[Parse]") {
                     nodes[3],
                     {.fundamental = false, .imported = true, .path = "foo::Bar"}
                 );
+            }
+        }
+    );
+}
+
+TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
+    AssertType::infer(
+        "[[x]]", {
+            .assert_expr = [](Node const& id) {
+                assertIdentifier(id, EToken::Identifier, "x");
+            }
+        }
+    );
+
+    AssertType::infer(
+        "[[3.14159]]", {
+            .assert_expr = [](Node const& value) {
+                assertFloat(value, 3.14159);
             }
         }
     );

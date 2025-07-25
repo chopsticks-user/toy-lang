@@ -45,9 +45,7 @@ namespace tlc::parse {
 
         auto handleType() -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
-        auto handleTypeArray() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
-        auto handleTypeFunction() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
 
     private:

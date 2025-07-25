@@ -202,20 +202,13 @@ namespace tlc::syntax {
         };
 
         struct Array final : detail::NodeBase {
-            Array(Node type, Vec<Opt<szt>> sizes, Coords coords);
+            Array(Node type, Vec<Node> sizes, Coords coords);
 
-            [[nodiscard]] auto type() const -> Node;
+            [[nodiscard]] auto type() const noexcept -> Node const&;
 
-            [[nodiscard]] auto size(szt const dimension) const -> Opt<szt> {
-                return m_sizes.at(dimension);
-            }
+            [[nodiscard]] auto size(szt dimIndex) const noexcept -> Node const&;
 
-            [[nodiscard]] auto fixed(szt const dimension) const -> bool {
-                return !m_sizes.at(dimension).has_value();
-            }
-
-        private:
-            Vec<Opt<szt>> m_sizes;
+            [[nodiscard]] auto fixed(szt dimIndex) const -> bool;
         };
 
         struct Tuple final : detail::NodeBase {

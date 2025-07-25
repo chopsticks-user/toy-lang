@@ -6,11 +6,55 @@ namespace tlc::parse {
     auto Parse::handleType() -> ParseResult {
         pushCoords();
 
-        auto lhs = handleTypeTuple().or_else(
-            [this](Error const&) -> ParseResult {
-                return handleTypeIdentifier();
+        auto lhs =
+            handleTypeInfer().or_else(
+                [this](auto const&) -> ParseResult {
+                    return handleTypeTuple().or_else(
+                        [this](auto const&) -> ParseResult {
+                            return handleTypeIdentifier();
+                        }
+                    );
+                }
+            );
+
+        if (!lhs) {
+            return Unexpected{lhs.error()};
+        }
+
+        m_stream.markBacktrack();
+        while (true) {
+            if (m_stream.peek().type() == LeftBracket) {
+                Vec<syntax::Node> dimSizes;
+                while (m_stream.match(LeftBracket)) {
+                    dimSizes.emplace_back(
+                        *handleExpr().or_else([]([[maybe_unused]] Error&& error)
+                            -> ParseResult {
+                                // todo: collect errors
+                                return syntax::Node{};
+                            })
+                    );
+                    if (!m_stream.match(RightBracket)) {
+                        // todo: collect errors
+                        break;
+                    }
+                }
+                lhs = syntax::type::Array{*lhs, dimSizes, currentCoords()};
             }
-        );
+            else if (m_stream.match(MinusGreater)) {
+                lhs = handleType().and_then([this, &lhs](auto const& node)
+                    -> ParseResult {
+                        return syntax::type::Function{
+                            *lhs, node, currentCoords()
+                        };
+                    });
+            }
+            else if (false) {
+                // todo: binary operators on types
+            }
+            else {
+                break;
+            }
+        }
 
         return lhs;
     }
@@ -59,5 +103,20 @@ namespace tlc::parse {
                 return syntax::type::Tuple{std::move(elements), std::move(coords)};
             }
         );
+    }
+
+    auto Parse::handleTypeInfer() -> ParseResult {
+        return seq(match(LeftBracket), match(LeftBracket))
+            (m_context, m_stream, m_panic).and_then([this](auto const&)
+                -> ParseResult {
+                    return handleExpr().and_then([this](auto const& expr)
+                        -> ParseResult {
+                            if (!seq(match(RightBracket), match(RightBracket))
+                                (m_context, m_stream, m_panic)) {
+                                return Unexpected{Error{}};
+                            }
+                            return syntax::type::Infer{expr, currentCoords()};
+                        });
+                });
     }
 }

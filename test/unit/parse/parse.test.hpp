@@ -6,6 +6,7 @@
 #include "parse/parse.hpp"
 
 class ParseTestFixture {
+protected:
     using FnNode = void (*)(tlc::syntax::Node const&);
     using FnNodes = void (*)(tlc::Span<tlc::syntax::Node const>);
 
@@ -48,6 +49,10 @@ protected:
         REQUIRE(tlc::syntax::matchAstType<T>(node));
         return tlc::syntax::astCast<T>(node);
     }
+
+    // struct AssertExpr {
+    //
+    // };
 
     static auto assertIdentifier(
         tlc::syntax::Node const& node,
@@ -162,6 +167,13 @@ protected:
 
         static auto tuple(tlc::syntax::Node const& node, TupleInfo info) -> void;
         static auto tuple(tlc::Str source, TupleInfo info) -> void;
+
+        struct InferInfo {
+            tlc::Opt<FnNode> assert_expr;
+        };
+
+        static auto infer(tlc::syntax::Node const& node, InferInfo info) -> void;
+        static auto infer(tlc::Str source, InferInfo info) -> void;
     };
 
 private:

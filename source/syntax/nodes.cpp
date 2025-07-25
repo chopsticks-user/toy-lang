@@ -1,4 +1,5 @@
 #include "nodes.hpp"
+#include "util.hpp"
 
 namespace tlc::syntax {
     namespace expr {
@@ -114,12 +115,28 @@ namespace tlc::syntax {
         }
 
         Array::Array(
-            Node type, Vec<Opt<szt>> sizes, Coords coords
-        ): NodeBase{{std::move(type)}, std::move(coords)},
-           m_sizes{std::move(sizes)} {}
+            Node type, Vec<Node> sizes, Coords coords
+        ): NodeBase{
+            [&] {
+                Vec<Node> nodes;
+                nodes.reserve(sizes.size() + 1);
+                nodes.emplace_back(type);
+                nodes.append_range(std::move(sizes));
+                return nodes;
+            }(),
+            std::move(coords)
+        } {}
 
-        auto Array::type() const -> Node {
+        auto Array::type() const -> Node const& {
             return firstChild();
+        }
+
+        auto Array::size(szt const dimIndex) const noexcept -> Node const& {
+            return childAt(dimIndex + 1);
+        }
+
+        auto Array::fixed(szt const dimIndex) const -> bool {
+            return isEmptyNode(size(dimIndex));
         }
 
         Tuple::Tuple(Vec<Node> types, Coords coords)
