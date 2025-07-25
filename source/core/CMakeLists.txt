@@ -1,3 +1,6 @@
+# For the <execution> header
+find_package(TBB REQUIRED COMPONENTS tbb)
+
 add_library(tlc_core SHARED)
 add_library(tlc::core ALIAS tlc_core)
 target_sources(
@@ -9,5 +12,5 @@ target_sources(
 target_include_directories(tlc_core INTERFACE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(
     tlc_core
-    PUBLIC tlc::cflags
+    PUBLIC tlc::cflags tbb
 )

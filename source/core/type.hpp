@@ -25,6 +25,8 @@
 #include <numeric>
 #include <sstream>
 #include <memory>
+#include <functional>
+#include <expected>
 
 namespace tlc {
     using i64 = std::int64_t;
@@ -95,6 +97,15 @@ namespace tlc {
 
     template <typename... T>
     using Tpl = std::tuple<T...>;
+
+    template <typename T, typename E>
+    using Expected = std::expected<T, E>;
+
+    template <typename E>
+    using Unexpected = std::unexpected<E>;
+
+    template <typename S>
+    using Fn = std::function<S>;
 }
 
 #endif // TLC_CORE_TYPE_HPP

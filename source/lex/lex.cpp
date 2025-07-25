@@ -3,19 +3,15 @@
 #include "util.hpp"
 
 namespace tlc::lex {
-    auto Lexer::operator()(fs::path const& filepath) -> Vec<token::Token> {
-        reset();
-        m_stream = Stream{filepath};
-        return lex();
+    auto Lex::operator()(fs::path const& filepath) -> token::TokenizedBuffer {
+        return Lex{filepath}();
     }
 
-    auto Lexer::operator()(std::istringstream iss) -> Vec<token::Token> {
-        reset();
-        m_stream = Stream{std::move(iss)};
-        return lex();
+    auto Lex::operator()(std::istringstream iss) -> token::TokenizedBuffer {
+        return Lex{std::move(iss)}();
     }
 
-    auto Lexer::lex() -> Vec<token::Token> {
+    auto Lex::operator()() -> token::TokenizedBuffer {
         m_stream.consumeSpaces();
         while (!m_stream.done()) {
             m_currentLexeme = "";

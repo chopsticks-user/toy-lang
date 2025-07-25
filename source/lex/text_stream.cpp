@@ -1,7 +1,7 @@
-#include "stream.hpp"
+#include "text_stream.hpp"
 
 namespace tlc::lex {
-    auto Stream::advance() -> void {
+    auto TextStream::advance() -> void {
         if (done()) {
             return;
         }
@@ -43,7 +43,7 @@ namespace tlc::lex {
         }
     }
 
-    auto Stream::consumeSpaces() -> void {
+    auto TextStream::consumeSpaces() -> void {
         while (match(' ', '\t', '\r', '\n')) {}
     }
 }

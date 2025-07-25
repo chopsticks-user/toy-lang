@@ -4,17 +4,23 @@
 #include "core/core.hpp"
 #include "token/token.hpp"
 
-#include "stream.hpp"
+#include "text_stream.hpp"
 
 namespace tlc::lex {
-    class Lexer {
+    class Lex final {
     public:
-        // todo: reset before using
-        auto operator()(fs::path const& filepath) -> Vec<token::Token>;
-        auto operator()(std::istringstream iss) -> Vec<token::Token>;
+        static auto operator()(fs::path const& filepath) -> token::TokenizedBuffer;
+        static auto operator()(std::istringstream iss) -> token::TokenizedBuffer;
+
+        explicit Lex(fs::path const& filepath)
+            : m_stream{filepath} {}
+
+        explicit Lex(std::istringstream iss)
+            : m_stream{std::move(iss)} {}
+
+        auto operator()() -> token::TokenizedBuffer;
 
     private:
-        auto lex() -> Vec<token::Token>;
         auto lexComment() -> void;
         auto lexIdentifier() -> void;
         auto lexFloatingPoint() -> void;
@@ -23,13 +29,6 @@ namespace tlc::lex {
         auto lexSymbol() -> void;
 
     private:
-        auto reset() -> void {
-            m_stream = {};
-            m_currentTokenType = {};
-            m_currentLexeme = {};
-            m_tokens = {};
-        }
-
         auto classifyIdentifier(StrV lexeme) -> void;
 
         auto markTokenCoords() -> void {
@@ -49,16 +48,16 @@ namespace tlc::lex {
 
             m_tokens.emplace_back(
                 m_currentTokenType, m_currentLexeme,
-                m_tokenLine, m_tokenColumn
+                token::Token::Coords{m_tokenLine, m_tokenColumn}
             );
         }
 
     private:
-        Stream m_stream{};
+        TextStream m_stream;
         token::EToken m_currentTokenType{};
         Str m_currentLexeme{};
         szt m_tokenLine{}, m_tokenColumn{};
-        Vec<token::Token> m_tokens{};
+        token::TokenizedBuffer m_tokens{};
     };
 }
 

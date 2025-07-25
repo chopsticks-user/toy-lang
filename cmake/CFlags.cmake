@@ -10,6 +10,8 @@ endif ()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+
 set(gcc_like_cxx_flags -pedantic;-Wall;-Wextra;-Wshadow;-Wconversion;
     -Wunreachable-code)
 set(msvc_cxx_flags -W3)

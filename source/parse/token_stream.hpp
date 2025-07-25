@@ -1,101 +1,64 @@
-#ifndef TOYLANG_FRONTEND_PARSING_DRIVER_HPP
-#define TOYLANG_FRONTEND_PARSING_DRIVER_HPP
+#ifndef TLC_PARSE_STREAM_HPP
+#define TLC_PARSE_STREAM_HPP
 
-#include "syntax/syntax.hpp"
 #include "token/token.hpp"
 #include "core/core.hpp"
 
-namespace tl::fe {
-  class ParsingDriver final {
-  public:
-    enum class Context {
-      Id, TypeId, AnonId
+namespace tlc::parse {
+    class TokenStream final {
+    public:
+        using MatchFn = bool (*)(token::EToken);
+        using TokenIt = token::TokenizedBuffer::const_iterator;
+
+    public:
+        explicit TokenStream(token::TokenizedBuffer tokens)
+            : m_tokens{std::move(tokens)},
+              m_tokenIt{m_tokens.begin()} {}
+
+        auto match(std::same_as<token::EToken> auto... types) -> bool {
+            auto const tokenType = peek().type();
+            if (done() || ((tokenType != types) && ...)) {
+                return false;
+            }
+            advance();
+            return true;
+        }
+
+        auto match(MatchFn cond) -> bool;
+
+        auto advance() -> void;
+
+        [[nodiscard]] auto peek() const -> token::Token;
+
+        auto markBacktrack() -> void {
+            m_backtrack.push({m_tokenIt, m_started});
+        }
+
+        auto backtrack() -> void;
+
+        [[nodiscard]] auto current() const -> token::Token;
+
+        [[nodiscard]] auto done() const -> b8 {
+            // todo:
+            return m_started && m_tokenIt == m_tokens.end();
+        }
+
+    private:
+        static auto makeInvalidToken() -> token::Token {
+            return {token::EToken::Invalid, "", {0, 0}};
+        }
+
+    private:
+        struct BacktrackStates {
+            TokenIt tokenIt;
+            b8 started;
+        };
+
+        token::TokenizedBuffer const m_tokens;
+        TokenIt m_tokenIt;
+        Stack<BacktrackStates> m_backtrack{};
+        b8 m_started{};
     };
-
-    ParsingDriver() = default;
-
-    ParsingDriver(String filepath, Tokens tokens)
-      : m_filepath(std::move(filepath)), m_tokens(std::move(tokens)) {
-    }
-
-    auto filepath() -> CRef<String> {
-      return m_filepath;
-    }
-
-    auto revert() -> void {
-      backwardBoundCheck();
-      --m_current;
-    }
-
-    auto advance() -> void {
-      forwardBoundCheck();
-      ++m_current;
-    }
-
-    auto to(sz index) -> void {
-      // currentBoundCheck();
-      m_current = index;
-    }
-
-    auto currentIndex() const -> sz {
-      return m_current;
-    }
-
-    auto current() const -> CRef<Token> {
-      currentBoundCheck();
-      return m_tokens[m_current];
-    }
-
-    auto match(std::same_as<EToken> auto... expected) -> bool {
-      if (done() || !((current().type() == expected) || ...)) {
-        return false;
-      }
-
-      if (m_current < m_tokens.size()) {
-        ++m_current;
-      }
-      return true;
-    }
-
-    auto peekNext() -> CRef<Token> {
-      forwardBoundCheck();
-      return m_tokens[m_current + 1];
-    }
-
-    auto peekPrev() -> CRef<Token> {
-      backwardBoundCheck();
-      return m_tokens[m_current - 1];
-    }
-
-    auto done() const noexcept -> bool {
-      return m_current >= m_tokens.size();
-    }
-
-  private:
-    auto currentBoundCheck() const -> void {
-      if (done()) {
-        throw InternalException(m_filepath, "Parser: m_current >= m_tokens.size()");
-      }
-    }
-
-    auto forwardBoundCheck() const -> void {
-      if (m_current + 1 >= m_tokens.size()) {
-        throw InternalException(m_filepath, "Parser: m_current + 1 >= m_tokens.size()");
-      }
-    }
-
-    auto backwardBoundCheck() const -> void {
-      if (m_current - 1 < 0) {
-        throw InternalException(m_filepath, "Parser: m_current - 1 < 0");
-      }
-    }
-
-  private:
-    String m_filepath = "";
-    Tokens m_tokens = {};
-    sz m_current = 0;
-    syntax::Storage m_currentStorage = syntax::Storage::Internal;
-  };
 }
 
-#endif // TOYLANG_FRONTEND_PARSING_DRIVER_HPP
+#endif // TLC_PARSE_STREAM_HPP

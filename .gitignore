@@ -73,3 +73,6 @@ resources/Antlr/*
 
 # Antlr4
 gen
+
+# Misc
+dump

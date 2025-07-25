@@ -3,34 +3,47 @@
 
 #include "core/core.hpp"
 #include "forward.hpp"
+#include "token/token.hpp"
 
 namespace tlc::syntax::detail {
-  class NodeBase {
-  public:
-    [[nodiscard]] auto children() const noexcept -> Span<Node const>;
+    class NodeBase {
+    protected:
+        using Coords = token::Token::Coords;
 
-    [[nodiscard]] auto children() noexcept -> Span<Node>;
+    public:
+        [[nodiscard]] auto children() const noexcept -> Span<Node const>;
 
-    [[nodiscard]] auto childAt(szt index) const -> Node const &;
+        [[nodiscard]] auto children() noexcept -> Span<Node>;
 
-    [[nodiscard]] auto firstChild() const -> Node const &;
+        [[nodiscard]] auto childAt(szt index) const -> Node const&;
 
-    [[nodiscard]] auto lastChild() const -> Node const &;
+        [[nodiscard]] auto firstChild() const -> Node const&;
 
-    [[nodiscard]] auto nChildren() const noexcept -> szt;
+        [[nodiscard]] auto lastChild() const -> Node const&;
 
-  protected:
-    explicit NodeBase(Vec<Node> children) noexcept;
+        [[nodiscard]] auto nChildren() const noexcept -> szt;
 
-    auto childAt(szt index) -> Node &;
+        [[nodiscard]] auto line() const noexcept -> szt {
+            return m_coords.first;
+        }
 
-    auto firstChild() -> Node &;
+        [[nodiscard]] auto column() const noexcept -> szt {
+            return m_coords.second;
+        }
 
-    auto lastChild() -> Node &;
+    protected:
+        NodeBase(Vec<Node> children, token::Token::Coords coords) noexcept;
 
-  private:
-    Vec<Node> m_children;
-  };
+        auto childAt(szt index) -> Node&;
+
+        auto firstChild() -> Node&;
+
+        auto lastChild() -> Node&;
+
+    private:
+        Vec<Node> m_children;
+        token::Token::Coords m_coords;
+    };
 }
 
 #endif // TLC_SYNTAX_BASE_HPP

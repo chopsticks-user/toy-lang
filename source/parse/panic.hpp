@@ -1,16 +1,12 @@
-//
-// Created by frost on 2/8/25.
-//
+#ifndef TLC_PARSE_PANIC_HPP
+#define TLC_PARSE_PANIC_HPP
 
-#ifndef PANIC_HPP
-#define PANIC_HPP
+#include "core/core.hpp"
+#include "syntax/syntax.hpp"
+#include "lex/lex.hpp"
 
+namespace tlc::parse {
+    class Panic {};
+}
 
-
-class panic {
-
-};
-
-
-
-#endif //PANIC_HPP
+#endif // TLC_PARSE_PANIC_HPP

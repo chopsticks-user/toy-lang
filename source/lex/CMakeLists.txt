@@ -3,7 +3,7 @@ add_library(tlc::lex ALIAS tlc_lex)
 target_sources(
     tlc_lex PRIVATE
     lex.hpp lex.cpp
-    stream.hpp stream.cpp
+    text_stream.hpp text_stream.cpp
     util.hpp
     lex_comment.cpp
     lex_identifier.cpp
@@ -12,6 +12,5 @@ target_sources(
 )
 target_link_libraries(
     tlc_lex
-    PUBLIC tlc::core
-    PRIVATE tlc::token
+    PUBLIC tlc::core tlc::token
 )

@@ -6,6 +6,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
+add_compile_definitions(
+    TLC_TEST_SAMPLE_DIR="../../samples"
+)
+add_compile_definitions(
+    TLC_TMP_FILE_DIR="../../tmp"
+)
+
 add_subdirectory(utility)
 add_subdirectory(unit)
 add_subdirectory(performance)

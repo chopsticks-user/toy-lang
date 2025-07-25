@@ -1,206 +1,168 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax {
-  namespace expr {
-    TokenNode::TokenNode(token::Token token)
-      : NodeBase({}), m_token(std::move(token)) {
+    namespace expr {
+        Integer::Integer(i64 const value, Coords coords)
+            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+
+        Float::Float(f64 const value, Coords coords)
+            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+
+        Boolean::Boolean(b8 const value, Coords coords)
+            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+
+        Identifier::Identifier(
+            Vec<Str> path, token::EToken const type, Coords coords
+        ) : NodeBase{{}, std::move(coords)}, m_path{std::move(path)},
+            m_type{type} {}
+
+        Array::Array(Vec<Node> elements, Coords coords)
+            : NodeBase{std::move(elements), std::move(coords)} {}
+
+        Tuple::Tuple(Vec<Node> elements, Coords coords)
+            : NodeBase{std::move(elements), std::move(coords)} {}
+
+        FnApp::FnApp(Node callee, Node args, Coords coords)
+            : NodeBase{
+                {std::move(callee), std::move(args)},
+                std::move(coords)
+            } {}
+
+        auto FnApp::callee() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto FnApp::args() const noexcept -> Node {
+            return childAt(1);
+        }
+
+        Subscript::Subscript(
+            Node collection, Node subscript, Coords coords
+        ): NodeBase{
+            {std::move(collection), std::move(subscript)},
+            std::move(coords)
+        } {}
+
+        auto Subscript::collection() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto Subscript::subscript() const noexcept -> Node {
+            return childAt(1);
+        }
+
+        Access::Access(
+            Node object, Node field, Coords coords
+        ): NodeBase{
+            {std::move(object), std::move(field)},
+            std::move(coords)
+        } {}
+
+        auto Access::object() const noexcept -> Node {
+            return childAt(0);
+        }
+
+        auto Access::field() const noexcept -> Node {
+            return childAt(1);
+        }
+
+        Prefix::Prefix(
+            Node operand, token::EToken const op, Coords coords
+        ): NodeBase{{std::move(operand)}, std::move(coords)},
+           m_op{op} {}
+
+        auto Prefix::operand() const noexcept -> Node {
+            return firstChild();
+        }
+
+        Binary::Binary(
+            Node lhs, Node rhs, token::EToken const op, Coords coords
+        ) : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
+            m_op{op} {}
+
+        auto Binary::left() const noexcept -> Node {
+            return firstChild();
+        }
+
+        auto Binary::right() const noexcept -> Node {
+            return lastChild();
+        }
     }
 
-    Integer::Integer(i64 const value)
-      : NodeBase({}), m_value(value) {
+    namespace type {
+        Identifier::Identifier(
+            Vec<Str> path, b8 const fundamental, Coords coords
+        ): NodeBase{{}, std::move(coords)},
+           m_path{std::move(path)}, m_fundamental{fundamental} {}
+
+        auto Identifier::path() const noexcept -> Str {
+            if (m_path.empty()) {
+                return "";
+            }
+
+            Str pathStr = m_path.front();
+
+            if (!imported()) {
+                return pathStr;
+            }
+
+            for (Str s : m_path | rv::drop(1)) {
+                pathStr += "::"s + s;
+            }
+
+            return pathStr;
+        }
+
+        Array::Array(
+            Node type, Vec<Opt<szt>> sizes, Coords coords
+        ): NodeBase{{std::move(type)}, std::move(coords)},
+           m_sizes{std::move(sizes)} {}
+
+        auto Array::type() const -> Node {
+            return firstChild();
+        }
+
+        Tuple::Tuple(Vec<Node> types, Coords coords)
+            : NodeBase{std::move(types), std::move(coords)} {}
+
+        auto Tuple::type(szt const index) const -> Node {
+            return childAt(index);
+        }
+
+        auto Tuple::size() const -> szt {
+            return nChildren();
+        }
+
+        Function::Function(Node args, Node result, Coords coords)
+            : NodeBase{{std::move(args), std::move(result)}, std::move(coords)} {}
+
+        auto Function::args() const noexcept -> Node {
+            return firstChild();
+        }
+
+        auto Function::result() const noexcept -> Node {
+            return lastChild();
+        }
+
+        Infer::Infer(Node expr, Coords coords)
+            : NodeBase{{std::move(expr)}, std::move(coords)} {}
+
+        auto Infer::expr() const noexcept -> Node {
+            return firstChild();
+        }
+
+        Sum::Sum(Vec<Node> types, Coords coords)
+            : NodeBase{std::move(types), std::move(coords)} {}
+
+        auto Sum::type(szt const index) const -> Node {
+            return childAt(index);
+        }
+
+        Product::Product(Vec<Node> types, Coords coords)
+            : NodeBase{std::move(types), std::move(coords)} {}
+
+        auto Product::type(szt const index) const -> Node {
+            return childAt(index);
+        }
     }
-
-    Float::Float(f64 const value)
-      : NodeBase({}), m_value(value) {
-    }
-
-    String::String(Str value, Vec<Node> placeholders)
-      : NodeBase({std::move(placeholders)}), m_value(std::move(value)) {
-    }
-
-    Boolean::Boolean(bool const value)
-      : NodeBase({}), m_value(value) {
-    }
-
-    IdentifierBase::IdentifierBase(Vec<Str> path)
-      : NodeBase({}), m_path(std::move(path)) {
-    }
-
-    VarId::VarId(Vec<Str> path)
-      : IdentifierBase(std::move(path)) {
-    }
-
-    TypeId::TypeId(Vec<Str> path)
-      : IdentifierBase(std::move(path)) {
-    }
-
-    OpId::OpId(Str op)
-      : IdentifierBase({std::move(op)}) {
-    }
-
-    Ternary::Ternary(
-      Node operand1, Node operand2, Node operand3,
-      Str op1, Str op2
-    ): NodeBase(
-         {std::move(operand1), std::move(operand2), std::move(operand3)}
-       ), m_op1(std::move(op1)), m_op2(std::move(op2)) {
-    }
-
-    Binary::Binary(Node lhs, Node rhs, Str op)
-      : NodeBase({std::move(lhs), std::move(rhs)}),
-        m_op(std::move(op)) {
-    }
-
-    Unary::Unary(Node operand, Str op)
-      : NodeBase({std::move(operand)}), m_op(std::move(op)) {
-    }
-
-    Tuple::Tuple(Vec<Node> ids) : NodeBase(std::move(ids)) {
-    }
-
-    FunApp::FunApp(Node callee, Node args
-    ) : NodeBase({std::move(callee), std::move(args)}) {
-    }
-
-    // auto FunctionCallExpr::fromPipeExpr(
-    //   ASTNode lhs, ASTNode rhs
-    // ) -> Opt<FunctionCallExpr> {
-    //   if (matchAstType<FunctionCallExpr>(rhs)) {
-    //     Vec<ASTNode> args = astCast<TupleExpr>(
-    //       astCast<FunctionCallExpr>(rhs).args()
-    //     ).children();
-    //     args.insert(args.begin(), lhs);
-    //
-    //     return FunctionCallExpr{
-    //       astCast<FunctionCallExpr>(rhs).callee(), TupleExpr{std::move(args)}
-    //     };
-    //   }
-    //
-    //   if (matchAstType<VarId>(rhs)) {
-    //     return FunctionCallExpr{rhs, {lhs}};
-    //   }
-    //
-    //   return {};
-    // }
-
-    SubScript::SubScript(
-      Node collection,
-      Node subscript
-    ): NodeBase({std::move(collection), std::move(subscript)}) {
-    }
-
-    Access::Access(Node &&object, Node &&field)
-      : NodeBase({std::forward<Node>(object), std::forward<Node>(field)}) {
-    }
-
-    Array::Array(Vec<Node> elements) : NodeBase(std::move(elements)) {
-    }
-  }
-
-  namespace stmt {
-    ForStmt::ForStmt(Node condition, Node body)
-      : NodeBase({std::move(condition), std::move(body)}) {
-    }
-
-    ForRangeFragment::ForRangeFragment(Node iterator, Node iterable)
-      : NodeBase({std::move(iterator), std::move(iterable)}) {
-    }
-
-    // MatchStmt::MatchStmt(Node matchedExpr, Node defaultBody, Vec<Node> cases)
-    //   : NodeBase({
-    //     [&]() {
-    //       // todo: move args
-    //       auto v = std::vector{matchedExpr, defaultBody};
-    //       v.insert(v.end(), cases.begin(), cases.end());
-    //       return v;
-    //     }()
-    //   }) {
-    // }
-
-    MatchStmt::MatchStmt(Node matchedExpr, Node defaultBody, Vec<Node> cases)
-      : NodeBase(
-        rv::concat(Vec{std::move(matchedExpr), std::move(defaultBody)}, std::move(cases)) | rng::to<Vec<Node> >()
-      ) {
-    }
-
-    MatchStmtCase::MatchStmtCase(Node value, Node condition, Node body)
-      : NodeBase({std::move(value), std::move(condition), std::move(body)}) {
-    }
-
-    BlockStmt::BlockStmt(Vec<Node> statements)
-      : NodeBase(std::move(statements)) {
-    }
-
-    LetStmt::LetStmt(Node decl, Node init)
-      : NodeBase({std::move(decl), std::move(init)}) {
-    }
-
-    ConditionalStmt::ConditionalStmt(Node condition, Node body)
-      : NodeBase({std::move(condition), std::move(body)}) {
-    }
-
-    ReturnStmt::ReturnStmt(Node expr)
-      : NodeBase({std::move(expr)}) {
-    }
-
-    AssignStmt::AssignStmt(Node left, Node right, Str op)
-      : NodeBase({std::move(left), std::move(right)}), m_op(std::move(op)) {
-    }
-
-    ExprStmt::ExprStmt(Node expr)
-      : NodeBase({std::move(expr)}) {
-    }
-  }
-
-  namespace decl {
-    ModuleDecl::ModuleDecl(Node nsIdentifier)
-      : NodeBase({nsIdentifier}) {
-    }
-
-    ImportDecl::ImportDecl(Node nsIdentifier)
-      : NodeBase({nsIdentifier}) {
-    }
-
-    TypeDecl::TypeDecl(const Storage storage, Node identifier, Node typeExpr)
-      : NodeBase({identifier, typeExpr}), m_storage(storage) {
-    }
-
-    IdentifierDecl::IdentifierDecl(
-      const bool isMutable, Node const &identifier, Node const &typeExpr
-    ): NodeBase({identifier, typeExpr}), m_mutable(isMutable) {
-    }
-
-    TupleDecl::TupleDecl(Vec<Node> idDecls)
-      : NodeBase(std::move(idDecls)) {
-    }
-
-    GenericDecl::GenericDecl(Vec<Node> typeIds)
-      : NodeBase(std::move(typeIds)) {
-    }
-  }
-
-  namespace def {
-    FunctionPrototype::FunctionPrototype(
-      const FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
-    ): NodeBase({fIdentifier, fParamDecls, fReturnDecls}),
-       m_type(fType) {
-    }
-
-    FunctionDef::FunctionDef(
-      const Storage fStorage, Node fPrototype, Node fBody
-    ): NodeBase({fPrototype, fBody}), m_storage(fStorage) {
-    }
-
-    ConceptDef::ConceptDef(const Storage storage, Node identifier, Vec<Node> requirements)
-      : NodeBase(
-          rv::concat(
-            Vec{std::move(identifier)}, std::move(requirements)
-          ) | rng::to<Vec<Node> >()
-        ), m_storage(storage) {
-    }
-  }
-
-  TranslationUnit::TranslationUnit(Vec<Node> definitions)
-    : NodeBase(std::move(definitions)) {
-  }
 }

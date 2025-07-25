@@ -1,129 +1,87 @@
-#ifndef  TOYLANG_FRONTEND_PARSER_HPP
-#define  TOYLANG_FRONTEND_PARSER_HPP
-
-#include "syntax/syntax.hpp"
-#include "lex.hpp"
+#ifndef TLC_PARSE_HPP
+#define TLC_PARSE_HPP
 
 #include "core/core.hpp"
+#include "token/token.hpp"
+#include "syntax/syntax.hpp"
 
-namespace tl::fe {
-  struct ParserExpception final : ToyLangException {
-    ParserExpception(CRef<String> filepath, CRef<String> mesg)
-      : ToyLangException{filepath, mesg} {
-    }
+#include "context.hpp"
+#include "panic.hpp"
+#include "ast_printer.hpp"
+#include "pretty_printer.hpp"
+#include "token_stream.hpp"
+#include "combinator.hpp"
 
-    ParserExpception(
-      CRef<String> filepath, CRef<Token> token, CRef<String> mesg
-    ): ToyLangException{filepath, token.line(), token.column(), "syntax error: " + mesg} {
-    }
-  };
+namespace tlc::parse {
+    class Parse final {
+    public:
+        using TokenIt = Vec<token::Token>::const_iterator;
+        using ParseResult = Expected<syntax::Node, Error>;
 
-  class Parser {
-    using TokenIterator = Tokens::const_iterator;
+    public:
+        static auto operator()(Vec<token::Token> tokens) -> syntax::Node;
 
-    enum class TupleDeclState {
-      Local, Param, Return,
+        explicit Parse(Vec<token::Token> tokens)
+            : m_stream{std::move(tokens)} {}
+
+        auto operator()() -> syntax::Node;
+
+    public: // for testing
+        auto parseExpr() -> ParseResult {
+            return handleExpr();
+        }
+
+        auto parseType() -> ParseResult {
+            return handleType();
+        }
+
+    protected:
+        auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
+        auto handlePrimaryExpr() -> ParseResult;
+        auto handleTupleExpr() -> ParseResult;
+        auto handleArrayExpr() -> ParseResult;
+        auto handleSingleTokenLiteral() -> ParseResult;
+        auto handleIdentifierLiteral() -> ParseResult;
+
+        auto handleType() -> ParseResult;
+        auto handleTypeIdentifier() -> ParseResult;
+        auto handleTypeArray() -> ParseResult;
+        auto handleTypeTuple() -> ParseResult;
+        auto handleTypeFunction() -> ParseResult;
+        auto handleTypeInfer() -> ParseResult;
+
+    private:
+        auto pushCoords() -> void {
+            // todo: eof
+            return m_coords.push(m_stream.peek().coords());
+        }
+
+        auto popCoords() -> token::Token::Coords {
+            auto coords = currentCoords();
+            m_coords.pop();
+            return coords;
+        }
+
+        auto currentCoords() -> token::Token::Coords {
+            if (m_coords.empty()) {
+                throw InternalError{
+                    "Parser::popCoords: m_markedCoords.empty()"
+                };
+            }
+            return m_coords.top();
+        }
+
+        template <typename... Args, syntax::IsASTNode T>
+        auto createNode(token::Token::Coords coords, Args&&... args) -> syntax::Node {
+            return T{std::forward<Args&&>(args)..., std::move(coords)};
+        }
+
+    private:
+        TokenStream m_stream;
+        Context m_context{};
+        Panic m_panic{};
+        Stack<token::Token::Coords> m_coords{};
     };
-
-    enum class Context {
-      None, Global, Function, Concept, Class, Type, String, Lambda,
-    };
-
-  public:
-    auto operator()(String filepath, Tokens tokens) -> syntax::TranslationUnit;
-
-  private:
-    auto parseTranslationUnit() -> syntax::TranslationUnit;
-
-    auto parseModuleDecl() -> syntax::ASTNode;
-
-    auto parseImportDecl() -> syntax::ASTNode;
-
-    auto parseTypeDecl() -> syntax::ASTNode;
-
-    auto parseEnumDecl() -> syntax::ASTNode;
-
-    auto parseFlagDecl() -> syntax::ASTNode;
-
-    auto parseFunctionDef() -> syntax::ASTNode;
-
-    auto parseClassDef() -> syntax::ASTNode;
-
-    auto parseConceptDef() -> syntax::ASTNode;
-
-    auto parseFunctionPrototype() -> syntax::ASTNode;
-
-    auto parseTupleDecl() -> syntax::ASTNode;
-
-    auto parseIdentifierDecl() -> syntax::ASTNode;
-
-    auto parseStmt() -> syntax::ASTNode;
-
-    auto parseForStmt() -> syntax::ASTNode;
-
-    auto parseMatchStmt() -> syntax::ASTNode;
-
-    auto parseBlockStmt() -> syntax::ASTNode;
-
-    auto parseExprPrefixStmt() -> syntax::ASTNode;
-
-    auto parseLetStmt() -> syntax::ASTNode;
-
-    auto parseReturnStmt() -> syntax::ASTNode;
-
-    auto parseExpr() -> syntax::ASTNode;
-
-    auto parseTernaryExpr() -> syntax::ASTNode;
-
-    auto parseSequenceExpr() -> syntax::ASTNode;
-
-    auto parseNullCoalescingExpr() -> syntax::ASTNode;
-
-    auto parseLogicalOrExpr() -> syntax::ASTNode;
-
-    auto parseLogicalAndExpr() -> syntax::ASTNode;
-
-    auto parseInclusiveOrExpr() -> syntax::ASTNode;
-
-    auto parseExclusiveOrExpr() -> syntax::ASTNode;
-
-    auto parseAndExpr() -> syntax::ASTNode;
-
-    auto parseEqualityExpr() -> syntax::ASTNode;
-
-    auto parseRelationalExpr() -> syntax::ASTNode;
-
-    auto parseShiftExpr() -> syntax::ASTNode;
-
-    auto parseAdditiveExpr() -> syntax::ASTNode;
-
-    auto parseMultiplicativeExpr() -> syntax::ASTNode;
-
-    auto parseExponentialExpr() -> syntax::ASTNode;
-
-    auto parsePrefixUnaryExpr() -> syntax::ASTNode;
-
-    auto parsePostfixExpr() -> syntax::ASTNode;
-
-    auto parsePrimaryExpr() -> syntax::ASTNode;
-
-    auto parseTupleExpr() -> syntax::ASTNode;
-
-    auto parseTypeExpr() -> syntax::ASTNode;
-
-    auto parseTypeIdentifier() -> syntax::ASTNode;
-
-    auto parseIdentifier() -> syntax::ASTNode;
-
-  private:
-    String m_filepath;
-    TokenIterator m_tokenIt;
-    TokenIterator m_tokenItEnd;
-    Opt<Token> m_currentToken;
-    Opt<TokenIterator> m_revertPoint;
-    syntax::Storage m_currentStorage = syntax::Storage::Internal;
-    Stack<Context> m_parseContext;
-  };
 }
 
-#endif // TOYLANG_FRONTEND_PARSER_HPP
+#endif // TLC_PARSE_HPP

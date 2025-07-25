@@ -2,7 +2,7 @@
 #include "util.hpp"
 
 namespace tlc::lex {
-    auto Lexer::lexSymbol() -> void {
+    auto Lex::lexSymbol() -> void {
         appendLexeme();
         if (isUnnamedIdentifier(m_stream.current())) {
             m_currentTokenType = token::EToken::AnonymousIdentifier;
