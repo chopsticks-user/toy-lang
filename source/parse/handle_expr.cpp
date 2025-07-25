@@ -4,8 +4,8 @@ namespace tlc::parse {
     using enum token::EToken;
 
     auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult {
-        ParseResult lhs;
         pushCoords();
+        ParseResult lhs;
 
         // todo: consider requiring parenthesis around each prefix expressions
         // to avoid ambiguity
@@ -177,6 +177,7 @@ namespace tlc::parse {
 
         auto coords = m_stream.current().coords();
         Vec<syntax::Node> elements;
+
         do {
             if (auto const expr = handleExpr(); expr) {
                 elements.push_back(*expr);
@@ -190,7 +191,6 @@ namespace tlc::parse {
         if (!m_stream.match(RightParen)) {
             return Unexpected{Error{}};
         }
-
         return syntax::expr::Tuple{std::move(elements), std::move(coords)};
     }
 

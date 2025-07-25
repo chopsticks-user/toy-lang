@@ -4,7 +4,15 @@ namespace tlc::parse {
     using enum token::EToken;
 
     auto Parse::handleType() -> ParseResult {
-        return handleTypeIdentifier();
+        pushCoords();
+
+        auto lhs = handleTypeTuple().or_else(
+            [this](Error const&) -> ParseResult {
+                return handleTypeIdentifier();
+            }
+        );
+
+        return lhs;
     }
 
     auto Parse::handleTypeIdentifier() -> ParseResult {
@@ -25,6 +33,30 @@ namespace tlc::parse {
                     std::move(path), m_stream.current().type() == FundamentalType,
                     tokens.front().coords()
                 };
+            }
+        );
+    }
+
+    auto Parse::handleTypeTuple() -> ParseResult {
+        return match(LeftParen)(m_context, m_stream, m_panic).and_then(
+            [this](auto const& tokens) -> ParseResult {
+                auto coords = tokens.front().coords();
+
+                Vec<syntax::Node> elements;
+                do {
+                    if (auto const type = handleType(); type) {
+                        elements.push_back(*type);
+                    }
+                    else {
+                        // todo: error
+                    }
+                }
+                while (m_stream.match(Comma));
+
+                if (!m_stream.match(RightParen)) {
+                    return Unexpected{Error{}};
+                }
+                return syntax::type::Tuple{std::move(elements), std::move(coords)};
             }
         );
     }

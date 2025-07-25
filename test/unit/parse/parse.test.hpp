@@ -20,6 +20,7 @@ protected:
 
     template <tlc::syntax::IsASTNode T>
     static auto parseExpr(tlc::Str source) -> T {
+        CAPTURE(source.c_str());
         std::istringstream iss;
         iss.str(std::move(source));
         auto const result = tlc::parse::Parse{
@@ -153,6 +154,14 @@ protected:
 
         static auto identifier(tlc::syntax::Node const& node, IdentifierInfo info) -> void;
         static auto identifier(tlc::Str source, IdentifierInfo info) -> void;
+
+        struct TupleInfo {
+            tlc::Opt<tlc::szt> size;
+            tlc::Opt<FnNodes> assert_children;
+        };
+
+        static auto tuple(tlc::syntax::Node const& node, TupleInfo info) -> void;
+        static auto tuple(tlc::Str source, TupleInfo info) -> void;
     };
 
 private:
