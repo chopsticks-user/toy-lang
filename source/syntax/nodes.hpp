@@ -8,7 +8,7 @@
 namespace tlc::syntax {
     namespace expr {
         struct Integer final : detail::NodeBase {
-            Integer(i64 value, token::Token::Coords coords);
+            Integer(i64 value, Coords coords);
 
             [[nodiscard]] auto value() const noexcept -> i64 {
                 return m_value;
@@ -19,7 +19,7 @@ namespace tlc::syntax {
         };
 
         struct Float final : detail::NodeBase {
-            Float(f64 value, token::Token::Coords coords);
+            Float(f64 value, Coords coords);
 
             [[nodiscard]] auto value() const noexcept -> double {
                 return m_value;
@@ -30,7 +30,7 @@ namespace tlc::syntax {
         };
 
         struct Boolean final : detail::NodeBase {
-            Boolean(b8 value, token::Token::Coords coords);
+            Boolean(b8 value, Coords coords);
 
             [[nodiscard]] auto value() const noexcept -> b8 {
                 return m_value;
@@ -41,7 +41,7 @@ namespace tlc::syntax {
         };
 
         struct Identifier : detail::NodeBase {
-            Identifier(Vec<Str> path, token::EToken type, token::Token::Coords coords);
+            Identifier(Vec<Str> path, token::EToken type, Coords coords);
 
             [[nodiscard]] auto name() const noexcept -> Str {
                 return m_path.empty() ? "" : m_path.back();
@@ -79,15 +79,15 @@ namespace tlc::syntax {
         };
 
         struct Array final : detail::NodeBase {
-            Array(Vec<Node> elements, token::Token::Coords coords);
+            Array(Vec<Node> elements, Coords coords);
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> elements, token::Token::Coords coords);
+            Tuple(Vec<Node> elements, Coords coords);
         };
 
         struct FnApp final : detail::NodeBase {
-            FnApp(Node callee, Node args, token::Token::Coords coords);
+            FnApp(Node callee, Node args, Coords coords);
 
             [[nodiscard]] auto callee() const noexcept -> Node;
 
@@ -95,9 +95,7 @@ namespace tlc::syntax {
         };
 
         struct Subscript final : detail::NodeBase {
-            Subscript(
-                Node collection, Node subscript, token::Token::Coords coords
-            );
+            Subscript(Node collection, Node subscript, Coords coords);
 
             [[nodiscard]] auto collection() const noexcept -> Node;
 
@@ -105,7 +103,7 @@ namespace tlc::syntax {
         };
 
         struct Access final : detail::NodeBase {
-            Access(Node object, Node field, token::Token::Coords coords);
+            Access(Node object, Node field, Coords coords);
 
             [[nodiscard]] auto object() const noexcept -> Node;
 
@@ -113,9 +111,7 @@ namespace tlc::syntax {
         };
 
         struct Prefix final : detail::NodeBase {
-            Prefix(
-                Node operand, token::EToken op, token::Token::Coords coords
-            );
+            Prefix(Node operand, token::EToken op, Coords coords);
 
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
@@ -128,9 +124,7 @@ namespace tlc::syntax {
         };
 
         struct Binary final : detail::NodeBase {
-            Binary(
-                Node lhs, Node rhs, token::EToken op, token::Token::Coords coords
-            );
+            Binary(Node lhs, Node rhs, token::EToken op, Coords coords);
 
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
@@ -161,8 +155,7 @@ namespace tlc::syntax {
         // private:
         //     Str m_value;
         // };
-        //
-        //
+
         // struct Ternary final : detail::NodeBase {
         //     Ternary(
         //         Node operand1,
@@ -183,8 +176,94 @@ namespace tlc::syntax {
         //     Str m_op1;
         //     Str m_op2;
         // };
-        //
-        //
+    }
+
+    namespace type {
+        struct Identifier : detail::NodeBase {
+            Identifier(Vec<Str> path, b8 fundamental, Coords coords);
+
+            [[nodiscard]] auto name() const noexcept -> Str {
+                return m_path.empty() ? "" : m_path.back();
+            }
+
+            [[nodiscard]] auto path() const noexcept -> Str;
+
+            [[nodiscard]] auto fundamental() const noexcept -> bool {
+                return m_fundamental;
+            }
+
+            [[nodiscard]] auto imported() const noexcept -> bool {
+                return m_path.size() > 1;
+            }
+
+        private:
+            Vec<Str> m_path;
+            b8 m_fundamental;
+        };
+
+        struct Array final : detail::NodeBase {
+            Array(Node type, Vec<Opt<szt>> sizes, Coords coords);
+
+            [[nodiscard]] auto type() const -> Node;
+
+            [[nodiscard]] auto size(szt const dimension) const -> Opt<szt> {
+                return m_sizes.at(dimension);
+            }
+
+            [[nodiscard]] auto fixed(szt const dimension) const -> bool {
+                return !m_sizes.at(dimension).has_value();
+            }
+
+        private:
+            Vec<Opt<szt>> m_sizes;
+        };
+
+        struct Tuple final : detail::NodeBase {
+            Tuple(Vec<Node> types, Coords coords);
+
+            [[nodiscard]] auto type(szt index) const -> Node;
+
+            [[nodiscard]] auto size() const -> szt;
+        };
+
+        struct Function final : detail::NodeBase {
+            Function(Node args, Node result, Coords coords);
+
+            [[nodiscard]] auto args() const noexcept -> Node;
+
+            [[nodiscard]] auto result() const noexcept -> Node;
+        };
+
+        /**
+         * [[expr]]
+         */
+        struct Infer final : detail::NodeBase {
+            Infer(Node expr, Coords coords);
+
+            [[nodiscard]] auto expr() const noexcept -> Node;
+        };
+
+        /**
+         * For both types and traits
+         *
+         * Int | Float | IsNumeric | ...
+         */
+        struct Sum final : detail::NodeBase {
+            Sum(Vec<Node> types, Coords coords);
+
+            [[nodiscard]] auto type(szt index) const -> Node;
+        };
+
+        /**
+         * For traits only.
+         *
+         * IsNumeric & IsFundamental & ...
+         */
+        struct Product final : detail::NodeBase {
+            Product(Vec<Node> types, Coords coords);
+
+            [[nodiscard]] auto type(szt index) const -> Node;
+        };
     }
 
     // namespace stmt {

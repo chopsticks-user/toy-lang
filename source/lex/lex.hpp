@@ -7,15 +7,15 @@
 #include "text_stream.hpp"
 
 namespace tlc::lex {
-    class Lexer final {
+    class Lex final {
     public:
         static auto operator()(fs::path const& filepath) -> token::TokenizedBuffer;
         static auto operator()(std::istringstream iss) -> token::TokenizedBuffer;
 
-        explicit Lexer(fs::path const& filepath)
+        explicit Lex(fs::path const& filepath)
             : m_stream{filepath} {}
 
-        explicit Lexer(std::istringstream iss)
+        explicit Lex(std::istringstream iss)
             : m_stream{std::move(iss)} {}
 
         auto operator()() -> token::TokenizedBuffer;

@@ -10,21 +10,33 @@ class ParseTestFixture {
     using FnNodes = void (*)(tlc::Span<tlc::syntax::Node const>);
 
 protected:
-    auto parse(tlc::Str source) -> void {
-        std::istringstream iss;
-        iss.str(std::move(source));
-        m_ast = tlc::parse::Parser::operator()(
-            tlc::lex::Lexer::operator()(std::move(iss))
-        );
-    }
+    // auto parse(tlc::Str source) -> void {
+    //     std::istringstream iss;
+    //     iss.str(std::move(source));
+    //     m_ast = tlc::parse::Parser::operator()(
+    //         tlc::lex::Lexer::operator()(std::move(iss))
+    //     );
+    // }
 
     template <tlc::syntax::IsASTNode T>
     static auto parseExpr(tlc::Str source) -> T {
         std::istringstream iss;
         iss.str(std::move(source));
-        auto const result = tlc::parse::Parser{
-            tlc::lex::Lexer::operator()(std::move(iss))
+        auto const result = tlc::parse::Parse{
+            tlc::lex::Lex::operator()(std::move(iss))
         }.parseExpr();
+
+        REQUIRE(result.has_value());
+        return cast<T>(*result);
+    }
+
+    template <tlc::syntax::IsASTNode T>
+    static auto parseType(tlc::Str source) -> T {
+        std::istringstream iss;
+        iss.str(std::move(source));
+        auto const result = tlc::parse::Parse{
+            tlc::lex::Lex::operator()(std::move(iss))
+        }.parseType();
 
         REQUIRE(result.has_value());
         return cast<T>(*result);
@@ -39,204 +51,112 @@ protected:
     static auto assertIdentifier(
         tlc::syntax::Node const& node,
         tlc::token::EToken type, tlc::Str const& path
-    ) -> void {
-        auto const identifier = cast<tlc::syntax::expr::Identifier>(node);
-        REQUIRE(identifier.type() == type);
-        REQUIRE(identifier.path() == path);
-    }
+    ) -> void;
 
     static auto assertIdentifier(
         tlc::Str source,
-        tlc::token::EToken const type, tlc::Str const& path
-    ) -> void {
-        return assertIdentifier(
-            parseExpr<tlc::syntax::expr::Identifier>(std::move(source)),
-            type, path
-        );
-    }
+        tlc::token::EToken type, tlc::Str const& path
+    ) -> void;
 
     static auto assertInteger(
-        tlc::syntax::Node const& node, tlc::i64 const value
-    ) -> void {
-        auto const integer = cast<tlc::syntax::expr::Integer>(node);
-        REQUIRE(integer.value() == value);
-    }
+        tlc::syntax::Node const& node, tlc::i64 value
+    ) -> void;
 
     static auto assertInteger(
-        tlc::Str source, tlc::i64 const value
-    ) -> void {
-        return assertInteger(
-            parseExpr<tlc::syntax::expr::Integer>(std::move(source)), value
-        );
-    }
+        tlc::Str source, tlc::i64 value
+    ) -> void;
 
     static auto assertFloat(
-        tlc::syntax::Node const& node, tlc::f64 const value
-    ) -> void {
-        auto const f = cast<tlc::syntax::expr::Float>(node);
-        REQUIRE(f.value() == value);
-    }
+        tlc::syntax::Node const& node, tlc::f64 value
+    ) -> void;
 
     static auto assertFloat(
-        tlc::Str source, tlc::f64 const value
-    ) -> void {
-        return assertFloat(
-            parseExpr<tlc::syntax::expr::Float>(std::move(source)), value
-        );
-    }
+        tlc::Str source, tlc::f64 value
+    ) -> void;
 
     static auto assertBoolean(
-        tlc::syntax::Node const& node, tlc::f64 const value
-    ) -> void {
-        auto const f = cast<tlc::syntax::expr::Boolean>(node);
-        REQUIRE(f.value() == value);
-    }
+        tlc::syntax::Node const& node, tlc::f64 value
+    ) -> void;
 
     static auto assertBoolean(
-        tlc::Str source, tlc::b8 const value
-    ) -> void {
-        return assertBoolean(
-            parseExpr<tlc::syntax::expr::Boolean>(std::move(source)), value
-        );
-    }
+        tlc::Str source, tlc::b8 value
+    ) -> void;
 
     static auto assertTuple(
-        tlc::syntax::Node const& node, tlc::szt const size,
-        tlc::Opt<FnNodes> const fn = {}
-    ) -> void {
-        auto const tuple = cast<tlc::syntax::expr::Tuple>(node);
-        REQUIRE(tuple.nChildren() == size);
-        if (fn) {
-            fn.value()(tuple.children());
-        }
-    }
+        tlc::syntax::Node const& node, tlc::szt size,
+        tlc::Opt<FnNodes> fn = {}
+    ) -> void;
 
     static auto assertTuple(
-        tlc::Str source, tlc::szt const size,
+        tlc::Str source, tlc::szt size,
         tlc::Opt<FnNodes> fn = {}
-    ) -> void {
-        return assertTuple(
-            parseExpr<tlc::syntax::expr::Tuple>(std::move(source)),
-            size, std::move(fn)
-        );
-    }
+    ) -> void;
 
     static auto assertArray(
-        tlc::syntax::Node const& node, tlc::szt const size,
-        tlc::Opt<FnNodes> const fn = {}
-    ) -> void {
-        auto const array = cast<tlc::syntax::expr::Array>(node);
-        REQUIRE(array.nChildren() == size);
-        if (fn) {
-            fn.value()(array.children());
-        }
-    }
+        tlc::syntax::Node const& node, tlc::szt size,
+        tlc::Opt<FnNodes> fn = {}
+    ) -> void;
 
     static auto assertArray(
-        tlc::Str source, tlc::szt const size,
+        tlc::Str source, tlc::szt size,
         tlc::Opt<FnNodes> fn = {}
-    ) -> void {
-        return assertArray(
-            parseExpr<tlc::syntax::expr::Array>(std::move(source)),
-            size, std::move(fn)
-        );
-    }
+    ) -> void;
 
     static auto assertAccessExpr(
-        tlc::syntax::Node const& node, tlc::Opt<FnNode> const fnObj = {},
-        tlc::Opt<FnNode> const fnField = {}
-    ) -> void {
-        auto const expr = cast<tlc::syntax::expr::Access>(node);
-        if (fnObj) {
-            fnObj.value()(expr.object());
-        }
-        if (fnField) {
-            fnField.value()(expr.field());
-        }
-    }
-
-    static auto assertAccessExpr(
-        tlc::Str source, tlc::Opt<FnNode> const fnObj = {},
+        tlc::syntax::Node const& node, tlc::Opt<FnNode> fnObj = {},
         tlc::Opt<FnNode> fnField = {}
-    ) -> void {
-        return assertAccessExpr(
-            parseExpr<tlc::syntax::expr::Access>(std::move(source)),
-            std::move(fnObj), std::move(fnField)
-        );
-    }
+    ) -> void;
+
+    static auto assertAccessExpr(
+        tlc::Str source, tlc::Opt<FnNode> fnObj = {},
+        tlc::Opt<FnNode> fnField = {}
+    ) -> void;
 
     static auto assertFnAppExpr(
-        tlc::syntax::Node const& node, tlc::Opt<FnNode> const fnCallee = {},
-        tlc::Opt<FnNode> const fnArgs = {}
-    ) -> void {
-        auto const expr = cast<tlc::syntax::expr::FnApp>(node);
-        if (fnCallee) {
-            fnCallee.value()(expr.callee());
-        }
-        if (fnArgs) {
-            fnArgs.value()(expr.args());
-        }
-    }
-
-    static auto assertFnAppExpr(
-        tlc::Str source, tlc::Opt<FnNode> const fnCallee = {},
+        tlc::syntax::Node const& node, tlc::Opt<FnNode> fnCallee = {},
         tlc::Opt<FnNode> fnArgs = {}
-    ) -> void {
-        return assertFnAppExpr(
-            parseExpr<tlc::syntax::expr::FnApp>(std::move(source)),
-            std::move(fnCallee), std::move(fnArgs)
-        );
-    }
+    ) -> void;
+
+    static auto assertFnAppExpr(
+        tlc::Str source, tlc::Opt<FnNode> fnCallee = {},
+        tlc::Opt<FnNode> fnArgs = {}
+    ) -> void;
 
     static auto assertSubscriptExpr(
-        tlc::syntax::Node const& node, tlc::Opt<FnNode> const fnColl = {},
-        tlc::Opt<FnNode> const fnSubs = {}
-    ) -> void {
-        auto const expr = cast<tlc::syntax::expr::Subscript>(node);
-        if (fnColl) {
-            fnColl.value()(expr.collection());
-        }
-        if (fnSubs) {
-            fnSubs.value()(expr.subscript());
-        }
-    }
-
-    static auto assertSubscriptExpr(
-        tlc::Str source, tlc::Opt<FnNode> const fnColl = {},
+        tlc::syntax::Node const& node, tlc::Opt<FnNode> fnColl = {},
         tlc::Opt<FnNode> fnSubs = {}
-    ) -> void {
-        return assertSubscriptExpr(
-            parseExpr<tlc::syntax::expr::Subscript>(std::move(source)),
-            std::move(fnColl),
-            std::move(fnSubs)
-        );
-    }
+    ) -> void;
+
+    static auto assertSubscriptExpr(
+        tlc::Str source, tlc::Opt<FnNode> fnColl = {},
+        tlc::Opt<FnNode> fnSubs = {}
+    ) -> void;
 
     static auto assertPrefixExpr(
         tlc::syntax::Node const& node, tlc::token::EToken op,
-        tlc::Opt<FnNode> const fnOperand = {}
-    ) -> void {
-        auto const expr = cast<tlc::syntax::expr::Prefix>(node);
-        REQUIRE(expr.op() == op);
-        if (fnOperand) {
-            fnOperand.value()(expr.operand());
-        }
-    }
+        tlc::Opt<FnNode> fnOperand = {}
+    ) -> void;
 
     static auto assertPrefixExpr(
-        tlc::Str source, tlc::token::EToken const op,
-        tlc::Opt<FnNode> const fnOperand = {}
-    ) -> void {
-        return assertPrefixExpr(
-            parseExpr<tlc::syntax::expr::Prefix>(std::move(source)),
-            op, std::move(fnOperand)
-        );
-    }
+        tlc::Str source, tlc::token::EToken op,
+        tlc::Opt<FnNode> fnOperand = {}
+    ) -> void;
 
     // todo: assertBinaryExpr
 
+    struct AssertType {
+        struct IdentifierInfo {
+            tlc::Opt<tlc::b8> fundamental;
+            tlc::Opt<tlc::b8> imported;
+            tlc::Opt<tlc::Str> path;
+        };
+
+        static auto identifier(tlc::syntax::Node const& node, IdentifierInfo info) -> void;
+        static auto identifier(tlc::Str source, IdentifierInfo info) -> void;
+    };
+
 private:
-    tlc::parse::Parser::ParseResult m_ast;
+    // tlc::parse::Parser::ParseResult m_ast;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

@@ -3,7 +3,7 @@
 namespace tlc::parse {
     using enum token::EToken;
 
-    auto Parser::handleExpr(syntax::OpPrecedence const minP) -> ParseResult {
+    auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult {
         ParseResult lhs;
         pushCoords();
 
@@ -94,7 +94,7 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parser::handlePrimaryExpr() -> ParseResult {
+    auto Parse::handlePrimaryExpr() -> ParseResult {
         pushCoords();
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
@@ -112,7 +112,7 @@ namespace tlc::parse {
         return Unexpected{Error{}};
     }
 
-    auto Parser::handleSingleTokenLiteral() -> ParseResult {
+    auto Parse::handleSingleTokenLiteral() -> ParseResult {
         static const HashMap<token::EToken, i32> baseTable = {
             {Integer2Literal, 2}, {Integer8Literal, 8},
             {Integer10Literal, 10}, {Integer16Literal, 16},
@@ -146,7 +146,8 @@ namespace tlc::parse {
         return Unexpected{Error{}};
     }
 
-    auto Parser::handleIdentifierLiteral() -> ParseResult {
+    // todo: remove types
+    auto Parse::handleIdentifierLiteral() -> ParseResult {
         if (auto const result = seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(Identifier, FundamentalType, UserDefinedType)
@@ -169,7 +170,7 @@ namespace tlc::parse {
         return Unexpected{Error{}};
     }
 
-    auto Parser::handleTupleExpr() -> ParseResult {
+    auto Parse::handleTupleExpr() -> ParseResult {
         if (!m_stream.match(LeftParen)) {
             return Unexpected{Error{}};
         }
@@ -193,7 +194,7 @@ namespace tlc::parse {
         return syntax::expr::Tuple{std::move(elements), std::move(coords)};
     }
 
-    auto Parser::handleArrayExpr() -> ParseResult {
+    auto Parse::handleArrayExpr() -> ParseResult {
         if (!m_stream.match(LeftBracket)) {
             return Unexpected{Error{}};
         }

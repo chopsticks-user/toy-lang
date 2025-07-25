@@ -2,7 +2,7 @@
 #include "util.hpp"
 
 namespace tlc::lex {
-    auto Lexer::lexFloatingPoint() -> void {
+    auto Lex::lexFloatingPoint() -> void {
         if (m_stream.match(isStartOfDecimalPart)) {
             appendLexeme();
             m_currentTokenType = token::EToken::FloatLiteral;
@@ -18,7 +18,7 @@ namespace tlc::lex {
         }
     }
 
-    auto Lexer::lexNondecimalNumeric() -> void {
+    auto Lex::lexNondecimalNumeric() -> void {
         szt count = 0;
         if (m_stream.match('x')) {
             appendLexeme();
@@ -60,7 +60,7 @@ namespace tlc::lex {
         appendToken();
     }
 
-    auto Lexer::lexNumeric() -> void {
+    auto Lex::lexNumeric() -> void {
         m_currentTokenType = token::EToken::Integer10Literal;
         if (m_stream.current() == '0') {
             return lexNondecimalNumeric();

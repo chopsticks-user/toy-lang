@@ -7,13 +7,13 @@ protected:
     auto parse(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_ast = tlc::parse::Parser::operator()(
-            tlc::lex::Lexer::operator()(std::move(iss))
+        m_ast = tlc::parse::Parse::operator()(
+            tlc::lex::Lex::operator()(std::move(iss))
         );
     }
 
 private:
-    tlc::parse::Parser::ParseResult m_ast;
+    tlc::parse::Parse::ParseResult m_ast;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

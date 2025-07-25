@@ -8,8 +8,9 @@ target_sources(
     token_stream.hpp token_stream.cpp
     combinator.hpp
     panic.hpp panic.cpp
-    handle_stmt.cpp
     handle_expr.cpp
+    handle_type.cpp
+    handle_stmt.cpp
     pretty_printer.hpp pretty_printer.cpp
     ast_printer.hpp ast_printer.cpp
 )

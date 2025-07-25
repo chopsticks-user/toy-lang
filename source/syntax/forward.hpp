@@ -24,6 +24,16 @@ namespace tlc::syntax {
         // struct Ternary;
     }
 
+    namespace type {
+        struct Identifier;
+        struct Array;
+        struct Tuple;
+        struct Function;
+        struct Infer;
+        struct Sum;
+        struct Product;
+    }
+
     // namespace stmt {
     //     struct ForStmt;
     //     struct ForRangeFragment;
@@ -61,7 +71,9 @@ namespace tlc::syntax {
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
         expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
-        expr::Binary
+        expr::Binary,
+
+        type::Identifier, type::Array, type::Tuple, type::Function, type::Infer
     >;
 }
 

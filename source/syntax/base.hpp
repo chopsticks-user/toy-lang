@@ -7,6 +7,9 @@
 
 namespace tlc::syntax::detail {
     class NodeBase {
+    protected:
+        using Coords = token::Token::Coords;
+
     public:
         [[nodiscard]] auto children() const noexcept -> Span<Node const>;
 

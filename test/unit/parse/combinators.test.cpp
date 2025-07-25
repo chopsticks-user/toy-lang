@@ -8,7 +8,7 @@ protected:
     auto initialize(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_stream.emplace(tlc::lex::Lexer::operator()(std::move(iss)));
+        m_stream.emplace(tlc::lex::Lex::operator()(std::move(iss)));
         m_context = {};
         m_panic = {};
     }

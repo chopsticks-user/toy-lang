@@ -2,7 +2,7 @@
 #include "util.hpp"
 
 namespace tlc::lex {
-    auto Lexer::classifyIdentifier(StrV const lexeme)
+    auto Lex::classifyIdentifier(StrV const lexeme)
         -> void {
         using enum token::EToken;
 
@@ -27,7 +27,7 @@ namespace tlc::lex {
         }
     }
 
-    auto Lexer::lexIdentifier() -> void {
+    auto Lex::lexIdentifier() -> void {
         while (m_stream.match(isDigitOrLetter)) {
             appendLexeme();
         }

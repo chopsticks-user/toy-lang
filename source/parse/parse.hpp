@@ -13,7 +13,7 @@
 #include "combinator.hpp"
 
 namespace tlc::parse {
-    class Parser {
+    class Parse final {
     public:
         using TokenIt = Vec<token::Token>::const_iterator;
         using ParseResult = Expected<syntax::Node, Error>;
@@ -21,24 +21,34 @@ namespace tlc::parse {
     public:
         static auto operator()(Vec<token::Token> tokens) -> syntax::Node;
 
-        explicit Parser(Vec<token::Token> tokens)
+        explicit Parse(Vec<token::Token> tokens)
             : m_stream{std::move(tokens)} {}
 
         auto operator()() -> syntax::Node;
 
-        // for testing
+    public: // for testing
         auto parseExpr() -> ParseResult {
             return handleExpr();
         }
 
+        auto parseType() -> ParseResult {
+            return handleType();
+        }
+
     protected:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handlePostfixExpr() -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
         auto handleTupleExpr() -> ParseResult;
         auto handleArrayExpr() -> ParseResult;
         auto handleSingleTokenLiteral() -> ParseResult;
         auto handleIdentifierLiteral() -> ParseResult;
+
+        auto handleType() -> ParseResult;
+        auto handleTypeIdentifier() -> ParseResult;
+        auto handleTypeArray() -> ParseResult;
+        auto handleTypeTuple() -> ParseResult;
+        auto handleTypeFunction() -> ParseResult;
+        auto handleTypeInfer() -> ParseResult;
 
     private:
         auto pushCoords() -> void {

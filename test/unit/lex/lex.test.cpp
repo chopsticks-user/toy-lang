@@ -9,7 +9,7 @@ protected:
     auto lex(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
-        m_tokens = tlc::lex::Lexer::operator()(std::move(iss));
+        m_tokens = tlc::lex::Lex::operator()(std::move(iss));
     }
 
     auto assertTokenAt(
