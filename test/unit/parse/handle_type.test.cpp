@@ -3,36 +3,8 @@
 using tlc::token::EToken;
 using namespace tlc::syntax;
 
-#define TLC_TEST_GENERATE_COMPARE_ASSERTION(field) \
-    info.field.transform([&ast](auto value) { \
-        REQUIRE(ast.field() == value); \
-        return ""; \
-    })
-
-#define TLC_TEST_GENERATE_SELF_ASSERTION() \
-    info.assert_self.transform([&ast](auto const& fn) { \
-        fn(ast); \
-        return ""; \
-    })
-
-#define TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(accessorName) \
-    info.assert_##accessorName.transform([&ast](auto const& fn) { \
-        fn(ast.accessorName()); \
-        return ""; \
-    })
-
-#define TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(lc_name, uc_name) \
-    auto ParseTestFixture::AssertType::lc_name( \
-        tlc::Str source, uc_name##Info info \
-    ) -> void { \
-        CAPTURE(source); \
-        return (lc_name)( \
-            parseType<type::uc_name>(std::move(source)), std::move(info) \
-        ); \
-    }
-
 auto ParseTestFixture::AssertType::identifier(
-    Node const& node, IdentifierInfo info
+    Node const& node, Identifier info
 ) -> void {
     auto const& ast = cast<type::Identifier>(node);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(fundamental);
@@ -41,7 +13,7 @@ auto ParseTestFixture::AssertType::identifier(
 }
 
 auto ParseTestFixture::AssertType::tuple(
-    Node const& node, TupleInfo info
+    Node const& node, Tuple info
 ) -> void {
     auto const& ast = cast<type::Tuple>(node);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(size);
@@ -49,14 +21,14 @@ auto ParseTestFixture::AssertType::tuple(
 }
 
 auto ParseTestFixture::AssertType::infer(
-    Node const& node, InferInfo info
+    Node const& node, Infer info
 ) -> void {
     auto const& ast = cast<type::Infer>(node);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(expr);
 }
 
 auto ParseTestFixture::AssertType::array(
-    Node const& node, ArrayInfo info
+    Node const& node, Array info
 ) -> void {
     auto const& ast = cast<type::Array>(node);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(dim);
@@ -65,18 +37,18 @@ auto ParseTestFixture::AssertType::array(
 }
 
 auto ParseTestFixture::AssertType::function(
-    Node const& node, FunctionInfo info
+    Node const& node, Function info
 ) -> void {
     auto const& ast = cast<type::Function>(node);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(args);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(result);
 }
 
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(identifier, Identifier);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(tuple, Tuple);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(infer, Infer);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(array, Array);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(function, Function);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, identifier, Identifier);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, tuple, Tuple);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, infer, Infer);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, array, Array);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, function, Function);
 
 TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
     AssertType::identifier(
@@ -94,7 +66,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
     AssertType::infer(
         "[[x]]", {
             .assert_expr = [](Node const& id) {
-                assertIdentifier(id, "x");
+                AssertExpr::identifier(id, {"x"});
             }
         }
     );
@@ -102,7 +74,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
     AssertType::infer(
         "[[3.14159]]", {
             .assert_expr = [](Node const& value) {
-                assertFloat(value, 3.14159);
+                AssertExpr::fl0at(value, {3.14159});
             }
         }
     );
@@ -189,7 +161,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
                 AssertType::infer(
                     type, {
                         [](Node const& expr) {
-                            assertIdentifier(expr, "x");
+                            AssertExpr::identifier(expr, {"x"});
                         }
                     }
                 );

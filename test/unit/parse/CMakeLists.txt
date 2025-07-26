@@ -10,6 +10,7 @@ target_sources(
     panic.test.cpp
     handle_expr.test.cpp
     handle_type.test.cpp
+    handle_decl.test.cpp
     handle_stmt.test.cpp
 )
 target_link_libraries(

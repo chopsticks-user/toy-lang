@@ -11,7 +11,7 @@ target_sources(
     handle_expr.cpp
     handle_type.cpp
     handle_stmt.cpp
-    handle_stmt_level_decl.cpp
+    handle_decl.cpp
     pretty_printer.hpp pretty_printer.cpp
     ast_printer.hpp ast_printer.cpp
 )

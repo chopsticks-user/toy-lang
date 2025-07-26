@@ -86,7 +86,7 @@ namespace tlc::parse {
             return T{std::forward<Args&&>(args)..., std::move(coords)};
         }
 
-        auto defaultError() -> ParseResult {
+        static auto defaultError() -> ParseResult {
             return Unexpected{Error{}};
         }
 
