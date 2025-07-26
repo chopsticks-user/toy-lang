@@ -11,27 +11,43 @@ namespace tlc::parse {
         }
         case Reason::MissingEnclosingSymbol: {
             switch (m_context) {
-            case Context::TupleExpr: {
-                return "Missing a ')' at the end of tuple expression.";
+            case Context::Tuple: {
+                return "Missing a ')'.";
             }
-            case Context::ArrayExpr: {
-                return "Missing a ']' at the end of array expression.";
+            case Context::Array: {
+                return "Missing a ']'.";
+            }
+            case Context::TypeInfer: {
+                return "Missing a ']]'.";
             }
             default: {
                 return "Missing enclosing" + endOfSentenceWithInfo();
             }
             }
         }
-        case Reason::NotAnExpression: {
+        case Reason::ExpectedAnExpression: {
             switch (m_context) {
-            case Context::TupleExpr: {
-                return "Tuple expression requires a comma-separated list of expressions.";
+            case Context::Tuple: {
+                return "Missing an expression in tuple.";
             }
-            case Context::ArrayExpr: {
-                return "Array expression requires a comma-separated list of expressions.";
+            case Context::Array: {
+                return "Missing an expression in array.";
             }
             default: {
                 return "Expected an expression.";
+            }
+            }
+        }
+        case Reason::ExpectedAType: {
+            switch (m_context) {
+            case Context::Tuple: {
+                return "Expected a type in tuple.";
+            }
+            case Context::Array: {
+                return "Expected a type in array.";
+            }
+            default: {
+                return "Expected a type.";
             }
             }
         }

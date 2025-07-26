@@ -26,7 +26,8 @@ namespace tlc::parse {
         }
         if (!lhs) {
             popCoords();
-            return defaultError();
+            m_panic.collect(lhs.error());
+            return Unexpected{lhs.error()};
         }
 
         m_stream.markBacktrack();
@@ -34,16 +35,19 @@ namespace tlc::parse {
             if (syntax::isPostfixStart(m_stream.peek().type())) {
                 if (m_stream.match(Dot)) {
                     pushCoords();
-                    auto field = *handleIdentifierLiteral().or_else(
-                        [this](auto const&) -> ParseResult {
-                            m_panic.collect({
-                                .location = currentCoords(),
-                                .context = Error::Context::AccessExpr,
-                                .reason = Error::Reason::ExpectedAnIdentifier,
-                            });
-                            return syntax::expr::Identifier{{}, currentCoords()};
-                        }
-                    );
+                    auto field = *handleIdentifierLiteral()
+                        .or_else(
+                            [this](auto const&) -> ParseResult {
+                                m_panic.collect({
+                                    .location = currentCoords(),
+                                    .context = Error::Context::Access,
+                                    .reason = Error::Reason::ExpectedAnIdentifier,
+                                });
+                                return syntax::expr::Identifier{
+                                    {}, currentCoords()
+                                };
+                            }
+                        );
                     lhs = syntax::expr::Access{
                         *lhs, std::move(field), currentCoords()
                     };
@@ -191,8 +195,8 @@ namespace tlc::parse {
                         m_panic.collect(std::move(error));
                         m_panic.collect({
                             .location = m_stream.current().coords(),
-                            .context = Error::Context::TupleExpr,
-                            .reason = Error::Reason::NotAnExpression,
+                            .context = Error::Context::Tuple,
+                            .reason = Error::Reason::ExpectedAnExpression,
                         });
                         return syntax::Node{};
                     })
@@ -203,7 +207,7 @@ namespace tlc::parse {
         if (!m_stream.match(RightParen)) {
             m_panic.collect({
                 .location = m_stream.current().coords(),
-                .context = Error::Context::TupleExpr,
+                .context = Error::Context::Tuple,
                 .reason = Error::Reason::MissingEnclosingSymbol,
             });
         }
@@ -237,8 +241,8 @@ namespace tlc::parse {
                         m_panic.collect(std::move(error));
                         m_panic.collect({
                             .location = m_stream.current().coords(),
-                            .context = Error::Context::ArrayExpr,
-                            .reason = Error::Reason::NotAnExpression,
+                            .context = Error::Context::Array,
+                            .reason = Error::Reason::ExpectedAnExpression,
                         });
                         return syntax::Node{};
                     })
@@ -249,7 +253,7 @@ namespace tlc::parse {
         if (!m_stream.match(RightBracket)) {
             m_panic.collect({
                 .location = m_stream.current().coords(),
-                .context = Error::Context::TupleExpr,
+                .context = Error::Context::Tuple,
                 .reason = Error::Reason::MissingEnclosingSymbol,
             });
         }

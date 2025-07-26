@@ -17,6 +17,8 @@ namespace tlc::parse {
                 }
             );
         if (!lhs) {
+            popCoords();
+            m_panic.collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -25,9 +27,13 @@ namespace tlc::parse {
             if (m_stream.peek().type() == LeftBracket) {
                 Vec<syntax::Node> dimSizes;
                 while (m_stream.match(LeftBracket)) {
-                    dimSizes.emplace_back(handleExpr().value_or(syntax::Node{}));
+                    dimSizes.emplace_back(handleExpr().value_or({}));
                     if (!m_stream.match(RightBracket)) {
-                        // todo: collect errors
+                        m_panic.collect({
+                            .location = m_stream.current().coords(),
+                            .context = Error::Context::Array,
+                            .reason = Error::Reason::MissingEnclosingSymbol,
+                        });
                         break;
                     }
                 }
@@ -35,10 +41,10 @@ namespace tlc::parse {
             }
             else if (m_stream.match(MinusGreater)) {
                 auto fnResultType = handleType()
-                    .or_else([this, &lhs]([[maybe_unused]] auto&& Error)
+                    .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
-                            // todo: collect errors, if any
-                            return syntax::Node{};
+                            m_panic.collect(std::move(error));
+                            return {};
                         });
                 lhs = syntax::type::Function{
                     *lhs, std::move(*fnResultType), currentCoords()
@@ -82,23 +88,40 @@ namespace tlc::parse {
         return match(LeftParen)(m_context, m_stream, m_panic).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
+                Vec<syntax::Node> types;
 
-                Vec<syntax::Node> elements;
+                if (m_stream.match(RightParen)) {
+                    return syntax::type::Tuple{
+                        std::move(types), std::move(coords)
+                    };
+                }
+
                 do {
-                    if (auto const type = handleType(); type) {
-                        elements.push_back(*type);
-                    }
-                    else {
-                        // todo: error
-                    }
+                    types.push_back(*handleType().or_else(
+                            [this](auto&& error) -> ParseResult {
+                                m_panic.collect(std::move(error));
+                                m_panic.collect({
+                                    .location = m_stream.current().coords(),
+                                    .context = Error::Context::Tuple,
+                                    .reason = Error::Reason::ExpectedAType,
+                                });
+                                return syntax::Node{};
+                            }
+                        )
+                    );
                 }
                 while (m_stream.match(Comma));
 
                 if (!m_stream.match(RightParen)) {
-                    return Unexpected{Error{}};
+                    m_panic.collect({
+                        .location = m_stream.current().coords(),
+                        .context = Error::Context::Tuple,
+                        .reason = Error::Reason::MissingEnclosingSymbol,
+                    });
                 }
+
                 return syntax::type::Tuple{
-                    std::move(elements),
+                    std::move(types),
                     std::move(coords)
                 };
             }
@@ -113,10 +136,15 @@ namespace tlc::parse {
                         -> ParseResult {
                             if (!seq(match(RightBracket), match(RightBracket))
                                 (m_context, m_stream, m_panic)) {
-                                return Unexpected{Error{}};
+                                m_panic.collect({
+                                    .location = m_stream.current().coords(),
+                                    .context = Error::Context::TypeInfer,
+                                    .reason = Error::Reason::MissingEnclosingSymbol,
+                                });
                             }
                             return syntax::type::Infer{expr, currentCoords()};
                         });
-                });
+                }
+            );
     }
 }

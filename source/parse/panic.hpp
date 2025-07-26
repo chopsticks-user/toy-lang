@@ -24,7 +24,12 @@ namespace tlc::parse {
             /**
              *
              */
-            NotAnExpression,
+            ExpectedAnExpression,
+
+            /**
+             *
+             */
+            ExpectedAType,
 
             /**
              *
@@ -38,7 +43,7 @@ namespace tlc::parse {
         };
 
         enum class Context {
-            Unknown, TupleExpr, ArrayExpr, AccessExpr,
+            Unknown, Tuple, Array, Access, TypeInfer,
         };
 
         struct Params {
