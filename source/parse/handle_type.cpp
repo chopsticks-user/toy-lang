@@ -16,7 +16,6 @@ namespace tlc::parse {
                     );
                 }
             );
-
         if (!lhs) {
             return Unexpected{lhs.error()};
         }
@@ -26,13 +25,7 @@ namespace tlc::parse {
             if (m_stream.peek().type() == LeftBracket) {
                 Vec<syntax::Node> dimSizes;
                 while (m_stream.match(LeftBracket)) {
-                    dimSizes.emplace_back(
-                        *handleExpr().or_else([]([[maybe_unused]] Error&& error)
-                            -> ParseResult {
-                                // todo: collect errors
-                                return syntax::Node{};
-                            })
-                    );
+                    dimSizes.emplace_back(handleExpr().value_or(syntax::Node{}));
                     if (!m_stream.match(RightBracket)) {
                         // todo: collect errors
                         break;
@@ -41,12 +34,15 @@ namespace tlc::parse {
                 lhs = syntax::type::Array{*lhs, dimSizes, currentCoords()};
             }
             else if (m_stream.match(MinusGreater)) {
-                lhs = handleType().and_then([this, &lhs](auto const& node)
-                    -> ParseResult {
-                        return syntax::type::Function{
-                            *lhs, node, currentCoords()
-                        };
-                    });
+                auto fnResultType = handleType()
+                    .or_else([this, &lhs](auto&& Error)
+                        -> ParseResult {
+                            // todo: collect errors, if any
+                            return syntax::Node{};
+                        });
+                lhs = syntax::type::Function{
+                    *lhs, std::move(*fnResultType), currentCoords()
+                };
             }
             else if (false) {
                 // todo: binary operators on types
@@ -74,7 +70,8 @@ namespace tlc::parse {
                     | rng::to<Vec<Str>>();
                 path.push_back(Str{tokens.back().str()});
                 return syntax::type::Identifier{
-                    std::move(path), m_stream.current().type() == FundamentalType,
+                    std::move(path),
+                    m_stream.current().type() == FundamentalType,
                     tokens.front().coords()
                 };
             }
@@ -100,7 +97,10 @@ namespace tlc::parse {
                 if (!m_stream.match(RightParen)) {
                     return Unexpected{Error{}};
                 }
-                return syntax::type::Tuple{std::move(elements), std::move(coords)};
+                return syntax::type::Tuple{
+                    std::move(elements),
+                    std::move(coords)
+                };
             }
         );
     }

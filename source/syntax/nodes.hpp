@@ -208,6 +208,8 @@ namespace tlc::syntax {
 
             [[nodiscard]] auto size(szt dimIndex) const noexcept -> Node const&;
 
+            [[nodiscard]] auto dim() const noexcept -> szt;
+
             [[nodiscard]] auto fixed(szt dimIndex) const -> bool;
         };
 

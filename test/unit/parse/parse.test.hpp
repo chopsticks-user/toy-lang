@@ -9,6 +9,8 @@ class ParseTestFixture {
 protected:
     using FnNode = void (*)(tlc::syntax::Node const&);
     using FnNodes = void (*)(tlc::Span<tlc::syntax::Node const>);
+    template <tlc::syntax::IsASTNode T>
+    using FnNodeT = void (*)(T const&);
 
 protected:
     // auto parse(tlc::Str source) -> void {
@@ -174,6 +176,23 @@ protected:
 
         static auto infer(tlc::syntax::Node const& node, InferInfo info) -> void;
         static auto infer(tlc::Str source, InferInfo info) -> void;
+
+        struct ArrayInfo {
+            tlc::Opt<tlc::szt> dim;
+            tlc::Opt<FnNode> assert_type;
+            tlc::Opt<FnNodeT<tlc::syntax::type::Array>> assert_self;
+        };
+
+        static auto array(tlc::syntax::Node const& node, ArrayInfo info) -> void;
+        static auto array(tlc::Str source, ArrayInfo info) -> void;
+
+        struct FunctionInfo {
+            tlc::Opt<FnNode> assert_args;
+            tlc::Opt<FnNode> assert_result;
+        };
+
+        static auto function(tlc::syntax::Node const& node, FunctionInfo info) -> void;
+        static auto function(tlc::Str source, FunctionInfo info) -> void;
     };
 
 private:

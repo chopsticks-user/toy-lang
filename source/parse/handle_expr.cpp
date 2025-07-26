@@ -24,7 +24,6 @@ namespace tlc::parse {
         else {
             lhs = handlePrimaryExpr();
         }
-
         if (!lhs) {
             popCoords();
             return Unexpected{Error{}};

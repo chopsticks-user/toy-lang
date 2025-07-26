@@ -135,8 +135,12 @@ namespace tlc::syntax {
             return childAt(dimIndex + 1);
         }
 
+        auto Array::dim() const noexcept -> size_t {
+            return nChildren() - 1;
+        }
+
         auto Array::fixed(szt const dimIndex) const -> bool {
-            return isEmptyNode(size(dimIndex));
+            return !isEmptyNode(size(dimIndex));
         }
 
         Tuple::Tuple(Vec<Node> types, Coords coords)
