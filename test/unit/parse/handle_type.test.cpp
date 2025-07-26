@@ -94,7 +94,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
     AssertType::infer(
         "[[x]]", {
             .assert_expr = [](Node const& id) {
-                assertIdentifier(id, EToken::Identifier, "x");
+                assertIdentifier(id, "x");
             }
         }
     );
@@ -189,7 +189,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
                 AssertType::infer(
                     type, {
                         [](Node const& expr) {
-                            assertIdentifier(expr, EToken::Identifier, "x");
+                            assertIdentifier(expr, "x");
                         }
                     }
                 );

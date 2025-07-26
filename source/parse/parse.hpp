@@ -35,6 +35,10 @@ namespace tlc::parse {
             return handleType();
         }
 
+        auto parseStmt() -> ParseResult {
+            return handleStmt();
+        }
+
     protected:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
@@ -47,6 +51,14 @@ namespace tlc::parse {
         auto handleTypeIdentifier() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
+
+        auto handleStmt() -> ParseResult;
+        auto handleLetStmt() -> ParseResult;
+        auto handleBlockStmt() -> ParseResult;
+
+        auto handleStmtLevelDecl() -> ParseResult;
+        auto handleIdentifierDecl() -> ParseResult;
+        auto handleTupleDecl() -> ParseResult;
 
     private:
         auto pushCoords() -> void {

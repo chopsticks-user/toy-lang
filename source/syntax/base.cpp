@@ -40,4 +40,22 @@ namespace tlc::syntax::detail {
     auto NodeBase::nChildren() const noexcept -> szt {
         return m_children.size();
     }
+
+    auto IdentifierBase::path() const noexcept -> Str {
+        if (m_path.empty()) {
+            return "";
+        }
+
+        Str pathStr = m_path.front();
+
+        if (!imported()) {
+            return pathStr;
+        }
+
+        for (StrV s : m_path | rv::drop(1)) {
+            pathStr += "::"s + Str(s);
+        }
+
+        return pathStr;
+    }
 }

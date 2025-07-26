@@ -3,7 +3,7 @@
 namespace tlc::parse {
     using enum token::EToken;
 
-    auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult {
+    auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
         pushCoords();
         ParseResult lhs;
 
@@ -38,7 +38,6 @@ namespace tlc::parse {
                         lhs = syntax::expr::Access{
                             *lhs, syntax::expr::Identifier{
                                 {m_stream.current().str()},
-                                m_stream.current().type(),
                                 m_stream.current().coords()
                             },
                             currentCoords()
@@ -93,7 +92,7 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parse::handlePrimaryExpr() -> ParseResult {
+    auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
         pushCoords();
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
@@ -162,14 +161,14 @@ namespace tlc::parse {
                 | rng::to<Vec<Str>>();
             path.push_back(Str{tokens.back().str()});
             return syntax::expr::Identifier{
-                std::move(path), m_stream.current().type(), tokens.front().coords()
+                std::move(path), tokens.front().coords()
             };
         }
 
         return Unexpected{Error{}};
     }
 
-    auto Parse::handleTupleExpr() -> ParseResult {
+    auto Parse::handleTupleExpr() -> ParseResult { // NOLINT(*-no-recursion)
         if (!m_stream.match(LeftParen)) {
             return Unexpected{Error{}};
         }
@@ -193,7 +192,7 @@ namespace tlc::parse {
         return syntax::expr::Tuple{std::move(elements), std::move(coords)};
     }
 
-    auto Parse::handleArrayExpr() -> ParseResult {
+    auto Parse::handleArrayExpr() -> ParseResult { // NOLINT(*-no-recursion)
         if (!m_stream.match(LeftBracket)) {
             return Unexpected{Error{}};
         }

@@ -57,8 +57,7 @@ protected:
     // };
 
     static auto assertIdentifier(
-        tlc::syntax::Node const& node,
-        tlc::token::EToken type, tlc::Str const& path
+        tlc::syntax::Node const& node, tlc::Str const& path
     ) -> void;
 
     static auto assertIdentifier(

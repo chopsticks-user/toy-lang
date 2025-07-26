@@ -34,6 +34,11 @@ namespace tlc::syntax {
         struct Product;
     }
 
+    namespace decl {
+        struct Identifier;
+        // struct Tuple;
+    }
+
     // namespace stmt {
     //     struct ForStmt;
     //     struct ForRangeFragment;
@@ -73,7 +78,9 @@ namespace tlc::syntax {
         expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
         expr::Binary,
 
-        type::Identifier, type::Array, type::Tuple, type::Function, type::Infer
+        type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
+
+        decl::Identifier
     >;
 }
 

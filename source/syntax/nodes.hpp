@@ -40,42 +40,8 @@ namespace tlc::syntax {
             b8 m_value;
         };
 
-        struct Identifier : detail::NodeBase {
-            Identifier(Vec<Str> path, token::EToken type, Coords coords);
-
-            [[nodiscard]] auto name() const noexcept -> Str {
-                return m_path.empty() ? "" : m_path.back();
-            }
-
-            [[nodiscard]] auto path() const noexcept -> Str {
-                if (m_path.empty()) {
-                    return "";
-                }
-
-                Str pathStr = m_path.front();
-
-                if (!isImported()) {
-                    return pathStr;
-                }
-
-                for (StrV s : m_path | rv::drop(1)) {
-                    pathStr += "::"s + Str(s);
-                }
-
-                return pathStr;
-            }
-
-            [[nodiscard]] auto type() const noexcept -> token::EToken {
-                return m_type;
-            }
-
-            [[nodiscard]] auto isImported() const noexcept -> bool {
-                return m_path.size() > 1;
-            }
-
-        private:
-            Vec<Str> m_path;
-            token::EToken m_type;
+        struct Identifier : detail::NodeBase, detail::IdentifierBase {
+            Identifier(Vec<Str> path, Coords coords);
         };
 
         struct Array final : detail::NodeBase {
@@ -179,25 +145,14 @@ namespace tlc::syntax {
     }
 
     namespace type {
-        struct Identifier : detail::NodeBase {
+        struct Identifier : detail::NodeBase, detail::IdentifierBase {
             Identifier(Vec<Str> path, b8 fundamental, Coords coords);
-
-            [[nodiscard]] auto name() const noexcept -> Str {
-                return m_path.empty() ? "" : m_path.back();
-            }
-
-            [[nodiscard]] auto path() const noexcept -> Str;
 
             [[nodiscard]] auto fundamental() const noexcept -> bool {
                 return m_fundamental;
             }
 
-            [[nodiscard]] auto imported() const noexcept -> bool {
-                return m_path.size() > 1;
-            }
-
         private:
-            Vec<Str> m_path;
             b8 m_fundamental;
         };
 
@@ -260,6 +215,29 @@ namespace tlc::syntax {
             [[nodiscard]] auto type(szt index) const -> Node;
         };
     }
+
+    namespace decl {
+        struct Identifier : detail::NodeBase {
+            Identifier(b8 constant, Node identifier, Node type, Coords coords);
+
+            [[nodiscard]] auto constant() const noexcept -> b8 {
+                return m_constant;
+            }
+
+            [[nodiscard]] auto identifier() const noexcept -> Node const&;
+
+            [[nodiscard]] auto type() const noexcept -> Node const&;
+
+        private:
+            b8 m_constant;
+        };
+
+        struct Tuple : detail::NodeBase {};
+    }
+
+    namespace stmt {}
+
+    namespace global {}
 
     // namespace stmt {
     //     struct ForStmt final : detail::NodeBase {

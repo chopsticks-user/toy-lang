@@ -13,9 +13,9 @@ namespace tlc::syntax {
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
         Identifier::Identifier(
-            Vec<Str> path, token::EToken const type, Coords coords
-        ) : NodeBase{{}, std::move(coords)}, m_path{std::move(path)},
-            m_type{type} {}
+            Vec<Str> path, Coords coords
+        ) : NodeBase{{}, std::move(coords)},
+            IdentifierBase{std::move(path)} {}
 
         Array::Array(Vec<Node> elements, Coords coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
@@ -94,25 +94,7 @@ namespace tlc::syntax {
         Identifier::Identifier(
             Vec<Str> path, b8 const fundamental, Coords coords
         ): NodeBase{{}, std::move(coords)},
-           m_path{std::move(path)}, m_fundamental{fundamental} {}
-
-        auto Identifier::path() const noexcept -> Str {
-            if (m_path.empty()) {
-                return "";
-            }
-
-            Str pathStr = m_path.front();
-
-            if (!imported()) {
-                return pathStr;
-            }
-
-            for (Str s : m_path | rv::drop(1)) {
-                pathStr += "::"s + s;
-            }
-
-            return pathStr;
-        }
+           IdentifierBase{std::move(path)}, m_fundamental{fundamental} {}
 
         Array::Array(
             Node type, Vec<Node> sizes, Coords coords
@@ -184,6 +166,21 @@ namespace tlc::syntax {
 
         auto Product::type(szt const index) const -> Node {
             return childAt(index);
+        }
+    }
+
+    namespace decl {
+        Identifier::Identifier(
+            b8 const constant, Node identifier, Node type, Coords coords
+        ) : NodeBase{{std::move(identifier), std::move(type)}, std::move(coords)},
+            m_constant{constant} {}
+
+        auto Identifier::identifier() const noexcept -> Node const& {
+            return firstChild();
+        }
+
+        auto Identifier::type() const noexcept -> Node const& {
+            return lastChild();
         }
     }
 }

@@ -4,11 +4,9 @@ using tlc::token::EToken;
 using namespace tlc::syntax;
 
 auto ParseTestFixture::assertIdentifier(
-    Node const& node,
-    EToken type, tlc::Str const& path
+    Node const& node, tlc::Str const& path
 ) -> void {
     auto const identifier = cast<expr::Identifier>(node);
-    REQUIRE(identifier.type() == type);
     REQUIRE(identifier.path() == path);
 }
 
@@ -17,8 +15,7 @@ auto ParseTestFixture::assertIdentifier(
     EToken const type, tlc::Str const& path
 ) -> void {
     return assertIdentifier(
-        parseExpr<expr::Identifier>(std::move(source)),
-        type, path
+        parseExpr<expr::Identifier>(std::move(source)), path
     );
 }
 
@@ -267,7 +264,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuples", "[Parse]") {
     assertTuple(
         "(1,x,2.1)", 3, [](tlc::Span<Node const> const elements) {
             assertInteger(elements[0], 1);
-            assertIdentifier(elements[1], EToken::Identifier, "x");
+            assertIdentifier(elements[1], "x");
             assertFloat(elements[2], 2.1);
         }
     );
@@ -285,7 +282,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
     assertArray(
         "[1,x,2.1]", 3, [](tlc::Span<Node const> const elements) {
             assertInteger(elements[0], 1);
-            assertIdentifier(elements[1], EToken::Identifier, "x");
+            assertIdentifier(elements[1], "x");
             assertFloat(elements[2], 2.1);
         }
     );
@@ -303,30 +300,30 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
     assertAccessExpr(
         "foo.bar",
         [](Node const& object) {
-            assertIdentifier(object, EToken::Identifier, "foo");
+            assertIdentifier(object, "foo");
         },
         [](Node const& field) {
-            assertIdentifier(field, EToken::Identifier, "bar");
+            assertIdentifier(field, "bar");
         }
     );
 
     assertAccessExpr(
         "foo.Bar",
         [](Node const& object) {
-            assertIdentifier(object, EToken::Identifier, "foo");
+            assertIdentifier(object, "foo");
         },
         [](Node const& field) {
-            assertIdentifier(field, EToken::UserDefinedType, "Bar");
+            assertIdentifier(field, "Bar");
         }
     );
 
     assertAccessExpr(
         "Foo.Bar",
         [](Node const& object) {
-            assertIdentifier(object, EToken::UserDefinedType, "Foo");
+            assertIdentifier(object, "Foo");
         },
         [](Node const& field) {
-            assertIdentifier(field, EToken::UserDefinedType, "Bar");
+            assertIdentifier(field, "Bar");
         }
     );
 
@@ -340,7 +337,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
             });
         },
         [](Node const& field) {
-            assertIdentifier(field, EToken::Identifier, "foo");
+            assertIdentifier(field, "foo");
         }
     );
 
@@ -350,15 +347,15 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
             assertAccessExpr(
                 object,
                 [](Node const& object1) {
-                    assertIdentifier(object1, EToken::Identifier, "foo");
+                    assertIdentifier(object1, "foo");
                 },
                 [](Node const& field1) {
-                    assertIdentifier(field1, EToken::Identifier, "bar");
+                    assertIdentifier(field1, "bar");
                 }
             );
         },
         [](Node const& field) {
-            assertIdentifier(field, EToken::Identifier, "baz");
+            assertIdentifier(field, "baz");
         }
     );
 }
@@ -367,7 +364,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     assertFnAppExpr(
         "foo(0,1,2)",
         [](Node const& callee) {
-            assertIdentifier(callee, EToken::Identifier, "foo");
+            assertIdentifier(callee, "foo");
         }, [](Node const& args) {
             assertTuple(args, 3, [](tlc::Span<Node const> const elements) {
                 assertInteger(elements[0], 0);
@@ -380,7 +377,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     assertFnAppExpr(
         "foo()",
         [](Node const& callee) {
-            assertIdentifier(callee, EToken::Identifier, "foo");
+            assertIdentifier(callee, "foo");
         }, [](Node const& args) {
             assertTuple(args, 0);
         }
@@ -392,7 +389,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
             assertFnAppExpr(
                 callee,
                 [](Node const& callee1) {
-                    assertIdentifier(callee1, EToken::Identifier, "foo");
+                    assertIdentifier(callee1, "foo");
                 }
                 ,
                 [](Node const& args1) {
@@ -410,7 +407,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
                 args, 1,
                 [](tlc::Span<Node const> const elements) {
                     assertIdentifier(
-                        elements[0], EToken::Identifier, "bar"
+                        elements[0], "bar"
                     );
                 });
         }
@@ -421,7 +418,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     assertSubscriptExpr(
         "foo[0,1,2]",
         [](Node const& callee) {
-            assertIdentifier(callee, EToken::Identifier, "foo");
+            assertIdentifier(callee, "foo");
         }, [](Node const& args) {
             assertArray(
                 args, 3,
@@ -437,7 +434,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     assertSubscriptExpr(
         "foo[]",
         [](Node const& callee) {
-            assertIdentifier(callee, EToken::Identifier, "foo");
+            assertIdentifier(callee, "foo");
         }, [](Node const& args) {
             assertArray(args, 0);
         }
@@ -449,7 +446,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
             assertSubscriptExpr(
                 callee,
                 [](Node const& callee1) {
-                    assertIdentifier(callee1, EToken::Identifier, "foo");
+                    assertIdentifier(callee1, "foo");
                 }
                 ,
                 [](Node const& args1) {
@@ -467,7 +464,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
                 args, 1,
                 [](tlc::Span<Node const> const elements) {
                     assertIdentifier(
-                        elements[0], EToken::Identifier, "bar"
+                        elements[0], "bar"
                     );
                 });
         }
@@ -538,7 +535,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
             cast<expr::Prefix>(expr.left());
         REQUIRE(left.op() == EToken::Minus);
         assertIdentifier(
-            left.operand(), EToken::Identifier, "x"
+            left.operand(), "x"
         );
 
         assertInteger(expr.right(), 3);
@@ -553,17 +550,17 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
             cast<expr::Prefix>(expr.left());
         REQUIRE(left.op() == EToken::Minus);
         assertIdentifier(
-            left.operand(), EToken::Identifier, "x"
+            left.operand(), "x"
         );
 
         auto const right =
             cast<expr::Binary>(expr.right());
         REQUIRE(right.op() == EToken::Star);
         assertIdentifier(
-            right.left(), EToken::Identifier, "y"
+            right.left(), "y"
         );
         assertIdentifier(
-            right.right(), EToken::Identifier, "z"
+            right.right(), "z"
         );
     }
 
@@ -576,18 +573,17 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
             cast<expr::Binary>(expr.left());
         REQUIRE(left.op() == EToken::Star);
         assertIdentifier(
-            left.left(), EToken::Identifier, "x"
+            left.left(), "x"
         );
         auto const leftRight =
             cast<expr::Prefix>(left.right());
         REQUIRE(leftRight.op() == EToken::Minus);
         assertIdentifier(
-            leftRight.operand(),
-            EToken::Identifier, "y"
+            leftRight.operand(), "y"
         );
 
         assertIdentifier(
-            expr.right(), EToken::Identifier, "z"
+            expr.right(), "z"
         );
     }
 }
