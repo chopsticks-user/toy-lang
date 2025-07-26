@@ -3,24 +3,26 @@
 
 #include "type.hpp"
 #include "singleton.hpp"
+#include "file.hpp"
 
 namespace tlc {
     class Exception : public std::runtime_error {
     public:
-        explicit Exception(Str const& message): std::runtime_error(message) {}
+        explicit Exception(Str message): std::runtime_error(std::move(message)) {}
 
-        explicit Exception(Str const& filepath, Str const& message)
-            : std::runtime_error("[" + filepath + " @0:0]" + message) {}
+        explicit Exception(fs::path filepath, Str message)
+            : std::runtime_error("[" + filepath.string() + " @0:0]" + std::move(message)),
+              m_filepath{std::move(filepath)} {}
 
         Exception(
-            Str const& filepath, const u64 line, const u64 column,
-            Str const& message
+            fs::path filepath, u64 const line, u64 const column,
+            Str message
         ): std::runtime_error(
-               "[" + filepath + " @" + std::to_string(line) + ":" +
-               std::to_string(column) + "] " + message
-           ), m_filepath(filepath), m_line(line), m_column(column) {}
+               "[" + filepath.string() + " @" + std::to_string(line) + ":" +
+               std::to_string(column) + "] " + std::move(message)
+           ), m_filepath(std::move(filepath)), m_line(line), m_column(column) {}
 
-        [[nodiscard]] auto filepath() const -> StrV {
+        [[nodiscard]] auto filepath() const -> fs::path {
             return m_filepath;
         }
 
@@ -33,29 +35,33 @@ namespace tlc {
         }
 
     protected:
-        Str m_filepath;
+        fs::path m_filepath;
         u64 m_line = 0;
         u64 m_column = 0;
     };
 
     struct InternalError final : Exception {
-        explicit InternalError(Str const& message) : Exception(message) {}
+        explicit InternalError(Str message) : Exception(std::move(message)) {}
 
-        InternalError(Str const& filepath, Str const& message)
-            : Exception(filepath, message) {}
+        InternalError(fs::path filepath, Str message)
+            : Exception(std::move(filepath), std::move(message)) {}
 
         InternalError(
-            Str const& filepath, const u64 line, const u64 column,
-            Str const& message
-        ): Exception{filepath, line, column, "Internal error: " + message} {}
+            fs::path filepath, u64 const line, u64 const column,
+            Str message
+        ): Exception{
+            std::move(filepath), line, column, "Internal error: " + std::move(message)
+        } {}
     };
 
+    // todo: code should be a reference
     struct CompileError final : Exception {
         CompileError(
-            Str const& filepath, const u64 line, const u64 column,
-            Str const& message, Str const& code
+            fs::path filepath, u64 const line, u64 const column,
+            Str message, Str code
         ): Exception{
-            filepath, line, column, message + "\n" + code
+            std::move(filepath), line, column, std::move(message) + "\n"
+            + std::move(code)
         } {}
     };
 

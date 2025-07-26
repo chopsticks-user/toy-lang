@@ -4,7 +4,7 @@ target_sources(
     tlc_test_unit_parse PRIVATE
     parse.test.hpp
     token_stream.test.cpp
-    combinators.test.cpp
+    combinator.test.cpp
     pretty_printer.test.cpp
     context.test.cpp
     panic.test.cpp

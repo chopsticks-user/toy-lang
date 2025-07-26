@@ -10,7 +10,7 @@ namespace tlc::parse {
     auto Parse::handleLetStmt() -> ParseResult {
         return match(Let)(m_context, m_stream, m_panic).and_then(
             [this](auto const& tokens) -> ParseResult {
-                auto coords = tokens.front().coords();
+                [[maybe_unused]] auto coords = tokens.front().coords();
 
                 if (!m_stream.match(Semicolon)) {
                     // todo: collect errors
@@ -24,7 +24,7 @@ namespace tlc::parse {
     auto Parse::handleBlockStmt() -> ParseResult {
         return match(LeftBrace)(m_context, m_stream, m_panic).and_then(
             [this](auto const& tokens) -> ParseResult {
-                auto coords = tokens.front().coords();
+                [[maybe_unused]] auto coords = tokens.front().coords();
 
                 if (!m_stream.match(RightBrace)) {
                     // todo: collect errors

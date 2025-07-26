@@ -26,7 +26,7 @@ namespace tlc::parse {
                         return syntax::decl::Identifier{
                             constant, id, type, popCoords()
                         };
-                    }).or_else([this, constant, id](auto const& error)
+                    }).or_else([this, constant, id]([[maybe_unused]] auto const& error)
                     -> ParseResult {
                         // todo: collect errors
                         return syntax::decl::Identifier{
@@ -38,5 +38,6 @@ namespace tlc::parse {
 
     auto Parse::handleTupleDecl() -> ParseResult {
         // empty tuples are not allowed
+        return {};
     }
 }

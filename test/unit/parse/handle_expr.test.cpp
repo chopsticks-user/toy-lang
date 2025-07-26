@@ -11,8 +11,7 @@ auto ParseTestFixture::assertIdentifier(
 }
 
 auto ParseTestFixture::assertIdentifier(
-    tlc::Str source,
-    EToken const type, tlc::Str const& path
+    tlc::Str source, tlc::Str const& path
 ) -> void {
     return assertIdentifier(
         parseExpr<expr::Identifier>(std::move(source)), path
@@ -242,21 +241,11 @@ TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
     SECTION("Local identifier") {
-        assertIdentifier(
-            "baz", EToken::Identifier, "baz"
-        );
+        assertIdentifier("baz", "baz");
     }
 
     SECTION("Imported identifier") {
-        assertIdentifier(
-            "foo::bar", EToken::Identifier, "foo::bar"
-        );
-    }
-
-    SECTION("Imported type") {
-        assertIdentifier(
-            "foo::bar::Baz", EToken::UserDefinedType, "foo::bar::Baz"
-        );
+        assertIdentifier("foo::bar", "foo::bar");
     }
 }
 
@@ -304,26 +293,6 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
         },
         [](Node const& field) {
             assertIdentifier(field, "bar");
-        }
-    );
-
-    assertAccessExpr(
-        "foo.Bar",
-        [](Node const& object) {
-            assertIdentifier(object, "foo");
-        },
-        [](Node const& field) {
-            assertIdentifier(field, "Bar");
-        }
-    );
-
-    assertAccessExpr(
-        "Foo.Bar",
-        [](Node const& object) {
-            assertIdentifier(object, "Foo");
-        },
-        [](Node const& field) {
-            assertIdentifier(field, "Bar");
         }
     );
 

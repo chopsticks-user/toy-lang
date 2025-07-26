@@ -12,6 +12,9 @@ protected:
     template <tlc::syntax::IsASTNode T>
     using FnNodeT = void (*)(T const&);
 
+    inline static const tlc::fs::path filepath =
+        "toy-lang/test/unit/parse.toy";
+
 protected:
     // auto parse(tlc::Str source) -> void {
     //     std::istringstream iss;
@@ -27,7 +30,7 @@ protected:
         std::istringstream iss;
         iss.str(std::move(source));
         auto const result = tlc::parse::Parse{
-            tlc::lex::Lex::operator()(std::move(iss))
+            filepath, tlc::lex::Lex::operator()(std::move(iss))
         }.parseExpr();
 
         REQUIRE(result.has_value());
@@ -39,7 +42,7 @@ protected:
         std::istringstream iss;
         iss.str(std::move(source));
         auto const result = tlc::parse::Parse{
-            tlc::lex::Lex::operator()(std::move(iss))
+            filepath, tlc::lex::Lex::operator()(std::move(iss))
         }.parseType();
 
         REQUIRE(result.has_value());
@@ -61,8 +64,7 @@ protected:
     ) -> void;
 
     static auto assertIdentifier(
-        tlc::Str source,
-        tlc::token::EToken type, tlc::Str const& path
+        tlc::Str source, tlc::Str const& path
     ) -> void;
 
     static auto assertInteger(

@@ -35,7 +35,7 @@ namespace tlc::parse {
             }
             else if (m_stream.match(MinusGreater)) {
                 auto fnResultType = handleType()
-                    .or_else([this, &lhs](auto&& Error)
+                    .or_else([this, &lhs]([[maybe_unused]] auto&& Error)
                         -> ParseResult {
                             // todo: collect errors, if any
                             return syntax::Node{};

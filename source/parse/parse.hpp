@@ -19,10 +19,10 @@ namespace tlc::parse {
         using ParseResult = Expected<syntax::Node, Error>;
 
     public:
-        static auto operator()(Vec<token::Token> tokens) -> syntax::Node;
+        static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
-        explicit Parse(Vec<token::Token> tokens)
-            : m_stream{std::move(tokens)} {}
+        Parse(fs::path filepath, Vec<token::Token> tokens)
+            : m_stream{std::move(tokens)}, m_panic{std::move(filepath)} {}
 
         auto operator()() -> syntax::Node;
 
@@ -86,10 +86,14 @@ namespace tlc::parse {
             return T{std::forward<Args&&>(args)..., std::move(coords)};
         }
 
+        auto defaultError() -> ParseResult {
+            return Unexpected{Error{}};
+        }
+
     private:
         TokenStream m_stream;
         Context m_context{};
-        Panic m_panic{};
+        Panic m_panic;
         Stack<token::Token::Coords> m_coords{};
     };
 }
