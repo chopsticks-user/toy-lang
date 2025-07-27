@@ -39,7 +39,11 @@ namespace tlc::parse {
             return handleStmt();
         }
 
-    protected:
+        auto parseDecl() -> ParseResult {
+            return handleStmtLevelDecl();
+        }
+
+    private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
         auto handleRecordExpr() -> ParseResult;
@@ -68,15 +72,10 @@ namespace tlc::parse {
 
         auto handleFunctionDef() -> ParseResult;
         auto handleFunctionPrototype() -> ParseResult;
-
         auto handleTypeDef() -> ParseResult;
-
         auto handleEnumDef() -> ParseResult;
-
         auto handleTraitDef() -> ParseResult;
-
         auto handleFlagDef() -> ParseResult;
-
         auto handleModuleDecl() -> ParseResult;
         auto handleImportDecl() -> ParseResult;
         auto handleTranslationUnit() -> ParseResult;
@@ -100,11 +99,6 @@ namespace tlc::parse {
                 };
             }
             return m_coords.top();
-        }
-
-        template <typename... Args, syntax::IsASTNode T>
-        auto createNode(token::Token::Coords coords, Args&&... args) -> syntax::Node {
-            return T{std::forward<Args&&>(args)..., std::move(coords)};
         }
 
         static auto defaultError() -> ParseResult {

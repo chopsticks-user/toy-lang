@@ -3,76 +3,76 @@
 using tlc::token::EToken;
 using namespace tlc::syntax;
 
-auto ParseTestFixture::AssertExpr::identifier(
-    Node const& node, Identifier info
-) -> void {
-    auto const ast = cast<expr::Identifier>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, identifier, Identifier
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Identifier);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(path);
 }
 
-auto ParseTestFixture::AssertExpr::integer(
-    Node const& node, Integer info
-) -> void {
-    auto const ast = cast<expr::Integer>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, integer, Integer
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Integer);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
 }
 
-auto ParseTestFixture::AssertExpr::fl0at(
-    Node const& node, Float info
-) -> void {
-    auto const ast = cast<expr::Float>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, fl0at, Float
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Float);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
 }
 
-auto ParseTestFixture::AssertExpr::boolean(
-    Node const& node, Boolean info
-) -> void {
-    auto const ast = cast<expr::Boolean>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, boolean, Boolean
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Boolean);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
 }
 
-auto ParseTestFixture::AssertExpr::tuple(
-    Node const& node, Tuple info
-) -> void {
-    auto const ast = cast<expr::Tuple>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, tuple, Tuple
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Tuple);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
 }
 
-auto ParseTestFixture::AssertExpr::array(
-    Node const& node, Array info
-) -> void {
-    auto const ast = cast<expr::Array>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, array, Array
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Array);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
 }
 
-auto ParseTestFixture::AssertExpr::access(
-    Node const& node, Access info
-) -> void {
-    auto const ast = cast<expr::Access>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, access, Access
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Access);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(object);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(field);
 }
 
-auto ParseTestFixture::AssertExpr::fnApp(
-    Node const& node, FnApp info
-) -> void {
-    auto const ast = cast<expr::FnApp>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, fnApp, FnApp
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::FnApp);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(callee);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(args);
 }
 
-auto ParseTestFixture::AssertExpr::subscript(
-    Node const& node, Subscript info
-) -> void {
-    auto const ast = cast<expr::Subscript>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, subscript, Subscript
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Subscript);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(collection);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(subscript);
 }
 
-auto ParseTestFixture::AssertExpr::prefix(
-    Node const& node, Prefix info
-) -> void {
-    auto const ast = cast<expr::Prefix>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    expr, Expr, prefix, Prefix
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Prefix);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(op);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(operand);
 }
@@ -182,6 +182,8 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
 
     AssertExpr::array("[]", {0});
 }
+
+TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
     AssertExpr::access(

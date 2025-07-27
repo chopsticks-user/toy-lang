@@ -192,7 +192,7 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_panic.collect(std::move(error));
+                        m_panic.collect(error);
                         m_panic.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Tuple,
@@ -238,7 +238,7 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_panic.collect(std::move(error));
+                        m_panic.collect(error);
                         m_panic.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Array,
@@ -264,13 +264,13 @@ namespace tlc::parse {
     auto Parse::handleRecordExpr() -> ParseResult {
         m_stream.markBacktrack();
 
-        auto const type = handleTypeIdentifier().value_or({});
+        auto type = handleTypeIdentifier().value_or({});
         if (!m_stream.match(LeftBrace)) {
             m_stream.backtrack();
             return defaultError();
         }
 
-        auto const coords = m_stream.current().coords();
+        auto coords = m_stream.current().coords();
         Vec<Pair<Str, syntax::Node>> entries;
 
         if (!m_stream.match(RightBrace)) {
@@ -280,7 +280,7 @@ namespace tlc::parse {
         }
 
         do {
-            Str key = "";
+            Str key;
             if (!m_stream.match(Identifier)) {
                 m_panic.collect({
                     .location = m_stream.current().coords(),

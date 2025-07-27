@@ -3,43 +3,43 @@
 using tlc::token::EToken;
 using namespace tlc::syntax;
 
-auto ParseTestFixture::AssertType::identifier(
-    Node const& node, Identifier info
-) -> void {
-    auto const& ast = cast<type::Identifier>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    type, Type, identifier, Identifier
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(type::Identifier);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(fundamental);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(imported);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(path);
 }
 
-auto ParseTestFixture::AssertType::tuple(
-    Node const& node, Tuple info
-) -> void {
-    auto const& ast = cast<type::Tuple>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    type, Type, tuple, Tuple
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(type::Tuple);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(size);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
 }
 
-auto ParseTestFixture::AssertType::infer(
-    Node const& node, Infer info
-) -> void {
-    auto const& ast = cast<type::Infer>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    type, Type, infer, Infer
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(type::Infer);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(expr);
 }
 
-auto ParseTestFixture::AssertType::array(
-    Node const& node, Array info
-) -> void {
-    auto const& ast = cast<type::Array>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    type, Type, array, Array
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(type::Array);
     TLC_TEST_GENERATE_COMPARE_ASSERTION(dim);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(type);
     TLC_TEST_GENERATE_SELF_ASSERTION();
 }
 
-auto ParseTestFixture::AssertType::function(
-    Node const& node, Function info
-) -> void {
-    auto const& ast = cast<type::Function>(node);
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    type, Type, function, Function
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(type::Function);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(args);
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(result);
 }

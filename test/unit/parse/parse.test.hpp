@@ -2,6 +2,7 @@
 #define TLC_TEST_UNIT_PARSE_TEST_HPP
 
 #include <catch2/catch_test_macros.hpp>
+#include <source_location>
 
 #include "parse/parse.hpp"
 
@@ -25,17 +26,34 @@
 
 #define TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(lc_syntax_ns, uc_syntax_ns, lc_name, uc_name) \
     auto ParseTestFixture::Assert##uc_syntax_ns::lc_name( \
-        tlc::Str source, uc_name info \
+        tlc::Str source, uc_name info, std::source_location location \
     ) -> void { \
-        CAPTURE(source); \
         return (lc_name)( \
-            parse##uc_syntax_ns<lc_syntax_ns::uc_name>(std::move(source)), std::move(info) \
+            parse##uc_syntax_ns<lc_syntax_ns::uc_name>(std::move(source)), \
+            std::move(info), std::move(location) \
     ); \
 }
 
+#define TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(node_type) \
+    INFO(std::format("{}:{}", location.file_name(), location.line())); \
+    auto const& ast = cast<node_type>(node);
+
+#define TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE( \
+    lc_syntax_ns, uc_syntax_ns, lc_name, uc_name \
+) \
+    auto ParseTestFixture::Assert##uc_syntax_ns::lc_name( \
+        Node const& node, uc_name info, std::source_location const location \
+    ) -> void
+
 #define TLC_TEST_GENERATE_ASSERT_DECL(lc_name, uc_name) \
-        static auto lc_name(tlc::syntax::Node const& node, uc_name info) -> void; \
-        static auto lc_name(tlc::Str source, uc_name info) -> void;
+        static auto lc_name( \
+            tlc::syntax::Node const& node, uc_name info, \
+            std::source_location location = std::source_location::current() \
+        ) -> void; \
+        static auto lc_name( \
+            tlc::Str source, uc_name info, \
+            std::source_location location = std::source_location::current() \
+        ) -> void;
 
 class ParseTestFixture {
 protected:
@@ -57,8 +75,12 @@ protected:
     // }
 
     template <tlc::syntax::IsASTNode T>
-    static auto parseExpr(tlc::Str source) -> T {
-        CAPTURE(source.c_str());
+    static auto parseExpr(
+        tlc::Str source,
+        std::source_location const location = std::source_location::current()
+    ) -> T {
+        INFO(std::format("{}:{}", location.file_name(), location.line()));
+
         std::istringstream iss;
         iss.str(std::move(source));
         auto const result = tlc::parse::Parse{
@@ -70,12 +92,34 @@ protected:
     }
 
     template <tlc::syntax::IsASTNode T>
-    static auto parseType(tlc::Str source) -> T {
+    static auto parseType(
+        tlc::Str source,
+        std::source_location const location = std::source_location::current()
+    ) -> T {
+        INFO(std::format("{}:{}", location.file_name(), location.line()));
+
         std::istringstream iss;
         iss.str(std::move(source));
         auto const result = tlc::parse::Parse{
             filepath, tlc::lex::Lex::operator()(std::move(iss))
         }.parseType();
+
+        REQUIRE(result.has_value());
+        return cast<T>(*result);
+    }
+
+    template <tlc::syntax::IsASTNode T>
+    static auto parseDecl(
+        tlc::Str source,
+        std::source_location const location = std::source_location::current()
+    ) -> T {
+        INFO(std::format("{}:{}", location.file_name(), location.line()));
+
+        std::istringstream iss;
+        iss.str(std::move(source));
+        auto const result = tlc::parse::Parse{
+            filepath, tlc::lex::Lex::operator()(std::move(iss))
+        }.parseDecl();
 
         REQUIRE(result.has_value());
         return cast<T>(*result);

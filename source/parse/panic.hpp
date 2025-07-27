@@ -62,14 +62,14 @@ namespace tlc::parse {
     public:
         Error() = default;
 
-        Error(Params params)
+        explicit Error(Params params)
             : m_filepath{std::move(params.filepath)},
               m_location{std::move(params.location)},
               m_context{params.context},
               m_reason{params.reason},
               m_info{std::move(params.info)} {}
 
-        operator CompileError() const {
+        explicit operator CompileError() const {
             return {
                 m_filepath, m_location.first, m_location.second,
                 message(), ""
