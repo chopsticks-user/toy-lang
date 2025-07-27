@@ -193,10 +193,12 @@ protected:
             tlc::Opt<FnNode> assert_type;
         };
 
-        struct Tuple {};
+        struct Tuple {
+            tlc::Opt<tlc::szt> size;
+        };
 
         TLC_TEST_GENERATE_ASSERT_DECL(identifier, Identifier);
-        // TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
+        TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
     };
 };
 

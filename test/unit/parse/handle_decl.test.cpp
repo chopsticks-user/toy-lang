@@ -11,7 +11,15 @@ TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
     TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(type);
 }
 
+TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
+    decl, Decl, tuple, Tuple
+) {
+    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(decl::Tuple);
+    TLC_TEST_GENERATE_COMPARE_ASSERTION(size);
+}
+
 TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, identifier, Identifier);
+TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, tuple, Tuple);
 
 
 const auto let_stmt = R"(
@@ -92,4 +100,8 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
+    AssertDecl::tuple("()", {.size = 0});
+    AssertDecl::tuple("($x)", {.size = 1});
+    AssertDecl::tuple("(x: Int, $y: Float, z)", {.size = 3});
+}
