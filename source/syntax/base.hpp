@@ -44,6 +44,25 @@ namespace tlc::syntax::detail {
         Vec<Node> m_children;
         token::Token::Coords m_coords;
     };
+
+    class IdentifierBase {
+    public:
+        explicit IdentifierBase(Vec<Str> path)
+            : m_path{std::move(path)} {}
+
+        [[nodiscard]] auto name() const noexcept -> Str {
+            return m_path.empty() ? "" : m_path.back();
+        }
+
+        [[nodiscard]] auto path() const noexcept -> Str;
+
+        [[nodiscard]] auto imported() const noexcept -> bool {
+            return m_path.size() > 1;
+        }
+
+    protected:
+        Vec<Str> m_path;
+    };
 }
 
 #endif // TLC_SYNTAX_BASE_HPP

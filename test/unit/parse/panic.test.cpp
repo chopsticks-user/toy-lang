@@ -3,12 +3,15 @@
 #include "parse/parse.hpp"
 
 class ParsePanicTestFixture {
+    inline static const tlc::fs::path filepath =
+        "toy-lang/test/unit/parse/panic.toy";
+
 protected:
     auto parse(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
         m_ast = tlc::parse::Parse::operator()(
-            tlc::lex::Lex::operator()(std::move(iss))
+            filepath, tlc::lex::Lex::operator()(std::move(iss))
         );
     }
 

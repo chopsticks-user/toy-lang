@@ -4,12 +4,13 @@ target_sources(
     tlc_test_unit_parse PRIVATE
     parse.test.hpp
     token_stream.test.cpp
-    combinators.test.cpp
+    combinator.test.cpp
     pretty_printer.test.cpp
     context.test.cpp
     panic.test.cpp
     handle_expr.test.cpp
     handle_type.test.cpp
+    handle_decl.test.cpp
     handle_stmt.test.cpp
 )
 target_link_libraries(
