@@ -55,6 +55,22 @@
             std::source_location location = std::source_location::current() \
         ) -> void;
 
+#define TLC_TEST_GENERATE_PARSE_OVERLOAD(uc_syntax_ns) \
+    template <tlc::syntax::IsASTNode T> \
+    static auto parse##uc_syntax_ns( \
+        tlc::Str source, \
+        std::source_location const location = std::source_location::current() \
+    ) -> T { \
+        INFO(std::format("{}:{}", location.file_name(), location.line())); \
+        std::istringstream iss; \
+        iss.str(std::move(source)); \
+        auto const result = tlc::parse::Parse{ \
+            filepath, tlc::lex::Lex::operator()(std::move(iss)) \
+        }.parse##uc_syntax_ns(); \
+        REQUIRE(result.has_value()); \
+        return cast<T>(*result); \
+    }
+
 class ParseTestFixture {
 protected:
     using FnNode = void (*)(tlc::syntax::Node const&);
@@ -66,64 +82,10 @@ protected:
         "toy-lang/test/unit/parse.toy";
 
 protected:
-    // auto parse(tlc::Str source) -> void {
-    //     std::istringstream iss;
-    //     iss.str(std::move(source));
-    //     m_ast = tlc::parse::Parser::operator()(
-    //         tlc::lex::Lexer::operator()(std::move(iss))
-    //     );
-    // }
-
-    template <tlc::syntax::IsASTNode T>
-    static auto parseExpr(
-        tlc::Str source,
-        std::source_location const location = std::source_location::current()
-    ) -> T {
-        INFO(std::format("{}:{}", location.file_name(), location.line()));
-
-        std::istringstream iss;
-        iss.str(std::move(source));
-        auto const result = tlc::parse::Parse{
-            filepath, tlc::lex::Lex::operator()(std::move(iss))
-        }.parseExpr();
-
-        REQUIRE(result.has_value());
-        return cast<T>(*result);
-    }
-
-    template <tlc::syntax::IsASTNode T>
-    static auto parseType(
-        tlc::Str source,
-        std::source_location const location = std::source_location::current()
-    ) -> T {
-        INFO(std::format("{}:{}", location.file_name(), location.line()));
-
-        std::istringstream iss;
-        iss.str(std::move(source));
-        auto const result = tlc::parse::Parse{
-            filepath, tlc::lex::Lex::operator()(std::move(iss))
-        }.parseType();
-
-        REQUIRE(result.has_value());
-        return cast<T>(*result);
-    }
-
-    template <tlc::syntax::IsASTNode T>
-    static auto parseDecl(
-        tlc::Str source,
-        std::source_location const location = std::source_location::current()
-    ) -> T {
-        INFO(std::format("{}:{}", location.file_name(), location.line()));
-
-        std::istringstream iss;
-        iss.str(std::move(source));
-        auto const result = tlc::parse::Parse{
-            filepath, tlc::lex::Lex::operator()(std::move(iss))
-        }.parseDecl();
-
-        REQUIRE(result.has_value());
-        return cast<T>(*result);
-    }
+    TLC_TEST_GENERATE_PARSE_OVERLOAD(Expr);
+    TLC_TEST_GENERATE_PARSE_OVERLOAD(Type);
+    TLC_TEST_GENERATE_PARSE_OVERLOAD(Decl);
+    TLC_TEST_GENERATE_PARSE_OVERLOAD(Stmt);
 
     template <tlc::syntax::IsASTNode T>
     static auto cast(tlc::syntax::Node const& node) -> T {
@@ -225,12 +187,16 @@ protected:
     };
 
     struct AssertDecl {
-        struct Identifier {};
+        struct Identifier {
+            tlc::Opt<tlc::b8> constant;
+            tlc::Opt<FnNode> assert_identifier;
+            tlc::Opt<FnNode> assert_type;
+        };
 
         struct Tuple {};
 
         TLC_TEST_GENERATE_ASSERT_DECL(identifier, Identifier);
-        TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
+        // TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
     };
 };
 
