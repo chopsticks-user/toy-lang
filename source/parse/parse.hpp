@@ -53,13 +53,33 @@ namespace tlc::parse {
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
 
-        auto handleStmt() -> ParseResult;
-        auto handleLetStmt() -> ParseResult;
-        auto handleBlockStmt() -> ParseResult;
-
         auto handleStmtLevelDecl() -> ParseResult;
         auto handleIdentifierDecl() -> ParseResult;
         auto handleTupleDecl() -> ParseResult;
+
+        auto handleStmt() -> ParseResult;
+        auto handleLetStmt() -> ParseResult;
+        auto handleReturnStmt() -> ParseResult;
+        auto handleExprPrefixedStmt() -> ParseResult;
+        auto handleLoopStmt() -> ParseResult;
+        auto handleMatchStmt() -> ParseResult;
+        auto handleConditionalStmt() -> ParseResult;
+        auto handleBlockStmt() -> ParseResult;
+
+        auto handleFunctionDef() -> ParseResult;
+        auto handleFunctionPrototype() -> ParseResult;
+
+        auto handleTypeDef() -> ParseResult;
+
+        auto handleEnumDef() -> ParseResult;
+
+        auto handleTraitDef() -> ParseResult;
+
+        auto handleFlagDef() -> ParseResult;
+
+        auto handleModuleDecl() -> ParseResult;
+        auto handleImportDecl() -> ParseResult;
+        auto handleTranslationUnit() -> ParseResult;
 
     private:
         auto pushCoords() -> void {

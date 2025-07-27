@@ -21,6 +21,26 @@ namespace tlc::parse {
         );
     }
 
+    auto Parse::handleReturnStmt() -> ParseResult {
+        return {};
+    }
+
+    auto Parse::handleExprPrefixedStmt() -> ParseResult {
+        return {};
+    }
+
+    auto Parse::handleLoopStmt() -> ParseResult {
+        return {};
+    }
+
+    auto Parse::handleMatchStmt() -> ParseResult {
+        return {};
+    }
+
+    auto Parse::handleConditionalStmt() -> ParseResult {
+        return {};
+    }
+
     auto Parse::handleBlockStmt() -> ParseResult {
         return match(LeftBrace)(m_context, m_stream, m_panic).and_then(
             [this](auto const& tokens) -> ParseResult {
