@@ -7,9 +7,6 @@
 #include "token_stream.hpp"
 
 namespace tlc::parse {
-    // todo: move error.hpp
-    struct Error {};
-
     using ParserCombinatorResult = Expected<
         token::TokenizedBuffer, Error
     >;

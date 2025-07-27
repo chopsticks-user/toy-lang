@@ -19,10 +19,10 @@ namespace tlc::parse {
         using ParseResult = Expected<syntax::Node, Error>;
 
     public:
-        static auto operator()(Vec<token::Token> tokens) -> syntax::Node;
+        static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
-        explicit Parse(Vec<token::Token> tokens)
-            : m_stream{std::move(tokens)} {}
+        Parse(fs::path filepath, Vec<token::Token> tokens)
+            : m_stream{std::move(tokens)}, m_panic{std::move(filepath)} {}
 
         auto operator()() -> syntax::Node;
 
@@ -35,9 +35,14 @@ namespace tlc::parse {
             return handleType();
         }
 
+        auto parseStmt() -> ParseResult {
+            return handleStmt();
+        }
+
     protected:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
+        auto handleRecordExpr() -> ParseResult;
         auto handleTupleExpr() -> ParseResult;
         auto handleArrayExpr() -> ParseResult;
         auto handleSingleTokenLiteral() -> ParseResult;
@@ -45,10 +50,36 @@ namespace tlc::parse {
 
         auto handleType() -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
-        auto handleTypeArray() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
-        auto handleTypeFunction() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
+
+        auto handleStmtLevelDecl() -> ParseResult;
+        auto handleIdentifierDecl() -> ParseResult;
+        auto handleTupleDecl() -> ParseResult;
+
+        auto handleStmt() -> ParseResult;
+        auto handleLetStmt() -> ParseResult;
+        auto handleReturnStmt() -> ParseResult;
+        auto handleExprPrefixedStmt() -> ParseResult;
+        auto handleLoopStmt() -> ParseResult;
+        auto handleMatchStmt() -> ParseResult;
+        auto handleConditionalStmt() -> ParseResult;
+        auto handleBlockStmt() -> ParseResult;
+
+        auto handleFunctionDef() -> ParseResult;
+        auto handleFunctionPrototype() -> ParseResult;
+
+        auto handleTypeDef() -> ParseResult;
+
+        auto handleEnumDef() -> ParseResult;
+
+        auto handleTraitDef() -> ParseResult;
+
+        auto handleFlagDef() -> ParseResult;
+
+        auto handleModuleDecl() -> ParseResult;
+        auto handleImportDecl() -> ParseResult;
+        auto handleTranslationUnit() -> ParseResult;
 
     private:
         auto pushCoords() -> void {
@@ -76,10 +107,14 @@ namespace tlc::parse {
             return T{std::forward<Args&&>(args)..., std::move(coords)};
         }
 
+        static auto defaultError() -> ParseResult {
+            return Unexpected{Error{}};
+        }
+
     private:
         TokenStream m_stream;
         Context m_context{};
-        Panic m_panic{};
+        Panic m_panic;
         Stack<token::Token::Coords> m_coords{};
     };
 }

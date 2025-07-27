@@ -4,13 +4,16 @@
 #include "parse/parse.hpp"
 
 class ParserCombinatorTestFixture {
+    inline static const tlc::fs::path filepath =
+        "toy-lang/test/unit/parse/combinator.toy";
+
 protected:
     auto initialize(tlc::Str source) -> void {
         std::istringstream iss;
         iss.str(std::move(source));
         m_stream.emplace(tlc::lex::Lex::operator()(std::move(iss)));
         m_context = {};
-        m_panic = {};
+        m_panic = tlc::parse::Panic{filepath};
     }
 
     auto invoke(tlc::parse::ParserCombinator const& pc)
@@ -26,14 +29,14 @@ protected:
 
 private:
     tlc::parse::Context m_context{};
-    tlc::parse::Panic m_panic{};
+    tlc::parse::Panic m_panic{filepath};
     tlc::Opt<tlc::parse::TokenStream> m_stream;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \
     TEST_CASE_METHOD(ParserCombinatorTestFixture, __VA_ARGS__)
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators:", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator:", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
     //
     // initialize("-x-5");
@@ -42,7 +45,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators:", "[Parse][ParserCombinator]") {
     //     invoke(tlc::parse::handleExpr());
 }
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator: Match", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
 
     SECTION("Sequential matches") {
@@ -113,7 +116,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Match", "[Parse][ParserCombinator]") 
     }
 }
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators: Many or 0", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 0", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
 
     SECTION("Consumes all tokens") {
@@ -182,7 +185,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Many or 0", "[Parse][ParserCombinator
     }
 }
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators: Many or 1", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 1", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
 
     SECTION("Consumes all tokens") {
@@ -224,7 +227,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Many or 1", "[Parse][ParserCombinator
     }
 }
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators: Any", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator: Any", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
 
     SECTION("Success") {
@@ -259,7 +262,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Any", "[Parse][ParserCombinator]") {
     }
 }
 
-TEST_CASE_WITH_FIXTURE("ParserCombinators: Sequence", "[Parse][ParserCombinator]") {
+TEST_CASE_WITH_FIXTURE("ParserCombinator: Sequence", "[Parse][ParserCombinator]") {
     using enum tlc::token::EToken;
 
     SECTION("Success") {
@@ -315,7 +318,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinators: Sequence", "[Parse][ParserCombinator]
  * all required states instead of just reverting "m_tokenIt"
  */
 TEST_CASE_WITH_FIXTURE(
-    "ParserCombinators: Combinator for identifier literals",
+    "ParserCombinator: Combinator for identifier literals",
     "[Parse][ParserCombinator][Fixed]"
 ) {
     using enum tlc::token::EToken;

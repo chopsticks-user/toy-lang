@@ -3,14 +3,17 @@
 #include "parse/parse.hpp"
 
 class PrettyPrinterTestFixture {
+    inline static const tlc::fs::path filepath =
+        "toy-lang/test/unit/parse/pretty_printer.toy";
+
 protected:
-    auto parse(tlc::Str source) -> void {
-        std::istringstream iss;
-        iss.str(std::move(source));
-        m_ast = tlc::parse::Parse::operator()(
-            tlc::lex::Lex::operator()(std::move(iss))
-        );
-    }
+    // auto parse(tlc::Str source) -> void {
+    //     std::istringstream iss;
+    //     iss.str(std::move(source));
+    //     m_ast = tlc::parse::Parse::operator()(
+    //         filepath, tlc::lex::Lex::operator()(std::move(iss))
+    //     );
+    // }
 
 private:
     tlc::parse::Parse::ParseResult m_ast;

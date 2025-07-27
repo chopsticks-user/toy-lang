@@ -11,6 +11,13 @@ target_sources(
     handle_expr.cpp
     handle_type.cpp
     handle_stmt.cpp
+    handle_decl.cpp
+    handle_enum_def.cpp
+    handle_flag_def.cpp
+    handle_function_def.cpp
+    handle_trait_def.cpp
+    handle_type_def.cpp
+    handle_global_decl.cpp
     pretty_printer.hpp pretty_printer.cpp
     ast_printer.hpp ast_printer.cpp
 )

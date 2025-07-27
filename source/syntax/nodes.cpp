@@ -1,4 +1,5 @@
 #include "nodes.hpp"
+#include "util.hpp"
 
 namespace tlc::syntax {
     namespace expr {
@@ -12,9 +13,9 @@ namespace tlc::syntax {
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
         Identifier::Identifier(
-            Vec<Str> path, token::EToken const type, Coords coords
-        ) : NodeBase{{}, std::move(coords)}, m_path{std::move(path)},
-            m_type{type} {}
+            Vec<Str> path, Coords coords
+        ) : NodeBase{{}, std::move(coords)},
+            IdentifierBase{std::move(path)} {}
 
         Array::Array(Vec<Node> elements, Coords coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
@@ -87,39 +88,82 @@ namespace tlc::syntax {
         auto Binary::right() const noexcept -> Node {
             return lastChild();
         }
+
+        Record::Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords)
+            : NodeBase{
+                [&] {
+                    Vec<Node> nodes;
+                    nodes.reserve(entries.size() + 1);
+                    nodes.push_back(std::move(of));
+                    nodes.append_range(
+                        entries | rv::transform(
+                            [](auto const& entry) {
+                                return entry.second;
+                            }
+                        )
+                    );
+                    m_keys.append_range(
+                        entries | rv::transform(
+                            [](auto const& entry) {
+                                return entry.first;
+                            }
+                        )
+                    );
+                    return nodes;
+                }(),
+                std::move(coords)
+            } {}
+
+        auto Record::size() const noexcept -> szt {
+            return nChildren() - 1;
+        }
+
+        auto Record::of() const noexcept -> Node {
+            return firstChild();
+        }
+
+        auto Record::key(szt const index) const noexcept -> Str {
+            return m_keys.at(index);
+        }
+
+        auto Record::value(szt const index) const noexcept -> Node const& {
+            return childAt(index + 1);
+        }
     }
 
     namespace type {
         Identifier::Identifier(
             Vec<Str> path, b8 const fundamental, Coords coords
         ): NodeBase{{}, std::move(coords)},
-           m_path{std::move(path)}, m_fundamental{fundamental} {}
-
-        auto Identifier::path() const noexcept -> Str {
-            if (m_path.empty()) {
-                return "";
-            }
-
-            Str pathStr = m_path.front();
-
-            if (!imported()) {
-                return pathStr;
-            }
-
-            for (Str s : m_path | rv::drop(1)) {
-                pathStr += "::"s + s;
-            }
-
-            return pathStr;
-        }
+           IdentifierBase{std::move(path)}, m_fundamental{fundamental} {}
 
         Array::Array(
-            Node type, Vec<Opt<szt>> sizes, Coords coords
-        ): NodeBase{{std::move(type)}, std::move(coords)},
-           m_sizes{std::move(sizes)} {}
+            Node type, Vec<Node> sizes, Coords coords
+        ): NodeBase{
+            [&] {
+                Vec<Node> nodes;
+                nodes.reserve(sizes.size() + 1);
+                nodes.emplace_back(type);
+                nodes.append_range(std::move(sizes));
+                return nodes;
+            }(),
+            std::move(coords)
+        } {}
 
-        auto Array::type() const -> Node {
+        auto Array::type() const noexcept -> Node const& {
             return firstChild();
+        }
+
+        auto Array::size(szt const dimIndex) const noexcept -> Node const& {
+            return childAt(dimIndex + 1);
+        }
+
+        auto Array::dim() const noexcept -> size_t {
+            return nChildren() - 1;
+        }
+
+        auto Array::fixed(szt const dimIndex) const -> bool {
+            return !isEmptyNode(size(dimIndex));
         }
 
         Tuple::Tuple(Vec<Node> types, Coords coords)
@@ -163,6 +207,32 @@ namespace tlc::syntax {
 
         auto Product::type(szt const index) const -> Node {
             return childAt(index);
+        }
+    }
+
+    namespace decl {
+        Identifier::Identifier(
+            b8 const constant, Node identifier, Node type, Coords coords
+        ) : NodeBase{{std::move(identifier), std::move(type)}, std::move(coords)},
+            m_constant{constant} {}
+
+        auto Identifier::identifier() const noexcept -> Node const& {
+            return firstChild();
+        }
+
+        auto Identifier::type() const noexcept -> Node const& {
+            return lastChild();
+        }
+
+        Tuple::Tuple(Vec<Node> decls, Coords coords)
+            : NodeBase{std::move(decls), std::move(coords)} {}
+
+        auto Tuple::decl(szt const index) const -> Node {
+            return childAt(index);
+        }
+
+        auto Tuple::size() const -> szt {
+            return nChildren();
         }
     }
 }
