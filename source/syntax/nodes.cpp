@@ -88,6 +88,47 @@ namespace tlc::syntax {
         auto Binary::right() const noexcept -> Node {
             return lastChild();
         }
+
+        Record::Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords)
+            : NodeBase{
+                [&] {
+                    Vec<Node> nodes;
+                    nodes.reserve(entries.size() + 1);
+                    nodes.push_back(std::move(of));
+                    nodes.append_range(
+                        entries | rv::transform(
+                            [](auto const& entry) {
+                                return entry.second;
+                            }
+                        )
+                    );
+                    m_keys.append_range(
+                        entries | rv::transform(
+                            [](auto const& entry) {
+                                return entry.first;
+                            }
+                        )
+                    );
+                    return nodes;
+                }(),
+                std::move(coords)
+            } {}
+
+        auto Record::size() const noexcept -> szt {
+            return nChildren() - 1;
+        }
+
+        auto Record::of() const noexcept -> Node {
+            return firstChild();
+        }
+
+        auto Record::key(szt const index) const noexcept -> Str {
+            return m_keys.at(index);
+        }
+
+        auto Record::value(szt const index) const noexcept -> Node const& {
+            return childAt(index + 1);
+        }
     }
 
     namespace type {
@@ -109,7 +150,7 @@ namespace tlc::syntax {
             std::move(coords)
         } {}
 
-        auto Array::type() const -> Node const& {
+        auto Array::type() const noexcept -> Node const& {
             return firstChild();
         }
 
@@ -181,6 +222,17 @@ namespace tlc::syntax {
 
         auto Identifier::type() const noexcept -> Node const& {
             return lastChild();
+        }
+
+        Tuple::Tuple(Vec<Node> decls, Coords coords)
+            : NodeBase{std::move(decls), std::move(coords)} {}
+
+        auto Tuple::decl(szt const index) const -> Node {
+            return childAt(index);
+        }
+
+        auto Tuple::size() const -> szt {
+            return nChildren();
         }
     }
 }

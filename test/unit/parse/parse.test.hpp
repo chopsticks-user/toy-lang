@@ -188,9 +188,6 @@ protected:
         TLC_TEST_GENERATE_ASSERT_DECL(identifier, Identifier);
         TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
     };
-
-private:
-    // tlc::parse::Parser::ParseResult m_ast;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

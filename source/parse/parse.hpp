@@ -42,6 +42,7 @@ namespace tlc::parse {
     protected:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
+        auto handleRecordExpr() -> ParseResult;
         auto handleTupleExpr() -> ParseResult;
         auto handleArrayExpr() -> ParseResult;
         auto handleSingleTokenLiteral() -> ParseResult;

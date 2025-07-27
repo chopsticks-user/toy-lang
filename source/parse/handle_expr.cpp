@@ -41,7 +41,7 @@ namespace tlc::parse {
                                 m_panic.collect({
                                     .location = currentCoords(),
                                     .context = Error::Context::Access,
-                                    .reason = Error::Reason::ExpectedAnIdentifier,
+                                    .reason = Error::Reason::MissingId,
                                 });
                                 return syntax::expr::Identifier{
                                     {}, currentCoords()
@@ -196,7 +196,7 @@ namespace tlc::parse {
                         m_panic.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Tuple,
-                            .reason = Error::Reason::ExpectedAnExpression,
+                            .reason = Error::Reason::MissingExpr,
                         });
                         return syntax::Node{};
                     })
@@ -242,7 +242,7 @@ namespace tlc::parse {
                         m_panic.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Array,
-                            .reason = Error::Reason::ExpectedAnExpression,
+                            .reason = Error::Reason::MissingExpr,
                         });
                         return syntax::Node{};
                     })
@@ -259,5 +259,73 @@ namespace tlc::parse {
         }
 
         return syntax::expr::Array{std::move(elements), std::move(coords)};
+    }
+
+    auto Parse::handleRecordExpr() -> ParseResult {
+        m_stream.markBacktrack();
+
+        auto const type = handleTypeIdentifier().value_or({});
+        if (!m_stream.match(LeftBrace)) {
+            m_stream.backtrack();
+            return defaultError();
+        }
+
+        auto const coords = m_stream.current().coords();
+        Vec<Pair<Str, syntax::Node>> entries;
+
+        if (!m_stream.match(RightBrace)) {
+            return syntax::expr::Record{
+                std::move(type), std::move(entries), std::move(coords)
+            };
+        }
+
+        do {
+            Str key = "";
+            if (!m_stream.match(Identifier)) {
+                m_panic.collect({
+                    .location = m_stream.current().coords(),
+                    .context = Error::Context::Record,
+                    .reason = Error::Reason::MissingId,
+                });
+            }
+            else {
+                key = m_stream.current().str();
+            }
+
+            if (!m_stream.match(Colon)) {
+                m_panic.collect({
+                    .location = m_stream.current().coords(),
+                    .context = Error::Context::Record,
+                    .reason = Error::Reason::MissingSymbol,
+                });
+            }
+
+            syntax::Node value = *handleExpr().or_else(
+                [this](auto&& error) -> ParseResult {
+                    m_panic.collect(error);
+                    m_panic.collect({
+                        .location = m_stream.current().coords(),
+                        .context = Error::Context::Record,
+                        .reason = Error::Reason::MissingExpr,
+                    });
+                    return {};
+                }
+            );
+
+            entries.emplace_back(std::move(key), std::move(value));
+        }
+        while (m_stream.match(Comma));
+
+        if (!m_stream.match(RightBrace)) {
+            m_panic.collect({
+                .location = coords,
+                .context = Error::Context::Record,
+                .reason = Error::Reason::MissingEnclosingSymbol,
+            });
+        }
+
+        return syntax::expr::Record{
+            std::move(type), std::move(entries), std::move(coords)
+        };
     }
 }

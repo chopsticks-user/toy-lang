@@ -24,17 +24,22 @@ namespace tlc::parse {
             /**
              *
              */
-            ExpectedAnExpression,
+            MissingExpr,
 
             /**
              *
              */
-            ExpectedAType,
+            MissingType,
 
             /**
              *
              */
-            ExpectedAnIdentifier,
+            MissingId,
+
+            /**
+             *
+             */
+            MissingDecl,
 
             /**
              *
@@ -43,7 +48,7 @@ namespace tlc::parse {
         };
 
         enum class Context {
-            Unknown, Tuple, Array, Access, TypeInfer,
+            Unknown, Tuple, Array, Access, TypeInfer, Record,
         };
 
         struct Params {
@@ -57,12 +62,11 @@ namespace tlc::parse {
     public:
         Error() = default;
 
-        // todo: info
         Error(Params params)
             : m_filepath{std::move(params.filepath)},
               m_location{std::move(params.location)},
-              m_context{std::move(params.context)},
-              m_reason{std::move(params.reason)},
+              m_context{params.context},
+              m_reason{params.reason},
               m_info{std::move(params.info)} {}
 
         operator CompileError() const {
@@ -72,14 +76,14 @@ namespace tlc::parse {
             };
         }
 
-        auto message() const -> Str;
+        [[nodiscard]] auto message() const -> Str;
 
-        auto reason() const -> Reason {
+        [[nodiscard]] auto reason() const -> Reason {
             return m_reason;
         }
 
     private:
-        auto endOfSentenceWithInfo() const -> Str {
+        [[nodiscard]] auto endOfSentenceWithInfo() const -> Str {
             return m_info.empty() ? " " + m_info + "." : ".";
         }
 
@@ -98,7 +102,7 @@ namespace tlc::parse {
 
         auto collect(Error error) -> void {
             if (error.reason() != Error::Reason::NotAnError) {
-                m_errors.emplace_back(error);
+                m_errors.push_back(std::move(error));
             }
         }
 

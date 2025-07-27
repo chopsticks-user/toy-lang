@@ -142,6 +142,21 @@ namespace tlc::syntax {
         //     Str m_op1;
         //     Str m_op2;
         // };
+
+        struct Record final : detail::NodeBase {
+            Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
+
+            [[nodiscard]] auto of() const noexcept -> Node;
+
+            [[nodiscard]] auto key(szt index) const noexcept -> Str;
+
+            [[nodiscard]] auto value(szt index) const noexcept -> Node const&;
+
+        private:
+            Vec<Str> m_keys;
+        };
     }
 
     namespace type {
@@ -232,7 +247,13 @@ namespace tlc::syntax {
             b8 m_constant;
         };
 
-        struct Tuple : detail::NodeBase {};
+        struct Tuple : detail::NodeBase {
+            Tuple(Vec<Node> decls, Coords coords);
+
+            [[nodiscard]] auto decl(szt index) const -> Node;
+
+            [[nodiscard]] auto size() const -> szt;
+        };
     }
 
     namespace stmt {}

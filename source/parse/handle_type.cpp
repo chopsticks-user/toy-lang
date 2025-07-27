@@ -3,7 +3,7 @@
 namespace tlc::parse {
     using enum token::EToken;
 
-    auto Parse::handleType() -> ParseResult {
+    auto Parse::handleType() -> ParseResult { // NOLINT(*-no-recursion)
         pushCoords();
 
         auto lhs =
@@ -43,7 +43,7 @@ namespace tlc::parse {
                 auto fnResultType = handleType()
                     .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
-                            m_panic.collect(std::move(error));
+                            m_panic.collect(error);
                             return {};
                         });
                 lhs = syntax::type::Function{
@@ -99,11 +99,11 @@ namespace tlc::parse {
                 do {
                     types.push_back(*handleType().or_else(
                             [this](auto&& error) -> ParseResult {
-                                m_panic.collect(std::move(error));
+                                m_panic.collect(error);
                                 m_panic.collect({
                                     .location = m_stream.current().coords(),
                                     .context = Error::Context::Tuple,
-                                    .reason = Error::Reason::ExpectedAType,
+                                    .reason = Error::Reason::MissingType,
                                 });
                                 return syntax::Node{};
                             }

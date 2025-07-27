@@ -12,42 +12,65 @@ namespace tlc::parse {
         case Reason::MissingEnclosingSymbol: {
             switch (m_context) {
             case Context::Tuple: {
-                return "Missing a ')'.";
+                return "Missing ')'.";
             }
             case Context::Array: {
-                return "Missing a ']'.";
+                return "Missing ']'.";
             }
             case Context::TypeInfer: {
-                return "Missing a ']]'.";
+                return "Missing ']]'.";
+            }
+            case Context::Record: {
+                return "Missing '}'.";
             }
             default: {
                 return "Missing enclosing" + endOfSentenceWithInfo();
             }
             }
         }
-        case Reason::ExpectedAnExpression: {
+        case Reason::MissingExpr: {
             switch (m_context) {
             case Context::Tuple: {
-                return "Missing an expression in tuple.";
+                return "Missing expressions in tuple.";
             }
             case Context::Array: {
-                return "Missing an expression in array.";
+                return "Missing expressions in array.";
             }
             default: {
-                return "Expected an expression.";
+                return "Missing expressions.";
             }
             }
         }
-        case Reason::ExpectedAType: {
+        case Reason::MissingType: {
             switch (m_context) {
             case Context::Tuple: {
-                return "Expected a type in tuple.";
+                return "Missing type identifiers in tuple.";
             }
             case Context::Array: {
-                return "Expected a type in array.";
+                return "Missing type identifiers in array.";
             }
             default: {
-                return "Expected a type.";
+                return "Missing type identifiers.";
+            }
+            }
+        }
+        case Reason::MissingId: {
+            switch (m_context) {
+            case Context::Access: {
+                return "Missing identifiers after '.'.";
+            }
+            default: {
+                return "Missing identifiers.";
+            }
+            }
+        }
+        case Reason::MissingDecl: {
+            switch (m_context) {
+            case Context::Tuple: {
+                return "Missing declarations in tuple.";
+            }
+            default: {
+                return "Missing declarations.";
             }
             }
         }

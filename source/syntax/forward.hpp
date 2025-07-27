@@ -22,6 +22,8 @@ namespace tlc::syntax {
         struct Prefix;
         struct Binary;
         // struct Ternary;
+
+        struct Record;
     }
 
     namespace type {
@@ -36,7 +38,7 @@ namespace tlc::syntax {
 
     namespace decl {
         struct Identifier;
-        // struct Tuple;
+        struct Tuple;
     }
 
     // namespace stmt {
@@ -76,11 +78,11 @@ namespace tlc::syntax {
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
         expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
-        expr::Binary,
+        expr::Binary, expr::Record,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
 
-        decl::Identifier
+        decl::Identifier, decl::Tuple
     >;
 }
 
