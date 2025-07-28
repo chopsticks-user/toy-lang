@@ -164,7 +164,7 @@ namespace tlc::syntax {
             return childAt(dimIndex + 1);
         }
 
-        auto Array::dim() const noexcept -> size_t {
+        auto Array::nDims() const noexcept -> size_t {
             return nChildren() - 1;
         }
 

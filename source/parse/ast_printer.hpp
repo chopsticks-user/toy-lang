@@ -32,7 +32,18 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Binary const& node) -> Str;
         auto operator()(syntax::expr::Record const& node) -> Str;
 
+        auto operator()(syntax::type::Identifier const& node) -> Str;
+        auto operator()(syntax::type::Array const& node) -> Str;
+        auto operator()(syntax::type::Tuple const& node) -> Str;
+        auto operator()(syntax::type::Function const& node) -> Str;
+        auto operator()(syntax::type::Infer const& node) -> Str;
+
     private:
+        static constexpr auto rvFilterEmpty =
+            rv::filter([](auto const& s) {
+                return !s.empty();
+            });
+
         [[nodiscard]] auto withDepth(Str s) const -> Str;
     };
 }

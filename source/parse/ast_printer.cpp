@@ -91,10 +91,55 @@ namespace tlc::parse {
                 [](auto const& k) { return std::format("'{}'", k); }
             ) | rv::join_with(',') | rng::to<Str>()
         )) + (node.size() > 0
-                  ? "\n" + (visitChildren(node) | rv::filter([](auto const& value) {
-                      return !value.empty();
-                  }) | rv::join_with('\n') | rng::to<Str>())
+                  ? "\n" + (
+                      visitChildren(node) | rvFilterEmpty | rv::join_with('\n') | rng::to<Str>()
+                  )
                   : "");
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
+        return withDepth(std::format(
+            "type::Identifier [@{}:{}] with (fundamental, path) = ({:s}, '{}')",
+            node.line(), node.column(), node.fundamental(), node.path()
+        ));
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Array const& node) -> Str {
+        return withDepth(std::format(
+            "type::Array [@{}:{}] with dims = {{{}}}",
+            node.line(), node.column(),
+            rv::iota(0ull, node.nDims()) | rv::transform([&node](auto index) {
+                return std::to_string(index)
+                    + (node.fixed(index) ? ":fix" : ":dyn");
+            }) | rng::to<Vec<Str>>() | rv::join_with(',') | rng::to<Str>()
+        )) + (node.nChildren() > 0
+                  ? "\n" + (
+                      visitChildren(node) | rvFilterEmpty | rv::join_with('\n') | rng::to<Str>()
+                  )
+                  : "");
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Tuple const& node) -> Str {
+        return withDepth(std::format(
+            "type::Tuple [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
+        )) + (node.size() > 0
+                  ? "\n" + (visitChildren(node) | rv::join_with('\n') | rng::to<Str>())
+                  : "");
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Function const& node) -> Str {
+        return withDepth(std::format(
+            "type::Function [@{}:{}]",
+            node.line(), node.column()
+        )) + "\n" + (visitChildren(node) | rv::join_with('\n') | rng::to<Str>());
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Infer const& node) -> Str {
+        return withDepth(std::format(
+            "type::Infer [@{}:{}]",
+            node.line(), node.column()
+        )) + "\n" + (visitChildren(node) | rv::join_with('\n') | rng::to<Str>());
     }
 
     auto ASTPrinter::withDepth(Str s) const -> Str {

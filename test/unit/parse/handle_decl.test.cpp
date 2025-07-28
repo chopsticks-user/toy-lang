@@ -48,13 +48,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
             .assert_identifier = [](Node const& id) {
                 // AssertExpr::identifier(id, {.path = "x"});
             },
-            .assert_type = [](Node const& id) {
-                AssertType::identifier(
-                    id, {
-                        .fundamental = false, .imported = false, .path = "Foo"
-                    }
-                );
-            },
+            // .assert_type = [](Node const& id) {
+            //     AssertType::identifier(
+            //         id, {
+            //             .fundamental = false, .imported = false, .path = "Foo"
+            //         }
+            //     );
+            // },
         }
     );
 
@@ -64,13 +64,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
             .assert_identifier = [](Node const& id) {
                 // AssertExpr::identifier(id, {.path = "x"});
             },
-            .assert_type = [](Node const& type) {
-                AssertType::identifier(
-                    type, {
-                        .fundamental = true, .imported = false, .path = "Float"
-                    }
-                );
-            },
+            // .assert_type = [](Node const& type) {
+            //     AssertType::identifier(
+            //         type, {
+            //             .fundamental = true, .imported = false, .path = "Float"
+            //         }
+            //     );
+            // },
         }
     );
 

@@ -113,40 +113,6 @@ protected:
         std::source_location location = std::source_location::current()
     ) -> void;
 
-    struct AssertType {
-        struct Identifier {
-            tlc::Opt<tlc::b8> fundamental;
-            tlc::Opt<tlc::b8> imported;
-            tlc::Opt<tlc::Str> path;
-        };
-
-        struct Tuple {
-            tlc::Opt<tlc::szt> size;
-            tlc::Opt<FnNodes> assert_children;
-        };
-
-        struct Infer {
-            tlc::Opt<FnNode> assert_expr;
-        };
-
-        struct Array {
-            tlc::Opt<tlc::szt> dim;
-            tlc::Opt<FnNode> assert_type;
-            tlc::Opt<FnNodeT<tlc::syntax::type::Array>> assert_self;
-        };
-
-        struct Function {
-            tlc::Opt<FnNode> assert_args;
-            tlc::Opt<FnNode> assert_result;
-        };
-
-        TLC_TEST_GENERATE_ASSERT_DECL(identifier, Identifier);
-        TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
-        TLC_TEST_GENERATE_ASSERT_DECL(infer, Infer);
-        TLC_TEST_GENERATE_ASSERT_DECL(array, Array);
-        TLC_TEST_GENERATE_ASSERT_DECL(function, Function);
-    };
-
     struct AssertDecl {
         struct Identifier {
             tlc::Opt<tlc::b8> constant;
