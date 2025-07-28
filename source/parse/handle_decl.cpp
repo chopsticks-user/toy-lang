@@ -14,27 +14,37 @@ namespace tlc::parse {
         pushCoords();
         auto const constant = !m_stream.match(Dollar);
 
-        return handleIdentifierLiteral().and_then([this, constant](auto const& id)
-            -> ParseResult {
+        return match(Identifier)(m_context, m_stream, m_panic).and_then(
+            [this, constant](auto const& tokens) -> ParseResult {
+                auto name = tokens.front().str();
+
                 if (!m_stream.match(Colon)) {
                     return syntax::decl::Identifier{
-                        constant, id, {}, popCoords()
+                        constant, tokens.front().str(), {}, popCoords()
                     };
                 }
 
-                return handleType().and_then([this, constant, id](auto const& type)
+                return handleType().and_then([this, constant, name](auto const& type)
                     -> ParseResult {
                         return syntax::decl::Identifier{
-                            constant, id, type, popCoords()
+                            constant, name, type, popCoords()
                         };
-                    }).or_else([this, constant, id]([[maybe_unused]] auto&& error)
+                    }).or_else([this, constant, name]([[maybe_unused]] auto&& error)
                     -> ParseResult {
                         m_panic.collect(error);
                         return syntax::decl::Identifier{
-                            constant, id, {}, popCoords()
+                            constant, name, {}, popCoords()
                         };
                     });
+            }
+        ).or_else([this](auto) -> ParseResult {
+            m_panic.collect({
+                .location = m_stream.current().coords(),
+                .context = Error::Context::IdDecl,
+                .reason = Error::Reason::MissingId
             });
+            return {};
+        });
     }
 
     auto Parse::handleTupleDecl() -> ParseResult {

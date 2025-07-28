@@ -218,16 +218,16 @@ namespace tlc::syntax {
 
     namespace decl {
         Identifier::Identifier(
-            b8 const constant, Node identifier, Node type, Coords coords
-        ) : NodeBase{{std::move(identifier), std::move(type)}, std::move(coords)},
-            m_constant{constant} {}
+            b8 const constant, Str name, Node type, Coords coords
+        ) : NodeBase{{std::move(type)}, std::move(coords)},
+            m_constant{constant}, m_name{std::move(name)} {}
 
-        auto Identifier::identifier() const noexcept -> Node const& {
+        auto Identifier::type() const noexcept -> Node const& {
             return firstChild();
         }
 
-        auto Identifier::type() const noexcept -> Node const& {
-            return lastChild();
+        auto Identifier::inferred() const noexcept -> b8 {
+            return isEmptyNode(firstChild());
         }
 
         Tuple::Tuple(Vec<Node> decls, Coords coords)

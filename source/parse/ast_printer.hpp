@@ -38,6 +38,9 @@ namespace tlc::parse {
         auto operator()(syntax::type::Function const& node) -> Str;
         auto operator()(syntax::type::Infer const& node) -> Str;
 
+        auto operator()(syntax::decl::Identifier const& node) -> Str;
+        auto operator()(syntax::decl::Tuple const& node) -> Str;
+
     private:
         static constexpr auto rvFilterEmpty =
             rv::filter([](auto const& s) {

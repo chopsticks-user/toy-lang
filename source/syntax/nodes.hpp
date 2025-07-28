@@ -246,18 +246,23 @@ namespace tlc::syntax {
 
     namespace decl {
         struct Identifier final : detail::NodeBase {
-            Identifier(b8 constant, Node identifier, Node type, Coords coords);
+            Identifier(b8 constant, Str name, Node type, Coords coords);
 
             [[nodiscard]] auto constant() const noexcept -> b8 {
                 return m_constant;
             }
 
-            [[nodiscard]] auto identifier() const noexcept -> Node const&;
+            [[nodiscard]] auto name() const noexcept -> Str const& {
+                return m_name;
+            }
 
             [[nodiscard]] auto type() const noexcept -> Node const&;
 
+            [[nodiscard]] auto inferred() const noexcept -> b8;
+
         private:
             b8 m_constant;
+            Str m_name;
         };
 
         struct Tuple final : detail::NodeBase {

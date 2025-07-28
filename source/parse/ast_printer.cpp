@@ -142,6 +142,22 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rv::join_with('\n') | rng::to<Str>());
     }
 
+    auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
+        return withDepth(std::format(
+            "decl::Identifier [@{}:{}] with (const, name) = ({}, '{}')",
+            node.line(), node.column(), node.constant(), node.name()
+        )) + (node.inferred() ? "" : "\n" + (visitChildren(node).front() | rng::to<Str>()));
+    }
+
+    auto ASTPrinter::operator()(syntax::decl::Tuple const& node) -> Str {
+        return withDepth(std::format(
+            "decl::Tuple [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
+        )) + (node.size() > 0
+                  ? "\n" + (visitChildren(node) | rv::join_with('\n') | rng::to<Str>())
+                  : "");
+    }
+
     auto ASTPrinter::withDepth(Str s) const -> Str {
         return (
             [&] -> Vec<Str> {

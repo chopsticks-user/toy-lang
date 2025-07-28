@@ -3,104 +3,69 @@
 using tlc::token::EToken;
 using namespace tlc::syntax;
 
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    decl, Decl, identifier, Identifier
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(decl::Identifier);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(identifier);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(type);
+auto ParseTestFixture::assertDecl(
+    tlc::Str source, tlc::Str expected, std::source_location const location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
+
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }.parseDecl();
+    REQUIRE(result.has_value());
+
+    auto const actual = tlc::parse::ASTPrinter::operator()(
+        std::move(*result)
+    );
+    REQUIRE(actual == expected);
 }
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    decl, Decl, tuple, Tuple
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(decl::Tuple);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(size);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, identifier, Identifier);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, tuple, Tuple);
-
-const auto let_stmt = R"(
-    // basic
-    let x = 0;
-    let x: Int = 0;
-    let $x: Int = 0;
-    let $x = 0;
-
-    // arrays
-    let x = [];
-    let x: Int[] = [];
-    let x = [0, 1, 2];
-
-    // objects
-    let x = Foo{name: "", data: []};
-    let x: Foo = {};
-
-    // tuples
-    let (x, $y: Float[], z: Foo) = (5, [], {name: "", data: []});
-)";
 
 TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
-    AssertDecl::identifier(
-        "x: Foo", {
-            .constant = true,
-            .assert_identifier = [](Node const& id) {
-                // AssertExpr::identifier(id, {.path = "x"});
-            },
-            // .assert_type = [](Node const& id) {
-            //     AssertType::identifier(
-            //         id, {
-            //             .fundamental = false, .imported = false, .path = "Foo"
-            //         }
-            //     );
-            // },
-        }
+    assertDecl(
+        "x: Foo",
+        "decl::Identifier [@0:3] with (const, name) = (true, 'x')\n" // todo: wrong coords
+        "├─ type::Identifier [@0:3] with (fundamental, path) = (false, 'Foo')"
     );
-
-    AssertDecl::identifier(
-        "$x: Float", {
-            .constant = false,
-            .assert_identifier = [](Node const& id) {
-                // AssertExpr::identifier(id, {.path = "x"});
-            },
-            // .assert_type = [](Node const& type) {
-            //     AssertType::identifier(
-            //         type, {
-            //             .fundamental = true, .imported = false, .path = "Float"
-            //         }
-            //     );
-            // },
-        }
+    assertDecl(
+        "$x: Float",
+        "decl::Identifier [@0:4] with (const, name) = (false, 'x')\n" // todo: wrong coords
+        "├─ type::Identifier [@0:4] with (fundamental, path) = (true, 'Float')"
     );
-
-    AssertDecl::identifier(
-        "$x", {
-            .constant = false,
-            .assert_identifier = [](Node const& id) {
-                // AssertExpr::identifier(id, {.path = "x"});
-            },
-            .assert_type = [](Node const& type) {
-                REQUIRE(isEmptyNode(type));
-            },
-        }
-    );
-
-    AssertDecl::identifier(
-        "x", {
-            .constant = true,
-            .assert_identifier = [](Node const& id) {
-                // AssertExpr::identifier(id, {.path = "x"});
-            },
-            .assert_type = [](Node const& type) {
-                REQUIRE(isEmptyNode(type));
-            },
-        }
+    assertDecl(
+        "$x",
+        "decl::Identifier [@0:0] with (const, name) = (false, 'x')" // todo: wrong coords
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
-    AssertDecl::tuple("()", {.size = 0});
-    AssertDecl::tuple("($x)", {.size = 1});
-    AssertDecl::tuple("(x: Int, $y: Float, z)", {.size = 3});
+    assertDecl(
+        "()",
+        "decl::Tuple [@0:0] with size = 0"
+    );
+    assertDecl(
+        "($x)",
+        "decl::Tuple [@0:0] with size = 1\n"
+        "├─ decl::Identifier [@0:1] with (const, name) = (false, 'x')"
+    );
+    assertDecl(
+        "(x: Int, $y: Float, z)",
+        "decl::Tuple [@0:0] with size = 3\n"
+        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n"
+        "   ├─ type::Identifier [@0:4] with (fundamental, path) = (true, 'Int')\n"
+        "├─ decl::Identifier [@0:13] with (const, name) = (false, 'y')\n"
+        "   ├─ type::Identifier [@0:13] with (fundamental, path) = (true, 'Float')\n"
+        "├─ decl::Identifier [@0:20] with (const, name) = (true, 'z')"
+    );
+    assertDecl(
+        "(x: Int, $y: Float, ($z, t))",
+        "decl::Tuple [@0:0] with size = 3\n"
+        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n"
+        "   ├─ type::Identifier [@0:4] with (fundamental, path) = (true, 'Int')\n"
+        "├─ decl::Identifier [@0:13] with (const, name) = (false, 'y')\n"
+        "   ├─ type::Identifier [@0:13] with (fundamental, path) = (true, 'Float')\n"
+        "├─ decl::Tuple [@0:20] with size = 2\n"
+        "   ├─ decl::Identifier [@0:21] with (const, name) = (false, 'z')\n"
+        "   ├─ decl::Identifier [@0:25] with (const, name) = (true, 't')"
+    );
 }
