@@ -64,6 +64,9 @@ namespace tlc::parse {
         auto handleStmt() -> ParseResult;
         auto handleLetStmt() -> ParseResult;
         auto handleReturnStmt() -> ParseResult;
+        auto handleDeferStmt() -> ParseResult;
+        auto handlePrefaceStmt() -> ParseResult;
+        auto handleYieldStmt() -> ParseResult;
         auto handleExprPrefixedStmt() -> ParseResult;
         auto handleLoopStmt() -> ParseResult;
         auto handleMatchStmt() -> ParseResult;

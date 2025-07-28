@@ -232,7 +232,7 @@ namespace tlc::syntax {
     }
 
     namespace decl {
-        struct Identifier : detail::NodeBase {
+        struct Identifier final : detail::NodeBase {
             Identifier(b8 constant, Node identifier, Node type, Coords coords);
 
             [[nodiscard]] auto constant() const noexcept -> b8 {
@@ -247,7 +247,7 @@ namespace tlc::syntax {
             b8 m_constant;
         };
 
-        struct Tuple : detail::NodeBase {
+        struct Tuple final : detail::NodeBase {
             Tuple(Vec<Node> decls, Coords coords);
 
             [[nodiscard]] auto decl(szt index) const -> Node;
@@ -256,150 +256,83 @@ namespace tlc::syntax {
         };
     }
 
-    namespace stmt {}
+    namespace stmt {
+        struct Let final : detail::NodeBase {};
+
+        struct Return final : detail::NodeBase {};
+
+        /**
+         * Syntax:
+         *      - "yield" expr? ";"
+         *
+         * Examples:
+         *      -   export fn f: (n: Int) -> {
+         *              let x = {
+         *                  yield n * n;
+         *              };
+         *              ...
+         *          }
+         *
+         * Notes:
+         *      - Cannot be placed inside a 1st-level scope of a function.
+         *      - Used to exit the current scope and indicate that the value evaluated
+         *      by "expr" will be returned and effectively make the statement owning
+         *      the exited scope an expression returning the value.
+         *      - Unlike "return", "yield" cannot be a scope owner.
+         *      - If "expr" is neither present nor evaluating to a non-void value,
+         *      the type of the returned value is Void.
+         *      - Like "return", "yield" is a pure statement.
+         */
+        struct Yield final : detail::NodeBase {
+            Yield(Node expr, Coords coords);
+
+            [[nodiscard]] auto expr() const noexcept -> Node const&;
+        };
+
+        /**
+         * Syntax:
+         *      - "preface" ("{" stmt* "}" | expr ";")
+         *
+         * Examples:
+         *
+         * Notes:
+         *      - Like its counter-part, "defer", "preface" is a pure statement
+         *      and can be a scope owner.
+         */
+        struct Preface final : detail::NodeBase {};
+
+        /**
+         * Syntax:
+         *      - "defer" ("{" stmt* "}" | expr ";")
+         *
+         * Examples:
+         *
+         * Notes:
+         *      - Like its counter-part, "preface", "defer" is a pure statement
+         *      and can be a scope owner.
+         */
+        struct Defer final : detail::NodeBase {};
+
+        struct Match final : detail::NodeBase {};
+
+        struct Loop final : detail::NodeBase {};
+
+        struct Cond final : detail::NodeBase {};
+
+        struct Block final : detail::NodeBase {};
+
+        struct Assign final : detail::NodeBase {};
+
+        struct Expr final : detail::NodeBase {};
+    }
 
     namespace global {}
 
-    // namespace stmt {
-    //     struct ForStmt final : detail::NodeBase {
-    //         ForStmt(Node condition, Node body);
-    //     };
-    //
-    //     struct ForRangeFragment final : detail::NodeBase {
-    //         ForRangeFragment(Node iterator, Node iterable);
-    //     };
-    //
-    //     struct MatchStmt final : detail::NodeBase {
-    //         MatchStmt(Node matchedExpr, Node defaultBody, Vec<Node> cases);
-    //     };
-    //
-    //     struct MatchStmtCase final : detail::NodeBase {
-    //         MatchStmtCase(Node value, Node condition, Node body);
-    //     };
-    //
-    //     struct BlockStmt final : detail::NodeBase {
-    //         explicit BlockStmt(Vec<Node> statements);
-    //     };
-    //
-    //     struct LetStmt final : detail::NodeBase {
-    //         LetStmt(Node decl, Node init);
-    //     };
-    //
-    //     struct ConditionalStmt final : detail::NodeBase {
-    //         ConditionalStmt(Node condition, Node body);
-    //     };
-    //
-    //     struct ReturnStmt final : detail::NodeBase {
-    //         explicit ReturnStmt(Node expr);
-    //     };
-    //
-    //     struct AssignStmt final : detail::NodeBase {
-    //         AssignStmt(Node left, Node right, Str op);
-    //
-    //         [[nodiscard]] auto op() const noexcept -> StrV {
-    //             return m_op;
-    //         }
-    //
-    //     private:
-    //         Str m_op;
-    //     };
-    //
-    //     struct ExprStmt final : detail::NodeBase {
-    //         explicit ExprStmt(Node expr);
-    //     };
-    // }
-    //
-    // namespace decl {
-    //     struct Module final : detail::NodeBase {
-    //         explicit Module(Node nsIdentifier, szt line, szt column);
-    //     };
-    //
-    //     struct ImportDecl final : detail::NodeBase {
-    //         explicit ImportDecl(Node nsIdentifier);
-    //     };
-    //
-    //     // struct TypeDecl final : detail::NodeBase {
-    //     //     explicit TypeDecl(Storage storage, Node identifier, Node typeExpr);
-    //     //
-    //     //     auto storage() const noexcept -> Storage {
-    //     //         return m_storage;
-    //     //     }
-    //     //
-    //     // private:
-    //     //     Storage m_storage;
-    //     // };
-    //
-    //     struct IdentifierDecl final : detail::NodeBase {
-    //         IdentifierDecl(bool isMutable, Node const& identifier, Node const& typeExpr);
-    //
-    //         auto isMutable() const noexcept -> bool {
-    //             return m_mutable;
-    //         }
-    //
-    //     private:
-    //         bool m_mutable;
-    //     };
-    //
-    //     struct TupleDecl final : detail::NodeBase {
-    //         explicit TupleDecl(Vec<Node> idDecls);
-    //     };
-    //
-    //     struct GenericDecl final : detail::NodeBase {
-    //         explicit GenericDecl(Vec<Node> typeIds);
-    //     };
-    // }
-    //
-    // // namespace def {
-    // //     struct FunctionPrototype final : detail::NodeBase {
-    // //         FunctionPrototype(
-    // //             FnType fType, Node fIdentifier, Node fParamDecls, Node fReturnDecls
-    // //         );
-    // //
-    // //         auto type() const noexcept -> FnType {
-    // //             return m_type;
-    // //         }
-    // //
-    // //     private:
-    // //         FnType m_type;
-    // //     };
-    // //
-    // //     struct FunctionDef final : detail::NodeBase {
-    // //         FunctionDef(Storage fStorage, Node fPrototype, Node fBody);
-    // //
-    // //         auto storage() const noexcept -> Storage {
-    // //             return m_storage;
-    // //         }
-    // //
-    // //     private:
-    // //         Storage m_storage;
-    // //     };
-    // //
-    // //     struct ConceptDef final : detail::NodeBase {
-    // //         ConceptDef(Storage storage, Node identifier, Vec<Node> requirements);
-    // //
-    // //         auto storage() const noexcept -> Storage {
-    // //             return m_storage;
-    // //         }
-    // //
-    // //     private:
-    // //         Storage m_storage;
-    // //     };
-    // // }
-    //
-    // struct TokenWrapper final : detail::NodeBase {
-    //     explicit TokenWrapper(token::Token token);
-    //
-    //     auto token() const noexcept -> token::Token {
-    //         return m_token;
-    //     }
-    //
-    // private:
-    //     token::Token m_token;
-    // };
-    //
-    // // struct TranslationUnit final : detail::NodeBase {
-    // //     explicit TranslationUnit(Vec<Node> definitions);
-    // // };
+    namespace def {}
+
+    struct TranslationUnit final : detail::NodeBase {
+        // explicit TranslationUnit(Vec<Node> definitions);
+    };
 }
 
 #endif // TLC_SYNTAX_NODES_HPP

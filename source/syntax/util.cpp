@@ -2,7 +2,7 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax {
-    auto isEmptyNode(const Node& node) -> bool {
+    auto isEmptyNode(Node const& node) -> bool {
         return std::holds_alternative<std::monostate>(node);
     }
 

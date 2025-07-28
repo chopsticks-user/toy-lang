@@ -235,4 +235,11 @@ namespace tlc::syntax {
             return nChildren();
         }
     }
+
+    stmt::Yield::Yield(Node expr, Coords coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+
+    auto stmt::Yield::expr() const noexcept -> Node const& {
+        return firstChild();
+    }
 }

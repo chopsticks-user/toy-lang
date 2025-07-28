@@ -21,7 +21,6 @@ TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
 TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, identifier, Identifier);
 TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(decl, Decl, tuple, Tuple);
 
-
 const auto let_stmt = R"(
     // basic
     let x = 0;

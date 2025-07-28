@@ -48,7 +48,9 @@ namespace tlc::parse {
         };
 
         enum class Context {
-            Unknown, Tuple, Array, Access, TypeInfer, Record,
+            Unknown,
+            Tuple, Array, Access, TypeInfer, Record,
+            Stmt, LetStmt,
         };
 
         struct Params {

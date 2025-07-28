@@ -12,7 +12,7 @@ namespace tlc::token {
         // Keywords
         /* Visibility */ Module, Import, Export, Internal, Local, Extern, Static,
         /* Definition */ Let, Mut, Fn, Trait, Type, Enum, Flag,
-        /* Control */ For, Return, Match,
+        /* Control */ For, Match, Return, Yield, Defer, Preface,
         /* Adverb */ By, Of, In, When,
         /* Boolean */ True, False,
         /* Object */ Self, Pub, Prv, Impl,
