@@ -34,24 +34,20 @@ namespace tlc::parse {
         while (true) {
             if (syntax::isPostfixStart(m_stream.peek().type())) {
                 if (m_stream.match(Dot)) {
-                    pushCoords();
-                    auto field = *handleIdentifierLiteral()
-                        .or_else(
-                            [this](auto const&) -> ParseResult {
-                                m_panic.collect({
-                                    .location = currentCoords(),
-                                    .context = Error::Context::Access,
-                                    .reason = Error::Reason::MissingId,
-                                });
-                                return syntax::expr::Identifier{
-                                    {}, currentCoords()
-                                };
-                            }
-                        );
+                    auto field = [this] -> Str {
+                        if (m_stream.match(Identifier)) {
+                            return m_stream.current().str();
+                        }
+                        m_panic.collect({
+                            .location = currentCoords(),
+                            .context = Error::Context::Access,
+                            .reason = Error::Reason::MissingId,
+                        });
+                        return "";
+                    }();
                     lhs = syntax::expr::Access{
                         *lhs, std::move(field), currentCoords()
                     };
-                    popCoords();
                 }
                 else if (auto const tuple = handleTupleExpr(); tuple) {
                     lhs = syntax::expr::FnApp{
@@ -106,6 +102,9 @@ namespace tlc::parse {
             return result;
         }
         if (auto const result = handleArrayExpr(); result) {
+            return result;
+        }
+        if (auto const result = handleRecordExpr(); result) {
             return result;
         }
         popCoords();
@@ -273,7 +272,7 @@ namespace tlc::parse {
         auto coords = m_stream.current().coords();
         Vec<Pair<Str, syntax::Node>> entries;
 
-        if (!m_stream.match(RightBrace)) {
+        if (m_stream.match(RightBrace)) {
             return syntax::expr::Record{
                 std::move(type), std::move(entries), std::move(coords)
             };

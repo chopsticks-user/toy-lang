@@ -46,10 +46,14 @@ namespace tlc::syntax {
 
         struct Array final : detail::NodeBase {
             Array(Vec<Node> elements, Coords coords);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct Tuple final : detail::NodeBase {
             Tuple(Vec<Node> elements, Coords coords);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct FnApp final : detail::NodeBase {
@@ -69,11 +73,14 @@ namespace tlc::syntax {
         };
 
         struct Access final : detail::NodeBase {
-            Access(Node object, Node field, Coords coords);
+            Access(Node object, Str field, Coords coords);
 
             [[nodiscard]] auto object() const noexcept -> Node;
 
-            [[nodiscard]] auto field() const noexcept -> Node;
+            [[nodiscard]] auto field() const noexcept -> Str;
+
+        private:
+            Str m_field;
         };
 
         struct Prefix final : detail::NodeBase {
@@ -150,7 +157,13 @@ namespace tlc::syntax {
 
             [[nodiscard]] auto of() const noexcept -> Node;
 
-            [[nodiscard]] auto key(szt index) const noexcept -> Str;
+            [[nodiscard]] auto key(szt const index) const noexcept -> Str {
+                return m_keys.at(index);
+            }
+
+            [[nodiscard]] auto keys() const noexcept -> Span<const Str> {
+                return m_keys;
+            }
 
             [[nodiscard]] auto value(szt index) const noexcept -> Node const&;
 
@@ -263,15 +276,19 @@ namespace tlc::syntax {
 
         /**
          * Syntax:
-         *      - "yield" expr? ";"
+         *      \code
+         *          "yield" expr? ";"
+         *      \endcode
          *
          * Examples:
-         *      -   export fn f: (n: Int) -> {
+         *      \code
+         *          export fn f: (n: Int) -> {
          *              let x = {
          *                  yield n * n;
          *              };
          *              ...
          *          }
+         *      \endcode
          *
          * Notes:
          *      - Cannot be placed inside a 1st-level scope of a function.
@@ -291,7 +308,9 @@ namespace tlc::syntax {
 
         /**
          * Syntax:
-         *      - "preface" ("{" stmt* "}" | expr ";")
+         *      \code
+         *          "preface" ("{" stmt* "}" | expr ";")
+         *      \endcode
          *
          * Examples:
          *
@@ -303,7 +322,9 @@ namespace tlc::syntax {
 
         /**
          * Syntax:
-         *      - "defer" ("{" stmt* "}" | expr ";")
+         *      \code
+         *          "defer" ("{" stmt* "}" | expr ";")
+         *      \endcode
          *
          * Examples:
          *

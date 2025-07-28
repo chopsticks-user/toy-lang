@@ -45,6 +45,8 @@ namespace tlc::token {
 
     extern const HashMap<StrV, EToken> operatorTable;
 
+    extern const HashMap<EToken, StrV> reversedOperatorTable;
+
     extern const OpGraph3 opGraph;
 }
 

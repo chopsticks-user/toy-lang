@@ -20,8 +20,16 @@ namespace tlc::syntax {
         Array::Array(Vec<Node> elements, Coords coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
 
+        auto Array::size() const noexcept -> szt {
+            return nChildren();
+        }
+
         Tuple::Tuple(Vec<Node> elements, Coords coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
+
+        auto Tuple::size() const noexcept -> szt {
+            return nChildren();
+        }
 
         FnApp::FnApp(Node callee, Node args, Coords coords)
             : NodeBase{
@@ -53,18 +61,18 @@ namespace tlc::syntax {
         }
 
         Access::Access(
-            Node object, Node field, Coords coords
+            Node object, Str field, Coords coords
         ): NodeBase{
-            {std::move(object), std::move(field)},
-            std::move(coords)
-        } {}
+               {std::move(object)},
+               std::move(coords)
+           }, m_field{std::move(field)} {}
 
         auto Access::object() const noexcept -> Node {
             return childAt(0);
         }
 
-        auto Access::field() const noexcept -> Node {
-            return childAt(1);
+        auto Access::field() const noexcept -> Str {
+            return m_field;
         }
 
         Prefix::Prefix(
@@ -91,28 +99,30 @@ namespace tlc::syntax {
 
         Record::Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords)
             : NodeBase{
-                [&] {
-                    Vec<Node> nodes;
-                    nodes.reserve(entries.size() + 1);
-                    nodes.push_back(std::move(of));
-                    nodes.append_range(
-                        entries | rv::transform(
-                            [](auto const& entry) {
-                                return entry.second;
-                            }
-                        )
-                    );
-                    m_keys.append_range(
-                        entries | rv::transform(
-                            [](auto const& entry) {
-                                return entry.first;
-                            }
-                        )
-                    );
-                    return nodes;
-                }(),
-                std::move(coords)
-            } {}
+                  [&] {
+                      Vec<Node> nodes;
+                      nodes.reserve(entries.size() + 1);
+                      // todo: concat
+                      nodes.push_back(std::move(of));
+                      nodes.append_range(
+                          entries | rv::transform(
+                              [](auto const& entry) {
+                                  return entry.second;
+                              }
+                          )
+                      );
+                      return nodes;
+                  }(),
+                  std::move(coords)
+              }, m_keys{
+                  [&] {
+                      return entries | rv::transform(
+                          [](auto const& entry) {
+                              return entry.first;
+                          }
+                      ) | rng::to<Vec<Str>>();
+                  }()
+              } {}
 
         auto Record::size() const noexcept -> szt {
             return nChildren() - 1;
@@ -120,10 +130,6 @@ namespace tlc::syntax {
 
         auto Record::of() const noexcept -> Node {
             return firstChild();
-        }
-
-        auto Record::key(szt const index) const noexcept -> Str {
-            return m_keys.at(index);
         }
 
         auto Record::value(szt const index) const noexcept -> Node const& {

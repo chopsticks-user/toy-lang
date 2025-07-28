@@ -3,502 +3,308 @@
 using tlc::token::EToken;
 using namespace tlc::syntax;
 
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, identifier, Identifier
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Identifier);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(path);
-}
+auto ParseTestFixture::assertExpr(
+    tlc::Str source, tlc::Str expected, std::source_location const location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
 
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, integer, Integer
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Integer);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
-}
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }.parseExpr();
+    REQUIRE(result.has_value());
 
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, fl0at, Float
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Float);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
+    auto const actual = tlc::parse::ASTPrinter::operator()(
+        std::move(*result)
+    );
+    REQUIRE(actual == expected);
 }
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, boolean, Boolean
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Boolean);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(value);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, tuple, Tuple
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Tuple);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, array, Array
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Array);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, access, Access
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Access);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(object);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(field);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, fnApp, FnApp
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::FnApp);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(callee);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(args);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, subscript, Subscript
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Subscript);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(collection);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(subscript);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_PROTOTYPE(
-    expr, Expr, prefix, Prefix
-) {
-    TLC_TEST_GENERATE_ASSERT_FROM_NODE_OVERLOAD_SETUP(expr::Prefix);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(op);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(operand);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, identifier, Identifier);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, integer, Integer);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, fl0at, Float);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, boolean, Boolean);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, tuple, Tuple);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, array, Array);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, access, Access);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, fnApp, FnApp);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, subscript, Subscript);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(expr, Expr, prefix, Prefix);
 
 TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
-    SECTION("Base 10") {
-        AssertExpr::integer("31415", {31415});
-        AssertExpr::integer("0", {0});
-    }
-
-    SECTION("Base 16") {
-        AssertExpr::integer("0x123456789abcdef", {0x123456789abcdef});
-        AssertExpr::integer("0x0", {0});
-    }
-
-    SECTION("Base 8") {
-        AssertExpr::integer("01234567", {01234567});
-        AssertExpr::integer("00", {0});
-    }
-
-    SECTION("Base 2") {
-        AssertExpr::integer("0b1010101001", {0b1010101001});
-        AssertExpr::integer("0b0", {0});
-    }
+    assertExpr(
+        "31415",
+        "expr::Integer [@0:0] with value = 31415"
+    );
+    assertExpr(
+        "0",
+        "expr::Integer [@0:0] with value = 0"
+    );
+    assertExpr(
+        "0x123456789abcdef",
+        "expr::Integer [@0:0] with value = 81985529216486895"
+    );
+    assertExpr(
+        "0x0",
+        "expr::Integer [@0:0] with value = 0"
+    );
+    assertExpr(
+        "01234567",
+        "expr::Integer [@0:0] with value = 342391"
+    );
+    assertExpr(
+        "00",
+        "expr::Integer [@0:0] with value = 0"
+    );
+    assertExpr(
+        "0b1010101001",
+        "expr::Integer [@0:0] with value = 681"
+    );
+    assertExpr(
+        "0b0",
+        "expr::Integer [@0:0] with value = 0"
+    );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Parse]") {
-    AssertExpr::fl0at("0.0314159", {0.0314159});
-    AssertExpr::fl0at("3145.1926", {3145.1926});
-    AssertExpr::fl0at("0.314159", {0.314159});
-    AssertExpr::fl0at("00.31415", {0.31415});
-    AssertExpr::fl0at("000.3141", {0.3141});
-    AssertExpr::fl0at("0.000", {0.0});
-    AssertExpr::fl0at("00.00", {0.0});
-    AssertExpr::fl0at("000.0", {0.0});
+    assertExpr(
+        "0.0314159",
+        "expr::Float [@0:0] with value = 0.0314159"
+    );
+    assertExpr(
+        "3145.1926",
+        "expr::Float [@0:0] with value = 3145.1926"
+    );
+    assertExpr(
+        "0.314159",
+        "expr::Float [@0:0] with value = 0.314159"
+    );
+    assertExpr(
+        "00.31415",
+        "expr::Float [@0:0] with value = 0.31415"
+    );
+    assertExpr(
+        "000.3141",
+        "expr::Float [@0:0] with value = 0.3141"
+    );
+    assertExpr(
+        "0.000",
+        "expr::Float [@0:0] with value = 0"
+    );
+    assertExpr(
+        "00.00",
+        "expr::Float [@0:0] with value = 0"
+    );
+    assertExpr(
+        "000.0",
+        "expr::Float [@0:0] with value = 0"
+    );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {
-    AssertExpr::boolean("true", {true});
-    AssertExpr::boolean("false", {false});
+    assertExpr(
+        "true",
+        "expr::Boolean [@0:0] with value = true"
+    );
+    assertExpr(
+        "false",
+        "expr::Boolean [@0:0] with value = false"
+    );
 }
 
 // todo
 TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
-    SECTION("Local identifier") {
-        AssertExpr::identifier("baz", {"baz"});
-    }
-
-    SECTION("Imported identifier") {
-        AssertExpr::identifier("foo::bar", {"foo::bar"});
-    }
+    assertExpr(
+        "baz",
+        "expr::Identifier [@0:0] with path = 'baz'"
+    );
+    assertExpr(
+        "foo::bar",
+        "expr::Identifier [@0:0] with path = 'foo::bar'"
+    );
+    assertExpr(
+        "foo::bar::baz::boo",
+        "expr::Identifier [@0:0] with path = 'foo::bar::baz::boo'"
+    );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Tuples", "[Parse]") {
-    AssertExpr::tuple(
-        "(1,x,2.1)", {
-            3, [](tlc::Span<Node const> const elements) {
-                AssertExpr::integer(elements[0], {1});
-                AssertExpr::identifier(elements[1], {"x"});
-                AssertExpr::fl0at(elements[2], {2.1});
-            }
-        }
+    assertExpr(
+        "(1,x,2.1)",
+        "expr::Tuple [@0:0] with size = 3\n"
+        "├─ expr::Integer [@0:1] with value = 1\n"
+        "├─ expr::Identifier [@0:3] with path = 'x'\n"
+        "├─ expr::Float [@0:5] with value = 2.1"
     );
-
-    AssertExpr::tuple(
-        "(0)", {
-            1, [](tlc::Span<Node const> const elements) {
-                AssertExpr::integer(elements[0], {0});
-            }
-        }
+    assertExpr(
+        "(x)",
+        "expr::Tuple [@0:0] with size = 1\n"
+        "├─ expr::Identifier [@0:1] with path = 'x'"
     );
-
-    AssertExpr::tuple("()", {0});
+    assertExpr(
+        "()",
+        "expr::Tuple [@0:0] with size = 0"
+    );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
-    AssertExpr::array(
-        "[1,x,2.1]", {
-            3, [](tlc::Span<Node const> const elements) {
-                AssertExpr::integer(elements[0], {1});
-                AssertExpr::identifier(elements[1], {"x"});
-                AssertExpr::fl0at(elements[2], {2.1});
-            }
-        }
+    assertExpr(
+        "[1,x,2.1]",
+        "expr::Array [@0:0] with size = 3\n"
+        "├─ expr::Integer [@0:1] with value = 1\n"
+        "├─ expr::Identifier [@0:3] with path = 'x'\n"
+        "├─ expr::Float [@0:5] with value = 2.1"
     );
-
-    AssertExpr::array(
-        "[0]", {
-            1, [](tlc::Span<Node const> const elements) {
-                AssertExpr::integer(elements[0], {0});
-            }
-        }
+    assertExpr(
+        "[0]",
+        "expr::Array [@0:0] with size = 1\n"
+        "├─ expr::Integer [@0:1] with value = 0"
     );
-
-    AssertExpr::array("[]", {0});
+    assertExpr(
+        "[]",
+        "expr::Array [@0:0] with size = 0"
+    );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Type-implicit records", "[Parse]") {
+    assertExpr(
+        "{}",
+        "expr::Record [@0:0] with keys = []"
+    );
+
+    assertExpr(
+        "{x: 0, y: 1.1, z: false}\n",
+        "expr::Record [@0:0] with keys = ['x','y','z']\n"
+        "├─ expr::Integer [@0:4] with value = 0\n"
+        "├─ expr::Float [@0:10] with value = 1.1\n"
+        "├─ expr::Boolean [@0:18] with value = false"
+    );
+}
 
 TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
-    AssertExpr::access(
-        "foo.bar", {
-            [](Node const& object) {
-                AssertExpr::identifier(object, {"foo"});
-            },
-            [](Node const& field) {
-                AssertExpr::identifier(field, {"bar"});
-            }
-        }
+    assertExpr(
+        "foo.bar",
+        "expr::Access [@0:0] with field = 'bar'\n"
+        "├─ expr::Identifier [@0:0] with path = 'foo'"
     );
-
-    AssertExpr::access(
-        "[1,2,3].foo", {
-            [](Node const& object) {
-                AssertExpr::array(
-                    object, {
-                        3, [](tlc::Span<Node const> elements) {
-                            AssertExpr::integer(elements[0], {1});
-                            AssertExpr::integer(elements[1], {2});
-                            AssertExpr::integer(elements[2], {3});
-                        }
-                    }
-                );
-            },
-            [](Node const& field) {
-                AssertExpr::identifier(field, {"foo"});
-            }
-        }
+    assertExpr(
+        "tmp::foo.bar.baz",
+        "expr::Access [@0:0] with field = 'baz'\n"
+        "├─ expr::Access [@0:0] with field = 'bar'\n"
+        "   ├─ expr::Identifier [@0:0] with path = 'tmp::foo'"
     );
-
-    AssertExpr::access(
-        "foo.bar.baz", {
-            [](Node const& object) {
-                AssertExpr::access(
-                    object, {
-                        [](Node const& object1) {
-                            AssertExpr::identifier(object1, {"foo"});
-                        },
-                        [](Node const& field1) {
-                            AssertExpr::identifier(field1, {"bar"});
-                        }
-                    }
-                );
-            },
-            [](Node const& field) {
-                AssertExpr::identifier(field, {"baz"});
-            }
-        }
+    assertExpr(
+        "[0,1,2].foo",
+        "expr::Access [@0:5] with field = 'foo'\n" // todo: wrong coords
+        "├─ expr::Array [@0:0] with size = 3\n"
+        "   ├─ expr::Integer [@0:1] with value = 0\n"
+        "   ├─ expr::Integer [@0:3] with value = 1\n"
+        "   ├─ expr::Integer [@0:5] with value = 2"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
-    AssertExpr::fnApp(
-        "foo(0,1,2)", {
-            [](Node const& callee) {
-                AssertExpr::identifier(callee, {"foo"});
-            },
-            [](Node const& args) {
-                AssertExpr::tuple(
-                    args, {
-                        3, [](tlc::Span<Node const> const elements) {
-                            AssertExpr::integer(elements[0], {0});
-                            AssertExpr::integer(elements[1], {1});
-                            AssertExpr::integer(elements[2], {2});
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "foo::bar(0,1,2)",
+        "expr::FnApp [@0:13]\n" // todo: wrong coords
+        "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
+        "├─ expr::Tuple [@0:8] with size = 3\n"
+        "   ├─ expr::Integer [@0:9] with value = 0\n"
+        "   ├─ expr::Integer [@0:11] with value = 1\n"
+        "   ├─ expr::Integer [@0:13] with value = 2"
     );
-
-    AssertExpr::fnApp(
-        "foo()", {
-            [](Node const& callee) {
-                AssertExpr::identifier(callee, {"foo"});
-            },
-            [](Node const& args) {
-                AssertExpr::tuple(args, {0});
-            }
-        }
+    assertExpr(
+        "foo()",
+        "expr::FnApp [@0:0]\n"
+        "├─ expr::Identifier [@0:0] with path = 'foo'\n"
+        "├─ expr::Tuple [@0:3] with size = 0"
     );
-
-    AssertExpr::fnApp(
-        "foo(0,1,2)(bar)", {
-            [](Node const& callee) {
-                AssertExpr::fnApp(
-                    callee, {
-                        [](Node const& callee1) {
-                            AssertExpr::identifier(callee1, {"foo"});
-                        },
-                        [](Node const& args1) {
-                            AssertExpr::tuple(
-                                args1, {
-                                    3, [](tlc::Span<Node const> const elements) {
-                                        AssertExpr::integer(elements[0], {0});
-                                        AssertExpr::integer(elements[1], {1});
-                                        AssertExpr::integer(elements[2], {2});
-                                    }
-                                }
-                            );
-                        }
-                    }
-                );
-            },
-            [](Node const& args) {
-                AssertExpr::tuple(
-                    args, {
-                        1,
-                        [](tlc::Span<Node const> const elements) {
-                            AssertExpr::identifier(
-                                elements[0], {"bar"}
-                            );
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "foo(0,1,2)(bar)",
+        "expr::FnApp [@0:11]\n" // todo: wrong coords
+        "├─ expr::FnApp [@0:8]\n" // todo: wrong coords
+        "   ├─ expr::Identifier [@0:0] with path = 'foo'\n"
+        "   ├─ expr::Tuple [@0:3] with size = 3\n"
+        "      ├─ expr::Integer [@0:4] with value = 0\n"
+        "      ├─ expr::Integer [@0:6] with value = 1\n"
+        "      ├─ expr::Integer [@0:8] with value = 2\n"
+        "├─ expr::Tuple [@0:10] with size = 1\n"
+        "   ├─ expr::Identifier [@0:11] with path = 'bar'"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
-    AssertExpr::subscript(
-        "foo[0,1,2]", {
-            [](Node const& callee) {
-                AssertExpr::identifier(callee, {"foo"});
-            },
-            [](Node const& args) {
-                AssertExpr::array(
-                    args, {
-                        3,
-                        [](tlc::Span<Node const> const elements) {
-                            AssertExpr::integer(elements[0], {0});
-                            AssertExpr::integer(elements[1], {1});
-                            AssertExpr::integer(elements[2], {2});
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "foo::bar[0,1,2]",
+        "expr::Subscript [@0:13]\n" // todo: wrong coords
+        "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
+        "├─ expr::Array [@0:8] with size = 3\n"
+        "   ├─ expr::Integer [@0:9] with value = 0\n"
+        "   ├─ expr::Integer [@0:11] with value = 1\n"
+        "   ├─ expr::Integer [@0:13] with value = 2"
     );
-
-    // todo: error
-    AssertExpr::subscript(
-        "foo[]", {
-            [](Node const& callee) {
-                AssertExpr::identifier(callee, {"foo"});
-            },
-            [](Node const& args) {
-                AssertExpr::array(args, {0});
-            }
-        }
+    assertExpr(
+        "foo[x]",
+        "expr::Subscript [@0:4]\n" // todo: wrong coords
+        "├─ expr::Identifier [@0:0] with path = 'foo'\n"
+        "├─ expr::Array [@0:3] with size = 1\n"
+        "   ├─ expr::Identifier [@0:4] with path = 'x'"
     );
-
-    AssertExpr::subscript(
-        "foo[0,1,2][bar]", {
-            [](Node const& callee) {
-                AssertExpr::subscript(
-                    callee, {
-                        [](Node const& callee1) {
-                            AssertExpr::identifier(callee1, {"foo"});
-                        },
-                        [](Node const& args1) {
-                            AssertExpr::array(
-                                args1, {
-                                    3, [](tlc::Span<Node const> const elements) {
-                                        AssertExpr::integer(elements[0], {0});
-                                        AssertExpr::integer(elements[1], {1});
-                                        AssertExpr::integer(elements[2], {2});
-                                    }
-                                }
-                            );
-                        }
-                    }
-                );
-            },
-            [](Node const& args) {
-                AssertExpr::array(
-                    args, {
-                        1, [](tlc::Span<Node const> const elements) {
-                            AssertExpr::identifier(
-                                elements[0], {"bar"}
-                            );
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "foo[0,1,2][bar]",
+        "expr::Subscript [@0:11]\n" // todo: wrong coords
+        "├─ expr::Subscript [@0:8]\n" // todo: wrong coords
+        "   ├─ expr::Identifier [@0:0] with path = 'foo'\n"
+        "   ├─ expr::Array [@0:3] with size = 3\n"
+        "      ├─ expr::Integer [@0:4] with value = 0\n"
+        "      ├─ expr::Integer [@0:6] with value = 1\n"
+        "      ├─ expr::Integer [@0:8] with value = 2\n"
+        "├─ expr::Array [@0:10] with size = 1\n"
+        "   ├─ expr::Identifier [@0:11] with path = 'bar'"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Prefix expressions", "[Parse]") {
-    AssertExpr::prefix(
-        "!5", {
-            EToken::Exclaim, [](Node const& operand) {
-                AssertExpr::integer(operand, {5});
-            }
-        }
+    assertExpr(
+        "!x",
+        "expr::Prefix [@0:0] with op = '!'\n"
+        "├─ expr::Identifier [@0:1] with path = 'x'"
     );
-
-    AssertExpr::prefix(
-        "!!!5", {
-            EToken::Exclaim, [](Node const& operand) {
-                AssertExpr::prefix(
-                    operand, {
-                        EToken::Exclaim, [](Node const& operand1) {
-                            AssertExpr::prefix(
-                                operand1, {
-                                    EToken::Exclaim, [](Node const& operand2) {
-                                        AssertExpr::integer(operand2, {5});
-                                    }
-                                }
-                            );
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "!!!x",
+        "expr::Prefix [@0:0] with op = '!'\n"
+        "├─ expr::Prefix [@0:1] with op = '!'\n"
+        "   ├─ expr::Prefix [@0:2] with op = '!'\n"
+        "      ├─ expr::Identifier [@0:3] with path = 'x'"
     );
-
-    AssertExpr::prefix(
-        "...[0,1,2]", {
-            EToken::Dot3, [](Node const& operand) {
-                AssertExpr::array(
-                    operand, {
-                        3, [](tlc::Span<Node const> const elements) {
-                            AssertExpr::integer(elements[0], {0});
-                            AssertExpr::integer(elements[1], {1});
-                            AssertExpr::integer(elements[2], {2});
-                        }
-                    }
-                );
-            }
-        }
-    );
-
-    AssertExpr::prefix(
-        "...[0,1,2]", {
-            EToken::Dot3, [](Node const& operand) {
-                AssertExpr::array(
-                    operand, {
-                        3, [](tlc::Span<Node const> const elements) {
-                            AssertExpr::integer(elements[0], {0});
-                            AssertExpr::integer(elements[1], {1});
-                            AssertExpr::integer(elements[2], {2});
-                        }
-                    }
-                );
-            }
-        }
+    assertExpr(
+        "...[0,1,2]",
+        "expr::Prefix [@0:0] with op = '...'\n"
+        "├─ expr::Array [@0:3] with size = 3\n"
+        "   ├─ expr::Integer [@0:4] with value = 0\n"
+        "   ├─ expr::Integer [@0:6] with value = 1\n"
+        "   ├─ expr::Integer [@0:8] with value = 2"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
-    SECTION("Simple") {
-        auto const expr =
-            parseExpr<expr::Binary>("-x+3");
-        REQUIRE(expr.op() == EToken::Plus);
-
-        auto const left =
-            cast<expr::Prefix>(expr.left());
-        REQUIRE(left.op() == EToken::Minus);
-        AssertExpr::identifier(
-            left.operand(), {"x"}
-        );
-
-        AssertExpr::integer(expr.right(), {3});
-    }
-
-    SECTION("Prioritize right") {
-        auto const expr =
-            parseExpr<expr::Binary>("-x+y*z");
-        REQUIRE(expr.op() == EToken::Plus);
-
-        auto const left =
-            cast<expr::Prefix>(expr.left());
-        REQUIRE(left.op() == EToken::Minus);
-        AssertExpr::identifier(
-            left.operand(), {"x"}
-        );
-
-        auto const right =
-            cast<expr::Binary>(expr.right());
-        REQUIRE(right.op() == EToken::Star);
-        AssertExpr::identifier(
-            right.left(), {"y"}
-        );
-        AssertExpr::identifier(
-            right.right(), {"z"}
-        );
-    }
-
-    SECTION("Prioritize left") {
-        auto const expr =
-            parseExpr<expr::Binary>("x*-y+z");
-        REQUIRE(expr.op() == EToken::Plus);
-
-        auto const left =
-            cast<expr::Binary>(expr.left());
-        REQUIRE(left.op() == EToken::Star);
-        AssertExpr::identifier(
-            left.left(), {"x"}
-        );
-        auto const leftRight =
-            cast<expr::Prefix>(left.right());
-        REQUIRE(leftRight.op() == EToken::Minus);
-        AssertExpr::identifier(
-            leftRight.operand(), {"y"}
-        );
-
-        AssertExpr::identifier(
-            expr.right(), {"z"}
-        );
-    }
+    assertExpr(
+        "-x+3",
+        "expr::Binary [@0:3] with op = '+'\n" // wrong coords
+        "├─ expr::Prefix [@0:0] with op = '-'\n"
+        "   ├─ expr::Identifier [@0:1] with path = 'x'\n"
+        "├─ expr::Integer [@0:3] with value = 3"
+    );
+    assertExpr(
+        "-x+y*z",
+        "expr::Binary [@0:5] with op = '+'\n" // wrong coords
+        "├─ expr::Prefix [@0:0] with op = '-'\n"
+        "   ├─ expr::Identifier [@0:1] with path = 'x'\n"
+        "├─ expr::Binary [@0:5] with op = '*'\n" // wrong coords
+        "   ├─ expr::Identifier [@0:3] with path = 'y'\n"
+        "   ├─ expr::Identifier [@0:5] with path = 'z'"
+    );
+    assertExpr(
+        "x*-y+z",
+        "expr::Binary [@0:5] with op = '+'\n" // wrong coords
+        "├─ expr::Binary [@0:2] with op = '*'\n" // wrong coords
+        "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "   ├─ expr::Prefix [@0:2] with op = '-'\n"
+        "      ├─ expr::Identifier [@0:3] with path = 'y'\n"
+        "├─ expr::Identifier [@0:5] with path = 'z'"
+    );
 }
 
 // todo

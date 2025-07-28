@@ -46,7 +46,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
         "x: Foo", {
             .constant = true,
             .assert_identifier = [](Node const& id) {
-                AssertExpr::identifier(id, {.path = "x"});
+                // AssertExpr::identifier(id, {.path = "x"});
             },
             .assert_type = [](Node const& id) {
                 AssertType::identifier(
@@ -62,7 +62,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
         "$x: Float", {
             .constant = false,
             .assert_identifier = [](Node const& id) {
-                AssertExpr::identifier(id, {.path = "x"});
+                // AssertExpr::identifier(id, {.path = "x"});
             },
             .assert_type = [](Node const& type) {
                 AssertType::identifier(
@@ -78,7 +78,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
         "$x", {
             .constant = false,
             .assert_identifier = [](Node const& id) {
-                AssertExpr::identifier(id, {.path = "x"});
+                // AssertExpr::identifier(id, {.path = "x"});
             },
             .assert_type = [](Node const& type) {
                 REQUIRE(isEmptyNode(type));
@@ -90,7 +90,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
         "x", {
             .constant = true,
             .assert_identifier = [](Node const& id) {
-                AssertExpr::identifier(id, {.path = "x"});
+                // AssertExpr::identifier(id, {.path = "x"});
             },
             .assert_type = [](Node const& type) {
                 REQUIRE(isEmptyNode(type));

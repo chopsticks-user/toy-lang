@@ -70,14 +70,16 @@ namespace tlc::parse {
     }
 
     auto Parse::handleYieldStmt() -> ParseResult {
-        return match(Yield)(m_context, m_stream, m_panic)
-            .and_then([this](auto) -> ParseResult {
+        return match(Yield)(m_context, m_stream, m_panic).and_then(
+            [this](auto const& tokens) -> ParseResult {
                 return syntax::stmt::Yield{
-                    handleExpr().or_else([this](auto&& error) -> ParseResult {
+                    *handleExpr().or_else([this](auto&& error) -> ParseResult {
                         m_panic.collect(error);
                         return {};
-                    })
+                    }),
+                    tokens.front().coords()
                 };
-            });
+            }
+        );
     }
 }

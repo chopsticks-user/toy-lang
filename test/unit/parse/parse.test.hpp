@@ -93,64 +93,25 @@ protected:
         return tlc::syntax::astCast<T>(node);
     }
 
-    struct AssertExpr {
-        struct Identifier {
-            tlc::Opt<tlc::Str> path;
-        };
+    static auto assertExpr(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
 
-        struct Integer {
-            tlc::Opt<tlc::i64> value;
-        };
+    static auto assertType(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
 
-        struct Float {
-            tlc::Opt<tlc::f64> value;
-        };
+    static auto assertDecl(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
 
-        struct Boolean {
-            tlc::Opt<tlc::b8> value;
-        };
-
-        struct Tuple {
-            tlc::Opt<tlc::szt> size;
-            tlc::Opt<FnNodes> assert_children;
-        };
-
-        struct Array {
-            tlc::Opt<tlc::szt> size;
-            tlc::Opt<FnNodes> assert_children;
-        };
-
-        struct Access {
-            tlc::Opt<FnNode> assert_object;
-            tlc::Opt<FnNode> assert_field;
-        };
-
-        struct FnApp {
-            tlc::Opt<FnNode> assert_callee;
-            tlc::Opt<FnNode> assert_args;
-        };
-
-        struct Subscript {
-            tlc::Opt<FnNode> assert_collection;
-            tlc::Opt<FnNode> assert_subscript;
-        };
-
-        struct Prefix {
-            tlc::Opt<tlc::token::EToken> op;
-            tlc::Opt<FnNode> assert_operand;
-        };
-
-        TLC_TEST_GENERATE_ASSERT_DECL(identifier, Identifier);
-        TLC_TEST_GENERATE_ASSERT_DECL(integer, Integer);
-        TLC_TEST_GENERATE_ASSERT_DECL(fl0at, Float);
-        TLC_TEST_GENERATE_ASSERT_DECL(boolean, Boolean);
-        TLC_TEST_GENERATE_ASSERT_DECL(tuple, Tuple);
-        TLC_TEST_GENERATE_ASSERT_DECL(array, Array);
-        TLC_TEST_GENERATE_ASSERT_DECL(access, Access);
-        TLC_TEST_GENERATE_ASSERT_DECL(fnApp, FnApp);
-        TLC_TEST_GENERATE_ASSERT_DECL(subscript, Subscript);
-        TLC_TEST_GENERATE_ASSERT_DECL(prefix, Prefix);
-    };
+    static auto assertStmt(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
 
     struct AssertType {
         struct Identifier {
