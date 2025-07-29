@@ -308,6 +308,12 @@ namespace tlc::syntax {
          *      \endcode
          *
          * Notes:
+         *      - Among all statements, conditional statement is the only
+         *      statement capable of returning a value to its lhs expression.
+         *      Other scope-owner statements, except for a few exceptions such as
+         *      "defer" and "preface", can achieve value semantics by using the
+         *      "yield" statement. Thus, it can be said that "yield" makes the
+         *      language a partially expression-oriented language.
          *      - Cannot be placed inside a 1st-level scope of a function.
          *      - Used to exit the current scope and indicate that the value evaluated
          *      by "expr" will be returned and effectively make the statement owning
@@ -332,10 +338,18 @@ namespace tlc::syntax {
          * Examples:
          *
          * Notes:
+         *      - There can only be at most one "preface" statement in a
+         *      function's scope, and it must be placed at the beginning of
+         *      the scope.
+         *      - "preface" accepts one statement, which can be a block statement.
          *      - Like its counter-part, "defer", "preface" is a pure statement
          *      and can be a scope owner.
          */
-        struct Preface final : detail::NodeBase {};
+        struct Preface final : detail::NodeBase {
+            Preface(Node stmt, Coords coords);
+
+            [[nodiscard]] auto stmt() const noexcept -> Node const&;
+        };
 
         /**
          * Syntax:
@@ -346,16 +360,50 @@ namespace tlc::syntax {
          * Examples:
          *
          * Notes:
+         *      - "defer" accepts one statement, which can be a block statement.
          *      - Like its counter-part, "preface", "defer" is a pure statement
          *      and can be a scope owner.
          */
-        struct Defer final : detail::NodeBase {};
+        struct Defer final : detail::NodeBase {
+            Defer(Node stmt, Coords coords);
+
+            [[nodiscard]] auto stmt() const noexcept -> Node const&;
+        };
 
         struct Match final : detail::NodeBase {};
 
         struct Loop final : detail::NodeBase {};
 
-        struct Cond final : detail::NodeBase {};
+        /**
+         * Syntax:
+         *      \code
+         *          expr "=>" stmt ";"
+         *      \endcode
+         *
+         * Examples:
+         *      \code
+         *          x > 0 => io::println(x);
+         *      \endcode
+         *      \code
+         *          x < 0 => {
+         *              ...
+         *          }
+         *      \endcode
+         *      \code
+         *          x = y > 0 => y * 2;
+         *      \endcode
+         *      \code
+         *          return x == 0 => y;
+         *      \endcode
+         *
+         * Notes:
+         *      - If "stmt" is an expression statement, conditional statement returns
+         *      the yields the value of the expression, thus making it the only default
+         *      value-semantics statement.
+         */
+        struct Cond final : detail::NodeBase {
+            Cond(Node cond, Node then, Coords coords);
+        };
 
         struct Block final : detail::NodeBase {
             Block(Vec<Node> statements, Coords coords);
@@ -363,9 +411,20 @@ namespace tlc::syntax {
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
-        struct Assign final : detail::NodeBase {};
+        struct Assign final : detail::NodeBase {
+            Assign(Node lhs, Node rhs, token::EToken op, Coords coords);
 
-        struct Expr final : detail::NodeBase {};
+            [[nodiscard]] auto op() const noexcept -> token::EToken {
+                return m_op;
+            }
+
+        private:
+            token::EToken m_op;
+        };
+
+        struct Expr final : detail::NodeBase {
+            Expr(Node expr, Coords coords);
+        };
     }
 
     namespace global {}

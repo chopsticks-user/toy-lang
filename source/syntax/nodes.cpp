@@ -271,10 +271,38 @@ namespace tlc::syntax {
         return firstChild();
     }
 
+    stmt::Preface::Preface(Node stmt, Coords coords)
+        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
+
+    auto stmt::Preface::stmt() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::Defer::Defer(Node stmt, Coords coords)
+        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
+
+    auto stmt::Defer::stmt() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::Cond::Cond(Node cond, Node then, Coords coords)
+        : NodeBase{
+            {std::move(cond), std::move(then)},
+            std::move(coords)
+        } {}
+
     stmt::Block::Block(Vec<Node> statements, Coords coords)
         : NodeBase{std::move(statements), std::move(coords)} {}
 
     auto stmt::Block::size() const noexcept -> szt {
         return nChildren();
     }
+
+    stmt::Assign::Assign(
+        Node lhs, Node rhs, token::EToken const op, Coords coords
+    ): NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
+       m_op{op} {}
+
+    stmt::Expr::Expr(Node expr, Coords coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
 }

@@ -46,17 +46,15 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
         "stmt::Let [@0:0]\n"
         "├─ decl::Identifier [@0:4] with (const, name) = (false, 'x')"
     );
-
     assertStmt(
         "let x = foo::Bar{x: 0, y: true};",
         "stmt::Let [@0:0]\n"
-        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n" // todo: wrong coords
+        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n"
         "├─ expr::Record [@0:8] with keys = ['x','y']\n"
         "   ├─ type::Identifier [@0:8] with (fundamental, path) = (false, 'foo::Bar')\n"
         "   ├─ expr::Integer [@0:20] with value = 0\n"
         "   ├─ expr::Boolean [@0:26] with value = true"
     );
-
     assertStmt(
         "let (x, y, z: Bool) = (0, 0.0, false);",
         "stmt::Let [@0:0]\n"
@@ -71,3 +69,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
         "   ├─ expr::Boolean [@0:31] with value = false"
     );
 }
+
+TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Conditional statements", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Parse]") {}

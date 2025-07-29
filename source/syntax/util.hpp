@@ -52,15 +52,15 @@ namespace tlc::syntax {
     auto isBinaryOperator(token::EToken type) -> bool;
     auto opPrecedence(token::EToken tokenType, EOperator opType) -> OpPrecedence;
     auto isLeftAssociative(token::EToken type) -> bool;
+    auto isAssignmentOperator(token::EToken type) -> bool;
 
-    // const HashSet<Str> overloadableOps = {
-    //   "+", "-", "*", "/",
-    //   "==", "!=",
-    // };
-    //
     // const HashSet<Str> assignmentOps = {
     //   "=", "+=", "-=", "*=", "/=", "%=", "**=",
     //   "&=", "|=", "^=", "<<=", ">>=",
+    // };
+    // const HashSet<Str> overloadableOps = {
+    //   "+", "-", "*", "/",
+    //   "==", "!=",
     // };
 }
 

@@ -10,9 +10,29 @@ namespace tlc::parse {
         if (auto letStmt = handleLetStmt(); letStmt) {
             return letStmt;
         }
-        // todo: last to be considered to avoid ambiguity with records
+        if (auto deferStmt = handleDeferStmt(); deferStmt) {
+            return deferStmt;
+        }
+        if (auto prefaceStmt = handlePrefaceStmt(); prefaceStmt) {
+            return prefaceStmt;
+        }
+        if (auto yieldStmt = handleYieldStmt(); yieldStmt) {
+            return yieldStmt;
+        }
         if (auto blockStmt = handleBlockStmt(); blockStmt) {
             return blockStmt;
+        }
+        if (auto condStmt = handleConditionalStmt(); condStmt) {
+            return condStmt;
+        }
+        if (auto matchStmt = handleMatchStmt(); matchStmt) {
+            return matchStmt;
+        }
+        if (auto loopStmt = handleLoopStmt(); loopStmt) {
+            return loopStmt;
+        }
+        if (auto exprStmt = handleExprPrefixedStmt(); exprStmt) {
+            return exprStmt;
         }
         return {};
     }
@@ -83,7 +103,38 @@ namespace tlc::parse {
     }
 
     auto Parse::handleExprPrefixedStmt() -> ParseResult {
-        return {};
+        pushCoords();
+        return handleExpr().and_then([this](auto&& lhs)
+            -> ParseResult {
+                if (m_stream.match(syntax::isAssignmentOperator)) {
+                    auto const op = m_stream.current().type();
+                    lhs = syntax::stmt::Assign{
+                        std::move(lhs),
+                        *handleExpr().or_else([this](auto&& error) -> ParseResult {
+                            m_panic.collect(error);
+                            m_panic.collect({
+                                .location = m_stream.current().coords(),
+                                .context = Error::Context::AssignStmt,
+                                .reason = Error::Reason::MissingExpr,
+                            });
+                            return {};
+                        }),
+                        op, popCoords()
+                    };
+                }
+                else {
+                    lhs = syntax::stmt::Expr{lhs, popCoords()};
+                }
+
+                if (!m_stream.match(Semicolon)) {
+                    m_panic.collect({
+                        .location = m_stream.current().coords(),
+                        .context = Error::Context::Stmt,
+                        .reason = Error::Reason::MissingEnclosingSymbol,
+                    });
+                }
+                return lhs;
+            });
     }
 
     auto Parse::handleLoopStmt() -> ParseResult {
@@ -95,7 +146,25 @@ namespace tlc::parse {
     }
 
     auto Parse::handleConditionalStmt() -> ParseResult {
-        return {};
+        pushCoords();
+        return handleExpr().and_then([this](auto&& cond) -> ParseResult {
+            return match(EqualGreater)(m_context, m_stream, m_panic)
+                .and_then([this, &cond](auto) -> ParseResult {
+                    return syntax::stmt::Cond{
+                        cond,
+                        *handleStmt().or_else([this](auto&& error) -> ParseResult {
+                            m_panic.collect(error);
+                            m_panic.collect({
+                                .location = m_stream.current().coords(),
+                                .context = Error::Context::CondStmt,
+                                .reason = Error::Reason::MissingStmt,
+                            });
+                            return {};
+                        }),
+                        popCoords()
+                    };
+                });
+        });
     }
 
     auto Parse::handleBlockStmt() -> ParseResult {
@@ -134,11 +203,48 @@ namespace tlc::parse {
     }
 
     auto Parse::handleDeferStmt() -> ParseResult {
-        return {};
+        return match(Defer)(m_context, m_stream, m_panic)
+            .and_then([this](auto const& tokens) -> ParseResult {
+                auto coords = tokens.front().coords();
+                return syntax::stmt::Defer{
+                    *handleStmt().or_else(
+                        [this, &coords](auto&& error) -> ParseResult {
+                            m_panic.collect(error);
+                            m_panic.collect({
+                                .location = m_stream.current().coords(),
+                                .context = Error::Context::DeferStmt,
+                                .reason = Error::Reason::MissingStmt,
+                            });
+                            return syntax::stmt::Defer{
+                                {}, std::move(coords)
+                            };
+                        }),
+                    std::move(coords)
+                };
+            });
     }
 
+
     auto Parse::handlePrefaceStmt() -> ParseResult {
-        return {};
+        return match(Preface)(m_context, m_stream, m_panic)
+            .and_then([this](auto const& tokens) -> ParseResult {
+                auto coords = tokens.front().coords();
+                return syntax::stmt::Preface{
+                    *handleStmt().or_else(
+                        [this, &coords](auto&& error) -> ParseResult {
+                            m_panic.collect(error);
+                            m_panic.collect({
+                                .location = m_stream.current().coords(),
+                                .context = Error::Context::PrefaceStmt,
+                                .reason = Error::Reason::MissingStmt,
+                            });
+                            return syntax::stmt::Preface{
+                                {}, std::move(coords)
+                            };
+                        }),
+                    std::move(coords)
+                };
+            });
     }
 
     auto Parse::handleYieldStmt() -> ParseResult {

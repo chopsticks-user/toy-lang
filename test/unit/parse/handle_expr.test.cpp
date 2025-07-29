@@ -311,3 +311,6 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
 
 // todo
 TEST_CASE_WITH_FIXTURE("Parse: Ternary expressions", "[Parse]") {}
+
+// todo
+TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Parse]") {}

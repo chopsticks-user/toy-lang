@@ -6,7 +6,7 @@ namespace tlc::syntax {
         return std::holds_alternative<std::monostate>(node);
     }
 
-    static HashSet prefixOps = {
+    static const HashSet prefixOps = {
         token::EToken::Exclaim,
         token::EToken::Tilde,
         token::EToken::Plus,
@@ -19,7 +19,7 @@ namespace tlc::syntax {
         return prefixOps.contains(type);
     }
 
-    static HashSet postfixStart = {
+    static const HashSet postfixStart = {
         token::EToken::Dot,
         token::EToken::LeftParen,
         token::EToken::LeftBracket,
@@ -30,7 +30,7 @@ namespace tlc::syntax {
         return postfixStart.contains(type);
     }
 
-    static HashSet binaryOps = {
+    static const HashSet binaryOps = {
         token::EToken::Plus,
         token::EToken::Minus,
         token::EToken::Star,
@@ -41,7 +41,8 @@ namespace tlc::syntax {
         return binaryOps.contains(type);
     }
 
-    static HashMap<token::EToken, OpPrecedence> prefixOpPrecedenceTable = {
+    static const HashMap<token::EToken, OpPrecedence>
+    prefixOpPrecedenceTable = {
         {token::EToken::Exclaim, 30},
         {token::EToken::Tilde, 31},
         {token::EToken::Plus, 32},
@@ -50,7 +51,8 @@ namespace tlc::syntax {
         {token::EToken::Dot3, 35},
     };
 
-    static HashMap<token::EToken, OpPrecedence> binaryOpPrecedenceTable = {
+    static const HashMap<token::EToken, OpPrecedence>
+    binaryOpPrecedenceTable = {
         {token::EToken::Plus, 10},
         {token::EToken::Minus, 10},
         {token::EToken::Star, 12},
@@ -67,14 +69,33 @@ namespace tlc::syntax {
         }
     }
 
-    static HashSet leftAssociativeOps = {
+    static const HashSet leftAssociativeOps = {
         token::EToken::Plus,
         token::EToken::Minus,
         token::EToken::Star,
         token::EToken::FwdSlash,
     };
 
-    auto isLeftAssociative(token::EToken const type) -> bool {
+    auto isLeftAssociative(token::EToken const type) -> b8 {
         return leftAssociativeOps.contains(type);
+    }
+
+    static const HashSet assignmentOps = {
+        token::EToken::Equal,
+        token::EToken::PlusEqual,
+        token::EToken::MinusEqual,
+        token::EToken::StarEqual,
+        token::EToken::FwdSlashEqual,
+        token::EToken::PercentEqual,
+        token::EToken::Star2Equal,
+        token::EToken::AmpersandEqual,
+        token::EToken::BarEqual,
+        token::EToken::HatEqual,
+        token::EToken::Less2Equal,
+        token::EToken::Greater2Equal,
+    };
+
+    auto isAssignmentOperator(token::EToken const type) -> b8 {
+        return assignmentOps.contains(type);
     }
 }
