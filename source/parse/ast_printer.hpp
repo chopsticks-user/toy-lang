@@ -7,8 +7,8 @@
 
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
-        static constexpr Str prefixSymbol = "├─ ";
-        static constexpr Str spaceSymbol = "   ";
+        static constexpr StrV prefixSymbol = "├─ ";
+        static constexpr StrV spaceSymbol = "   ";
 
     public:
         using SyntaxTreeVisitor::operator();
@@ -40,6 +40,9 @@ namespace tlc::parse {
 
         auto operator()(syntax::decl::Identifier const& node) -> Str;
         auto operator()(syntax::decl::Tuple const& node) -> Str;
+
+        auto operator()(syntax::stmt::Return const& node) -> Str;
+        auto operator()(syntax::stmt::Let const& node) -> Str;
 
     private:
         static constexpr auto rvFilterEmpty =

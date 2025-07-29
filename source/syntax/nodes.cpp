@@ -242,6 +242,28 @@ namespace tlc::syntax {
         }
     }
 
+    stmt::Let::Let(Node decl, Node initializer, Coords coords)
+        : NodeBase{{std::move(decl), std::move(initializer)}, std::move(coords)} {}
+
+    auto stmt::Let::decl() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    auto stmt::Let::initializer() const noexcept -> Node const& {
+        return lastChild();
+    }
+
+    auto stmt::Let::defaultInitialized() const -> bool {
+        return isEmptyNode(lastChild());
+    }
+
+    stmt::Return::Return(Node expr, Coords coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+
+    auto stmt::Return::expr() const noexcept -> Node const& {
+        return firstChild();
+    }
+
     stmt::Yield::Yield(Node expr, Coords coords)
         : NodeBase{{std::move(expr)}, std::move(coords)} {}
 

@@ -275,9 +275,21 @@ namespace tlc::syntax {
     }
 
     namespace stmt {
-        struct Let final : detail::NodeBase {};
+        struct Let final : detail::NodeBase {
+            Let(Node decl, Node initializer, Coords coords);
 
-        struct Return final : detail::NodeBase {};
+            [[nodiscard]] auto decl() const noexcept -> Node const&;
+
+            [[nodiscard]] auto initializer() const noexcept -> Node const&;
+
+            [[nodiscard]] auto defaultInitialized() const -> bool;
+        };
+
+        struct Return final : detail::NodeBase {
+            Return(Node expr, Coords coords);
+
+            [[nodiscard]] auto expr() const noexcept -> Node const&;
+        };
 
         /**
          * Syntax:

@@ -4,6 +4,8 @@
 
 #include <format>
 
+#include "syntax/util.hpp"
+
 namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::expr::Integer const& node) -> Str {
         return withDepth(std::format(
@@ -158,9 +160,34 @@ namespace tlc::parse {
                   : "");
     }
 
+    auto ASTPrinter::operator()(syntax::stmt::Return const& node) -> Str {
+        Str suffix = visitChildren(node).front();
+        if (!suffix.empty()) {
+            suffix = std::format("\n{}", suffix);
+        }
+
+        return withDepth(std::format(
+            "stmt::Return [@{}:{}]",
+            node.line(), node.column()
+        )) + suffix;
+    }
+
+    auto ASTPrinter::operator()(syntax::stmt::Let const& node) -> Str {
+        auto suffix = visitChildren(node) | rvFilterEmpty
+            | rv::join_with('\n') | rng::to<Str>();
+        if (!suffix.empty()) {
+            suffix = std::format("\n{}", suffix);
+        }
+
+        return withDepth(std::format(
+            "stmt::Let [@{}:{}]",
+            node.line(), node.column()
+        )) + suffix;
+    }
+
     auto ASTPrinter::withDepth(Str s) const -> Str {
         return (
-            [&] -> Vec<Str> {
+            [&] -> Vec<StrV> {
                 switch (auto const d = depth(); d) {
                 case 0: return {};
                 case 1: return {prefixSymbol};
