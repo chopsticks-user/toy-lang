@@ -260,21 +260,21 @@ namespace tlc::parse {
         return syntax::expr::Array{std::move(elements), std::move(coords)};
     }
 
-    auto Parse::handleRecordExpr() -> ParseResult {
+    auto Parse::handleRecordExpr() -> ParseResult { // NOLINT(*-no-recursion)
         m_stream.markBacktrack();
+        auto coords = m_stream.peek().coords();
 
-        auto type = handleTypeIdentifier().value_or({});
-        if (!m_stream.match(LeftBrace)) {
+        auto type = handleTypeIdentifier();
+        if (!type || !m_stream.match(LeftBrace)) {
             m_stream.backtrack();
             return defaultError();
         }
 
-        auto coords = m_stream.current().coords();
         Vec<Pair<Str, syntax::Node>> entries;
 
         if (m_stream.match(RightBrace)) {
             return syntax::expr::Record{
-                std::move(type), std::move(entries), std::move(coords)
+                std::move(*type), std::move(entries), std::move(coords)
             };
         }
 
@@ -324,7 +324,7 @@ namespace tlc::parse {
         }
 
         return syntax::expr::Record{
-            std::move(type), std::move(entries), std::move(coords)
+            std::move(*type), std::move(entries), std::move(coords)
         };
     }
 }

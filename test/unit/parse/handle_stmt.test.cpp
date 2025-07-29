@@ -48,13 +48,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
     );
 
     assertStmt(
-        "let x: foo::Bar = {x: 0, y: true};",
+        "let x = foo::Bar{x: 0, y: true};",
         "stmt::Let [@0:0]\n"
-        "├─ decl::Identifier [@0:7] with (const, name) = (true, 'x')\n" // todo: wrong coords
-        "   ├─ type::Identifier [@0:7] with (fundamental, path) = (false, 'foo::Bar')\n"
-        "├─ expr::Record [@0:18] with keys = ['x','y']\n"
-        "   ├─ expr::Integer [@0:22] with value = 0\n"
-        "   ├─ expr::Boolean [@0:28] with value = true"
+        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n" // todo: wrong coords
+        "├─ expr::Record [@0:8] with keys = ['x','y']\n"
+        "   ├─ type::Identifier [@0:8] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "   ├─ expr::Integer [@0:20] with value = 0\n"
+        "   ├─ expr::Boolean [@0:26] with value = true"
     );
 
     assertStmt(

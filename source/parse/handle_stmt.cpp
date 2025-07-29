@@ -10,6 +10,10 @@ namespace tlc::parse {
         if (auto letStmt = handleLetStmt(); letStmt) {
             return letStmt;
         }
+        // todo: last to be considered to avoid ambiguity with records
+        if (auto blockStmt = handleBlockStmt(); blockStmt) {
+            return blockStmt;
+        }
         return {};
     }
 
@@ -99,11 +103,32 @@ namespace tlc::parse {
             [this](auto const& tokens) -> ParseResult {
                 [[maybe_unused]] auto coords = tokens.front().coords();
 
-                if (!m_stream.match(RightBrace)) {
-                    // todo: collect errors
+                Vec<syntax::Node> statements;
+                while (!m_stream.match(RightBrace)) {
+                    statements.push_back(*parseStmt()
+                        .or_else([this](auto&& error) -> ParseResult {
+                            m_panic.collect(error);
+                            m_panic.collect({
+                                .location = m_stream.current().coords(),
+                                .context = Error::Context::BlockStmt,
+                                .reason = Error::Reason::MissingStmt,
+                            });
+                            return {};
+                        })
+                    );
                 }
 
-                return {};
+                if (m_stream.current().type() != LeftBrace) {
+                    m_panic.collect({
+                        .location = m_stream.current().coords(),
+                        .context = Error::Context::BlockStmt,
+                        .reason = Error::Reason::MissingEnclosingSymbol,
+                    });
+                }
+
+                return syntax::stmt::Block{
+                    std::move(statements), std::move(coords)
+                };
             }
         );
     }

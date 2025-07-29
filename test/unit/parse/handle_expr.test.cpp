@@ -158,18 +158,20 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Type-implicit records", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     assertExpr(
-        "{}",
-        "expr::Record [@0:0] with keys = []"
+        "foo::Bar{}",
+        "expr::Record [@0:0] with keys = []\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'foo::Bar')"
     );
 
     assertExpr(
-        "{x: 0, y: 1.1, z: false}\n",
+        "Foo{x: 0, y: 1.1, z: false}\n",
         "expr::Record [@0:0] with keys = ['x','y','z']\n"
-        "├─ expr::Integer [@0:4] with value = 0\n"
-        "├─ expr::Float [@0:10] with value = 1.1\n"
-        "├─ expr::Boolean [@0:18] with value = false"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'Foo')\n"
+        "├─ expr::Integer [@0:7] with value = 0\n"
+        "├─ expr::Float [@0:13] with value = 1.1\n"
+        "├─ expr::Boolean [@0:21] with value = false"
     );
 }
 

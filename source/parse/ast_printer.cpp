@@ -92,11 +92,10 @@ namespace tlc::parse {
             node.line(), node.column(), node.keys() | rv::transform(
                 [](auto const& k) { return std::format("'{}'", k); }
             ) | rv::join_with(',') | rng::to<Str>()
-        )) + (node.size() > 0
-                  ? "\n" + (
-                      visitChildren(node) | rvFilterEmpty | rv::join_with('\n') | rng::to<Str>()
-                  )
-                  : "");
+        )) + "\n" + (
+            visitChildren(node) | rvFilterEmpty
+            | rv::join_with('\n') | rng::to<Str>()
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {

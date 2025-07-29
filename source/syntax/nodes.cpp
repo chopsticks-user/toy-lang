@@ -97,13 +97,13 @@ namespace tlc::syntax {
             return lastChild();
         }
 
-        Record::Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords)
+        Record::Record(Node type, Vec<Pair<Str, Node>> entries, Coords coords)
             : NodeBase{
                   [&] {
                       Vec<Node> nodes;
                       nodes.reserve(entries.size() + 1);
                       // todo: concat
-                      nodes.push_back(std::move(of));
+                      nodes.push_back(std::move(type));
                       nodes.append_range(
                           entries | rv::transform(
                               [](auto const& entry) {
@@ -125,10 +125,10 @@ namespace tlc::syntax {
               } {}
 
         auto Record::size() const noexcept -> szt {
-            return nChildren() - 1;
+            return m_keys.size() - 1;
         }
 
-        auto Record::of() const noexcept -> Node {
+        auto Record::type() const noexcept -> Node {
             return firstChild();
         }
 
@@ -269,5 +269,12 @@ namespace tlc::syntax {
 
     auto stmt::Yield::expr() const noexcept -> Node const& {
         return firstChild();
+    }
+
+    stmt::Block::Block(Vec<Node> statements, Coords coords)
+        : NodeBase{std::move(statements), std::move(coords)} {}
+
+    auto stmt::Block::size() const noexcept -> szt {
+        return nChildren();
     }
 }

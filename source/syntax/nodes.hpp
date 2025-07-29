@@ -151,11 +151,11 @@ namespace tlc::syntax {
         // };
 
         struct Record final : detail::NodeBase {
-            Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords);
+            Record(Node type, Vec<Pair<Str, Node>> entries, Coords coords);
 
             [[nodiscard]] auto size() const noexcept -> szt;
 
-            [[nodiscard]] auto of() const noexcept -> Node;
+            [[nodiscard]] auto type() const noexcept -> Node;
 
             [[nodiscard]] auto key(szt const index) const noexcept -> Str {
                 return m_keys.at(index);
@@ -357,7 +357,11 @@ namespace tlc::syntax {
 
         struct Cond final : detail::NodeBase {};
 
-        struct Block final : detail::NodeBase {};
+        struct Block final : detail::NodeBase {
+            Block(Vec<Node> statements, Coords coords);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
+        };
 
         struct Assign final : detail::NodeBase {};
 
