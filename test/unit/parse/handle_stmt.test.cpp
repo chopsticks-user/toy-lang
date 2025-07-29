@@ -21,7 +21,7 @@ auto ParseTestFixture::assertStmt(
     REQUIRE(actual == expected);
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Yield and Return statements", "[Parse]") {
     assertStmt(
         "return;",
         "stmt::Return [@0:0]"
@@ -37,6 +37,19 @@ TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Parse]") {
         "├─ expr::Tuple [@0:7] with size = 2\n"
         "   ├─ expr::Identifier [@0:8] with path = 'foo::bar'\n"
         "   ├─ expr::Integer [@0:18] with value = 0"
+    );
+
+    assertStmt(
+        "yield x;",
+        "stmt::Yield [@0:0]\n"
+        "├─ expr::Identifier [@0:6] with path = 'x'"
+    );
+    assertStmt(
+        "yield (foo::bar, 0);",
+        "stmt::Yield [@0:0]\n"
+        "├─ expr::Tuple [@0:6] with size = 2\n"
+        "   ├─ expr::Identifier [@0:7] with path = 'foo::bar'\n"
+        "   ├─ expr::Integer [@0:17] with value = 0"
     );
 }
 
@@ -70,12 +83,59 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
+    assertStmt(
+        "foo::bar();",
+        "stmt::Expression [@0:0]\n"
+        "├─ expr::FnApp [@0:0]\n"
+        "   ├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
+        "   ├─ expr::Tuple [@0:8] with size = 0"
+    );
+    assertStmt(
+        "x = 5;",
+        "stmt::Assign [@0:4] with op = '='\n" // todo: wrong coords
+        "├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "├─ expr::Integer [@0:4] with value = 5"
+    );
+    assertStmt(
+        "x += 5;",
+        "stmt::Assign [@0:5] with op = '+='\n" // todo: wrong coords
+        "├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "├─ expr::Integer [@0:5] with value = 5"
+    );
+    assertStmt(
+        "x == y => return x + y;",
+        "stmt::Conditional [@0:21]\n"
+        "├─ expr::Binary [@0:5] with op = '=='\n"
+        "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "   ├─ expr::Identifier [@0:5] with path = 'y'\n"
+        "├─ stmt::Return [@0:10]\n"
+        "   ├─ expr::Binary [@0:21] with op = '+'\n"
+        "      ├─ expr::Identifier [@0:17] with path = 'x'\n"
+        "      ├─ expr::Identifier [@0:21] with path = 'y'"
+    );
+    assertStmt(
+        "x == y => foo::Bar{sum: x+y, product: x*y};",
+        "stmt::Conditional [@0:40]\n"
+        "├─ expr::Binary [@0:5] with op = '=='\n"
+        "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "   ├─ expr::Identifier [@0:5] with path = 'y'\n"
+        "├─ stmt::Expression [@0:40]\n"
+        "   ├─ expr::Record [@0:10] with keys = ['sum','product']\n"
+        "      ├─ type::Identifier [@0:10] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "      ├─ expr::Binary [@0:26] with op = '+'\n"
+        "         ├─ expr::Identifier [@0:24] with path = 'x'\n"
+        "         ├─ expr::Identifier [@0:26] with path = 'y'\n"
+        "      ├─ expr::Binary [@0:40] with op = '*'\n"
+        "         ├─ expr::Identifier [@0:38] with path = 'x'\n"
+        "         ├─ expr::Identifier [@0:40] with path = 'y'"
+    );
+}
 
 TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {}
-
-TEST_CASE_WITH_FIXTURE("Parse: Conditional statements", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Parse]") {}
+
+TEST_CASE_WITH_FIXTURE("Parse: Defer and Preface statements", "[Parse]") {}

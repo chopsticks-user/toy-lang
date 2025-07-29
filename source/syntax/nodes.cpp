@@ -285,7 +285,7 @@ namespace tlc::syntax {
         return firstChild();
     }
 
-    stmt::Cond::Cond(Node cond, Node then, Coords coords)
+    stmt::Conditional::Conditional(Node cond, Node then, Coords coords)
         : NodeBase{
             {std::move(cond), std::move(then)},
             std::move(coords)
@@ -303,6 +303,6 @@ namespace tlc::syntax {
     ): NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
        m_op{op} {}
 
-    stmt::Expr::Expr(Node expr, Coords coords)
+    stmt::Expression::Expression(Node expr, Coords coords)
         : NodeBase{{std::move(expr)}, std::move(coords)} {}
 }

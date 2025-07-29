@@ -21,7 +21,10 @@ namespace tlc::token {
         // Control
         {"for", EToken::For},
         {"return", EToken::Return},
+        {"yield", EToken::Yield},
         {"match", EToken::Match},
+        {"defer", EToken::Defer},
+        {"preface", EToken::Preface},
 
         // Adverb
         {"by", EToken::By},

@@ -9,6 +9,7 @@ namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
         static constexpr StrV prefixSymbol = "├─ ";
         static constexpr StrV spaceSymbol = "   ";
+        static constexpr Str emptyNodeStr = "(empty)";
 
     public:
         using SyntaxTreeVisitor::operator();
@@ -42,12 +43,21 @@ namespace tlc::parse {
         auto operator()(syntax::decl::Tuple const& node) -> Str;
 
         auto operator()(syntax::stmt::Return const& node) -> Str;
+        auto operator()(syntax::stmt::Yield const& node) -> Str;
         auto operator()(syntax::stmt::Let const& node) -> Str;
+        auto operator()(syntax::stmt::Expression const& node) -> Str;
+        auto operator()(syntax::stmt::Assign const& node) -> Str;
+        auto operator()(syntax::stmt::Conditional const& node) -> Str;
 
     private:
         static constexpr auto rvFilterEmpty =
             rv::filter([](auto const& s) {
                 return !s.empty();
+            });
+
+        static constexpr auto rvTransformEmpty =
+            rv::transform([](auto const& s) {
+                return s.empty() ? emptyNodeStr : s;
             });
 
         [[nodiscard]] auto withDepth(Str s) const -> Str;

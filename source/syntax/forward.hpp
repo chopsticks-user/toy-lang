@@ -49,10 +49,10 @@ namespace tlc::syntax {
         struct Defer;
         struct Match;
         struct Loop;
-        struct Cond;
+        struct Conditional;
         struct Block;
         struct Assign;
-        struct Expr;
+        struct Expression;
     }
 
     namespace def {}
@@ -68,7 +68,7 @@ namespace tlc::syntax {
         decl::Identifier, decl::Tuple,
 
         stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Match,
-        stmt::Loop, stmt::Cond, stmt::Block, stmt::Assign, stmt::Expr,
+        stmt::Loop, stmt::Conditional, stmt::Block, stmt::Assign, stmt::Expression,
 
         TranslationUnit
     >;

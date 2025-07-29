@@ -318,9 +318,8 @@ namespace tlc::syntax {
          *      - Used to exit the current scope and indicate that the value evaluated
          *      by "expr" will be returned and effectively make the statement owning
          *      the exited scope an expression returning the value.
-         *      - Unlike "return", "yield" cannot be a scope owner.
-         *      - If "expr" is neither present nor evaluating to a non-void value,
-         *      the type of the returned value is Void.
+         *      - Unlike "return", "yield" cannot be a scope owner, and it is a syntax
+         *      error if "expr" is neither present nor evaluating to a non-void value.
          *      - Like "return", "yield" is a pure statement.
          */
         struct Yield final : detail::NodeBase {
@@ -401,8 +400,8 @@ namespace tlc::syntax {
          *      the yields the value of the expression, thus making it the only default
          *      value-semantics statement.
          */
-        struct Cond final : detail::NodeBase {
-            Cond(Node cond, Node then, Coords coords);
+        struct Conditional final : detail::NodeBase {
+            Conditional(Node cond, Node then, Coords coords);
         };
 
         struct Block final : detail::NodeBase {
@@ -422,8 +421,8 @@ namespace tlc::syntax {
             token::EToken m_op;
         };
 
-        struct Expr final : detail::NodeBase {
-            Expr(Node expr, Coords coords);
+        struct Expression final : detail::NodeBase {
+            Expression(Node expr, Coords coords);
         };
     }
 

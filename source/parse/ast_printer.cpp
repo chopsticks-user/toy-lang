@@ -147,7 +147,7 @@ namespace tlc::parse {
         return withDepth(std::format(
             "decl::Identifier [@{}:{}] with (const, name) = ({}, '{}')",
             node.line(), node.column(), node.constant(), node.name()
-        )) + (node.inferred() ? "" : "\n" + (visitChildren(node).front() | rng::to<Str>()));
+        )) + (node.inferred() ? "" : "\n" + visitChildren(node).front());
     }
 
     auto ASTPrinter::operator()(syntax::decl::Tuple const& node) -> Str {
@@ -171,6 +171,18 @@ namespace tlc::parse {
         )) + suffix;
     }
 
+    auto ASTPrinter::operator()(syntax::stmt::Yield const& node) -> Str {
+        Str suffix = visitChildren(node).front();
+        if (!suffix.empty()) {
+            suffix = std::format("\n{}", suffix);
+        }
+
+        return withDepth(std::format(
+            "stmt::Yield [@{}:{}]",
+            node.line(), node.column()
+        )) + suffix;
+    }
+
     auto ASTPrinter::operator()(syntax::stmt::Let const& node) -> Str {
         auto suffix = visitChildren(node) | rvFilterEmpty
             | rv::join_with('\n') | rng::to<Str>();
@@ -182,6 +194,32 @@ namespace tlc::parse {
             "stmt::Let [@{}:{}]",
             node.line(), node.column()
         )) + suffix;
+    }
+
+    auto ASTPrinter::operator()(syntax::stmt::Expression const& node) -> Str {
+        auto suffix = visitChildren(node).front();
+        return withDepth(std::format(
+            "stmt::Expression [@{}:{}]",
+            node.line(), node.column()
+        )) + (suffix.empty() ? emptyNodeStr : std::format("\n{}", suffix));
+    }
+
+    auto ASTPrinter::operator()(syntax::stmt::Assign const& node) -> Str {
+        return withDepth(std::format(
+            "stmt::Assign [@{}:{}] with op = '{}'",
+            node.line(), node.column(), token::reversedOperatorTable.at(node.op())
+        )) + ("\n" + (visitChildren(node) | rvTransformEmpty |
+                rv::join_with('\n') | rng::to<Str>())
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::stmt::Conditional const& node) -> Str {
+        return withDepth(std::format(
+            "stmt::Conditional [@{}:{}]",
+            node.line(), node.column()
+        )) + ("\n" + (visitChildren(node) | rvTransformEmpty |
+                rv::join_with('\n') | rng::to<Str>())
+        );
     }
 
     auto ASTPrinter::withDepth(Str s) const -> Str {

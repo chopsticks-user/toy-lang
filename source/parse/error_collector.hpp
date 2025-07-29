@@ -56,7 +56,7 @@ namespace tlc::parse {
             Unknown,
             Tuple, Array, Access, TypeInfer, Record, IdDecl, TupleDecl,
             Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt, AssignStmt,
-            ExprStmt, CondStmt,
+            ExprStmt, CondStmt, YieldStmt,
         };
 
         struct Params {

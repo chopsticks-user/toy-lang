@@ -122,7 +122,7 @@ namespace tlc::parse {
                     };
                 }
                 else if (m_stream.match(EqualGreater)) {
-                    return syntax::stmt::Cond{
+                    expr = syntax::stmt::Conditional{
                         expr, *handleStmt().or_else(
                             [this](auto&& error) -> ParseResult {
                                 m_collector.collect(error);
@@ -138,7 +138,7 @@ namespace tlc::parse {
                     };
                 }
                 else {
-                    expr = syntax::stmt::Expr{expr, popCoords()};
+                    expr = syntax::stmt::Expression{expr, popCoords()};
                 }
 
                 if (!m_stream.match(Semicolon)) {
@@ -255,13 +255,30 @@ namespace tlc::parse {
     auto Parse::handleYieldStmt() -> ParseResult {
         return match(Yield)(m_stream, m_tracker, m_collector).and_then(
             [this](auto const& tokens) -> ParseResult {
-                return syntax::stmt::Yield{
-                    *handleExpr().or_else([this](auto&& error) -> ParseResult {
+                auto coords = tokens.front().coords();
+
+                auto yieldStmt = syntax::stmt::Yield{
+                    *parseExpr().or_else([this](auto&& error) -> ParseResult {
                         m_collector.collect(error);
+                        m_collector.collect({
+                            .location = m_stream.current().coords(),
+                            .context = Error::Context::YieldStmt,
+                            .reason = Error::Reason::MissingExpr,
+                        });
                         return {};
                     }),
-                    tokens.front().coords()
+                    std::move(coords),
                 };
+
+                if (!m_stream.match(Semicolon)) {
+                    m_collector.collect({
+                        .location = m_stream.current().coords(),
+                        .context = Error::Context::Stmt,
+                        .reason = Error::Reason::MissingEnclosingSymbol,
+                    });
+                }
+
+                return yieldStmt;
             }
         );
     }
