@@ -1,4 +1,4 @@
-#include "panic.hpp"
+#include "error_collector.hpp"
 
 namespace tlc::parse {
     auto Error::message() const -> Str {

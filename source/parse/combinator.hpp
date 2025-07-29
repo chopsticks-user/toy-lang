@@ -2,9 +2,9 @@
 #define TLC_PARSE_COMBINATOR_HPP
 
 #include "core/core.hpp"
-#include "context.hpp"
-#include "panic.hpp"
 #include "token_stream.hpp"
+#include "location_tracker.hpp"
+#include "error_collector.hpp"
 
 namespace tlc::parse {
     using ParserCombinatorResult = Expected<
@@ -13,12 +13,14 @@ namespace tlc::parse {
 
     using ParserCombinator = Fn<
         ParserCombinatorResult(
-            Context& context, TokenStream& stream, Panic& panic
+            TokenStream& stream, LocationTracker& tracker, ErrorCollector& collector
         )
     >;
 
 #define TLC_PARSER_COMBINATOR_PROTOTYPE \
-    [=]([[maybe_unused]] Context& context, [[maybe_unused]] TokenStream& stream, [[maybe_unused]] Panic& panic) \
+    [=]([[maybe_unused]] TokenStream& stream, \
+    [[maybe_unused]] LocationTracker& tracker, \
+    [[maybe_unused]] ErrorCollector& collector) \
         -> ParserCombinatorResult
 
     auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
@@ -42,10 +44,10 @@ namespace tlc::parse {
     inline auto many0(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             token::TokenizedBuffer tokens;
-            auto result = pc(context, stream, panic);
+            auto result = pc(stream, tracker, collector);
             while (result) {
                 tokens.append_range(*result);
-                result = pc(context, stream, panic);
+                result = pc(stream, tracker, collector);
             }
             return tokens;
         };
@@ -53,9 +55,9 @@ namespace tlc::parse {
 
     inline auto many1(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            // return (match(type) & (*type))(context, stream, panic);
+            // return (match(type) & (*type))(stream,tracker,collector);
 
-            if (ParserCombinatorResult const result = many0(pc)(context, stream, panic);
+            if (ParserCombinatorResult const result = many0(pc)(stream, tracker, collector);
                 !result.value().empty()) {
                 return result;
             }
@@ -68,7 +70,7 @@ namespace tlc::parse {
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             for (auto&& p : {pc...}) {
-                if (auto const result = p(context, stream, panic); result) {
+                if (auto const result = p(stream, tracker, collector); result) {
                     return result;
                 }
             }
@@ -83,7 +85,7 @@ namespace tlc::parse {
             token::TokenizedBuffer tokens;
             stream.markBacktrack();
             for (auto&& p : {pc...}) {
-                auto const result = p(context, stream, panic);
+                auto const result = p(stream, tracker, collector);
                 if (!result) {
                     stream.backtrack();
                     return Unexpected{Error{}};

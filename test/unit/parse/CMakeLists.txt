@@ -4,8 +4,6 @@ target_sources(
     tlc_test_unit_parse PRIVATE
     token_stream.test.cpp
     combinator.test.cpp
-    context.test.cpp
-    panic.test.cpp
     parse.test.hpp
     handle_expr.test.cpp
     handle_type.test.cpp

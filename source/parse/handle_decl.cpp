@@ -5,7 +5,7 @@ namespace tlc::parse {
 
     auto Parse::handleStmtLevelDecl() -> ParseResult {
         return handleTupleDecl().or_else([this](auto&& error) -> ParseResult {
-            m_panic.collect(error);
+            m_collector.collect(error);
             return handleIdentifierDecl();
         });
     }
@@ -14,7 +14,7 @@ namespace tlc::parse {
         pushCoords();
         auto const constant = !m_stream.match(Dollar);
 
-        return match(Identifier)(m_context, m_stream, m_panic).and_then(
+        return match(Identifier)(m_stream, m_tracker, m_collector).and_then(
             [this, constant](auto const& tokens) -> ParseResult {
                 auto name = tokens.front().str();
 
@@ -31,14 +31,14 @@ namespace tlc::parse {
                         };
                     }).or_else([this, constant, name]([[maybe_unused]] auto&& error)
                     -> ParseResult {
-                        m_panic.collect(error);
+                        m_collector.collect(error);
                         return syntax::decl::Identifier{
                             constant, name, {}, popCoords()
                         };
                     });
             }
         ).or_else([this](auto) -> ParseResult {
-            m_panic.collect({
+            m_collector.collect({
                 .location = m_stream.current().coords(),
                 .context = Error::Context::IdDecl,
                 .reason = Error::Reason::MissingId
@@ -48,7 +48,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTupleDecl() -> ParseResult {
-        return match(LeftParen)(m_context, m_stream, m_panic).and_then(
+        return match(LeftParen)(m_stream, m_tracker, m_collector).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 Vec<syntax::Node> decls;
@@ -62,8 +62,8 @@ namespace tlc::parse {
                 do {
                     decls.push_back(*handleStmtLevelDecl().or_else(
                             [this](auto&& error) -> ParseResult {
-                                m_panic.collect(error);
-                                m_panic.collect({
+                                m_collector.collect(error);
+                                m_collector.collect({
                                     .location = m_stream.current().coords(),
                                     .context = Error::Context::Tuple,
                                     .reason = Error::Reason::MissingDecl,
@@ -76,7 +76,7 @@ namespace tlc::parse {
                 while (m_stream.match(Comma));
 
                 if (!m_stream.match(RightParen)) {
-                    m_panic.collect({
+                    m_collector.collect({
                         .location = m_stream.current().coords(),
                         .context = Error::Context::Tuple,
                         .reason = Error::Reason::MissingEnclosingSymbol,

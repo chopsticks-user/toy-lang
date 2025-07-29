@@ -103,9 +103,9 @@ namespace tlc::parse {
         Str m_info;
     };
 
-    class Panic final {
+    class ErrorCollector final {
     public:
-        explicit Panic(fs::path filepath)
+        explicit ErrorCollector(fs::path filepath)
             : m_filepath{std::move(filepath)} {}
 
         auto collect(Error error) -> void {

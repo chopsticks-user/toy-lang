@@ -11,7 +11,7 @@ namespace tlc::token {
 
         // Keywords
         /* Visibility */ Module, Import, Export, Internal, Local, Extern, Static,
-        /* Definition */ Let, Mut, Fn, Trait, Type, Enum, Flag,
+        /* Definition */ Let, Fn, Trait, Type, Enum, Flag,
         /* Control */ For, Match, Return, Yield, Defer, Preface,
         /* Adverb */ By, Of, In, When,
         /* Boolean */ True, False,
@@ -33,8 +33,7 @@ namespace tlc::token {
         Equal2, Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
         FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
         MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
-        /* Triple characters */ Dot3, Greater2Equal, Less2Equal, ColonEqualGreater,
-        ColonTildeGreater, Star2Equal,
+        /* Triple characters */ Dot3, Greater2Equal, Less2Equal, Star2Equal,
     };
 
     extern const HashMap<StrV, EToken> nonTypeKeywordTable;

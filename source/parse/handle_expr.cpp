@@ -26,7 +26,7 @@ namespace tlc::parse {
         }
         if (!lhs) {
             popCoords();
-            m_panic.collect(lhs.error());
+            m_collector.collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -38,7 +38,7 @@ namespace tlc::parse {
                         if (m_stream.match(Identifier)) {
                             return m_stream.current().str();
                         }
-                        m_panic.collect({
+                        m_collector.collect({
                             .location = currentCoords(),
                             .context = Error::Context::Access,
                             .reason = Error::Reason::MissingId,
@@ -120,7 +120,7 @@ namespace tlc::parse {
         return match(
             Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
             FloatLiteral, True, False
-        )(m_context, m_stream, m_panic).and_then([this](const auto& tokens)
+        )(m_stream, m_tracker, m_collector).and_then([this](const auto& tokens)
             -> ParseResult {
                 switch (tokens.front().type()) {
                 case FloatLiteral:
@@ -151,7 +151,7 @@ namespace tlc::parse {
         return seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(Identifier)
-        )(m_context, m_stream, m_panic).and_then([this](auto const& tokens)
+        )(m_stream, m_tracker, m_collector).and_then([this](auto const& tokens)
             -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
@@ -191,8 +191,8 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_panic.collect(error);
-                        m_panic.collect({
+                        m_collector.collect(error);
+                        m_collector.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Tuple,
                             .reason = Error::Reason::MissingExpr,
@@ -204,7 +204,7 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightParen)) {
-            m_panic.collect({
+            m_collector.collect({
                 .location = m_stream.current().coords(),
                 .context = Error::Context::Tuple,
                 .reason = Error::Reason::MissingEnclosingSymbol,
@@ -237,8 +237,8 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_panic.collect(error);
-                        m_panic.collect({
+                        m_collector.collect(error);
+                        m_collector.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Array,
                             .reason = Error::Reason::MissingExpr,
@@ -250,7 +250,7 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightBracket)) {
-            m_panic.collect({
+            m_collector.collect({
                 .location = m_stream.current().coords(),
                 .context = Error::Context::Tuple,
                 .reason = Error::Reason::MissingEnclosingSymbol,
@@ -281,7 +281,7 @@ namespace tlc::parse {
         do {
             Str key;
             if (!m_stream.match(Identifier)) {
-                m_panic.collect({
+                m_collector.collect({
                     .location = m_stream.current().coords(),
                     .context = Error::Context::Record,
                     .reason = Error::Reason::MissingId,
@@ -292,7 +292,7 @@ namespace tlc::parse {
             }
 
             if (!m_stream.match(Colon)) {
-                m_panic.collect({
+                m_collector.collect({
                     .location = m_stream.current().coords(),
                     .context = Error::Context::Record,
                     .reason = Error::Reason::MissingSymbol,
@@ -301,8 +301,8 @@ namespace tlc::parse {
 
             syntax::Node value = *handleExpr().or_else(
                 [this](auto&& error) -> ParseResult {
-                    m_panic.collect(error);
-                    m_panic.collect({
+                    m_collector.collect(error);
+                    m_collector.collect({
                         .location = m_stream.current().coords(),
                         .context = Error::Context::Record,
                         .reason = Error::Reason::MissingExpr,
@@ -316,7 +316,7 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightBrace)) {
-            m_panic.collect({
+            m_collector.collect({
                 .location = coords,
                 .context = Error::Context::Record,
                 .reason = Error::Reason::MissingEnclosingSymbol,

@@ -5,12 +5,12 @@
 #include "token/token.hpp"
 #include "syntax/syntax.hpp"
 
-#include "context.hpp"
-#include "panic.hpp"
+#include "error_collector.hpp"
 #include "ast_printer.hpp"
 #include "pretty_printer.hpp"
 #include "token_stream.hpp"
 #include "combinator.hpp"
+#include "location_tracker.hpp"
 
 namespace tlc::parse {
     class Parse final {
@@ -22,7 +22,9 @@ namespace tlc::parse {
         static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
         Parse(fs::path filepath, Vec<token::Token> tokens)
-            : m_stream{std::move(tokens)}, m_panic{std::move(filepath)} {}
+            : m_stream{std::move(tokens)},
+              m_tracker{m_stream},
+              m_collector{std::move(filepath)} {}
 
         auto operator()() -> syntax::Node;
 
@@ -70,7 +72,6 @@ namespace tlc::parse {
         auto handleExprPrefixedStmt() -> ParseResult;
         auto handleLoopStmt() -> ParseResult;
         auto handleMatchStmt() -> ParseResult;
-        auto handleConditionalStmt() -> ParseResult;
         auto handleBlockStmt() -> ParseResult;
 
         auto handleFunctionDef() -> ParseResult;
@@ -84,6 +85,7 @@ namespace tlc::parse {
         auto handleTranslationUnit() -> ParseResult;
 
     private:
+        // todo: move a to separate class
         auto pushCoords() -> void {
             // todo: eof
             return m_coords.push(m_stream.peek().coords());
@@ -110,8 +112,8 @@ namespace tlc::parse {
 
     private:
         TokenStream m_stream;
-        Context m_context{};
-        Panic m_panic;
+        LocationTracker m_tracker;
+        ErrorCollector m_collector;
         Stack<token::Token::Coords> m_coords{};
     };
 }

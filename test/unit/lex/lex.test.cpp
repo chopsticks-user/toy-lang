@@ -140,7 +140,6 @@ extern
         SECTION("Definition") {
             lex(R"(
 let
-mut
 fn
 trait
 type
@@ -148,14 +147,13 @@ enum
 flag
             )");
 
-            assertTokenCount(7);
+            assertTokenCount(6);
             assertTokenAt(0, tlc::token::EToken::Let, "let", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Mut, "mut", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::Fn, "fn", 3, 0);
-            assertTokenAt(3, tlc::token::EToken::Trait, "trait", 4, 0);
-            assertTokenAt(4, tlc::token::EToken::Type, "type", 5, 0);
-            assertTokenAt(5, tlc::token::EToken::Enum, "enum", 6, 0);
-            assertTokenAt(6, tlc::token::EToken::Flag, "flag", 7, 0);
+            assertTokenAt(1, tlc::token::EToken::Fn, "fn", 2, 0);
+            assertTokenAt(2, tlc::token::EToken::Trait, "trait", 3, 0);
+            assertTokenAt(3, tlc::token::EToken::Type, "type", 4, 0);
+            assertTokenAt(4, tlc::token::EToken::Enum, "enum", 5, 0);
+            assertTokenAt(5, tlc::token::EToken::Flag, "flag", 6, 0);
         }
 
         SECTION("Control") {
@@ -451,20 +449,16 @@ $
 
     SECTION("Triple characters") {
         lex(R"(
-:=>
-:~>
 >>=
 <<=
 **=
 ...
         )");
 
-        assertTokenCount(6);
-        assertTokenAt(0, tlc::token::EToken::ColonEqualGreater, ":=>", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::ColonTildeGreater, ":~>", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::Greater2Equal, ">>=", 3, 0);
-        assertTokenAt(3, tlc::token::EToken::Less2Equal, "<<=", 4, 0);
-        assertTokenAt(4, tlc::token::EToken::Star2Equal, "**=", 5, 0);
-        assertTokenAt(5, tlc::token::EToken::Dot3, "...", 6, 0);
+        assertTokenCount(4);
+        assertTokenAt(0, tlc::token::EToken::Greater2Equal, ">>=", 1, 0);
+        assertTokenAt(1, tlc::token::EToken::Less2Equal, "<<=", 2, 0);
+        assertTokenAt(2, tlc::token::EToken::Star2Equal, "**=", 3, 0);
+        assertTokenAt(3, tlc::token::EToken::Dot3, "...", 4, 0);
     }
 }

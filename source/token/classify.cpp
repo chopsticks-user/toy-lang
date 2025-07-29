@@ -12,13 +12,11 @@ namespace tlc::token {
 
         // Definition
         {"let", EToken::Let},
-        {"mut", EToken::Mut},
         {"fn", EToken::Fn},
         {"trait", EToken::Trait},
         {"type", EToken::Type},
         {"enum", EToken::Enum},
         {"flag", EToken::Flag},
-        // {"pure", EToken::Pure},
 
         // Control
         {"for", EToken::For},
@@ -53,8 +51,8 @@ namespace tlc::token {
 
     const HashMap<StrV, EToken> operatorTable = {
         // Triple characters
-        {":=>", EToken::ColonEqualGreater},
-        {":~>", EToken::ColonTildeGreater},
+        // {":=>", EToken::ColonEqualGreater},
+        // {":~>", EToken::ColonTildeGreater},
         {">>=", EToken::Greater2Equal},
         {"<<=", EToken::Less2Equal},
         {"**=", EToken::Star2Equal},
@@ -123,8 +121,8 @@ namespace tlc::token {
 
     const HashMap<EToken, StrV> reversedOperatorTable = {
         // Triple characters
-        {EToken::ColonEqualGreater, ":=>"},
-        {EToken::ColonTildeGreater, ":~>"},
+        // {EToken::ColonEqualGreater, ":=>"},
+        // {EToken::ColonTildeGreater, ":~>"},
         {EToken::Greater2Equal, ">>="},
         {EToken::Less2Equal, "<<="},
         {EToken::Star2Equal, "**="},

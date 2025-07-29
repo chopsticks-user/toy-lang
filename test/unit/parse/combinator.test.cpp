@@ -12,25 +12,25 @@ protected:
         std::istringstream iss;
         iss.str(std::move(source));
         m_stream.emplace(tlc::lex::Lex::operator()(std::move(iss)));
-        m_context = {};
-        m_panic = tlc::parse::Panic{filepath};
+        m_tracker.emplace(*m_stream);
+        m_panic = tlc::parse::ErrorCollector{filepath};
     }
 
     auto invoke(tlc::parse::ParserCombinator const& pc)
         -> tlc::parse::ParserCombinatorResult {
         // todo: no value error
-        return pc(m_context, m_stream.value(), m_panic);
+        return pc(*m_stream, *m_tracker, m_panic);
     }
 
     auto stream() -> tlc::parse::TokenStream {
-        REQUIRE(m_stream.has_value());
+        REQUIRE(m_stream);
         return *m_stream;
     }
 
 private:
-    tlc::parse::Context m_context{};
-    tlc::parse::Panic m_panic{filepath};
+    tlc::parse::ErrorCollector m_panic{filepath};
     tlc::Opt<tlc::parse::TokenStream> m_stream;
+    tlc::Opt<tlc::parse::LocationTracker> m_tracker;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

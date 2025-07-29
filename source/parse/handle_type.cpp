@@ -18,7 +18,7 @@ namespace tlc::parse {
             );
         if (!lhs) {
             popCoords();
-            m_panic.collect(lhs.error());
+            m_collector.collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -29,7 +29,7 @@ namespace tlc::parse {
                 while (m_stream.match(LeftBracket)) {
                     dimSizes.emplace_back(handleExpr().value_or({}));
                     if (!m_stream.match(RightBracket)) {
-                        m_panic.collect({
+                        m_collector.collect({
                             .location = m_stream.current().coords(),
                             .context = Error::Context::Array,
                             .reason = Error::Reason::MissingEnclosingSymbol,
@@ -43,7 +43,7 @@ namespace tlc::parse {
                 auto fnResultType = handleType()
                     .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
-                            m_panic.collect(error);
+                            m_collector.collect(error);
                             return {};
                         });
                 lhs = syntax::type::Function{
@@ -65,7 +65,7 @@ namespace tlc::parse {
         return seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(FundamentalType, UserDefinedType)
-        )(m_context, m_stream, m_panic).and_then(
+        )(m_stream, m_tracker, m_collector).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
@@ -85,7 +85,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeTuple() -> ParseResult {
-        return match(LeftParen)(m_context, m_stream, m_panic).and_then(
+        return match(LeftParen)(m_stream, m_tracker, m_collector).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 Vec<syntax::Node> types;
@@ -99,8 +99,8 @@ namespace tlc::parse {
                 do {
                     types.push_back(*handleType().or_else(
                             [this](auto&& error) -> ParseResult {
-                                m_panic.collect(error);
-                                m_panic.collect({
+                                m_collector.collect(error);
+                                m_collector.collect({
                                     .location = m_stream.current().coords(),
                                     .context = Error::Context::Tuple,
                                     .reason = Error::Reason::MissingType,
@@ -113,7 +113,7 @@ namespace tlc::parse {
                 while (m_stream.match(Comma));
 
                 if (!m_stream.match(RightParen)) {
-                    m_panic.collect({
+                    m_collector.collect({
                         .location = m_stream.current().coords(),
                         .context = Error::Context::Tuple,
                         .reason = Error::Reason::MissingEnclosingSymbol,
@@ -130,13 +130,13 @@ namespace tlc::parse {
 
     auto Parse::handleTypeInfer() -> ParseResult {
         return seq(match(LeftBracket), match(LeftBracket))
-            (m_context, m_stream, m_panic).and_then([this](auto const&)
+            (m_stream, m_tracker, m_collector).and_then([this](auto const&)
                 -> ParseResult {
                     return handleExpr().and_then([this](auto const& expr)
                         -> ParseResult {
                             if (!seq(match(RightBracket), match(RightBracket))
-                                (m_context, m_stream, m_panic)) {
-                                m_panic.collect({
+                                (m_stream, m_tracker, m_collector)) {
+                                m_collector.collect({
                                     .location = m_stream.current().coords(),
                                     .context = Error::Context::TypeInfer,
                                     .reason = Error::Reason::MissingEnclosingSymbol,
