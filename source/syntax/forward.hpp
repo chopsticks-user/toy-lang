@@ -47,6 +47,7 @@ namespace tlc::syntax {
         struct Yield;
         struct Preface;
         struct Defer;
+        struct MatchCase;
         struct Match;
         struct Loop;
         struct Conditional;
@@ -67,8 +68,9 @@ namespace tlc::syntax {
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
         decl::Identifier, decl::Tuple,
 
-        stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Match,
-        stmt::Loop, stmt::Conditional, stmt::Block, stmt::Assign, stmt::Expression,
+        stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Loop,
+        stmt::Match, stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
+        stmt::Expression,
 
         TranslationUnit
     >;

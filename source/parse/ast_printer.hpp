@@ -9,7 +9,8 @@ namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
         static constexpr StrV prefixSymbol = "├─ ";
         static constexpr StrV spaceSymbol = "   ";
-        static constexpr Str emptyNodeStr = "(empty)";
+        static constexpr StrV emptyNodeStr = "(empty)";
+        static constexpr StrV requireButEmptyNodeStr = "(required but empty)";
 
     public:
         using SyntaxTreeVisitor::operator();
@@ -48,8 +49,17 @@ namespace tlc::parse {
         auto operator()(syntax::stmt::Expression const& node) -> Str;
         auto operator()(syntax::stmt::Assign const& node) -> Str;
         auto operator()(syntax::stmt::Conditional const& node) -> Str;
+        auto operator()(syntax::stmt::Block const& node) -> Str;
+        auto operator()(syntax::stmt::Preface const& node) -> Str;
+        auto operator()(syntax::stmt::Defer const& node) -> Str;
+        auto operator()(syntax::stmt::Loop const& node) -> Str;
+        auto operator()(syntax::stmt::MatchCase const& node) -> Str;
+        auto operator()(syntax::stmt::Match const& node) -> Str;
 
     private:
+        static constexpr auto rvJoinWithEl =
+            rv::join_with('\n') | rng::to<Str>();
+
         static constexpr auto rvFilterEmpty =
             rv::filter([](auto const& s) {
                 return !s.empty();
@@ -58,6 +68,11 @@ namespace tlc::parse {
         static constexpr auto rvTransformEmpty =
             rv::transform([](auto const& s) {
                 return s.empty() ? emptyNodeStr : s;
+            });
+
+        static constexpr auto rvRequiredButEmpty =
+            rv::transform([](auto const& s) {
+                return s.empty() ? requireButEmptyNodeStr : s;
             });
 
         [[nodiscard]] auto withDepth(Str s) const -> Str;

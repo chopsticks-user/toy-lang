@@ -19,6 +19,11 @@ namespace tlc::parse {
             /**
              *
              */
+            MissingKeyword,
+
+            /**
+             *
+             */
             MissingEnclosingSymbol,
 
             /**
@@ -49,6 +54,11 @@ namespace tlc::parse {
             /**
              *
              */
+            MissingBody,
+
+            /**
+             *
+             */
             Unknown,
         };
 
@@ -56,7 +66,8 @@ namespace tlc::parse {
             Unknown,
             Tuple, Array, Access, TypeInfer, Record, IdDecl, TupleDecl,
             Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt, AssignStmt,
-            ExprStmt, CondStmt, YieldStmt,
+            ExprStmt, CondStmt, YieldStmt, LoopStmt, MatchStmt, MatchCaseStmt,
+            MatchCaseDefaultStmt,
         };
 
         struct Params {

@@ -285,6 +285,33 @@ namespace tlc::syntax {
         return firstChild();
     }
 
+    stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Coords coords)
+        : NodeBase{
+            {std::move(value), std::move(cond), std::move(stmt)},
+            std::move(coords)
+        } {}
+
+    stmt::Match::Match(Node expr, Vec<Node> cases, Node defaultStmt, Coords coords)
+        : NodeBase{
+            {
+                [&] {
+                    Vec<Node> nodes;
+                    nodes.reserve(cases.size() + 2);
+                    nodes.push_back(std::move(expr));
+                    nodes.append_range(std::move(cases));
+                    nodes.push_back(std::move(defaultStmt));
+                    return nodes;
+                }()
+            },
+            std::move(coords)
+        } {}
+
+    stmt::Loop::Loop(Node decl, Node range, Node body, Coords coords)
+        : NodeBase{
+            {std::move(decl), std::move(range), std::move(body)},
+            std::move(coords)
+        } {}
+
     stmt::Conditional::Conditional(Node cond, Node then, Coords coords)
         : NodeBase{
             {std::move(cond), std::move(then)},

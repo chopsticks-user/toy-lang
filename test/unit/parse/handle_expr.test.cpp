@@ -111,6 +111,10 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
         "expr::Identifier [@0:0] with path = 'baz'"
     );
     assertExpr(
+        "_",
+        "expr::Identifier [@0:0] with path = '_'"
+    );
+    assertExpr(
         "foo::bar",
         "expr::Identifier [@0:0] with path = 'foo::bar'"
     );

@@ -60,6 +60,10 @@ namespace tlc::syntax::detail {
             return m_path.size() > 1;
         }
 
+        [[nodiscard]] auto anonymous() const noexcept -> bool {
+            return m_path.size() > 1;
+        }
+
     protected:
         Vec<Str> m_path;
     };

@@ -132,10 +132,140 @@ TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {
+    assertStmt(
+        "{}",
+        "stmt::Block [@0:0] with size = 0"
+    );
+    assertStmt(
+        "{\n"
+        "   let x = 3.14159;\n"
+        "   yield x + y;\n"
+        "}",
+        "stmt::Block [@0:0] with size = 2\n"
+        "├─ stmt::Let [@1:3]\n"
+        "   ├─ decl::Identifier [@1:7] with (const, name) = (true, 'x')\n"
+        "   ├─ expr::Float [@1:11] with value = 3.14159\n"
+        "├─ stmt::Yield [@2:3]\n"
+        "   ├─ expr::Binary [@2:13] with op = '+'\n"
+        "      ├─ expr::Identifier [@2:9] with path = 'x'\n"
+        "      ├─ expr::Identifier [@2:13] with path = 'y'"
+    );
+}
 
-TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Defer and Preface statements", "[Parse]") {
+    assertStmt(
+        "preface x == 0 => return 0;",
+        "stmt::Preface [@0:0]\n"
+        "├─ stmt::Conditional [@0:25]\n"
+        "   ├─ expr::Binary [@0:13] with op = '=='\n"
+        "      ├─ expr::Identifier [@0:8] with path = 'x'\n"
+        "      ├─ expr::Integer [@0:13] with value = 0\n"
+        "   ├─ stmt::Return [@0:18]\n"
+        "      ├─ expr::Integer [@0:25] with value = 0"
+    );
+    assertStmt(
+        "defer io::println(x)",
+        "stmt::Defer [@0:0]\n"
+        "├─ stmt::Expression [@0:18]\n"
+        "   ├─ expr::FnApp [@0:18]\n"
+        "      ├─ expr::Identifier [@0:6] with path = 'io::println'\n"
+        "      ├─ expr::Tuple [@0:17] with size = 1\n"
+        "         ├─ expr::Identifier [@0:18] with path = 'x'"
+    );
+    assertStmt(
+        "preface {}",
+        "stmt::Preface [@0:0]\n"
+        "├─ stmt::Block [@0:8] with size = 0"
+    );
+    assertStmt(
+        "defer {}",
+        "stmt::Defer [@0:0]\n"
+        "├─ stmt::Block [@0:6] with size = 0"
+    );
+}
 
-TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {
+    assertStmt(
+        "for e in r0 {}",
+        "stmt::Loop [@0:0]\n"
+        "├─ decl::Identifier [@0:4] with (const, name) = (true, 'e')\n"
+        "├─ expr::Identifier [@0:9] with path = 'r0'\n"
+        "├─ stmt::Block [@0:12] with size = 0"
+    );
+    assertStmt(
+        "for (i: Int, v: Float) in r0 {}",
+        "stmt::Loop [@0:0]\n"
+        "├─ decl::Tuple [@0:4] with size = 2\n"
+        "   ├─ decl::Identifier [@0:8] with (const, name) = (true, 'i')\n"
+        "      ├─ type::Identifier [@0:8] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ decl::Identifier [@0:16] with (const, name) = (true, 'v')\n"
+        "      ├─ type::Identifier [@0:16] with (fundamental, path) = (true, 'Float')\n"
+        "├─ expr::Identifier [@0:26] with path = 'r0'\n"
+        "├─ stmt::Block [@0:29] with size = 0"
+    );
+}
 
-TEST_CASE_WITH_FIXTURE("Parse: Defer and Preface statements", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Parse]") {
+    assertStmt(
+        "match x {\n"
+        "   5 => y = x * 5;\n"
+        "   when x < 5 => {}\n"
+        "   _ => {}\n"
+        "}",
+        "stmt::Match [@0:0]\n"
+        "├─ expr::Identifier [@0:6] with path = 'x'\n"
+        "├─ stmt::MatchCase [@1:3]\n"
+        "   ├─ expr::Integer [@1:3] with value = 5\n"
+        "   ├─ stmt::Assign [@1:16] with op = '='\n"
+        "      ├─ expr::Identifier [@1:8] with path = 'y'\n"
+        "      ├─ expr::Binary [@1:16] with op = '*'\n"
+        "         ├─ expr::Identifier [@1:12] with path = 'x'\n"
+        "         ├─ expr::Integer [@1:16] with value = 5\n"
+        "├─ stmt::MatchCase [@2:3]\n"
+        "   ├─ expr::Binary [@2:12] with op = '<'\n"
+        "      ├─ expr::Identifier [@2:8] with path = 'x'\n"
+        "      ├─ expr::Integer [@2:12] with value = 5\n"
+        "   ├─ stmt::Block [@2:17] with size = 0\n"
+        "├─ stmt::Block [@3:8] with size = 0"
+    );
+    assertStmt(
+        "match (x,y) {\n"
+        "   (_, 5) => z = x + y;\n"
+        "   when x < 5 && y > 0 => {}\n"
+        "   (10, _) when y <= 0 => {}\n"
+        "   _ => {}\n"
+        "}",
+        "stmt::Match [@0:0]\n"
+        "├─ expr::Tuple [@0:6] with size = 2\n"
+        "   ├─ expr::Identifier [@0:7] with path = 'x'\n"
+        "   ├─ expr::Identifier [@0:9] with path = 'y'\n"
+        "├─ stmt::MatchCase [@1:3]\n"
+        "   ├─ expr::Tuple [@1:3] with size = 2\n"
+        "      ├─ expr::Identifier [@1:4] with path = '_'\n"
+        "      ├─ expr::Integer [@1:7] with value = 5\n"
+        "   ├─ stmt::Assign [@1:21] with op = '='\n"
+        "      ├─ expr::Identifier [@1:13] with path = 'z'\n"
+        "      ├─ expr::Binary [@1:21] with op = '+'\n"
+        "         ├─ expr::Identifier [@1:17] with path = 'x'\n"
+        "         ├─ expr::Identifier [@1:21] with path = 'y'\n"
+        "├─ stmt::MatchCase [@2:3]\n"
+        "   ├─ expr::Binary [@2:21] with op = '&&'\n"
+        "      ├─ expr::Binary [@2:12] with op = '<'\n"
+        "         ├─ expr::Identifier [@2:8] with path = 'x'\n"
+        "         ├─ expr::Integer [@2:12] with value = 5\n"
+        "      ├─ expr::Binary [@2:21] with op = '>'\n"
+        "         ├─ expr::Identifier [@2:17] with path = 'y'\n"
+        "         ├─ expr::Integer [@2:21] with value = 0\n"
+        "   ├─ stmt::Block [@2:26] with size = 0\n"
+        "├─ stmt::MatchCase [@3:3]\n"
+        "   ├─ expr::Tuple [@3:3] with size = 2\n"
+        "      ├─ expr::Integer [@3:4] with value = 10\n"
+        "      ├─ expr::Identifier [@3:8] with path = '_'\n"
+        "   ├─ expr::Binary [@3:21] with op = '<='\n"
+        "      ├─ expr::Identifier [@3:16] with path = 'y'\n"
+        "      ├─ expr::Integer [@3:21] with value = 0\n"
+        "   ├─ stmt::Block [@3:26] with size = 0\n"
+        "├─ stmt::Block [@4:8] with size = 0"
+    );
+}

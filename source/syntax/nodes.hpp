@@ -369,9 +369,27 @@ namespace tlc::syntax {
             [[nodiscard]] auto stmt() const noexcept -> Node const&;
         };
 
-        struct Match final : detail::NodeBase {};
+        /**
+         *
+         */
+        struct MatchCase final : detail::NodeBase {
+            MatchCase(Node value, Node cond, Node stmt, Coords coords);
+        };
 
-        struct Loop final : detail::NodeBase {};
+        /**
+         *
+         */
+        struct Match final : detail::NodeBase {
+            Match(Node expr, Vec<Node> cases, Node defaultStmt, Coords coords);
+        };
+
+
+        /**
+         *
+         */
+        struct Loop final : detail::NodeBase {
+            Loop(Node decl, Node range, Node body, Coords coords);
+        };
 
         /**
          * Syntax:

@@ -148,6 +148,11 @@ namespace tlc::parse {
     }
 
     auto Parse::handleIdentifierLiteral() -> ParseResult {
+        if (m_stream.match(AnonymousIdentifier)) {
+            return syntax::expr::Identifier{
+                {m_stream.current().str()}, m_stream.current().coords()
+            };
+        }
         return seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(Identifier)
