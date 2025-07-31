@@ -14,7 +14,6 @@
 
 namespace tlc::parse {
     class Parse final {
-    public:
         using TokenIt = Vec<token::Token>::const_iterator;
         using TError = Error<EParseErrorContext, EParseErrorReason>;
         using TErrorCollector =
@@ -31,7 +30,7 @@ namespace tlc::parse {
 
         auto operator()() -> syntax::Node;
 
-    public: // for testing
+#ifdef TLC_CONFIG_BUILD_TESTS
         auto parseExpr() -> ParseResult {
             return handleExpr();
         }
@@ -47,6 +46,7 @@ namespace tlc::parse {
         auto parseDecl() -> ParseResult {
             return handleStmtLevelDecl();
         }
+#endif
 
     private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;

@@ -9,7 +9,6 @@
 #include "file.hpp"
 #include "utility.hpp"
 #include "visitor.hpp"
-#include "config.hpp"
 #include "constant.hpp"
 #include "singleton.hpp"
 #include "range.hpp"
