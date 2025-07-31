@@ -48,7 +48,7 @@ namespace tlc::lex {
 
             m_tokens.emplace_back(
                 m_currentTokenType, m_currentLexeme,
-                token::Token::Coords{m_tokenLine, m_tokenColumn}
+                Location{m_tokenLine, m_tokenColumn}
             );
         }
 

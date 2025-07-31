@@ -1,0 +1,28 @@
+module ownership;
+
+// the last time a value is used in a scope:
+//      tc => copy
+//      ntc => move
+
+fn foo: (itc, $tc, intc, $ntc) -> {
+    let a = itc; // copy (a: [immutable], itc: [tc, immutable])
+    let b = tc; // copy (b: [immutable], tc: [tc, mutable])
+    let c = intc; // copy (c: [immutable], intc: [ntc, immutable])
+    let d = ntc; // copy (d: [immutable], ntc: [ntc, mutable])
+
+    let $e = itc; // copy (e: [mutable], itc: [tc, immutable])
+    let $f = tc; // copy (f: [mutable], tc: [tc, mutable])
+    let $g = intc; // copy (g: [mutable], intc: [ntc, immutable])
+    let $h = ntc; // copy (h: [mutable], ntc: [ntc, mutable])
+
+    let $i = &itc; // (i: [mutable], itc: [tc, immutable])
+                   // error since itc is immutable
+    let $j = &tc; // weak (j: [mutable], tc: [tc, mutable])
+    let $k = &intc; // (k: [mutable], intc: [ntc, immutable])
+                    // error since intc is immutable
+    let $l = &ntc; // weak (l: [mutable], ntc: [ntc, mutable])
+}
+
+fn main: () -> {
+    return foo();
+}

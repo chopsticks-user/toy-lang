@@ -8,7 +8,7 @@
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
         static constexpr StrV prefixSymbol = "├─ ";
-        static constexpr StrV spaceSymbol = "   ";
+        static constexpr StrV space = "   ";
         static constexpr StrV emptyNodeStr = "(empty)";
         static constexpr StrV requireButEmptyNodeStr = "(required but empty)";
 

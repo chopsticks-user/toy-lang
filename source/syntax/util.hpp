@@ -30,8 +30,8 @@ namespace tlc::syntax {
 
         if (!std::holds_alternative<TNode>(node)) {
             throw filepath.empty()
-                      ? InternalError(filepath, "invalid AST-node cast")
-                      : InternalError("invalid AST-node cast");
+                      ? InternalException(filepath, "invalid AST-node cast")
+                      : InternalException("invalid AST-node cast");
         }
         return std::get<TNode>(node);
     }

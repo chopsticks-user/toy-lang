@@ -1,10 +1,9 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "ast_printer.hpp"
 #include "syntax/visitor.hpp"
+#include "syntax/util.hpp"
 
 #include <format>
-
-#include "syntax/util.hpp"
 
 namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::expr::Integer const& node) -> Str {
@@ -276,7 +275,7 @@ namespace tlc::parse {
                 case 1: return {prefixSymbol};
                 default: {
                     // todo: fix rv::concat impl
-                    auto v = Vec(d, spaceSymbol);
+                    auto v = Vec(d, space);
                     v.back() = prefixSymbol;
                     return v;
                 }

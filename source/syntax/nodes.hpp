@@ -8,7 +8,7 @@
 namespace tlc::syntax {
     namespace expr {
         struct Integer final : detail::NodeBase {
-            Integer(i64 value, Coords coords);
+            Integer(i64 value, Location coords);
 
             [[nodiscard]] auto value() const noexcept -> i64 {
                 return m_value;
@@ -19,7 +19,7 @@ namespace tlc::syntax {
         };
 
         struct Float final : detail::NodeBase {
-            Float(f64 value, Coords coords);
+            Float(f64 value, Location coords);
 
             [[nodiscard]] auto value() const noexcept -> double {
                 return m_value;
@@ -30,7 +30,7 @@ namespace tlc::syntax {
         };
 
         struct Boolean final : detail::NodeBase {
-            Boolean(b8 value, Coords coords);
+            Boolean(b8 value, Location coords);
 
             [[nodiscard]] auto value() const noexcept -> b8 {
                 return m_value;
@@ -41,23 +41,23 @@ namespace tlc::syntax {
         };
 
         struct Identifier : detail::NodeBase, detail::IdentifierBase {
-            Identifier(Vec<Str> path, Coords coords);
+            Identifier(Vec<Str> path, Location coords);
         };
 
         struct Array final : detail::NodeBase {
-            Array(Vec<Node> elements, Coords coords);
+            Array(Vec<Node> elements, Location coords);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> elements, Coords coords);
+            Tuple(Vec<Node> elements, Location coords);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct FnApp final : detail::NodeBase {
-            FnApp(Node callee, Node args, Coords coords);
+            FnApp(Node callee, Node args, Location coords);
 
             [[nodiscard]] auto callee() const noexcept -> Node;
 
@@ -65,7 +65,7 @@ namespace tlc::syntax {
         };
 
         struct Subscript final : detail::NodeBase {
-            Subscript(Node collection, Node subscript, Coords coords);
+            Subscript(Node collection, Node subscript, Location coords);
 
             [[nodiscard]] auto collection() const noexcept -> Node;
 
@@ -73,7 +73,7 @@ namespace tlc::syntax {
         };
 
         struct Access final : detail::NodeBase {
-            Access(Node object, Str field, Coords coords);
+            Access(Node object, Str field, Location coords);
 
             [[nodiscard]] auto object() const noexcept -> Node;
 
@@ -84,7 +84,7 @@ namespace tlc::syntax {
         };
 
         struct Prefix final : detail::NodeBase {
-            Prefix(Node operand, token::EToken op, Coords coords);
+            Prefix(Node operand, token::EToken op, Location coords);
 
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
@@ -97,7 +97,7 @@ namespace tlc::syntax {
         };
 
         struct Binary final : detail::NodeBase {
-            Binary(Node lhs, Node rhs, token::EToken op, Coords coords);
+            Binary(Node lhs, Node rhs, token::EToken op, Location coords);
 
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
@@ -151,7 +151,7 @@ namespace tlc::syntax {
         // };
 
         struct Record final : detail::NodeBase {
-            Record(Node type, Vec<Pair<Str, Node>> entries, Coords coords);
+            Record(Node type, Vec<Pair<Str, Node>> entries, Location coords);
 
             [[nodiscard]] auto size() const noexcept -> szt;
 
@@ -174,7 +174,7 @@ namespace tlc::syntax {
 
     namespace type {
         struct Identifier : detail::NodeBase, detail::IdentifierBase {
-            Identifier(Vec<Str> path, b8 fundamental, Coords coords);
+            Identifier(Vec<Str> path, b8 fundamental, Location coords);
 
             [[nodiscard]] auto fundamental() const noexcept -> bool {
                 return m_fundamental;
@@ -185,7 +185,7 @@ namespace tlc::syntax {
         };
 
         struct Array final : detail::NodeBase {
-            Array(Node type, Vec<Node> sizes, Coords coords);
+            Array(Node type, Vec<Node> sizes, Location coords);
 
             [[nodiscard]] auto type() const noexcept -> Node const&;
 
@@ -197,7 +197,7 @@ namespace tlc::syntax {
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> types, Coords coords);
+            Tuple(Vec<Node> types, Location coords);
 
             [[nodiscard]] auto type(szt index) const -> Node;
 
@@ -205,7 +205,7 @@ namespace tlc::syntax {
         };
 
         struct Function final : detail::NodeBase {
-            Function(Node args, Node result, Coords coords);
+            Function(Node args, Node result, Location coords);
 
             [[nodiscard]] auto args() const noexcept -> Node;
 
@@ -216,7 +216,7 @@ namespace tlc::syntax {
          * [[expr]]
          */
         struct Infer final : detail::NodeBase {
-            Infer(Node expr, Coords coords);
+            Infer(Node expr, Location coords);
 
             [[nodiscard]] auto expr() const noexcept -> Node;
         };
@@ -227,7 +227,7 @@ namespace tlc::syntax {
          * Int | Float | IsNumeric | ...
          */
         struct Sum final : detail::NodeBase {
-            Sum(Vec<Node> types, Coords coords);
+            Sum(Vec<Node> types, Location coords);
 
             [[nodiscard]] auto type(szt index) const -> Node;
         };
@@ -238,7 +238,7 @@ namespace tlc::syntax {
          * IsNumeric & IsFundamental & ...
          */
         struct Product final : detail::NodeBase {
-            Product(Vec<Node> types, Coords coords);
+            Product(Vec<Node> types, Location coords);
 
             [[nodiscard]] auto type(szt index) const -> Node;
         };
@@ -246,7 +246,7 @@ namespace tlc::syntax {
 
     namespace decl {
         struct Identifier final : detail::NodeBase {
-            Identifier(b8 constant, Str name, Node type, Coords coords);
+            Identifier(b8 constant, Str name, Node type, Location coords);
 
             [[nodiscard]] auto constant() const noexcept -> b8 {
                 return m_constant;
@@ -266,7 +266,7 @@ namespace tlc::syntax {
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> decls, Coords coords);
+            Tuple(Vec<Node> decls, Location coords);
 
             [[nodiscard]] auto decl(szt index) const -> Node;
 
@@ -276,7 +276,7 @@ namespace tlc::syntax {
 
     namespace stmt {
         struct Let final : detail::NodeBase {
-            Let(Node decl, Node initializer, Coords coords);
+            Let(Node decl, Node initializer, Location coords);
 
             [[nodiscard]] auto decl() const noexcept -> Node const&;
 
@@ -286,7 +286,7 @@ namespace tlc::syntax {
         };
 
         struct Return final : detail::NodeBase {
-            Return(Node expr, Coords coords);
+            Return(Node expr, Location coords);
 
             [[nodiscard]] auto expr() const noexcept -> Node const&;
         };
@@ -323,7 +323,7 @@ namespace tlc::syntax {
          *      - Like "return", "yield" is a pure statement.
          */
         struct Yield final : detail::NodeBase {
-            Yield(Node expr, Coords coords);
+            Yield(Node expr, Location coords);
 
             [[nodiscard]] auto expr() const noexcept -> Node const&;
         };
@@ -345,7 +345,7 @@ namespace tlc::syntax {
          *      and can be a scope owner.
          */
         struct Preface final : detail::NodeBase {
-            Preface(Node stmt, Coords coords);
+            Preface(Node stmt, Location coords);
 
             [[nodiscard]] auto stmt() const noexcept -> Node const&;
         };
@@ -364,7 +364,7 @@ namespace tlc::syntax {
          *      and can be a scope owner.
          */
         struct Defer final : detail::NodeBase {
-            Defer(Node stmt, Coords coords);
+            Defer(Node stmt, Location coords);
 
             [[nodiscard]] auto stmt() const noexcept -> Node const&;
         };
@@ -373,14 +373,14 @@ namespace tlc::syntax {
          *
          */
         struct MatchCase final : detail::NodeBase {
-            MatchCase(Node value, Node cond, Node stmt, Coords coords);
+            MatchCase(Node value, Node cond, Node stmt, Location coords);
         };
 
         /**
          *
          */
         struct Match final : detail::NodeBase {
-            Match(Node expr, Vec<Node> cases, Node defaultStmt, Coords coords);
+            Match(Node expr, Vec<Node> cases, Node defaultStmt, Location coords);
         };
 
 
@@ -388,7 +388,7 @@ namespace tlc::syntax {
          *
          */
         struct Loop final : detail::NodeBase {
-            Loop(Node decl, Node range, Node body, Coords coords);
+            Loop(Node decl, Node range, Node body, Location coords);
         };
 
         /**
@@ -419,17 +419,17 @@ namespace tlc::syntax {
          *      value-semantics statement.
          */
         struct Conditional final : detail::NodeBase {
-            Conditional(Node cond, Node then, Coords coords);
+            Conditional(Node cond, Node then, Location coords);
         };
 
         struct Block final : detail::NodeBase {
-            Block(Vec<Node> statements, Coords coords);
+            Block(Vec<Node> statements, Location coords);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct Assign final : detail::NodeBase {
-            Assign(Node lhs, Node rhs, token::EToken op, Coords coords);
+            Assign(Node lhs, Node rhs, token::EToken op, Location coords);
 
             [[nodiscard]] auto op() const noexcept -> token::EToken {
                 return m_op;
@@ -440,7 +440,7 @@ namespace tlc::syntax {
         };
 
         struct Expression final : detail::NodeBase {
-            Expression(Node expr, Coords coords);
+            Expression(Node expr, Location coords);
         };
     }
 

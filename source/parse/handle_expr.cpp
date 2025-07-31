@@ -26,7 +26,7 @@ namespace tlc::parse {
         }
         if (!lhs) {
             popCoords();
-            m_collector.collect(lhs.error());
+            collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -38,10 +38,10 @@ namespace tlc::parse {
                         if (m_stream.match(Identifier)) {
                             return m_stream.current().str();
                         }
-                        m_collector.collect({
+                        collect({
                             .location = currentCoords(),
-                            .context = Error::Context::Access,
-                            .reason = Error::Reason::MissingId,
+                            .context = EParseErrorContext::Access,
+                            .reason = EParseErrorReason::MissingId,
                         });
                         return "";
                     }();
@@ -120,7 +120,7 @@ namespace tlc::parse {
         return match(
             Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
             FloatLiteral, True, False
-        )(m_stream, m_tracker, m_collector).and_then([this](const auto& tokens)
+        )(m_stream, m_tracker).and_then([this](const auto& tokens)
             -> ParseResult {
                 switch (tokens.front().type()) {
                 case FloatLiteral:
@@ -156,7 +156,7 @@ namespace tlc::parse {
         return seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(Identifier)
-        )(m_stream, m_tracker, m_collector).and_then([this](auto const& tokens)
+        )(m_stream, m_tracker).and_then([this](auto const& tokens)
             -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
@@ -196,11 +196,10 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_collector.collect(error);
-                        m_collector.collect({
+                        collect(error).collect({
                             .location = m_stream.current().coords(),
-                            .context = Error::Context::Tuple,
-                            .reason = Error::Reason::MissingExpr,
+                            .context = EParseErrorContext::Tuple,
+                            .reason = EParseErrorReason::MissingExpr,
                         });
                         return syntax::Node{};
                     })
@@ -209,10 +208,10 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightParen)) {
-            m_collector.collect({
+            collect({
                 .location = m_stream.current().coords(),
-                .context = Error::Context::Tuple,
-                .reason = Error::Reason::MissingEnclosingSymbol,
+                .context = EParseErrorContext::Tuple,
+                .reason = EParseErrorReason::MissingEnclosingSymbol,
             });
         }
 
@@ -242,11 +241,11 @@ namespace tlc::parse {
              */
             elements.push_back(*handleExpr().or_else(
                     [this](auto&& error) -> ParseResult {
-                        m_collector.collect(error);
-                        m_collector.collect({
+                        collect(error);
+                        collect({
                             .location = m_stream.current().coords(),
-                            .context = Error::Context::Array,
-                            .reason = Error::Reason::MissingExpr,
+                            .context = EParseErrorContext::Array,
+                            .reason = EParseErrorReason::MissingExpr,
                         });
                         return syntax::Node{};
                     })
@@ -255,10 +254,10 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightBracket)) {
-            m_collector.collect({
+            collect({
                 .location = m_stream.current().coords(),
-                .context = Error::Context::Tuple,
-                .reason = Error::Reason::MissingEnclosingSymbol,
+                .context = EParseErrorContext::Tuple,
+                .reason = EParseErrorReason::MissingEnclosingSymbol,
             });
         }
 
@@ -286,10 +285,10 @@ namespace tlc::parse {
         do {
             Str key;
             if (!m_stream.match(Identifier)) {
-                m_collector.collect({
+                collect({
                     .location = m_stream.current().coords(),
-                    .context = Error::Context::Record,
-                    .reason = Error::Reason::MissingId,
+                    .context = EParseErrorContext::Record,
+                    .reason = EParseErrorReason::MissingId,
                 });
             }
             else {
@@ -297,20 +296,19 @@ namespace tlc::parse {
             }
 
             if (!m_stream.match(Colon)) {
-                m_collector.collect({
+                collect({
                     .location = m_stream.current().coords(),
-                    .context = Error::Context::Record,
-                    .reason = Error::Reason::MissingSymbol,
+                    .context = EParseErrorContext::Record,
+                    .reason = EParseErrorReason::MissingSymbol,
                 });
             }
 
             syntax::Node value = *handleExpr().or_else(
                 [this](auto&& error) -> ParseResult {
-                    m_collector.collect(error);
-                    m_collector.collect({
+                    collect(error).collect({
                         .location = m_stream.current().coords(),
-                        .context = Error::Context::Record,
-                        .reason = Error::Reason::MissingExpr,
+                        .context = EParseErrorContext::Record,
+                        .reason = EParseErrorReason::MissingExpr,
                     });
                     return {};
                 }
@@ -321,10 +319,10 @@ namespace tlc::parse {
         while (m_stream.match(Comma));
 
         if (!m_stream.match(RightBrace)) {
-            m_collector.collect({
+            collect({
                 .location = coords,
-                .context = Error::Context::Record,
-                .reason = Error::Reason::MissingEnclosingSymbol,
+                .context = EParseErrorContext::Record,
+                .reason = EParseErrorReason::MissingEnclosingSymbol,
             });
         }
 

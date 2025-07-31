@@ -18,7 +18,7 @@ namespace tlc::parse {
             );
         if (!lhs) {
             popCoords();
-            m_collector.collect(lhs.error());
+            collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -29,10 +29,10 @@ namespace tlc::parse {
                 while (m_stream.match(LeftBracket)) {
                     dimSizes.emplace_back(handleExpr().value_or({}));
                     if (!m_stream.match(RightBracket)) {
-                        m_collector.collect({
+                        collect({
                             .location = m_stream.current().coords(),
-                            .context = Error::Context::Array,
-                            .reason = Error::Reason::MissingEnclosingSymbol,
+                            .context = EParseErrorContext::Array,
+                            .reason = EParseErrorReason::MissingEnclosingSymbol,
                         });
                         break;
                     }
@@ -43,7 +43,7 @@ namespace tlc::parse {
                 auto fnResultType = handleType()
                     .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
-                            m_collector.collect(error);
+                            collect(error);
                             return {};
                         });
                 lhs = syntax::type::Function{
@@ -65,7 +65,7 @@ namespace tlc::parse {
         return seq(
             many0(seq(match(Identifier), match(Colon2))),
             match(FundamentalType, UserDefinedType)
-        )(m_stream, m_tracker, m_collector).and_then(
+        )(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
@@ -85,7 +85,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeTuple() -> ParseResult {
-        return match(LeftParen)(m_stream, m_tracker, m_collector).and_then(
+        return match(LeftParen)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 Vec<syntax::Node> types;
@@ -99,11 +99,10 @@ namespace tlc::parse {
                 do {
                     types.push_back(*handleType().or_else(
                             [this](auto&& error) -> ParseResult {
-                                m_collector.collect(error);
-                                m_collector.collect({
+                                collect(error).collect({
                                     .location = m_stream.current().coords(),
-                                    .context = Error::Context::Tuple,
-                                    .reason = Error::Reason::MissingType,
+                                    .context = EParseErrorContext::Tuple,
+                                    .reason = EParseErrorReason::MissingType,
                                 });
                                 return syntax::Node{};
                             }
@@ -113,10 +112,10 @@ namespace tlc::parse {
                 while (m_stream.match(Comma));
 
                 if (!m_stream.match(RightParen)) {
-                    m_collector.collect({
+                    collect({
                         .location = m_stream.current().coords(),
-                        .context = Error::Context::Tuple,
-                        .reason = Error::Reason::MissingEnclosingSymbol,
+                        .context = EParseErrorContext::Tuple,
+                        .reason = EParseErrorReason::MissingEnclosingSymbol,
                     });
                 }
 
@@ -130,16 +129,16 @@ namespace tlc::parse {
 
     auto Parse::handleTypeInfer() -> ParseResult {
         return seq(match(LeftBracket), match(LeftBracket))
-            (m_stream, m_tracker, m_collector).and_then([this](auto const&)
+            (m_stream, m_tracker).and_then([this](auto const&)
                 -> ParseResult {
                     return handleExpr().and_then([this](auto const& expr)
                         -> ParseResult {
                             if (!seq(match(RightBracket), match(RightBracket))
-                                (m_stream, m_tracker, m_collector)) {
-                                m_collector.collect({
+                                (m_stream, m_tracker)) {
+                                collect({
                                     .location = m_stream.current().coords(),
-                                    .context = Error::Context::TypeInfer,
-                                    .reason = Error::Reason::MissingEnclosingSymbol,
+                                    .context = EParseErrorContext::TypeInfer,
+                                    .reason = EParseErrorReason::MissingEnclosingSymbol,
                                 });
                             }
                             return syntax::type::Infer{expr, currentCoords()};

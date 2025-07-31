@@ -5,7 +5,7 @@
 #include "token/token.hpp"
 #include "syntax/syntax.hpp"
 
-#include "error_collector.hpp"
+#include "parse_error.hpp"
 #include "ast_printer.hpp"
 #include "pretty_printer.hpp"
 #include "token_stream.hpp"
@@ -16,15 +16,18 @@ namespace tlc::parse {
     class Parse final {
     public:
         using TokenIt = Vec<token::Token>::const_iterator;
-        using ParseResult = Expected<syntax::Node, Error>;
+        using TError = Error<EParseErrorContext, EParseErrorReason>;
+        using TErrorCollector =
+        ErrorCollector<EParseErrorContext, EParseErrorReason>;
+        using ParseResult = Expected<syntax::Node, TError>;
 
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
         Parse(fs::path filepath, Vec<token::Token> tokens)
-            : m_stream{std::move(tokens)},
-              m_tracker{m_stream},
-              m_collector{std::move(filepath)} {}
+            : m_filepath{std::move(filepath)},
+              m_stream{std::move(tokens)},
+              m_tracker{m_stream} {}
 
         auto operator()() -> syntax::Node;
 
@@ -91,15 +94,15 @@ namespace tlc::parse {
             return m_coords.push(m_stream.peek().coords());
         }
 
-        auto popCoords() -> token::Token::Coords {
+        auto popCoords() -> Location {
             auto coords = currentCoords();
             m_coords.pop();
             return coords;
         }
 
-        auto currentCoords() -> token::Token::Coords {
+        auto currentCoords() -> Location {
             if (m_coords.empty()) {
-                throw InternalError{
+                throw InternalException{
                     "Parser::popCoords: m_markedCoords.empty()"
                 };
             }
@@ -107,14 +110,24 @@ namespace tlc::parse {
         }
 
         static auto defaultError() -> ParseResult {
-            return Unexpected{Error{}};
+            return Unexpected{TError{}};
+        }
+
+        auto collect(TError::Params errorParams) const -> TErrorCollector& {
+            errorParams.filepath = m_filepath;
+            return TErrorCollector::instance().collect(std::move(errorParams));
+        }
+
+        auto collect(TError error) const -> TErrorCollector& {
+            error.filepath(m_filepath);
+            return TErrorCollector::instance().collect(std::move(error));
         }
 
     private:
+        fs::path m_filepath;
         TokenStream m_stream;
         LocationTracker m_tracker;
-        ErrorCollector m_collector;
-        Stack<token::Token::Coords> m_coords{};
+        Stack<Location> m_coords{};
     };
 }
 

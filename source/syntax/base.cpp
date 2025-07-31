@@ -2,7 +2,7 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax::detail {
-    NodeBase::NodeBase(Vec<Node> children, token::Token::Coords coords) noexcept
+    NodeBase::NodeBase(Vec<Node> children, Location coords) noexcept
         : m_children(std::move(children)), m_coords(std::move(coords)) {}
 
     auto NodeBase::children() const noexcept -> Span<Node const> {

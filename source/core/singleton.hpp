@@ -2,47 +2,43 @@
 #define  TLC_CORE_SINGLETON_HPP
 
 #include "type.hpp"
+#include "concept.hpp"
 
 #include <mutex>
 
 namespace tlc {
-  template<typename T>
-  class Singleton {
-  public:
-    Singleton &operator=(const Singleton &) = delete;
+    template <typename T>
+    concept IsSingleton =
+        !IsExternallyConstructible<RemoveAllQualifiers<T>> &&
+        !IsAssignable<RemoveAllQualifiers<T>> &&
+        std::is_destructible_v<RemoveAllQualifiers<T>>;
 
-    Singleton &operator=(Singleton &&) = delete;
+    class Singleton {
+    public:
+        Singleton& operator=(const Singleton&) = delete;
 
-    static auto instance() -> T & requires (
-      !std::is_default_constructible_v<T> &&
-      !std::is_constructible_v<T> &&
-      !std::is_move_constructible_v<T> &&
-      !std::is_copy_constructible_v<T> &&
-      !std::is_move_assignable_v<T> &&
-      !std::is_copy_assignable_v<T> &&
-      std::is_destructible_v<T>
-    ) {
-      static Ptr<T> ptr;
-      if (!ptr) {
-        std::call_once(initFlag, [&]() -> void {
-          ptr = std::make_unique<TInstance>();
-        });
-      }
-      return *ptr;
-    }
+        Singleton& operator=(Singleton&&) = delete;
 
-  protected:
-    Singleton() = default;
+        template <IsSingleton T>
+        static auto instance() -> RemoveAllQualifiers<T>& {
+            struct Instance : T {
+                Instance() = default;
+                ~Instance() = default;
+            };
+            static std::once_flag onceFlag;
+            static Ptr<T> ptr;
 
-  private:
-    struct TInstance : T {
-      TInstance() = default;
+            if (!ptr) {
+                std::call_once(onceFlag, [&]() -> void {
+                    ptr = std::make_unique<Instance>();
+                });
+            }
+            return *ptr;
+        }
 
-      ~TInstance() = default;
+    protected:
+        Singleton() = default;
     };
-
-    inline static std::once_flag initFlag;
-  };
 }
 
 #endif // TLC_CORE_SINGLETON_HPP

@@ -7,7 +7,9 @@ target_sources(
     token_stream.hpp token_stream.cpp
     combinator.hpp
     location_tracker.hpp location_tracker.cpp
-    error_collector.hpp error_collector.cpp
+    parse_error.hpp parse_error.cpp
+    pretty_printer.hpp pretty_printer.cpp
+    ast_printer.hpp ast_printer.cpp
     handle_expr.cpp
     handle_type.cpp
     handle_stmt.cpp
@@ -18,8 +20,6 @@ target_sources(
     handle_trait_def.cpp
     handle_type_def.cpp
     handle_global_decl.cpp
-    pretty_printer.hpp pretty_printer.cpp
-    ast_printer.hpp ast_printer.cpp
 )
 target_link_libraries(
     tlc_parse

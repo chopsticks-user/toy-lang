@@ -15,7 +15,7 @@ export fn double: (x: Float) -> {
     };
 }
 
-fn main = () -> {
+fn main: () -> {
     let x: Int, _: Bool, y: Int = 5;
 
     (x, y) :=> {

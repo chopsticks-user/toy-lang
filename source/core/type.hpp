@@ -47,9 +47,12 @@ namespace tlc {
     using c8 = char;
     using szt = std::size_t;
 
+    struct Location {
+        szt line, column;
+    };
+
     using Str = std::string;
     using StrV = std::string_view;
-
     using std::literals::operator ""s;
     using std::literals::operator ""sv;
 

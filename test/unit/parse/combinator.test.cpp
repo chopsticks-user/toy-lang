@@ -13,13 +13,12 @@ protected:
         iss.str(std::move(source));
         m_stream.emplace(tlc::lex::Lex::operator()(std::move(iss)));
         m_tracker.emplace(*m_stream);
-        m_panic = tlc::parse::ErrorCollector{filepath};
     }
 
     auto invoke(tlc::parse::ParserCombinator const& pc)
         -> tlc::parse::ParserCombinatorResult {
         // todo: no value error
-        return pc(*m_stream, *m_tracker, m_panic);
+        return pc(*m_stream, *m_tracker);
     }
 
     auto stream() -> tlc::parse::TokenStream {
@@ -28,7 +27,6 @@ protected:
     }
 
 private:
-    tlc::parse::ErrorCollector m_panic{filepath};
     tlc::Opt<tlc::parse::TokenStream> m_stream;
     tlc::Opt<tlc::parse::LocationTracker> m_tracker;
 };
