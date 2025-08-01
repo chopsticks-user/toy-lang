@@ -41,39 +41,24 @@ namespace tlc::syntax {
         struct Tuple;
     }
 
-    // namespace stmt {
-    //     struct ForStmt;
-    //     struct ForRangeFragment;
-    //     struct MatchStmt;
-    //     struct MatchStmtCase;
-    //     struct BlockStmt;
-    //     struct LetStmt;
-    //     struct ConditionalStmt;
-    //     struct ReturnStmt;
-    //     struct AssignStmt;
-    //     struct ExprStmt;
-    // }
-    //
-    // namespace decl {
-    //     struct Module;
-    //     struct ImportDecl;
-    //     // struct TypeDecl;
-    //     struct GenericDecl;
-    //     struct IdentifierDecl;
-    //     struct TupleDecl;
-    // }
-    //
-    // // namespace def {
-    // //     struct FunctionPrototype;
-    // //     struct FunctionDef;
-    // //     struct ConceptDef;
-    // //     // struct ClassDef;
-    // //     // struct EnumDef;
-    // //     // struct FlagDef;
-    // // }
-    //
-    // struct TokenWrapper;
-    // // struct TranslationUnit;
+    namespace stmt {
+        struct Let;
+        struct Return;
+        struct Yield;
+        struct Preface;
+        struct Defer;
+        struct MatchCase;
+        struct Match;
+        struct Loop;
+        struct Conditional;
+        struct Block;
+        struct Assign;
+        struct Expression;
+    }
+
+    namespace def {}
+
+    struct TranslationUnit;
 
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
@@ -81,8 +66,13 @@ namespace tlc::syntax {
         expr::Binary, expr::Record,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
+        decl::Identifier, decl::Tuple,
 
-        decl::Identifier, decl::Tuple
+        stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Loop,
+        stmt::Match, stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
+        stmt::Expression,
+
+        TranslationUnit
     >;
 }
 

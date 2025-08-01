@@ -3,20 +3,19 @@
 
 #include "type.hpp"
 #include "singleton.hpp"
-#include "file.hpp"
+#include "utility.hpp"
 
 namespace tlc {
     class Exception : public std::runtime_error {
     public:
-        explicit Exception(Str message): std::runtime_error(std::move(message)) {}
+        explicit Exception(Str const& message): std::runtime_error(message) {}
 
         explicit Exception(fs::path filepath, Str message)
             : std::runtime_error("[" + filepath.string() + " @0:0]" + std::move(message)),
               m_filepath{std::move(filepath)} {}
 
         Exception(
-            fs::path filepath, u64 const line, u64 const column,
-            Str message
+            fs::path filepath, u64 const line, u64 const column, Str message
         ): std::runtime_error(
                "[" + filepath.string() + " @" + std::to_string(line) + ":" +
                std::to_string(column) + "] " + std::move(message)
@@ -40,13 +39,13 @@ namespace tlc {
         u64 m_column = 0;
     };
 
-    struct InternalError final : Exception {
-        explicit InternalError(Str message) : Exception(std::move(message)) {}
+    struct InternalException final : Exception {
+        explicit InternalException(Str const& message) : Exception(message) {}
 
-        InternalError(fs::path filepath, Str message)
+        InternalException(fs::path filepath, Str message)
             : Exception(std::move(filepath), std::move(message)) {}
 
-        InternalError(
+        InternalException(
             fs::path filepath, u64 const line, u64 const column,
             Str message
         ): Exception{
@@ -55,8 +54,8 @@ namespace tlc {
     };
 
     // todo: code should be a reference
-    struct CompileError final : Exception {
-        CompileError(
+    struct CompileException final : Exception {
+        CompileException(
             fs::path filepath, u64 const line, u64 const column,
             Str message, Str code
         ): Exception{
@@ -65,9 +64,62 @@ namespace tlc {
         } {}
     };
 
-    // todo: use deducing this
-    // How C++23 Changes the Way We Write Code - Timur Doumler - CppCon 2022
-    class GlobalExceptionCollector : public Singleton<GlobalExceptionCollector> {
+#define TLC_CORE_GENERATE_SINGLETON_BODY_PREFIX(className) \
+    public: \
+        static auto instance() -> className& { \
+            return Singleton::instance<className>(); \
+        } \
+    protected: \
+        className() = default;
+
+    template <typename EContext, typename EReason>
+    class Error final {
+    public:
+        struct Params final {
+            fs::path filepath;
+            Location location;
+            EContext context;
+            EReason reason;
+            Str info;
+        };
+
+        Error() = default;
+        explicit Error(Params params) : m_params{std::move(params)} {}
+
+        explicit operator CompileException() const {
+            return {
+                m_params.filepath,
+                m_params.location.line,
+                m_params.location.column,
+                message(), ""
+            };
+        }
+
+        auto filepath(Opt<fs::path> fp = {}) -> fs::path {
+            if (!fp) {
+                m_params.filepath = std::move(*fp);
+            }
+            return m_params.filepath;
+        }
+
+        [[nodiscard]] auto context() const -> EContext {
+            return m_params.context;
+        }
+
+        [[nodiscard]] auto reason() const -> EReason {
+            return m_params.reason;
+        }
+
+        [[nodiscard]] auto message() const -> Str;
+
+    private:
+        Params m_params{};
+    };
+
+    template <typename EContext, typename EReason>
+    class ErrorCollector : public Singleton {
+        TLC_CORE_GENERATE_SINGLETON_BODY_PREFIX(ErrorCollector)
+
     public:
         [[nodiscard]] auto size() const -> szt {
             return m_collected.size();
@@ -77,33 +129,20 @@ namespace tlc {
             return m_collected.empty();
         }
 
-        // todo: handle out of memory, !InternalException
-        auto add(Exception e) -> void {
-            m_collected.emplace_back(std::make_unique<Exception>(std::move(e)));
+        auto collect(typename Error<EContext, EReason>::Params errorParams)
+            -> ErrorCollector& {
+            m_collected.emplace_back(errorParams);
+            return *this;
         }
 
-        auto throwAllIfExists() -> void {
-            if (empty()) {
-                return;
-            }
-
-            Str combinedMesg;
-
-            // todo: handle out of memory
-            for (auto& e : m_collected) {
-                combinedMesg += e->what() + "\n"s;
-                e.reset();
-            }
-            m_collected.clear();
-
-            throw Exception(combinedMesg);
+        auto collect(Error<EContext, EReason> error)
+            -> ErrorCollector& {
+            m_collected.push_back(std::move(error));
+            return *this;
         }
-
-    protected:
-        GlobalExceptionCollector() = default;
 
     private:
-        Vec<Ptr<Exception>> m_collected;
+        Vec<Error<EContext, EReason>> m_collected;
     };
 }
 

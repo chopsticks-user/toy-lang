@@ -30,8 +30,8 @@ namespace tlc::syntax {
 
         if (!std::holds_alternative<TNode>(node)) {
             throw filepath.empty()
-                      ? InternalError(filepath, "invalid AST-node cast")
-                      : InternalError("invalid AST-node cast");
+                      ? InternalException(filepath, "invalid AST-node cast")
+                      : InternalException("invalid AST-node cast");
         }
         return std::get<TNode>(node);
     }
@@ -47,20 +47,20 @@ namespace tlc::syntax {
         Prefix, Postfix, Binary, Ternary
     };
 
-    auto isPrefixOperator(token::EToken type) -> bool;
-    auto isPostfixStart(token::EToken type) -> bool;
-    auto isBinaryOperator(token::EToken type) -> bool;
-    auto opPrecedence(token::EToken tokenType, EOperator opType) -> OpPrecedence;
-    auto isLeftAssociative(token::EToken type) -> bool;
+    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool;
+    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool;
+    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool;
+    auto opPrecedence(lexeme::Lexeme const& lexeme, EOperator opType) -> OpPrecedence;
+    auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> bool;
+    auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> bool;
 
-    // const HashSet<Str> overloadableOps = {
-    //   "+", "-", "*", "/",
-    //   "==", "!=",
-    // };
-    //
     // const HashSet<Str> assignmentOps = {
     //   "=", "+=", "-=", "*=", "/=", "%=", "**=",
     //   "&=", "|=", "^=", "<<=", ">>=",
+    // };
+    // const HashSet<Str> overloadableOps = {
+    //   "+", "-", "*", "/",
+    //   "==", "!=",
     // };
 }
 

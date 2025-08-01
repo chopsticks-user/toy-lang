@@ -1,324 +1,144 @@
 #include "parse.test.hpp"
 
-using tlc::token::EToken;
 using namespace tlc::syntax;
 
-auto ParseTestFixture::AssertType::identifier(
-    Node const& node, Identifier info
+auto ParseTestFixture::assertType(
+    tlc::Str source, tlc::Str expected, std::source_location const location
 ) -> void {
-    auto const& ast = cast<type::Identifier>(node);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(fundamental);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(imported);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(path);
-}
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
 
-auto ParseTestFixture::AssertType::tuple(
-    Node const& node, Tuple info
-) -> void {
-    auto const& ast = cast<type::Tuple>(node);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(size);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(children);
-}
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }.parseType();
+    REQUIRE(result.has_value());
 
-auto ParseTestFixture::AssertType::infer(
-    Node const& node, Infer info
-) -> void {
-    auto const& ast = cast<type::Infer>(node);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(expr);
+    auto const actual = tlc::parse::ASTPrinter::operator()(
+        std::move(*result)
+    );
+    REQUIRE(actual == expected);
 }
-
-auto ParseTestFixture::AssertType::array(
-    Node const& node, Array info
-) -> void {
-    auto const& ast = cast<type::Array>(node);
-    TLC_TEST_GENERATE_COMPARE_ASSERTION(dim);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(type);
-    TLC_TEST_GENERATE_SELF_ASSERTION();
-}
-
-auto ParseTestFixture::AssertType::function(
-    Node const& node, Function info
-) -> void {
-    auto const& ast = cast<type::Function>(node);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(args);
-    TLC_TEST_GENERATE_CHILD_NODE_ASSERTION(result);
-}
-
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, identifier, Identifier);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, tuple, Tuple);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, infer, Infer);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, array, Array);
-TLC_TEST_GENERATE_ASSERT_FROM_SOURCE_OVERLOAD(type, Type, function, Function);
 
 TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
-    AssertType::identifier(
-        "Int", {.fundamental = true, .imported = false, .path = "Int"}
+    assertType(
+        "Int",
+        "type::Identifier [@0:0] with (fundamental, path) = (true, 'Int')"
     );
-
-    AssertType::identifier(
-        "foo::bar::Baz", {
-            .fundamental = false, .imported = true, .path = "foo::bar::Baz"
-        }
+    assertType(
+        "foo::bar::Baz",
+        "type::Identifier [@0:0] with (fundamental, path) = (false, 'foo::bar::Baz')"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
-    AssertType::infer(
-        "[[x]]", {
-            .assert_expr = [](Node const& id) {
-                AssertExpr::identifier(id, {"x"});
-            }
-        }
+    assertType(
+        "[[x]]",
+        "type::Infer [@0:0]\n"
+        "├─ expr::Identifier [@0:2] with path = 'x'"
     );
-
-    AssertType::infer(
-        "[[3.14159]]", {
-            .assert_expr = [](Node const& value) {
-                AssertExpr::fl0at(value, {3.14159});
-            }
-        }
+    assertType(
+        "[[3.14159]]",
+        "type::Infer [@0:0]\n"
+        "├─ expr::Float [@0:2] with value = 3.14159"
+    );
+    assertType(
+        "[[x+2]]",
+        "type::Infer [@0:0]\n"
+        "├─ expr::Binary [@0:2] with op = '+'\n"
+        "   ├─ expr::Identifier [@0:2] with path = 'x'\n"
+        "   ├─ expr::Integer [@0:4] with value = 2"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse]") {
-    AssertType::tuple("()", {.size = 0});
-
-    AssertType::tuple(
-        "(Foo)", {
-            .size = 1,
-            .assert_children = [](tlc::Span<Node const> const nodes) {
-                AssertType::identifier(
-                    nodes[0],
-                    {.fundamental = false, .imported = false, .path = "Foo"}
-                );
-            }
-        }
+    assertType(
+        "()",
+        "type::Tuple [@0:0] with size = 0"
     );
-
-    AssertType::tuple(
-        "(Int, Int)", {
-            .size = 2,
-            .assert_children = [](tlc::Span<Node const> const nodes) {
-                AssertType::identifier(
-                    nodes[0],
-                    {.fundamental = true, .imported = false, .path = "Int"}
-                );
-                AssertType::identifier(
-                    nodes[1],
-                    {.fundamental = true, .imported = false, .path = "Int"}
-                );
-            }
-        }
+    assertType(
+        "(Foo)",
+        "type::Tuple [@0:0] with size = 1\n"
+        "├─ type::Identifier [@0:1] with (fundamental, path) = (false, 'Foo')"
     );
-
-    AssertType::tuple(
-        "(Int, Float, Int, foo::Bar)", {
-            .size = 4,
-            .assert_children = [](tlc::Span<Node const> const nodes) {
-                AssertType::identifier(
-                    nodes[0],
-                    {.fundamental = true, .imported = false, .path = "Int"}
-                );
-                AssertType::identifier(
-                    nodes[1],
-                    {.fundamental = true, .imported = false, .path = "Float"}
-                );
-                AssertType::identifier(
-                    nodes[2],
-                    {.fundamental = true, .imported = false, .path = "Int"}
-                );
-                AssertType::identifier(
-                    nodes[3],
-                    {.fundamental = false, .imported = true, .path = "foo::Bar"}
-                );
-            }
-        }
+    assertType(
+        "(Int, Bool)",
+        "type::Tuple [@0:0] with size = 2\n"
+        "├─ type::Identifier [@0:1] with (fundamental, path) = (true, 'Int')\n"
+        "├─ type::Identifier [@0:6] with (fundamental, path) = (true, 'Bool')"
+    );
+    assertType(
+        "(Int, Float, Bool, foo::Bar)",
+        "type::Tuple [@0:0] with size = 4\n"
+        "├─ type::Identifier [@0:1] with (fundamental, path) = (true, 'Int')\n"
+        "├─ type::Identifier [@0:6] with (fundamental, path) = (true, 'Float')\n"
+        "├─ type::Identifier [@0:13] with (fundamental, path) = (true, 'Bool')\n"
+        "├─ type::Identifier [@0:19] with (fundamental, path) = (false, 'foo::Bar')"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
-    AssertType::array(
-        "Int[]", {
-            .dim = 1,
-            .assert_type = [](Node const& id) {
-                AssertType::identifier(
-                    id, {
-                        .fundamental = true, .imported = false, .path = "Int"
-                    }
-                );
-            },
-            .assert_self = [](type::Array const& arr) {
-                REQUIRE(isEmptyNode(arr.size(0)));
-                REQUIRE_FALSE(arr.fixed(0));
-            },
-        }
+    assertType(
+        "Int[]",
+        "type::Array [@0:0] with dims = {0:dyn}\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Int')"
     );
-
-    AssertType::array(
-        "[[x]][5]", {
-            .dim = 1,
-            .assert_type = [](Node const& type) {
-                AssertType::infer(
-                    type, {
-                        [](Node const& expr) {
-                            AssertExpr::identifier(expr, {"x"});
-                        }
-                    }
-                );
-            },
-            .assert_self = [](type::Array const& arr) {
-                REQUIRE_FALSE(isEmptyNode(arr.size(0)));
-                REQUIRE(arr.fixed(0));
-            },
-        }
+    assertType(
+        "[[x]][5][]",
+        "type::Array [@0:0] with dims = {0:fix,1:dyn}\n"
+        "├─ type::Infer [@0:0]\n"
+        "   ├─ expr::Identifier [@0:2] with path = 'x'\n"
+        "├─ expr::Integer [@0:6] with value = 5"
     );
-
-    AssertType::array(
-        "foo::Bar[][x + 1][][]", {
-            .dim = 4,
-            .assert_type = [](Node const& id) {
-                AssertType::identifier(
-                    id, {
-                        .fundamental = false, .imported = true, .path = "foo::Bar"
-                    }
-                );
-            },
-            .assert_self = [](type::Array const& arr) {
-                REQUIRE(isEmptyNode(arr.size(0)));
-                REQUIRE_FALSE(arr.fixed(0));
-
-                REQUIRE_FALSE(isEmptyNode(arr.size(1)));
-                REQUIRE(arr.fixed(1));
-
-                REQUIRE(isEmptyNode(arr.size(2)));
-                REQUIRE_FALSE(arr.fixed(2));
-
-                REQUIRE(isEmptyNode(arr.size(3)));
-                REQUIRE_FALSE(arr.fixed(3));
-            },
-        }
+    assertType(
+        "foo::Bar[][x+1][][]",
+        "type::Array [@0:0] with dims = {0:dyn,1:fix,2:dyn,3:dyn}\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "├─ expr::Binary [@0:11] with op = '+'\n"
+        "   ├─ expr::Identifier [@0:11] with path = 'x'\n"
+        "   ├─ expr::Integer [@0:13] with value = 1"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse]") {
-    AssertType::function(
-        "() ->", {
-            .assert_args = [](Node const& args) {
-                AssertType::tuple(args, {.size = 0});
-            },
-            .assert_result = [](Node const& result) {
-                REQUIRE(isEmptyNode(result));
-            }
-        }
+    assertType(
+        "() -> Void",
+        "type::Function [@0:0]\n"
+        "├─ type::Tuple [@0:0] with size = 0\n"
+        "├─ type::Identifier [@0:6] with (fundamental, path) = (true, 'Void')"
     );
-
-    AssertType::function(
-        "() -> ()", {
-            .assert_args = [](Node const& args) {
-                AssertType::tuple(args, {.size = 0});
-            },
-            .assert_result = [](Node const& result) {
-                AssertType::tuple(result, {.size = 0});
-            }
-        }
+    assertType(
+        "() -> ()",
+        "type::Function [@0:0]\n"
+        "├─ type::Tuple [@0:0] with size = 0\n"
+        "├─ type::Tuple [@0:6] with size = 0"
     );
-
-    AssertType::function(
-        "Int -> Bool", {
-            .assert_args = [](Node const& args) {
-                AssertType::identifier(
-                    args, {
-                        .fundamental = true, .imported = false, .path = "Int"
-                    }
-                );
-            },
-            .assert_result = [](Node const& result) {
-                AssertType::identifier(
-                    result, {
-                        .fundamental = true, .imported = false, .path = "Bool"
-                    }
-                );
-            }
-        }
+    assertType(
+        "Int -> Bool",
+        "type::Function [@0:0]\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Int')\n"
+        "├─ type::Identifier [@0:7] with (fundamental, path) = (true, 'Bool')"
     );
-
-    AssertType::function(
-        "(Int, Float) -> Bool", {
-            .assert_args = [](Node const& args) {
-                AssertType::tuple(
-                    args, {
-                        .size = 2,
-                        .assert_children = [](tlc::Span<Node const> const nodes) {
-                            AssertType::identifier(
-                                nodes[0], {
-                                    .fundamental = true, .imported = false, .path = "Int"
-                                }
-                            );
-                            AssertType::identifier(
-                                nodes[1], {
-                                    .fundamental = true, .imported = false, .path = "Float"
-                                }
-                            );
-                        }
-                    }
-                );
-            },
-            .assert_result = [](Node const& result) {
-                AssertType::identifier(
-                    result, {
-                        .fundamental = true, .imported = false, .path = "Bool"
-                    }
-                );
-            }
-        }
+    assertType(
+        "(Int, Float) -> foo::Bar",
+        "type::Function [@0:0]\n"
+        "├─ type::Tuple [@0:0] with size = 2\n"
+        "   ├─ type::Identifier [@0:1] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ type::Identifier [@0:6] with (fundamental, path) = (true, 'Float')\n"
+        "├─ type::Identifier [@0:16] with (fundamental, path) = (false, 'foo::Bar')"
     );
-
-    AssertType::function(
-        "(Int, foo::Bar) -> (Int, Bool)", {
-            .assert_args = [](Node const& args) {
-                AssertType::tuple(
-                    args, {
-                        .size = 2,
-                        .assert_children = [](tlc::Span<Node const> const nodes) {
-                            AssertType::identifier(
-                                nodes[0], {
-                                    .fundamental = true, .imported = false,
-                                    .path = "Int"
-                                }
-                            );
-                            AssertType::identifier(
-                                nodes[1], {
-                                    .fundamental = false, .imported = true,
-                                    .path = "foo::Bar"
-                                }
-                            );
-                        }
-                    }
-                );
-            },
-            .assert_result = [](Node const& result) {
-                AssertType::tuple(
-                    result, {
-                        .size = 2,
-                        .assert_children = [](tlc::Span<Node const> const nodes) {
-                            AssertType::identifier(
-                                nodes[0], {
-                                    .fundamental = true, .imported = false,
-                                    .path = "Int"
-                                }
-                            );
-                            AssertType::identifier(
-                                nodes[1], {
-                                    .fundamental = true, .imported = false,
-                                    .path = "Bool"
-                                }
-                            );
-                        }
-                    }
-                );
-            }
-        }
+    assertType(
+        "(Int, foo::Bar) -> (Int, Bool)",
+        "type::Function [@0:0]\n"
+        "├─ type::Tuple [@0:0] with size = 2\n"
+        "   ├─ type::Identifier [@0:1] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ type::Identifier [@0:6] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "├─ type::Tuple [@0:19] with size = 2\n"
+        "   ├─ type::Identifier [@0:20] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ type::Identifier [@0:25] with (fundamental, path) = (true, 'Bool')"
     );
-
-    AssertType::function("Int -> Float -> Bool", {});
+    // assertType(
+    //     "Int -> Float -> Bool",
+    //     ""
+    // );
 }

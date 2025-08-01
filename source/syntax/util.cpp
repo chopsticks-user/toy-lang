@@ -2,79 +2,97 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax {
-    auto isEmptyNode(const Node& node) -> bool {
+    auto isEmptyNode(Node const& node) -> bool {
         return std::holds_alternative<std::monostate>(node);
     }
 
-    static HashSet prefixOps = {
-        token::EToken::Exclaim,
-        token::EToken::Tilde,
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Hash,
-        token::EToken::Dot3,
+    static const HashSet prefixOps = {
+        lexeme::exclaim, lexeme::tilde, lexeme::plus,
+        lexeme::minus, lexeme::hash, lexeme::dot3,
     };
 
-    auto isPrefixOperator(token::EToken const type) -> bool {
-        return prefixOps.contains(type);
+    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return prefixOps.contains(lexeme);
     }
 
-    static HashSet postfixStart = {
-        token::EToken::Dot,
-        token::EToken::LeftParen,
-        token::EToken::LeftBracket,
-        // token::EToken::LeftBrace,
+    static const HashSet postfixStart = {
+        lexeme::dot, lexeme::leftParen, lexeme::leftBracket,
     };
 
-    auto isPostfixStart(token::EToken const type) -> bool {
-        return postfixStart.contains(type);
+    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
+        return postfixStart.contains(lexeme);
     }
 
-    static HashSet binaryOps = {
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Star,
-        token::EToken::FwdSlash,
+    static const HashSet binaryOps = {
+        lexeme::star2, lexeme::star, lexeme::fwdSlash, lexeme::plus,
+        lexeme::minus, lexeme::greater2, lexeme::less2, lexeme::less,
+        lexeme::greater, lexeme::lessEqual, lexeme::greaterEqual,
+        lexeme::equal2, lexeme::exclaimEqual, lexeme::ampersand,
+        lexeme::hat, lexeme::bar, lexeme::ampersand2, lexeme::bar2,
     };
 
-    auto isBinaryOperator(token::EToken const type) -> bool {
-        return binaryOps.contains(type);
+    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryOps.contains(lexeme);
     }
 
-    static HashMap<token::EToken, OpPrecedence> prefixOpPrecedenceTable = {
-        {token::EToken::Exclaim, 30},
-        {token::EToken::Tilde, 31},
-        {token::EToken::Plus, 32},
-        {token::EToken::Minus, 33},
-        {token::EToken::Hash, 34},
-        {token::EToken::Dot3, 35},
+    static const HashMap<lexeme::Lexeme, OpPrecedence>
+    prefixOpPrecedenceTable = {
+        {lexeme::exclaim, 40},
+        {lexeme::tilde, 41},
+        {lexeme::plus, 42},
+        {lexeme::minus, 43},
+        {lexeme::hash, 44},
+        {lexeme::dot3, 45},
     };
 
-    static HashMap<token::EToken, OpPrecedence> binaryOpPrecedenceTable = {
-        {token::EToken::Plus, 10},
-        {token::EToken::Minus, 10},
-        {token::EToken::Star, 12},
-        {token::EToken::FwdSlash, 12},
+    static const HashMap<lexeme::Lexeme, OpPrecedence>
+    binaryOpPrecedenceTable = {
+        {lexeme::bar2, 10},
+        {lexeme::ampersand2, 12},
+        {lexeme::bar, 14},
+        {lexeme::hat, 16},
+        {lexeme::ampersand, 18},
+        {lexeme::exclaimEqual, 20},
+        {lexeme::equal2, 20},
+        {lexeme::greaterEqual, 22},
+        {lexeme::lessEqual, 22},
+        {lexeme::greater, 22},
+        {lexeme::less, 22},
+        {lexeme::less2, 24},
+        {lexeme::greater2, 24},
+        {lexeme::minus, 26},
+        {lexeme::plus, 26},
+        {lexeme::fwdSlash, 28},
+        {lexeme::star, 28},
+        {lexeme::star2, 30},
     };
 
     auto opPrecedence(
-        token::EToken const tokenType, EOperator const opType
+        lexeme::Lexeme const& lexeme, EOperator const opType
     ) -> OpPrecedence {
         switch (opType) {
-        case EOperator::Prefix: return prefixOpPrecedenceTable.at(tokenType);
-        case EOperator::Binary: return binaryOpPrecedenceTable.at(tokenType);
+        case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
+        case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
         default: return 0;
         }
     }
 
-    static HashSet leftAssociativeOps = {
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Star,
-        token::EToken::FwdSlash,
+    static const HashSet leftAssociativeOps = {
+        lexeme::plus, lexeme::minus, lexeme::star, lexeme::fwdSlash,
     };
 
-    auto isLeftAssociative(token::EToken const type) -> bool {
-        return leftAssociativeOps.contains(type);
+    auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
+        return leftAssociativeOps.contains(lexeme);
+    }
+
+    static const HashSet assignmentOps = {
+        lexeme::equal, lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
+        lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
+        lexeme::ampersandEqual, lexeme::barEqual, lexeme::hatEqual,
+        lexeme::less2Equal, lexeme::greater2Equal,
+    };
+
+    auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
+        return assignmentOps.contains(lexeme);
     }
 }
