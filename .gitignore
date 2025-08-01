@@ -3,8 +3,8 @@
 .vscode
 
 # Build
-build
-cmake-build-debug
+build*
+cmake-build*
 
 # Ignore OS-generated files
 .DS_Store

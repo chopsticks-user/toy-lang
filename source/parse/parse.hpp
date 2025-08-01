@@ -95,7 +95,7 @@ namespace tlc::parse {
         }
 
         auto popCoords() -> Location {
-            auto coords = currentCoords();
+            auto const coords = currentCoords();
             m_coords.pop();
             return coords;
         }
