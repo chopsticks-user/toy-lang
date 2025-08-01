@@ -15,8 +15,7 @@ namespace tlc {
               m_filepath{std::move(filepath)} {}
 
         Exception(
-            fs::path filepath, u64 const line, u64 const column,
-            Str message
+            fs::path filepath, u64 const line, u64 const column, Str message
         ): std::runtime_error(
                "[" + filepath.string() + " @" + std::to_string(line) + ":" +
                std::to_string(column) + "] " + std::move(message)

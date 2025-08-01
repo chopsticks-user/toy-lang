@@ -14,4 +14,5 @@
   respectively
 - Create a visitor to collapse single-element tuples into
   value expressions
-- Create a visitor to combine "x |> y(...)" into "y(x, ...)" 
+- Create a visitor to combine "x |> y(...)" into "y(x, ...)"
+- Create a general error collector for IO, memory, etc

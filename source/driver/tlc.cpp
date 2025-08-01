@@ -2,6 +2,7 @@
 #include "lex/lex.hpp"
 #include "parse/parse.hpp"
 #include "syntax/syntax.hpp"
+#include "token/token.hpp"
 
 #include <print>
 #include <iostream>
