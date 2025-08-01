@@ -2,6 +2,7 @@
 
 namespace tlc::parse {
     auto Parse::handleStmtLevelDecl() -> ParseResult {
+        TLC_SCOPE_REPORTER();
         return handleTupleDecl().or_else([this](auto&& error) -> ParseResult {
             collect(error);
             return handleIdentifierDecl();
@@ -9,35 +10,36 @@ namespace tlc::parse {
     }
 
     auto Parse::handleIdentifierDecl() -> ParseResult {
-        pushCoords();
+        TLC_SCOPE_REPORTER();
+        auto const location = m_tracker.scopedLocation();
         auto const constant = !m_stream.match(lexeme::dollar);
 
         return match(lexeme::identifier)(m_stream, m_tracker).and_then(
-            [this, constant](auto const& tokens) -> ParseResult {
+            [&](auto const& tokens) -> ParseResult {
                 auto name = tokens.front().str();
 
                 if (!m_stream.match(lexeme::colon)) {
                     return syntax::decl::Identifier{
-                        constant, tokens.front().str(), {}, popCoords()
+                        constant, tokens.front().str(), {}, *location
                     };
                 }
 
-                return handleType().and_then([this, constant, name](auto const& type)
+                return handleType().and_then([&](auto const& type)
                     -> ParseResult {
                         return syntax::decl::Identifier{
-                            constant, name, type, popCoords()
+                            constant, name, type, *location
                         };
-                    }).or_else([this, constant, name]([[maybe_unused]] auto&& error)
+                    }).or_else([&]([[maybe_unused]] auto&& error)
                     -> ParseResult {
                         collect(error);
                         return syntax::decl::Identifier{
-                            constant, name, {}, popCoords()
+                            constant, name, {}, *location
                         };
                     });
             }
         ).or_else([this](auto) -> ParseResult {
             collect({
-                .location = m_stream.current().coords(),
+                .location = m_tracker.current(),
                 .context = EParseErrorContext::IdDecl,
                 .reason = EParseErrorReason::MissingId
             });
@@ -46,22 +48,21 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTupleDecl() -> ParseResult {
+        TLC_SCOPE_REPORTER();
         return match(lexeme::leftParen)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
-                auto coords = tokens.front().coords();
+                auto location = tokens.front().location();
                 Vec<syntax::Node> decls;
 
                 if (m_stream.match(lexeme::rightParen)) {
-                    return syntax::decl::Tuple{
-                        std::move(decls), std::move(coords)
-                    };
+                    return syntax::decl::Tuple{std::move(decls), location};
                 }
 
                 do {
                     decls.push_back(*handleStmtLevelDecl().or_else(
                             [this](auto&& error) -> ParseResult {
                                 collect(error).collect({
-                                    .location = m_stream.current().coords(),
+                                    .location = m_tracker.current(),
                                     .context = EParseErrorContext::Tuple,
                                     .reason = EParseErrorReason::MissingDecl,
                                 });
@@ -74,16 +75,13 @@ namespace tlc::parse {
 
                 if (!m_stream.match(lexeme::rightParen)) {
                     collect({
-                        .location = m_stream.current().coords(),
+                        .location = m_tracker.current(),
                         .context = EParseErrorContext::Tuple,
                         .reason = EParseErrorReason::MissingEnclosingSymbol,
                     });
                 }
 
-                return syntax::decl::Tuple{
-                    std::move(decls),
-                    std::move(coords)
-                };
+                return syntax::decl::Tuple{std::move(decls), location};
             }
         );
     }

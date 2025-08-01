@@ -41,7 +41,11 @@ namespace tlc {
     }
 
     auto exitOnInternalError(StrV const message, std::source_location const sl) -> void {
-        log(ELogLevel::Fatal, message, sl);
+        if constexpr (config::debugging) {
+            log(ELogLevel::Fatal, std::format(
+                    "Exit due to an internal error occurred in {}: {}",
+                    sl.function_name(), message), sl);
+        }
         std::exit(EXIT_FAILURE);
     }
 

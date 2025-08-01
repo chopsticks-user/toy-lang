@@ -2,13 +2,13 @@
 #define TLC_TOKEN_IMPL_HPP
 
 #include "core/core.hpp"
-#include "classify.hpp"
+#include "lexeme.hpp"
 
 namespace tlc::token {
     class Token final {
     public:
-        Token(lexeme::Lexeme type, StrV const str, Location coords)
-            : m_lexeme{std::move(type)}, m_str{str}, m_coords{std::move(coords)} {}
+        Token(lexeme::Lexeme type, StrV const str, Location const location)
+            : m_lexeme{std::move(type)}, m_str{str}, m_location{location} {}
 
         [[nodiscard]] auto lexeme() const noexcept -> lexeme::Lexeme {
             return m_lexeme;
@@ -18,22 +18,22 @@ namespace tlc::token {
             return m_str;
         }
 
-        [[nodiscard]] auto coords() const noexcept -> Location {
-            return m_coords;
+        [[nodiscard]] auto location() const noexcept -> Location {
+            return m_location;
         }
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_coords.line;
+            return m_location.line;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_coords.column;
+            return m_location.column;
         }
 
     private:
         lexeme::Lexeme m_lexeme;
         Str m_str;
-        Location m_coords;
+        Location m_location;
     };
 }
 

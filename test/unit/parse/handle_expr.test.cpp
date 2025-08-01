@@ -192,7 +192,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
     );
     assertExpr(
         "[0,1,2].foo",
-        "expr::Access [@0:5] with field = 'foo'\n" // todo: wrong coords
+        "expr::Access [@0:0] with field = 'foo'\n"
         "├─ expr::Array [@0:0] with size = 3\n"
         "   ├─ expr::Integer [@0:1] with value = 0\n"
         "   ├─ expr::Integer [@0:3] with value = 1\n"
@@ -203,7 +203,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
 TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     assertExpr(
         "foo::bar(0,1,2)",
-        "expr::FnApp [@0:13]\n" // todo: wrong coords
+        "expr::FnApp [@0:0]\n"
         "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
         "├─ expr::Tuple [@0:8] with size = 3\n"
         "   ├─ expr::Integer [@0:9] with value = 0\n"
@@ -218,8 +218,8 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     );
     assertExpr(
         "foo(0,1,2)(bar)",
-        "expr::FnApp [@0:11]\n" // todo: wrong coords
-        "├─ expr::FnApp [@0:8]\n" // todo: wrong coords
+        "expr::FnApp [@0:0]\n"
+        "├─ expr::FnApp [@0:0]\n"
         "   ├─ expr::Identifier [@0:0] with path = 'foo'\n"
         "   ├─ expr::Tuple [@0:3] with size = 3\n"
         "      ├─ expr::Integer [@0:4] with value = 0\n"
@@ -233,7 +233,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
 TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     assertExpr(
         "foo::bar[0,1,2]",
-        "expr::Subscript [@0:13]\n" // todo: wrong coords
+        "expr::Subscript [@0:0]\n"
         "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
         "├─ expr::Array [@0:8] with size = 3\n"
         "   ├─ expr::Integer [@0:9] with value = 0\n"
@@ -242,15 +242,15 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     );
     assertExpr(
         "foo[x]",
-        "expr::Subscript [@0:4]\n" // todo: wrong coords
+        "expr::Subscript [@0:0]\n"
         "├─ expr::Identifier [@0:0] with path = 'foo'\n"
         "├─ expr::Array [@0:3] with size = 1\n"
         "   ├─ expr::Identifier [@0:4] with path = 'x'"
     );
     assertExpr(
         "foo[0,1,2][bar]",
-        "expr::Subscript [@0:11]\n" // todo: wrong coords
-        "├─ expr::Subscript [@0:8]\n" // todo: wrong coords
+        "expr::Subscript [@0:0]\n"
+        "├─ expr::Subscript [@0:0]\n"
         "   ├─ expr::Identifier [@0:0] with path = 'foo'\n"
         "   ├─ expr::Array [@0:3] with size = 3\n"
         "      ├─ expr::Integer [@0:4] with value = 0\n"
@@ -287,24 +287,24 @@ TEST_CASE_WITH_FIXTURE("Parse: Prefix expressions", "[Parse]") {
 TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
     assertExpr(
         "-x+3",
-        "expr::Binary [@0:3] with op = '+'\n" // wrong coords
+        "expr::Binary [@0:0] with op = '+'\n"
         "├─ expr::Prefix [@0:0] with op = '-'\n"
         "   ├─ expr::Identifier [@0:1] with path = 'x'\n"
         "├─ expr::Integer [@0:3] with value = 3"
     );
     assertExpr(
         "-x+y*z",
-        "expr::Binary [@0:5] with op = '+'\n" // wrong coords
+        "expr::Binary [@0:0] with op = '+'\n"
         "├─ expr::Prefix [@0:0] with op = '-'\n"
         "   ├─ expr::Identifier [@0:1] with path = 'x'\n"
-        "├─ expr::Binary [@0:5] with op = '*'\n" // wrong coords
+        "├─ expr::Binary [@0:3] with op = '*'\n"
         "   ├─ expr::Identifier [@0:3] with path = 'y'\n"
         "   ├─ expr::Identifier [@0:5] with path = 'z'"
     );
     assertExpr(
         "x*-y+z",
-        "expr::Binary [@0:5] with op = '+'\n" // wrong coords
-        "├─ expr::Binary [@0:2] with op = '*'\n" // wrong coords
+        "expr::Binary [@0:0] with op = '+'\n"
+        "├─ expr::Binary [@0:0] with op = '*'\n"
         "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
         "   ├─ expr::Prefix [@0:2] with op = '-'\n"
         "      ├─ expr::Identifier [@0:3] with path = 'y'\n"

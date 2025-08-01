@@ -2,8 +2,8 @@
 
 namespace tlc::parse {
     auto Parse::handleType() -> ParseResult { // NOLINT(*-no-recursion)
-        pushCoords();
-
+        TLC_SCOPE_REPORTER();
+        auto const location = m_tracker.scopedLocation();
         auto lhs =
             handleTypeInfer().or_else(
                 [this](auto const&) -> ParseResult {
@@ -15,8 +15,6 @@ namespace tlc::parse {
                 }
             );
         if (!lhs) {
-            popCoords();
-            collect(lhs.error());
             return Unexpected{lhs.error()};
         }
 
@@ -28,14 +26,14 @@ namespace tlc::parse {
                     dimSizes.emplace_back(handleExpr().value_or({}));
                     if (!m_stream.match(lexeme::rightBracket)) {
                         collect({
-                            .location = m_stream.current().coords(),
+                            .location = m_tracker.current(),
                             .context = EParseErrorContext::Array,
                             .reason = EParseErrorReason::MissingEnclosingSymbol,
                         });
                         break;
                     }
                 }
-                lhs = syntax::type::Array{*lhs, dimSizes, currentCoords()};
+                lhs = syntax::type::Array{*lhs, dimSizes, *location};
             }
             else if (m_stream.match(lexeme::minusGreater)) {
                 auto fnResultType = handleType()
@@ -45,7 +43,7 @@ namespace tlc::parse {
                             return {};
                         });
                 lhs = syntax::type::Function{
-                    *lhs, std::move(*fnResultType), currentCoords()
+                    *lhs, std::move(*fnResultType), *location
                 };
             }
             else if (false) {
@@ -60,6 +58,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeIdentifier() -> ParseResult {
+        TLC_SCOPE_REPORTER();
         return seq(
             many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
             match(lexeme::fundamentalType, lexeme::userDefinedType)
@@ -76,21 +75,22 @@ namespace tlc::parse {
                 return syntax::type::Identifier{
                     std::move(path),
                     m_stream.current().lexeme() == lexeme::fundamentalType,
-                    tokens.front().coords()
+                    tokens.front().location()
                 };
             }
         );
     }
 
     auto Parse::handleTypeTuple() -> ParseResult {
+        TLC_SCOPE_REPORTER();
         return match(lexeme::leftParen)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
-                auto coords = tokens.front().coords();
+                auto location = tokens.front().location();
                 Vec<syntax::Node> types;
 
                 if (m_stream.match(lexeme::rightParen)) {
                     return syntax::type::Tuple{
-                        std::move(types), std::move(coords)
+                        std::move(types), std::move(location)
                     };
                 }
 
@@ -98,7 +98,7 @@ namespace tlc::parse {
                     types.push_back(*handleType().or_else(
                             [this](auto&& error) -> ParseResult {
                                 collect(error).collect({
-                                    .location = m_stream.current().coords(),
+                                    .location = m_tracker.current(),
                                     .context = EParseErrorContext::Tuple,
                                     .reason = EParseErrorReason::MissingType,
                                 });
@@ -111,35 +111,36 @@ namespace tlc::parse {
 
                 if (!m_stream.match(lexeme::rightParen)) {
                     collect({
-                        .location = m_stream.current().coords(),
+                        .location = m_tracker.current(),
                         .context = EParseErrorContext::Tuple,
                         .reason = EParseErrorReason::MissingEnclosingSymbol,
                     });
                 }
 
-                return syntax::type::Tuple{
-                    std::move(types),
-                    std::move(coords)
-                };
+                return syntax::type::Tuple{std::move(types), location};
             }
         );
     }
 
     auto Parse::handleTypeInfer() -> ParseResult {
+        TLC_SCOPE_REPORTER();
         return seq(match(lexeme::leftBracket), match(lexeme::leftBracket))
-            (m_stream, m_tracker).and_then([this](auto const&)
+            (m_stream, m_tracker).and_then([this](auto const& tokens)
                 -> ParseResult {
-                    return handleExpr().and_then([this](auto const& expr)
+                    return handleExpr().and_then([this, &tokens](auto const& expr)
                         -> ParseResult {
-                            if (!seq(match(lexeme::rightBracket), match(lexeme::rightBracket))
+                            if (!seq(match(lexeme::rightBracket),
+                                     match(lexeme::rightBracket))
                                 (m_stream, m_tracker)) {
                                 collect({
-                                    .location = m_stream.current().coords(),
+                                    .location = m_tracker.current(),
                                     .context = EParseErrorContext::TypeInfer,
                                     .reason = EParseErrorReason::MissingEnclosingSymbol,
                                 });
                             }
-                            return syntax::type::Infer{expr, currentCoords()};
+                            return syntax::type::Infer{
+                                expr, tokens.front().location()
+                            };
                         });
                 }
             );

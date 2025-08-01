@@ -91,7 +91,7 @@ namespace tlc::parse {
         // todo: move a to separate class
         auto pushCoords() -> void {
             // todo: eof
-            return m_coords.push(m_stream.peek().coords());
+            return m_coords.push(m_stream.peek().location());
         }
 
         auto popCoords() -> Location {
