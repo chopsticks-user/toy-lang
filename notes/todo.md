@@ -4,10 +4,11 @@
 - ~~Complete test cases for parsing statements~~
 - ~~Implement anonymous identifier~~
 - ~~Create a lexeme class having both string and integer values~~
-- Work on LocationTracker and ErrorCollector
+- ~~Work on LocationTracker and ErrorCollector~~
 - Replace "Vec<T> const&" and "Str const&" with Span<const T> and "StrV"
   respectively
 - Revise nodes' implementations, remove unnecessary methods
+- Function types must be right-associate
 - Implement parsing logic for strings and ternary operators.
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing
