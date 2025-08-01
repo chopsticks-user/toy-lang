@@ -7,9 +7,6 @@
 
 namespace tlc::syntax::detail {
     class NodeBase {
-    protected:
-        using Coords = token::Token::Coords;
-
     public:
         [[nodiscard]] auto children() const noexcept -> Span<Node const>;
 
@@ -24,15 +21,15 @@ namespace tlc::syntax::detail {
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_coords.first;
+            return m_coords.line;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_coords.second;
+            return m_coords.column;
         }
 
     protected:
-        NodeBase(Vec<Node> children, token::Token::Coords coords) noexcept;
+        NodeBase(Vec<Node> children, Location coords) noexcept;
 
         auto childAt(szt index) -> Node&;
 
@@ -42,7 +39,7 @@ namespace tlc::syntax::detail {
 
     private:
         Vec<Node> m_children;
-        token::Token::Coords m_coords;
+        Location m_coords;
     };
 
     class IdentifierBase {
@@ -57,6 +54,10 @@ namespace tlc::syntax::detail {
         [[nodiscard]] auto path() const noexcept -> Str;
 
         [[nodiscard]] auto imported() const noexcept -> bool {
+            return m_path.size() > 1;
+        }
+
+        [[nodiscard]] auto anonymous() const noexcept -> bool {
             return m_path.size() > 1;
         }
 

@@ -3,27 +3,35 @@
 
 namespace tlc::syntax {
     namespace expr {
-        Integer::Integer(i64 const value, Coords coords)
+        Integer::Integer(i64 const value, Location coords)
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
-        Float::Float(f64 const value, Coords coords)
+        Float::Float(f64 const value, Location coords)
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
-        Boolean::Boolean(b8 const value, Coords coords)
+        Boolean::Boolean(b8 const value, Location coords)
             : NodeBase{{}, std::move(coords)}, m_value{value} {}
 
         Identifier::Identifier(
-            Vec<Str> path, Coords coords
+            Vec<Str> path, Location coords
         ) : NodeBase{{}, std::move(coords)},
             IdentifierBase{std::move(path)} {}
 
-        Array::Array(Vec<Node> elements, Coords coords)
+        Array::Array(Vec<Node> elements, Location coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
 
-        Tuple::Tuple(Vec<Node> elements, Coords coords)
+        auto Array::size() const noexcept -> szt {
+            return nChildren();
+        }
+
+        Tuple::Tuple(Vec<Node> elements, Location coords)
             : NodeBase{std::move(elements), std::move(coords)} {}
 
-        FnApp::FnApp(Node callee, Node args, Coords coords)
+        auto Tuple::size() const noexcept -> szt {
+            return nChildren();
+        }
+
+        FnApp::FnApp(Node callee, Node args, Location coords)
             : NodeBase{
                 {std::move(callee), std::move(args)},
                 std::move(coords)
@@ -38,7 +46,7 @@ namespace tlc::syntax {
         }
 
         Subscript::Subscript(
-            Node collection, Node subscript, Coords coords
+            Node collection, Node subscript, Location coords
         ): NodeBase{
             {std::move(collection), std::move(subscript)},
             std::move(coords)
@@ -53,22 +61,22 @@ namespace tlc::syntax {
         }
 
         Access::Access(
-            Node object, Node field, Coords coords
+            Node object, Str field, Location coords
         ): NodeBase{
-            {std::move(object), std::move(field)},
-            std::move(coords)
-        } {}
+               {std::move(object)},
+               std::move(coords)
+           }, m_field{std::move(field)} {}
 
         auto Access::object() const noexcept -> Node {
             return childAt(0);
         }
 
-        auto Access::field() const noexcept -> Node {
-            return childAt(1);
+        auto Access::field() const noexcept -> Str {
+            return m_field;
         }
 
         Prefix::Prefix(
-            Node operand, token::EToken const op, Coords coords
+            Node operand, lexeme::Lexeme const op, Location coords
         ): NodeBase{{std::move(operand)}, std::move(coords)},
            m_op{op} {}
 
@@ -77,7 +85,7 @@ namespace tlc::syntax {
         }
 
         Binary::Binary(
-            Node lhs, Node rhs, token::EToken const op, Coords coords
+            Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
         ) : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
             m_op{op} {}
 
@@ -89,41 +97,39 @@ namespace tlc::syntax {
             return lastChild();
         }
 
-        Record::Record(Node of, Vec<Pair<Str, Node>> entries, Coords coords)
+        Record::Record(Node type, Vec<Pair<Str, Node>> entries, Location coords)
             : NodeBase{
-                [&] {
-                    Vec<Node> nodes;
-                    nodes.reserve(entries.size() + 1);
-                    nodes.push_back(std::move(of));
-                    nodes.append_range(
-                        entries | rv::transform(
-                            [](auto const& entry) {
-                                return entry.second;
-                            }
-                        )
-                    );
-                    m_keys.append_range(
-                        entries | rv::transform(
-                            [](auto const& entry) {
-                                return entry.first;
-                            }
-                        )
-                    );
-                    return nodes;
-                }(),
-                std::move(coords)
-            } {}
+                  [&] {
+                      Vec<Node> nodes;
+                      nodes.reserve(entries.size() + 1);
+                      // todo: concat
+                      nodes.push_back(std::move(type));
+                      nodes.append_range(
+                          entries | rv::transform(
+                              [](auto const& entry) {
+                                  return entry.second;
+                              }
+                          )
+                      );
+                      return nodes;
+                  }(),
+                  std::move(coords)
+              }, m_keys{
+                  [&] {
+                      return entries | rv::transform(
+                          [](auto const& entry) {
+                              return entry.first;
+                          }
+                      ) | rng::to<Vec<Str>>();
+                  }()
+              } {}
 
         auto Record::size() const noexcept -> szt {
-            return nChildren() - 1;
+            return m_keys.size() - 1;
         }
 
-        auto Record::of() const noexcept -> Node {
+        auto Record::type() const noexcept -> Node {
             return firstChild();
-        }
-
-        auto Record::key(szt const index) const noexcept -> Str {
-            return m_keys.at(index);
         }
 
         auto Record::value(szt const index) const noexcept -> Node const& {
@@ -133,12 +139,12 @@ namespace tlc::syntax {
 
     namespace type {
         Identifier::Identifier(
-            Vec<Str> path, b8 const fundamental, Coords coords
+            Vec<Str> path, b8 const fundamental, Location coords
         ): NodeBase{{}, std::move(coords)},
            IdentifierBase{std::move(path)}, m_fundamental{fundamental} {}
 
         Array::Array(
-            Node type, Vec<Node> sizes, Coords coords
+            Node type, Vec<Node> sizes, Location coords
         ): NodeBase{
             [&] {
                 Vec<Node> nodes;
@@ -158,7 +164,7 @@ namespace tlc::syntax {
             return childAt(dimIndex + 1);
         }
 
-        auto Array::dim() const noexcept -> size_t {
+        auto Array::nDims() const noexcept -> size_t {
             return nChildren() - 1;
         }
 
@@ -166,7 +172,7 @@ namespace tlc::syntax {
             return !isEmptyNode(size(dimIndex));
         }
 
-        Tuple::Tuple(Vec<Node> types, Coords coords)
+        Tuple::Tuple(Vec<Node> types, Location coords)
             : NodeBase{std::move(types), std::move(coords)} {}
 
         auto Tuple::type(szt const index) const -> Node {
@@ -177,7 +183,7 @@ namespace tlc::syntax {
             return nChildren();
         }
 
-        Function::Function(Node args, Node result, Coords coords)
+        Function::Function(Node args, Node result, Location coords)
             : NodeBase{{std::move(args), std::move(result)}, std::move(coords)} {}
 
         auto Function::args() const noexcept -> Node {
@@ -188,21 +194,21 @@ namespace tlc::syntax {
             return lastChild();
         }
 
-        Infer::Infer(Node expr, Coords coords)
+        Infer::Infer(Node expr, Location coords)
             : NodeBase{{std::move(expr)}, std::move(coords)} {}
 
         auto Infer::expr() const noexcept -> Node {
             return firstChild();
         }
 
-        Sum::Sum(Vec<Node> types, Coords coords)
+        Sum::Sum(Vec<Node> types, Location coords)
             : NodeBase{std::move(types), std::move(coords)} {}
 
         auto Sum::type(szt const index) const -> Node {
             return childAt(index);
         }
 
-        Product::Product(Vec<Node> types, Coords coords)
+        Product::Product(Vec<Node> types, Location coords)
             : NodeBase{std::move(types), std::move(coords)} {}
 
         auto Product::type(szt const index) const -> Node {
@@ -212,19 +218,19 @@ namespace tlc::syntax {
 
     namespace decl {
         Identifier::Identifier(
-            b8 const constant, Node identifier, Node type, Coords coords
-        ) : NodeBase{{std::move(identifier), std::move(type)}, std::move(coords)},
-            m_constant{constant} {}
+            b8 const constant, Str name, Node type, Location coords
+        ) : NodeBase{{std::move(type)}, std::move(coords)},
+            m_constant{constant}, m_name{std::move(name)} {}
 
-        auto Identifier::identifier() const noexcept -> Node const& {
+        auto Identifier::type() const noexcept -> Node const& {
             return firstChild();
         }
 
-        auto Identifier::type() const noexcept -> Node const& {
-            return lastChild();
+        auto Identifier::inferred() const noexcept -> b8 {
+            return isEmptyNode(firstChild());
         }
 
-        Tuple::Tuple(Vec<Node> decls, Coords coords)
+        Tuple::Tuple(Vec<Node> decls, Location coords)
             : NodeBase{std::move(decls), std::move(coords)} {}
 
         auto Tuple::decl(szt const index) const -> Node {
@@ -235,4 +241,95 @@ namespace tlc::syntax {
             return nChildren();
         }
     }
+
+    stmt::Let::Let(Node decl, Node initializer, Location coords)
+        : NodeBase{{std::move(decl), std::move(initializer)}, std::move(coords)} {}
+
+    auto stmt::Let::decl() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    auto stmt::Let::initializer() const noexcept -> Node const& {
+        return lastChild();
+    }
+
+    auto stmt::Let::defaultInitialized() const -> bool {
+        return isEmptyNode(lastChild());
+    }
+
+    stmt::Return::Return(Node expr, Location coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+
+    auto stmt::Return::expr() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::Yield::Yield(Node expr, Location coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+
+    auto stmt::Yield::expr() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::Preface::Preface(Node stmt, Location coords)
+        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
+
+    auto stmt::Preface::stmt() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::Defer::Defer(Node stmt, Location coords)
+        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
+
+    auto stmt::Defer::stmt() const noexcept -> Node const& {
+        return firstChild();
+    }
+
+    stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location coords)
+        : NodeBase{
+            {std::move(value), std::move(cond), std::move(stmt)},
+            std::move(coords)
+        } {}
+
+    stmt::Match::Match(Node expr, Vec<Node> cases, Node defaultStmt, Location coords)
+        : NodeBase{
+            {
+                [&] {
+                    Vec<Node> nodes;
+                    nodes.reserve(cases.size() + 2);
+                    nodes.push_back(std::move(expr));
+                    nodes.append_range(std::move(cases));
+                    nodes.push_back(std::move(defaultStmt));
+                    return nodes;
+                }()
+            },
+            std::move(coords)
+        } {}
+
+    stmt::Loop::Loop(Node decl, Node range, Node body, Location coords)
+        : NodeBase{
+            {std::move(decl), std::move(range), std::move(body)},
+            std::move(coords)
+        } {}
+
+    stmt::Conditional::Conditional(Node cond, Node then, Location coords)
+        : NodeBase{
+            {std::move(cond), std::move(then)},
+            std::move(coords)
+        } {}
+
+    stmt::Block::Block(Vec<Node> statements, Location coords)
+        : NodeBase{std::move(statements), std::move(coords)} {}
+
+    auto stmt::Block::size() const noexcept -> szt {
+        return nChildren();
+    }
+
+    stmt::Assign::Assign(
+        Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
+    ): NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
+       m_op{op} {}
+
+    stmt::Expression::Expression(Node expr, Location coords)
+        : NodeBase{{std::move(expr)}, std::move(coords)} {}
 }

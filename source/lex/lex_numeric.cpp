@@ -4,16 +4,16 @@
 namespace tlc::lex {
     auto Lex::lexFloatingPoint() -> void {
         if (m_stream.match(isStartOfDecimalPart)) {
-            appendLexeme();
-            m_currentTokenType = token::EToken::FloatLiteral;
+            appendStr();
+            m_currentLexeme = lexeme::floatLiteral;
             szt count = 0;
             while (m_stream.match(isDigit)) {
-                appendLexeme();
+                appendStr();
                 ++count;
             }
             if (count == 0) {
                 // todo: throw
-                m_currentTokenType = token::EToken::Invalid;
+                m_currentLexeme = lexeme::invalid;
             }
         }
     }
@@ -21,53 +21,53 @@ namespace tlc::lex {
     auto Lex::lexNondecimalNumeric() -> void {
         szt count = 0;
         if (m_stream.match('x')) {
-            appendLexeme();
-            m_currentTokenType = token::EToken::Integer16Literal;
+            appendStr();
+            m_currentLexeme = lexeme::integer16Literal;
 
             while (m_stream.match(isHexadecimalDigit)) {
-                appendLexeme();
+                appendStr();
                 ++count;
             }
         }
         else if (m_stream.match('b')) {
-            appendLexeme();
-            m_currentTokenType = token::EToken::Integer2Literal;
+            appendStr();
+            m_currentLexeme = lexeme::integer2Literal;
 
             while (m_stream.match(isBinaryDigit)) {
-                appendLexeme();
+                appendStr();
                 ++count;
             }
         }
         else {
-            m_currentTokenType = token::EToken::Integer8Literal;
+            m_currentLexeme = lexeme::integer8Literal;
 
             while (m_stream.match(isOctalDigit)) {
-                appendLexeme();
+                appendStr();
                 ++count;
             }
             lexFloatingPoint();
 
-            if (m_currentLexeme.length() > count + 1) {
-                m_currentTokenType = token::EToken::FloatLiteral;
+            if (m_currentStr.length() > count + 1) {
+                m_currentLexeme = lexeme::floatLiteral;
             }
         }
 
-        if (count == 0 && m_currentTokenType != token::EToken::FloatLiteral) {
+        if (count == 0 && m_currentLexeme != lexeme::floatLiteral) {
             // simply "0"
-            m_currentTokenType = token::EToken::Integer10Literal;
+            m_currentLexeme = lexeme::integer10Literal;
         }
 
         appendToken();
     }
 
     auto Lex::lexNumeric() -> void {
-        m_currentTokenType = token::EToken::Integer10Literal;
+        m_currentLexeme = lexeme::integer10Literal;
         if (m_stream.current() == '0') {
             return lexNondecimalNumeric();
         }
 
         while (m_stream.match(isDigit)) {
-            appendLexeme();
+            appendStr();
         }
         lexFloatingPoint();
 

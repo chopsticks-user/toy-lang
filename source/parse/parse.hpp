@@ -5,28 +5,32 @@
 #include "token/token.hpp"
 #include "syntax/syntax.hpp"
 
-#include "context.hpp"
-#include "panic.hpp"
+#include "parse_error.hpp"
 #include "ast_printer.hpp"
 #include "pretty_printer.hpp"
 #include "token_stream.hpp"
 #include "combinator.hpp"
+#include "location_tracker.hpp"
 
 namespace tlc::parse {
     class Parse final {
-    public:
         using TokenIt = Vec<token::Token>::const_iterator;
-        using ParseResult = Expected<syntax::Node, Error>;
+        using TError = Error<EParseErrorContext, EParseErrorReason>;
+        using TErrorCollector =
+        ErrorCollector<EParseErrorContext, EParseErrorReason>;
+        using ParseResult = Expected<syntax::Node, TError>;
 
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
         Parse(fs::path filepath, Vec<token::Token> tokens)
-            : m_stream{std::move(tokens)}, m_panic{std::move(filepath)} {}
+            : m_filepath{std::move(filepath)},
+              m_stream{std::move(tokens)},
+              m_tracker{m_stream} {}
 
         auto operator()() -> syntax::Node;
 
-    public: // for testing
+#ifdef TLC_CONFIG_BUILD_TESTS
         auto parseExpr() -> ParseResult {
             return handleExpr();
         }
@@ -39,7 +43,12 @@ namespace tlc::parse {
             return handleStmt();
         }
 
-    protected:
+        auto parseDecl() -> ParseResult {
+            return handleStmtLevelDecl();
+        }
+#endif
+
+    private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handlePrimaryExpr() -> ParseResult;
         auto handleRecordExpr() -> ParseResult;
@@ -60,62 +69,65 @@ namespace tlc::parse {
         auto handleStmt() -> ParseResult;
         auto handleLetStmt() -> ParseResult;
         auto handleReturnStmt() -> ParseResult;
+        auto handleDeferStmt() -> ParseResult;
+        auto handlePrefaceStmt() -> ParseResult;
+        auto handleYieldStmt() -> ParseResult;
         auto handleExprPrefixedStmt() -> ParseResult;
         auto handleLoopStmt() -> ParseResult;
         auto handleMatchStmt() -> ParseResult;
-        auto handleConditionalStmt() -> ParseResult;
         auto handleBlockStmt() -> ParseResult;
 
         auto handleFunctionDef() -> ParseResult;
         auto handleFunctionPrototype() -> ParseResult;
-
         auto handleTypeDef() -> ParseResult;
-
         auto handleEnumDef() -> ParseResult;
-
         auto handleTraitDef() -> ParseResult;
-
         auto handleFlagDef() -> ParseResult;
-
         auto handleModuleDecl() -> ParseResult;
         auto handleImportDecl() -> ParseResult;
         auto handleTranslationUnit() -> ParseResult;
 
     private:
+        // todo: move a to separate class
         auto pushCoords() -> void {
             // todo: eof
-            return m_coords.push(m_stream.peek().coords());
+            return m_coords.push(m_stream.peek().location());
         }
 
-        auto popCoords() -> token::Token::Coords {
-            auto coords = currentCoords();
+        auto popCoords() -> Location {
+            auto const coords = currentCoords();
             m_coords.pop();
             return coords;
         }
 
-        auto currentCoords() -> token::Token::Coords {
+        auto currentCoords() -> Location {
             if (m_coords.empty()) {
-                throw InternalError{
+                throw InternalException{
                     "Parser::popCoords: m_markedCoords.empty()"
                 };
             }
             return m_coords.top();
         }
 
-        template <typename... Args, syntax::IsASTNode T>
-        auto createNode(token::Token::Coords coords, Args&&... args) -> syntax::Node {
-            return T{std::forward<Args&&>(args)..., std::move(coords)};
+        static auto defaultError() -> ParseResult {
+            return Unexpected{TError{}};
         }
 
-        static auto defaultError() -> ParseResult {
-            return Unexpected{Error{}};
+        auto collect(TError::Params errorParams) const -> TErrorCollector& {
+            errorParams.filepath = m_filepath;
+            return TErrorCollector::instance().collect(std::move(errorParams));
+        }
+
+        auto collect(TError error) const -> TErrorCollector& {
+            error.filepath(m_filepath);
+            return TErrorCollector::instance().collect(std::move(error));
         }
 
     private:
+        fs::path m_filepath;
         TokenStream m_stream;
-        Context m_context{};
-        Panic m_panic;
-        Stack<token::Token::Coords> m_coords{};
+        LocationTracker m_tracker;
+        Stack<Location> m_coords{};
     };
 }
 

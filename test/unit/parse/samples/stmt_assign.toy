@@ -1,0 +1,17 @@
+x = y == 5 => y * 2;
+
+x = y > 0 => {
+    yield y == 5 => y * 2;
+    yield x * 2;
+}
+
+x = (x, y) :=> {
+    (_, _) if x > 4 && y > 4 => x |> io::println;
+    (_, 8) if x > 8 => x |> io::println;
+    (8, _) if y <= 8 => x * 2 |> io::println;
+    _ => io::println(":(");
+};
+
+x = x in 0..5 :~> {
+    yield x * x;
+};

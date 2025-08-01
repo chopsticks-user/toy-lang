@@ -2,41 +2,38 @@
 #define TLC_TOKEN_IMPL_HPP
 
 #include "core/core.hpp"
-#include "classify.hpp"
+#include "lexeme.hpp"
 
 namespace tlc::token {
     class Token final {
     public:
-        using Coords = Pair<szt, szt>;
+        Token(lexeme::Lexeme type, StrV const str, Location const location)
+            : m_lexeme{std::move(type)}, m_str{str}, m_location{location} {}
 
-    public:
-        Token(EToken const type, StrV const str, Coords coords)
-            : m_type{type}, m_str{str}, m_coords{std::move(coords)} {}
-
-        [[nodiscard]] auto type() const noexcept -> EToken {
-            return m_type;
+        [[nodiscard]] auto lexeme() const noexcept -> lexeme::Lexeme {
+            return m_lexeme;
         }
 
         [[nodiscard]] auto str() const noexcept -> Str {
             return m_str;
         }
 
-        [[nodiscard]] auto coords() const noexcept -> Coords {
-            return m_coords;
+        [[nodiscard]] auto location() const noexcept -> Location {
+            return m_location;
         }
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_coords.first;
+            return m_location.line;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_coords.second;
+            return m_location.column;
         }
 
     private:
-        EToken m_type;
+        lexeme::Lexeme m_lexeme;
         Str m_str;
-        Coords m_coords;
+        Location m_location;
     };
 }
 

@@ -2,29 +2,30 @@
 #define TLC_PARSE_COMBINATOR_HPP
 
 #include "core/core.hpp"
-#include "context.hpp"
-#include "panic.hpp"
 #include "token_stream.hpp"
+#include "location_tracker.hpp"
+#include "parse_error.hpp"
 
 namespace tlc::parse {
     using ParserCombinatorResult = Expected<
-        token::TokenizedBuffer, Error
+        token::TokenizedBuffer, Error<EParseErrorContext, EParseErrorReason>
     >;
 
     using ParserCombinator = Fn<
-        ParserCombinatorResult(
-            Context& context, TokenStream& stream, Panic& panic
-        )
+        ParserCombinatorResult(TokenStream& stream, LocationTracker& tracker)
     >;
 
 #define TLC_PARSER_COMBINATOR_PROTOTYPE \
-    [=]([[maybe_unused]] Context& context, [[maybe_unused]] TokenStream& stream, [[maybe_unused]] Panic& panic) \
+    [=]([[maybe_unused]] TokenStream& stream, \
+    [[maybe_unused]] LocationTracker& tracker) \
         -> ParserCombinatorResult
 
-    auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
+    auto match(std::same_as<lexeme::Lexeme> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             if (!stream.match(types...)) {
-                return Unexpected{Error{}};
+                return Unexpected{
+                    Error<EParseErrorContext, EParseErrorReason>{}
+                };
             }
             return {{stream.current()}};
         };
@@ -33,7 +34,9 @@ namespace tlc::parse {
     inline auto match(TokenStream::MatchFn const cond) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             if (!stream.match(cond)) {
-                return Unexpected{Error{}};
+                return Unexpected{
+                    Error<EParseErrorContext, EParseErrorReason>{}
+                };
             }
             return {{stream.current()}};
         };
@@ -42,10 +45,10 @@ namespace tlc::parse {
     inline auto many0(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             token::TokenizedBuffer tokens;
-            auto result = pc(context, stream, panic);
+            auto result = pc(stream, tracker);
             while (result) {
                 tokens.append_range(*result);
-                result = pc(context, stream, panic);
+                result = pc(stream, tracker);
             }
             return tokens;
         };
@@ -53,13 +56,14 @@ namespace tlc::parse {
 
     inline auto many1(ParserCombinator const& pc) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
-            // return (match(type) & (*type))(context, stream, panic);
-
-            if (ParserCombinatorResult const result = many0(pc)(context, stream, panic);
+            if (ParserCombinatorResult const result =
+                    many0(pc)(stream, tracker);
                 !result.value().empty()) {
                 return result;
             }
-            return Unexpected{Error{}};
+            return Unexpected{
+                Error<EParseErrorContext, EParseErrorReason>{}
+            };
         };
     }
 
@@ -68,11 +72,13 @@ namespace tlc::parse {
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             for (auto&& p : {pc...}) {
-                if (auto const result = p(context, stream, panic); result) {
+                if (auto const result = p(stream, tracker); result) {
                     return result;
                 }
             }
-            return Unexpected{Error{}};
+            return Unexpected{
+                Error<EParseErrorContext, EParseErrorReason>{}
+            };
         };
     }
 
@@ -83,10 +89,12 @@ namespace tlc::parse {
             token::TokenizedBuffer tokens;
             stream.markBacktrack();
             for (auto&& p : {pc...}) {
-                auto const result = p(context, stream, panic);
+                auto const result = p(stream, tracker);
                 if (!result) {
                     stream.backtrack();
-                    return Unexpected{Error{}};
+                    return Unexpected{
+                        Error<EParseErrorContext, EParseErrorReason>{}
+                    };
                 }
                 tokens.append_range(result.value());
             }

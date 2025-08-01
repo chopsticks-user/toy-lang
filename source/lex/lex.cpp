@@ -14,22 +14,22 @@ namespace tlc::lex {
     auto Lex::operator()() -> token::TokenizedBuffer {
         m_stream.consumeSpaces();
         while (!m_stream.done()) {
-            m_currentLexeme = "";
-            m_currentTokenType = token::EToken::Invalid;
+            m_currentStr = "";
+            m_currentLexeme = lexeme::invalid;
 
             if (m_stream.match(isCommentOuter)) {
                 markTokenCoords();
-                appendLexeme();
+                appendStr();
                 lexComment();
             }
             else if (m_stream.match(isDigit)) {
                 markTokenCoords();
-                appendLexeme();
+                appendStr();
                 lexNumeric();
             }
             else if (m_stream.match(isLetter)) {
                 markTokenCoords();
-                appendLexeme();
+                appendStr();
                 lexIdentifier();
             }
             else {

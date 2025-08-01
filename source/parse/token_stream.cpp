@@ -2,7 +2,7 @@
 
 namespace tlc::parse {
     auto TokenStream::match(MatchFn const cond) -> bool {
-        if (done() || !cond(peek().type())) {
+        if (done() || !cond(peek().lexeme())) {
             return false;
         }
         advance();

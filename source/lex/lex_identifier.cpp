@@ -4,34 +4,29 @@
 namespace tlc::lex {
     auto Lex::classifyIdentifier(StrV const lexeme)
         -> void {
-        using enum token::EToken;
-
         if (isLowerCaseLetter(lexeme.front())) {
-            if (token::reservedKeywords.contains(lexeme)) {
-                m_currentTokenType = Invalid;
-            }
-            else if (token::nonTypeKeywordTable.contains(lexeme)) {
-                m_currentTokenType = token::nonTypeKeywordTable.at(lexeme);
+            if (lexeme::nonTypeKeywordTable.contains(lexeme)) {
+                m_currentLexeme = lexeme::nonTypeKeywordTable.at(lexeme);
             }
             else {
-                m_currentTokenType = Identifier;
+                m_currentLexeme = lexeme::identifier;
             }
         }
         else {
-            if (token::fundamentalTypes.contains(lexeme)) {
-                m_currentTokenType = FundamentalType;
+            if (lexeme::fundamentalTypes.contains(lexeme)) {
+                m_currentLexeme = lexeme::fundamentalType;
             }
             else {
-                m_currentTokenType = UserDefinedType;
+                m_currentLexeme = lexeme::userDefinedType;
             }
         }
     }
 
     auto Lex::lexIdentifier() -> void {
         while (m_stream.match(isDigitOrLetter)) {
-            appendLexeme();
+            appendStr();
         }
-        classifyIdentifier(m_currentLexeme);
+        classifyIdentifier(m_currentStr);
         appendToken();
     }
 }

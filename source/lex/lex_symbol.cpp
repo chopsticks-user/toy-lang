@@ -3,33 +3,33 @@
 
 namespace tlc::lex {
     auto Lex::lexSymbol() -> void {
-        appendLexeme();
+        appendStr();
         if (isUnnamedIdentifier(m_stream.current())) {
-            m_currentTokenType = token::EToken::AnonymousIdentifier;
+            m_currentLexeme = lexeme::anonymousIdentifier;
             appendToken();
             return;
         }
 
-        if (auto const entry = token::opGraph.find(m_stream.current());
-            entry != token::opGraph.end()) {
+        if (auto const entry = lexeme::opGraph.find(m_stream.current());
+            entry != lexeme::opGraph.end()) {
             if (auto const entry2 = entry->second.find(m_stream.peek());
                 entry2 != entry->second.end()) {
                 m_stream.advance();
-                appendLexeme();
+                appendStr();
                 if (entry2->second.contains(m_stream.peek())) {
                     m_stream.advance();
-                    appendLexeme();
+                    appendStr();
                 }
             }
         }
 
-        if (m_currentLexeme.empty()) {
+        if (m_currentStr.empty()) {
             // todo: error
             m_stream.advance();
             return;
         }
 
-        m_currentTokenType = token::operatorTable.at(m_currentLexeme);
+        m_currentLexeme = lexeme::operatorTable.at(m_currentStr);
         appendToken();
     }
 }

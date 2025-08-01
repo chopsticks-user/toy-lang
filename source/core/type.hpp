@@ -41,15 +41,17 @@ namespace tlc {
 
     using f32 = float;
     using f64 = double;
-    using cstr = char const*;
     using b8 = bool;
     using b32 = u32;
     using c8 = char;
     using szt = std::size_t;
 
+    struct Location {
+        szt line{}, column{};
+    };
+
     using Str = std::string;
     using StrV = std::string_view;
-
     using std::literals::operator ""s;
     using std::literals::operator ""sv;
 
