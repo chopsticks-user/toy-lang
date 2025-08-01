@@ -40,8 +40,8 @@ namespace tlc {
         public:
             using enum EType;
 
-            explicit constexpr Lexeme(EType const type, Str str = "")
-                : m_type{type}, m_str{std::move(str)} {}
+            explicit constexpr Lexeme(EType const type, StrV const str = "")
+                : m_type{type}, m_str{str} {}
 
             auto constexpr operator==(Lexeme const& other) const -> bool {
                 return m_type == other.m_type;
@@ -159,6 +159,13 @@ namespace tlc {
         constexpr Lexeme greater2Equal{Lexeme::Greater2Equal, ">>="};
         constexpr Lexeme less2Equal{Lexeme::Less2Equal, "<<="};
         constexpr Lexeme star2Equal{Lexeme::Star2Equal, "**="};
+
+        extern const HashSet<Lexeme> nonTypeKeywordTable;
+        extern const HashSet<Lexeme> operatorTable;
+        extern const HashSet<StrV> fundamentalTypes;
+        extern const HashSet<StrV> reservedKeywords;
+        using OpGraph3 = HashMap<c8, HashMap<c8, HashSet<c8>>>;
+        extern const OpGraph3 opGraph;
     }
 
     namespace token {
@@ -206,5 +213,14 @@ namespace tlc {
         extern const OpGraph3 opGraph;
     }
 }
+
+template <>
+struct std::hash<tlc::lexeme::Lexeme> {
+    constexpr auto operator()(
+        tlc::lexeme::Lexeme const& lexeme
+    ) const noexcept -> size_t {
+        return hash<int>()(static_cast<tlc::szt>(lexeme.type()));
+    }
+};
 
 #endif // TLC_TOKEN_CLASSIFY_HPP
