@@ -36,26 +36,26 @@ namespace tlc::lex {
             m_tokenColumn = m_stream.column();
         }
 
-        auto appendLexeme() -> void {
-            m_currentLexeme += m_stream.current();
+        auto appendStr() -> void {
+            m_currentStr += m_stream.current();
         }
 
         auto appendToken() -> void {
-            if (m_currentTokenType == token::EToken::Invalid) {
+            if (m_currentLexeme == lexeme::invalid) {
                 // todo: throw
                 return;
             }
 
             m_tokens.emplace_back(
-                m_currentTokenType, m_currentLexeme,
+                m_currentLexeme, m_currentStr,
                 Location{m_tokenLine, m_tokenColumn}
             );
         }
 
     private:
         TextStream m_stream;
-        token::EToken m_currentTokenType{};
-        Str m_currentLexeme{};
+        lexeme::Lexeme m_currentLexeme = lexeme::invalid;
+        Str m_currentStr{};
         szt m_tokenLine{}, m_tokenColumn{};
         token::TokenizedBuffer m_tokens{};
     };

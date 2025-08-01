@@ -1,6 +1,5 @@
 #include "parse.test.hpp"
 
-using tlc::token::EToken;
 using namespace tlc::syntax;
 
 auto ParseTestFixture::assertExpr(

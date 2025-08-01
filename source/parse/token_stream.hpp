@@ -7,7 +7,7 @@
 namespace tlc::parse {
     class TokenStream final {
     public:
-        using MatchFn = bool (*)(token::EToken);
+        using MatchFn = bool (*)(lexeme::Lexeme const&);
         using TokenIt = token::TokenizedBuffer::const_iterator;
 
     public:
@@ -15,8 +15,8 @@ namespace tlc::parse {
             : m_tokens{std::move(tokens)},
               m_tokenIt{m_tokens.begin()} {}
 
-        auto match(std::same_as<token::EToken> auto... types) -> bool {
-            auto const tokenType = peek().type();
+        auto match(std::same_as<lexeme::Lexeme> auto... types) -> bool {
+            auto const tokenType = peek().lexeme();
             if (done() || ((tokenType != types) && ...)) {
                 return false;
             }
@@ -45,7 +45,7 @@ namespace tlc::parse {
 
     private:
         static auto makeInvalidToken() -> token::Token {
-            return {token::EToken::Invalid, "", {0, 0}};
+            return {lexeme::invalid, "", {0, 0}};
         }
 
     private:

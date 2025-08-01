@@ -74,14 +74,14 @@ namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::expr::Prefix const& node) -> Str {
         return withDepth(std::format(
             "expr::Prefix [@{}:{}] with op = '{}'",
-            node.line(), node.column(), token::reversedOperatorTable.at(node.op())
+            node.line(), node.column(), node.op().str()
         )) + "\n" + visitChildren(node).front();
     }
 
     auto ASTPrinter::operator()(syntax::expr::Binary const& node) -> Str {
         return withDepth(std::format(
             "expr::Binary [@{}:{}] with op = '{}'",
-            node.line(), node.column(), token::reversedOperatorTable.at(node.op())
+            node.line(), node.column(), node.op().str()
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
@@ -206,7 +206,7 @@ namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::stmt::Assign const& node) -> Str {
         return withDepth(std::format(
             "stmt::Assign [@{}:{}] with op = '{}'",
-            node.line(), node.column(), token::reversedOperatorTable.at(node.op())
+            node.line(), node.column(), node.op().str()
         )) + ("\n" + (visitChildren(node) | rvTransformEmpty |
                 rvJoinWithEl)
         );

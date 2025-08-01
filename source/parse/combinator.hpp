@@ -20,7 +20,7 @@ namespace tlc::parse {
     [[maybe_unused]] LocationTracker& tracker) \
         -> ParserCombinatorResult
 
-    auto match(std::same_as<token::EToken> auto... types) -> ParserCombinator {
+    auto match(std::same_as<lexeme::Lexeme> auto... types) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             if (!stream.match(types...)) {
                 return Unexpected{

@@ -13,12 +13,12 @@ protected:
     }
 
     auto assertTokenAt(
-        tlc::szt const i, tlc::token::EToken const type, tlc::StrV const str,
+        tlc::szt const i, tlc::lexeme::Lexeme const& lexeme, tlc::StrV const str,
         tlc::szt const line, tlc::szt const column
     ) const -> void {
         CAPTURE(i);
         REQUIRE(i < m_tokens.size());
-        REQUIRE(m_tokens[i].type() == type);
+        REQUIRE(m_tokens[i].lexeme() == lexeme);
         REQUIRE(m_tokens[i].str() == str);
         REQUIRE(m_tokens[i].line() == line);
         REQUIRE(m_tokens[i].column() == column);
@@ -38,16 +38,15 @@ private:
 TEST_CASE_WITH_FIXTURE("Lex: Spaces correctly ignored", "[Lex]") {
     lex(R"(
 foo Bar    Float
-int
+
     module
     )");
 
     assertTokenCount(4);
-    assertTokenAt(0, tlc::token::EToken::Identifier, "foo", 1, 0);
-    assertTokenAt(1, tlc::token::EToken::UserDefinedType, "Bar", 1, 4);
-    assertTokenAt(2, tlc::token::EToken::FundamentalType, "Float", 1, 11);
-    // "int" is a reserved keyword
-    assertTokenAt(3, tlc::token::EToken::Module, "module", 3, 4);
+    assertTokenAt(0, tlc::lexeme::identifier, "foo", 1, 0);
+    assertTokenAt(1, tlc::lexeme::userDefinedType, "Bar", 1, 4);
+    assertTokenAt(2, tlc::lexeme::fundamentalType, "Float", 1, 11);
+    assertTokenAt(3, tlc::lexeme::module, "module", 3, 4);
 }
 
 TEST_CASE_WITH_FIXTURE("Lex: Comments", "[Lex]") {}
@@ -66,29 +65,14 @@ Opt
         )");
 
         assertTokenCount(8);
-        assertTokenAt(0, tlc::token::EToken::FundamentalType, "Int", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::FundamentalType, "Float", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::FundamentalType, "Bool", 3, 0);
-        assertTokenAt(3, tlc::token::EToken::FundamentalType, "Char", 4, 0);
-        assertTokenAt(4, tlc::token::EToken::FundamentalType, "Void", 5, 0);
-        assertTokenAt(5, tlc::token::EToken::FundamentalType, "String", 6, 0);
-        assertTokenAt(6, tlc::token::EToken::FundamentalType, "Any", 7, 0);
-        assertTokenAt(7, tlc::token::EToken::FundamentalType, "Opt", 8, 0);
-    }
-
-    SECTION("Reserved keywords") {
-        lex(R"(
-int
-float
-bool
-char
-void
-string
-any
-opt
-        )");
-
-        assertTokenCount(0);
+        assertTokenAt(0, tlc::lexeme::fundamentalType, "Int", 1, 0);
+        assertTokenAt(1, tlc::lexeme::fundamentalType, "Float", 2, 0);
+        assertTokenAt(2, tlc::lexeme::fundamentalType, "Bool", 3, 0);
+        assertTokenAt(3, tlc::lexeme::fundamentalType, "Char", 4, 0);
+        assertTokenAt(4, tlc::lexeme::fundamentalType, "Void", 5, 0);
+        assertTokenAt(5, tlc::lexeme::fundamentalType, "String", 6, 0);
+        assertTokenAt(6, tlc::lexeme::fundamentalType, "Any", 7, 0);
+        assertTokenAt(7, tlc::lexeme::fundamentalType, "Opt", 8, 0);
     }
 
     SECTION("Identifiers") {
@@ -99,9 +83,9 @@ fo0
         )");
 
         assertTokenCount(3);
-        assertTokenAt(0, tlc::token::EToken::Identifier, "foo", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::Identifier, "f0o", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::Identifier, "fo0", 3, 0);
+        assertTokenAt(0, tlc::lexeme::identifier, "foo", 1, 0);
+        assertTokenAt(1, tlc::lexeme::identifier, "f0o", 2, 0);
+        assertTokenAt(2, tlc::lexeme::identifier, "fo0", 3, 0);
     }
 
     SECTION("UserDefinedType") {
@@ -112,9 +96,9 @@ Fo0
         )");
 
         assertTokenCount(3);
-        assertTokenAt(0, tlc::token::EToken::UserDefinedType, "Foo", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::UserDefinedType, "F0o", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::UserDefinedType, "Fo0", 3, 0);
+        assertTokenAt(0, tlc::lexeme::userDefinedType, "Foo", 1, 0);
+        assertTokenAt(1, tlc::lexeme::userDefinedType, "F0o", 2, 0);
+        assertTokenAt(2, tlc::lexeme::userDefinedType, "Fo0", 3, 0);
     }
 
     SECTION("Keywords") {
@@ -129,12 +113,12 @@ extern
             )");
 
             assertTokenCount(6);
-            assertTokenAt(0, tlc::token::EToken::Module, "module", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Import, "import", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::Export, "export", 3, 0);
-            assertTokenAt(3, tlc::token::EToken::Internal, "internal", 4, 0);
-            assertTokenAt(4, tlc::token::EToken::Local, "local", 5, 0);
-            assertTokenAt(5, tlc::token::EToken::Extern, "extern", 6, 0);
+            assertTokenAt(0, tlc::lexeme::module, "module", 1, 0);
+            assertTokenAt(1, tlc::lexeme::import_, "import", 2, 0);
+            assertTokenAt(2, tlc::lexeme::export_, "export", 3, 0);
+            assertTokenAt(3, tlc::lexeme::internal, "internal", 4, 0);
+            assertTokenAt(4, tlc::lexeme::local, "local", 5, 0);
+            assertTokenAt(5, tlc::lexeme::extern_, "extern", 6, 0);
         }
 
         SECTION("Definition") {
@@ -148,12 +132,12 @@ flag
             )");
 
             assertTokenCount(6);
-            assertTokenAt(0, tlc::token::EToken::Let, "let", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Fn, "fn", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::Trait, "trait", 3, 0);
-            assertTokenAt(3, tlc::token::EToken::Type, "type", 4, 0);
-            assertTokenAt(4, tlc::token::EToken::Enum, "enum", 5, 0);
-            assertTokenAt(5, tlc::token::EToken::Flag, "flag", 6, 0);
+            assertTokenAt(0, tlc::lexeme::let, "let", 1, 0);
+            assertTokenAt(1, tlc::lexeme::fn, "fn", 2, 0);
+            assertTokenAt(2, tlc::lexeme::trait, "trait", 3, 0);
+            assertTokenAt(3, tlc::lexeme::type, "type", 4, 0);
+            assertTokenAt(4, tlc::lexeme::enum_, "enum", 5, 0);
+            assertTokenAt(5, tlc::lexeme::flag, "flag", 6, 0);
         }
 
         SECTION("Control") {
@@ -164,9 +148,9 @@ match
             )");
 
             assertTokenCount(3);
-            assertTokenAt(0, tlc::token::EToken::For, "for", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Return, "return", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::Match, "match", 3, 0);
+            assertTokenAt(0, tlc::lexeme::for_, "for", 1, 0);
+            assertTokenAt(1, tlc::lexeme::return_, "return", 2, 0);
+            assertTokenAt(2, tlc::lexeme::match, "match", 3, 0);
         }
 
         SECTION("Adverb") {
@@ -178,10 +162,10 @@ when
             )");
 
             assertTokenCount(4);
-            assertTokenAt(0, tlc::token::EToken::By, "by", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Of, "of", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::In, "in", 3, 0);
-            assertTokenAt(3, tlc::token::EToken::When, "when", 4, 0);
+            assertTokenAt(0, tlc::lexeme::by, "by", 1, 0);
+            assertTokenAt(1, tlc::lexeme::of, "of", 2, 0);
+            assertTokenAt(2, tlc::lexeme::in, "in", 3, 0);
+            assertTokenAt(3, tlc::lexeme::when, "when", 4, 0);
         }
 
         SECTION("Boolean") {
@@ -191,8 +175,8 @@ false
             )");
 
             assertTokenCount(2);
-            assertTokenAt(0, tlc::token::EToken::True, "true", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::False, "false", 2, 0);
+            assertTokenAt(0, tlc::lexeme::true_, "true", 1, 0);
+            assertTokenAt(1, tlc::lexeme::false_, "false", 2, 0);
         }
 
         SECTION("Object") {
@@ -204,10 +188,10 @@ impl
             )");
 
             assertTokenCount(4);
-            assertTokenAt(0, tlc::token::EToken::Self, "self", 1, 0);
-            assertTokenAt(1, tlc::token::EToken::Pub, "pub", 2, 0);
-            assertTokenAt(2, tlc::token::EToken::Prv, "prv", 3, 0);
-            assertTokenAt(3, tlc::token::EToken::Impl, "impl", 4, 0);
+            assertTokenAt(0, tlc::lexeme::self, "self", 1, 0);
+            assertTokenAt(1, tlc::lexeme::pub, "pub", 2, 0);
+            assertTokenAt(2, tlc::lexeme::prv, "prv", 3, 0);
+            assertTokenAt(3, tlc::lexeme::impl, "impl", 4, 0);
         }
     }
 }
@@ -243,82 +227,82 @@ TEST_CASE_WITH_FIXTURE("Lex: Numbers", "[Lex]") {
         assertTokenCount(19);
 
         assertTokenAt(
-            0, tlc::token::EToken::Integer10Literal, "31415",
+            0, tlc::lexeme::integer10Literal, "31415",
             1, 0
         );
         assertTokenAt(
-            1, tlc::token::EToken::Integer10Literal, "0",
+            1, tlc::lexeme::integer10Literal, "0",
             2, 0
         );
 
         assertTokenAt(
-            2, tlc::token::EToken::FloatLiteral, "3.1415",
+            2, tlc::lexeme::floatLiteral, "3.1415",
             4, 0);
         assertTokenAt(
-            3, tlc::token::EToken::FloatLiteral,
+            3, tlc::lexeme::floatLiteral,
             "31.415", 5, 0
         );
         assertTokenAt(
-            4, tlc::token::EToken::FloatLiteral,
+            4, tlc::lexeme::floatLiteral,
             "03.1415", 6, 0
         );
         assertTokenAt(
-            5, tlc::token::EToken::FloatLiteral,
+            5, tlc::lexeme::floatLiteral,
             "0.0314", 7, 0
         );
         assertTokenAt(
-            6, tlc::token::EToken::FloatLiteral,
+            6, tlc::lexeme::floatLiteral,
             "00.0314", 8, 0
         );
         assertTokenAt(
-            7, tlc::token::EToken::FloatLiteral,
+            7, tlc::lexeme::floatLiteral,
             "0.0", 9, 0
         );
         assertTokenAt(
-            8, tlc::token::EToken::FloatLiteral,
+            8, tlc::lexeme::floatLiteral,
             "0.00", 10, 0
         );
         assertTokenAt(
-            9, tlc::token::EToken::FloatLiteral,
+            9, tlc::lexeme::floatLiteral,
             "00.00", 11, 0
         );
 
         assertTokenAt(
-            10, tlc::token::EToken::Integer2Literal,
+            10, tlc::lexeme::integer2Literal,
             "0b10101010", 13, 0
         );
         assertTokenAt(
-            11, tlc::token::EToken::Integer2Literal,
+            11, tlc::lexeme::integer2Literal,
             "0b0", 14, 0
         );
         assertTokenAt(
-            12, tlc::token::EToken::Integer2Literal,
+            12, tlc::lexeme::integer2Literal,
             "0b00", 15, 0
         );
 
         assertTokenAt(
-            13, tlc::token::EToken::Integer16Literal,
+            13, tlc::lexeme::integer16Literal,
             "0x123456789abcdef", 17, 0
         );
         assertTokenAt(
-            14, tlc::token::EToken::Integer16Literal,
+            14, tlc::lexeme::integer16Literal,
             "0x0", 18, 0
         );
         assertTokenAt(
-            15, tlc::token::EToken::Integer16Literal,
+            15, tlc::lexeme::integer16Literal,
             "0x00", 19, 0
         );
 
         assertTokenAt(
-            16, tlc::token::EToken::Integer8Literal,
+            16, tlc::lexeme::integer8Literal,
             "01234567", 21, 0
         );
         assertTokenAt(
-            17, tlc::token::EToken::Integer8Literal,
+            17, tlc::lexeme::integer8Literal,
             "00", 22, 0
         );
         assertTokenAt(
-            18, tlc::token::EToken::Integer8Literal,
+            18, tlc::lexeme::integer8Literal,
             "000", 23, 0
         );
     }
@@ -359,35 +343,35 @@ $
         )");
 
         assertTokenCount(29);
-        assertTokenAt(0, tlc::token::EToken::LeftParen, "(", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::RightParen, ")", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::LeftBracket, "[", 3, 0);
-        assertTokenAt(3, tlc::token::EToken::RightBracket, "]", 4, 0);
-        assertTokenAt(4, tlc::token::EToken::LeftBrace, "{", 5, 0);
-        assertTokenAt(5, tlc::token::EToken::RightBrace, "}", 6, 0);
-        assertTokenAt(6, tlc::token::EToken::Dot, ".", 7, 0);
-        assertTokenAt(7, tlc::token::EToken::Comma, ",", 8, 0);
-        assertTokenAt(8, tlc::token::EToken::Colon, ":", 9, 0);
-        assertTokenAt(9, tlc::token::EToken::Semicolon, ";", 10, 0);
-        assertTokenAt(10, tlc::token::EToken::Star, "*", 11, 0);
-        assertTokenAt(11, tlc::token::EToken::Ampersand, "&", 12, 0);
-        assertTokenAt(12, tlc::token::EToken::Hash, "#", 13, 0);
-        assertTokenAt(13, tlc::token::EToken::Bar, "|", 14, 0);
-        assertTokenAt(14, tlc::token::EToken::Hat, "^", 15, 0);
-        assertTokenAt(15, tlc::token::EToken::Plus, "+", 16, 0);
-        assertTokenAt(16, tlc::token::EToken::Minus, "-", 17, 0);
-        assertTokenAt(17, tlc::token::EToken::FwdSlash, "/", 18, 0);
-        assertTokenAt(18, tlc::token::EToken::Percent, "%", 19, 0);
-        assertTokenAt(19, tlc::token::EToken::Exclaim, "!", 20, 0);
-        assertTokenAt(20, tlc::token::EToken::Equal, "=", 21, 0);
-        assertTokenAt(21, tlc::token::EToken::Greater, ">", 22, 0);
-        assertTokenAt(22, tlc::token::EToken::Less, "<", 23, 0);
-        assertTokenAt(23, tlc::token::EToken::SQuote, "'", 24, 0);
-        assertTokenAt(24, tlc::token::EToken::DQuote, "\"", 25, 0);
-        assertTokenAt(25, tlc::token::EToken::QMark, "?", 26, 0);
-        assertTokenAt(26, tlc::token::EToken::Tilde, "~", 27, 0);
-        assertTokenAt(27, tlc::token::EToken::Dollar, "$", 28, 0);
-        assertTokenAt(28, tlc::token::EToken::At, "@", 29, 0);
+        assertTokenAt(0, tlc::lexeme::leftParen, "(", 1, 0);
+        assertTokenAt(1, tlc::lexeme::rightParen, ")", 2, 0);
+        assertTokenAt(2, tlc::lexeme::leftBracket, "[", 3, 0);
+        assertTokenAt(3, tlc::lexeme::rightBracket, "]", 4, 0);
+        assertTokenAt(4, tlc::lexeme::leftBrace, "{", 5, 0);
+        assertTokenAt(5, tlc::lexeme::rightBrace, "}", 6, 0);
+        assertTokenAt(6, tlc::lexeme::dot, ".", 7, 0);
+        assertTokenAt(7, tlc::lexeme::comma, ",", 8, 0);
+        assertTokenAt(8, tlc::lexeme::colon, ":", 9, 0);
+        assertTokenAt(9, tlc::lexeme::semicolon, ";", 10, 0);
+        assertTokenAt(10, tlc::lexeme::star, "*", 11, 0);
+        assertTokenAt(11, tlc::lexeme::ampersand, "&", 12, 0);
+        assertTokenAt(12, tlc::lexeme::hash, "#", 13, 0);
+        assertTokenAt(13, tlc::lexeme::bar, "|", 14, 0);
+        assertTokenAt(14, tlc::lexeme::hat, "^", 15, 0);
+        assertTokenAt(15, tlc::lexeme::plus, "+", 16, 0);
+        assertTokenAt(16, tlc::lexeme::minus, "-", 17, 0);
+        assertTokenAt(17, tlc::lexeme::fwdSlash, "/", 18, 0);
+        assertTokenAt(18, tlc::lexeme::percent, "%", 19, 0);
+        assertTokenAt(19, tlc::lexeme::exclaim, "!", 20, 0);
+        assertTokenAt(20, tlc::lexeme::equal, "=", 21, 0);
+        assertTokenAt(21, tlc::lexeme::greater, ">", 22, 0);
+        assertTokenAt(22, tlc::lexeme::less, "<", 23, 0);
+        assertTokenAt(23, tlc::lexeme::sQuote, "'", 24, 0);
+        assertTokenAt(24, tlc::lexeme::dQuote, "\"", 25, 0);
+        assertTokenAt(25, tlc::lexeme::qMark, "?", 26, 0);
+        assertTokenAt(26, tlc::lexeme::tilde, "~", 27, 0);
+        assertTokenAt(27, tlc::lexeme::dollar, "$", 28, 0);
+        assertTokenAt(28, tlc::lexeme::at, "@", 29, 0);
     }
 
     SECTION("Double characters") {
@@ -420,31 +404,31 @@ $
         )");
 
         assertTokenCount(25);
-        assertTokenAt(0, tlc::token::EToken::ExclaimEqual, "!=", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::StarEqual, "*=", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::AmpersandEqual, "&=", 3, 0);
-        assertTokenAt(3, tlc::token::EToken::BarEqual, "|=", 4, 0);
-        assertTokenAt(4, tlc::token::EToken::HatEqual, "^=", 5, 0);
-        assertTokenAt(5, tlc::token::EToken::FwdSlashEqual, "/=", 6, 0);
-        assertTokenAt(6, tlc::token::EToken::PercentEqual, "%=", 7, 0);
-        assertTokenAt(7, tlc::token::EToken::GreaterEqual, ">=", 8, 0);
-        assertTokenAt(8, tlc::token::EToken::LessEqual, "<=", 9, 0);
-        assertTokenAt(9, tlc::token::EToken::PlusEqual, "+=", 10, 0);
-        assertTokenAt(10, tlc::token::EToken::MinusEqual, "-=", 11, 0);
-        assertTokenAt(11, tlc::token::EToken::BarGreater, "|>", 12, 0);
-        assertTokenAt(12, tlc::token::EToken::MinusGreater, "->", 13, 0);
-        assertTokenAt(13, tlc::token::EToken::EqualGreater, "=>", 14, 0);
-        assertTokenAt(14, tlc::token::EToken::Colon2, "::", 15, 0);
-        assertTokenAt(15, tlc::token::EToken::Star2, "**", 16, 0);
-        assertTokenAt(16, tlc::token::EToken::Ampersand2, "&&", 17, 0);
-        assertTokenAt(17, tlc::token::EToken::Bar2, "||", 18, 0);
-        assertTokenAt(18, tlc::token::EToken::Plus2, "++", 19, 0);
-        assertTokenAt(19, tlc::token::EToken::Minus2, "--", 20, 0);
-        assertTokenAt(20, tlc::token::EToken::Equal2, "==", 21, 0);
-        assertTokenAt(21, tlc::token::EToken::Greater2, ">>", 22, 0);
-        assertTokenAt(22, tlc::token::EToken::Less2, "<<", 23, 0);
-        assertTokenAt(23, tlc::token::EToken::QMark2, "??", 24, 0);
-        assertTokenAt(24, tlc::token::EToken::Dot2, "..", 25, 0);
+        assertTokenAt(0, tlc::lexeme::exclaimEqual, "!=", 1, 0);
+        assertTokenAt(1, tlc::lexeme::starEqual, "*=", 2, 0);
+        assertTokenAt(2, tlc::lexeme::ampersandEqual, "&=", 3, 0);
+        assertTokenAt(3, tlc::lexeme::barEqual, "|=", 4, 0);
+        assertTokenAt(4, tlc::lexeme::hatEqual, "^=", 5, 0);
+        assertTokenAt(5, tlc::lexeme::fwdSlashEqual, "/=", 6, 0);
+        assertTokenAt(6, tlc::lexeme::percentEqual, "%=", 7, 0);
+        assertTokenAt(7, tlc::lexeme::greaterEqual, ">=", 8, 0);
+        assertTokenAt(8, tlc::lexeme::lessEqual, "<=", 9, 0);
+        assertTokenAt(9, tlc::lexeme::plusEqual, "+=", 10, 0);
+        assertTokenAt(10, tlc::lexeme::minusEqual, "-=", 11, 0);
+        assertTokenAt(11, tlc::lexeme::barGreater, "|>", 12, 0);
+        assertTokenAt(12, tlc::lexeme::minusGreater, "->", 13, 0);
+        assertTokenAt(13, tlc::lexeme::equalGreater, "=>", 14, 0);
+        assertTokenAt(14, tlc::lexeme::colon2, "::", 15, 0);
+        assertTokenAt(15, tlc::lexeme::star2, "**", 16, 0);
+        assertTokenAt(16, tlc::lexeme::ampersand2, "&&", 17, 0);
+        assertTokenAt(17, tlc::lexeme::bar2, "||", 18, 0);
+        assertTokenAt(18, tlc::lexeme::plus2, "++", 19, 0);
+        assertTokenAt(19, tlc::lexeme::minus2, "--", 20, 0);
+        assertTokenAt(20, tlc::lexeme::equal2, "==", 21, 0);
+        assertTokenAt(21, tlc::lexeme::greater2, ">>", 22, 0);
+        assertTokenAt(22, tlc::lexeme::less2, "<<", 23, 0);
+        assertTokenAt(23, tlc::lexeme::qMark2, "??", 24, 0);
+        assertTokenAt(24, tlc::lexeme::dot2, "..", 25, 0);
     }
 
     SECTION("Triple characters") {
@@ -456,9 +440,9 @@ $
         )");
 
         assertTokenCount(4);
-        assertTokenAt(0, tlc::token::EToken::Greater2Equal, ">>=", 1, 0);
-        assertTokenAt(1, tlc::token::EToken::Less2Equal, "<<=", 2, 0);
-        assertTokenAt(2, tlc::token::EToken::Star2Equal, "**=", 3, 0);
-        assertTokenAt(3, tlc::token::EToken::Dot3, "...", 4, 0);
+        assertTokenAt(0, tlc::lexeme::greater2Equal, ">>=", 1, 0);
+        assertTokenAt(1, tlc::lexeme::less2Equal, "<<=", 2, 0);
+        assertTokenAt(2, tlc::lexeme::star2Equal, "**=", 3, 0);
+        assertTokenAt(3, tlc::lexeme::dot3, "...", 4, 0);
     }
 }

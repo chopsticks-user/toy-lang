@@ -35,7 +35,6 @@ private:
     TEST_CASE_METHOD(ParserCombinatorTestFixture, __VA_ARGS__)
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator:", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
     //
     // initialize("-x-5");
     //
@@ -44,46 +43,46 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator:", "[Parse][ParserCombinator]") {
 }
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator: Match", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
+    using namespace tlc::lexeme;
 
     SECTION("Sequential matches") {
         initialize("x=5;");
 
         {
             auto const result = invoke(
-                tlc::parse::match(Integer10Literal, Identifier, Semicolon)
+                tlc::parse::match(integer10Literal, identifier, semicolon)
             );
             REQUIRE(result);
             REQUIRE(result.value().size() == 1);
-            REQUIRE(result.value().front().type() == tlc::token::EToken::Identifier);
+            REQUIRE(result.value().front().lexeme() == identifier);
         }
         {
             auto const result = invoke(
-                tlc::parse::match(Equal)
+                tlc::parse::match(equal)
             );
             REQUIRE(result);
             REQUIRE(result.value().size() == 1);
-            REQUIRE(result.value().front().type() == tlc::token::EToken::Equal);
+            REQUIRE(result.value().front().lexeme() == equal);
         }
         {
             auto const result = invoke(
-                tlc::parse::match(Integer10Literal, Identifier, Semicolon)
+                tlc::parse::match(integer10Literal, identifier, semicolon)
             );
             REQUIRE(result);
             REQUIRE(result.value().size() == 1);
-            REQUIRE(result.value().front().type() == tlc::token::EToken::Integer10Literal);
+            REQUIRE(result.value().front().lexeme() == integer10Literal);
         }
         {
             auto const result = invoke(
-                tlc::parse::match(Integer10Literal, Semicolon)
+                tlc::parse::match(integer10Literal, semicolon)
             );
             REQUIRE(result);
             REQUIRE(result.value().size() == 1);
-            REQUIRE(result.value().front().type() == tlc::token::EToken::Semicolon);
+            REQUIRE(result.value().front().lexeme() == semicolon);
         }
         {
             auto const result = invoke(
-                tlc::parse::match(Integer10Literal, Semicolon)
+                tlc::parse::match(integer10Literal, semicolon)
             );
             REQUIRE_FALSE(result);
         }
@@ -93,7 +92,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Match", "[Parse][ParserCombinator]") {
         initialize("x");
 
         static auto const predicate =
-            [](auto type) static { return type == Identifier; };
+            [](auto type) static { return type == identifier; };
 
         auto result = invoke(
             tlc::parse::match(predicate)
@@ -101,7 +100,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Match", "[Parse][ParserCombinator]") {
 
         REQUIRE(result);
         REQUIRE(result.value().size() == 1);
-        REQUIRE(result.value().front().type() == tlc::token::EToken::Identifier);
+        REQUIRE(result.value().front().lexeme() == identifier);
         REQUIRE(result.value().front().str() == "x");
 
         initialize("525");
@@ -115,20 +114,20 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Match", "[Parse][ParserCombinator]") {
 }
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 0", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
+    using namespace tlc::lexeme;
 
     SECTION("Consumes all tokens") {
         initialize("x y z t");
 
         auto const result = invoke(
-            tlc::parse::many0(tlc::parse::match(Identifier))
+            tlc::parse::many0(tlc::parse::match(identifier))
         );
         REQUIRE(result);
         REQUIRE(result.value().size() == 4);
 
         REQUIRE(tlc::rng::all_of(
-            *result, [](auto const& token) {
-            return token.type() == Identifier;
+            *result, [&](auto const& token) {
+            return token.lexeme() == identifier;
             }
         ));
 
@@ -147,7 +146,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 0", "[Parse][ParserCombinator]
         initialize("x y z t");
 
         auto const result = invoke(
-            tlc::parse::many0(tlc::parse::match(Integer10Literal))
+            tlc::parse::many0(tlc::parse::match(integer10Literal))
         );
         REQUIRE(result);
         REQUIRE(result.value().size() == 0);
@@ -160,14 +159,14 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 0", "[Parse][ParserCombinator]
         initialize("x y z 555 x");
 
         auto const result = invoke(
-            tlc::parse::many0(tlc::parse::match(Identifier))
+            tlc::parse::many0(tlc::parse::match(identifier))
         );
         REQUIRE(result);
         REQUIRE(result.value().size() == 3);
 
         REQUIRE(tlc::rng::all_of(
-            *result, [](auto const& token) {
-            return token.type() == Identifier;
+            *result, [&](auto const& token) {
+            return token.lexeme() == identifier;
             }
         ));
 
@@ -184,20 +183,20 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 0", "[Parse][ParserCombinator]
 }
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 1", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
+    using namespace tlc::lexeme;
 
     SECTION("Consumes all tokens") {
         initialize("5 26 777 0");
 
         auto const result = invoke(
-            tlc::parse::many1(tlc::parse::match(Integer10Literal))
+            tlc::parse::many1(tlc::parse::match(integer10Literal))
         );
         REQUIRE(result);
         REQUIRE(result.value().size() == 4);
 
         REQUIRE(tlc::rng::all_of(
-            *result, [](auto const& token) {
-            return token.type() == Integer10Literal;
+            *result, [&](auto const& token) {
+            return token.lexeme() == integer10Literal;
             }
         ));
 
@@ -216,7 +215,7 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 1", "[Parse][ParserCombinator]
         initialize("x y z t");
 
         auto const result = invoke(
-            tlc::parse::many1(tlc::parse::match(Integer10Literal))
+            tlc::parse::many1(tlc::parse::match(integer10Literal))
         );
         REQUIRE_FALSE(result);
 
@@ -226,22 +225,22 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Many or 1", "[Parse][ParserCombinator]
 }
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator: Any", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
+    using namespace tlc::lexeme;
 
     SECTION("Success") {
         initialize("525");
 
         auto const result = invoke(
             tlc::parse::any(
-                tlc::parse::many1(tlc::parse::match(Identifier)),
-                tlc::parse::match(Integer10Literal)
+                tlc::parse::many1(tlc::parse::match(identifier)),
+                tlc::parse::match(integer10Literal)
             )
         );
 
         REQUIRE(result);
         REQUIRE(result.value().size() == 1);
         REQUIRE(result.value().front().str() == "525");
-        REQUIRE(result.value().front().type() == Integer10Literal);
+        REQUIRE(result.value().front().lexeme() == integer10Literal);
         REQUIRE(stream().current().str() == "525");
     }
 
@@ -250,8 +249,8 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Any", "[Parse][ParserCombinator]") {
 
         auto const result = invoke(
             tlc::parse::any(
-                tlc::parse::many1(tlc::parse::match(Identifier)),
-                tlc::parse::match(Integer10Literal)
+                tlc::parse::many1(tlc::parse::match(identifier)),
+                tlc::parse::match(integer10Literal)
             )
         );
 
@@ -261,16 +260,16 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Any", "[Parse][ParserCombinator]") {
 }
 
 TEST_CASE_WITH_FIXTURE("ParserCombinator: Sequence", "[Parse][ParserCombinator]") {
-    using enum tlc::token::EToken;
+    using namespace tlc::lexeme;
 
     SECTION("Success") {
         initialize("x = 525;");
 
         auto const result = invoke(
             tlc::parse::seq(
-                tlc::parse::match(Identifier),
-                tlc::parse::match(Equal),
-                tlc::parse::match(Integer10Literal)
+                tlc::parse::match(identifier),
+                tlc::parse::match(equal),
+                tlc::parse::match(integer10Literal)
             )
         );
 
@@ -278,10 +277,11 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Sequence", "[Parse][ParserCombinator]"
         REQUIRE(result.value().size() == 3);
 
         REQUIRE(tlc::rng::equal(
-            *result | tlc::rv::transform([](auto const& token) {
-                return token.type();
+            *result | tlc::rv::transform(
+                [](auto const& token) -> Lexeme {
+                return token.lexeme();
                 }),
-            tlc::Vec{Identifier, Equal, Integer10Literal}
+            tlc::Vec{identifier, equal, integer10Literal}
         ));
 
         REQUIRE(tlc::rng::equal(
@@ -299,9 +299,9 @@ TEST_CASE_WITH_FIXTURE("ParserCombinator: Sequence", "[Parse][ParserCombinator]"
 
         auto const result = invoke(
             tlc::parse::seq(
-                tlc::parse::match(Identifier),
-                tlc::parse::match(Equal),
-                tlc::parse::match(Identifier)
+                tlc::parse::match(identifier),
+                tlc::parse::match(equal),
+                tlc::parse::match(identifier)
             )
         );
 
@@ -319,12 +319,12 @@ TEST_CASE_WITH_FIXTURE(
     "ParserCombinator: Combinator for identifier literals",
     "[Parse][ParserCombinator][Fixed]"
 ) {
-    using enum tlc::token::EToken;
-    using namespace tlc::parse;
+    using namespace tlc::lexeme;
+    using namespace tlc;
 
-    static auto parser = seq(
-        many0(seq(match(Identifier), match(Colon2))),
-        match(Identifier, FundamentalType, UserDefinedType)
+    static auto parser = parse::seq(
+        parse::many0(parse::seq(parse::match(identifier), parse::match(colon2))),
+        parse::match(identifier, fundamentalType, userDefinedType)
     );
 
     SECTION("Imported identifier") {
@@ -349,6 +349,6 @@ TEST_CASE_WITH_FIXTURE(
         REQUIRE(result);
         REQUIRE(result.value().size() == 1);
         REQUIRE(result.value().front().str() == "foo");
-        REQUIRE(result.value().front().type() == Identifier);
+        REQUIRE(result.value().front().lexeme() == identifier);
     }
 }

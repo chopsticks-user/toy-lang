@@ -47,12 +47,12 @@ namespace tlc::syntax {
         Prefix, Postfix, Binary, Ternary
     };
 
-    auto isPrefixOperator(token::EToken type) -> bool;
-    auto isPostfixStart(token::EToken type) -> bool;
-    auto isBinaryOperator(token::EToken type) -> bool;
-    auto opPrecedence(token::EToken tokenType, EOperator opType) -> OpPrecedence;
-    auto isLeftAssociative(token::EToken type) -> bool;
-    auto isAssignmentOperator(token::EToken type) -> bool;
+    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool;
+    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool;
+    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool;
+    auto opPrecedence(lexeme::Lexeme const& lexeme, EOperator opType) -> OpPrecedence;
+    auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> bool;
+    auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> bool;
 
     // const HashSet<Str> assignmentOps = {
     //   "=", "+=", "-=", "*=", "/=", "%=", "**=",

@@ -1,8 +1,6 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    using enum token::EToken;
-
     auto Parse::handleType() -> ParseResult { // NOLINT(*-no-recursion)
         pushCoords();
 
@@ -24,11 +22,11 @@ namespace tlc::parse {
 
         m_stream.markBacktrack();
         while (true) {
-            if (m_stream.peek().type() == LeftBracket) {
+            if (m_stream.peek().lexeme() == lexeme::leftBracket) {
                 Vec<syntax::Node> dimSizes;
-                while (m_stream.match(LeftBracket)) {
+                while (m_stream.match(lexeme::leftBracket)) {
                     dimSizes.emplace_back(handleExpr().value_or({}));
-                    if (!m_stream.match(RightBracket)) {
+                    if (!m_stream.match(lexeme::rightBracket)) {
                         collect({
                             .location = m_stream.current().coords(),
                             .context = EParseErrorContext::Array,
@@ -39,7 +37,7 @@ namespace tlc::parse {
                 }
                 lhs = syntax::type::Array{*lhs, dimSizes, currentCoords()};
             }
-            else if (m_stream.match(MinusGreater)) {
+            else if (m_stream.match(lexeme::minusGreater)) {
                 auto fnResultType = handleType()
                     .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
@@ -63,21 +61,21 @@ namespace tlc::parse {
 
     auto Parse::handleTypeIdentifier() -> ParseResult {
         return seq(
-            many0(seq(match(Identifier), match(Colon2))),
-            match(FundamentalType, UserDefinedType)
+            many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
+            match(lexeme::fundamentalType, lexeme::userDefinedType)
         )(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
                     | rv::filter([](auto&& token) {
-                        return token.type() == Identifier;
+                        return token.lexeme() == lexeme::identifier;
                     })
                     | rv::transform([](auto&& token) { return token.str(); })
                     | rng::to<Vec<Str>>();
                 path.push_back(Str{tokens.back().str()});
                 return syntax::type::Identifier{
                     std::move(path),
-                    m_stream.current().type() == FundamentalType,
+                    m_stream.current().lexeme() == lexeme::fundamentalType,
                     tokens.front().coords()
                 };
             }
@@ -85,12 +83,12 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeTuple() -> ParseResult {
-        return match(LeftParen)(m_stream, m_tracker).and_then(
+        return match(lexeme::leftParen)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 Vec<syntax::Node> types;
 
-                if (m_stream.match(RightParen)) {
+                if (m_stream.match(lexeme::rightParen)) {
                     return syntax::type::Tuple{
                         std::move(types), std::move(coords)
                     };
@@ -109,9 +107,9 @@ namespace tlc::parse {
                         )
                     );
                 }
-                while (m_stream.match(Comma));
+                while (m_stream.match(lexeme::comma));
 
-                if (!m_stream.match(RightParen)) {
+                if (!m_stream.match(lexeme::rightParen)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Tuple,
@@ -128,12 +126,12 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeInfer() -> ParseResult {
-        return seq(match(LeftBracket), match(LeftBracket))
+        return seq(match(lexeme::leftBracket), match(lexeme::leftBracket))
             (m_stream, m_tracker).and_then([this](auto const&)
                 -> ParseResult {
                     return handleExpr().and_then([this](auto const& expr)
                         -> ParseResult {
-                            if (!seq(match(RightBracket), match(RightBracket))
+                            if (!seq(match(lexeme::rightBracket), match(lexeme::rightBracket))
                                 (m_stream, m_tracker)) {
                                 collect({
                                     .location = m_stream.current().coords(),

@@ -1,8 +1,6 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    using enum token::EToken;
-
     auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
         pushCoords();
         ParseResult lhs;
@@ -10,7 +8,7 @@ namespace tlc::parse {
         // todo: consider requiring parenthesis around each prefix expressions
         // to avoid ambiguity
         if (m_stream.match(syntax::isPrefixOperator)) {
-            auto const op = m_stream.current().type();
+            auto const op = m_stream.current().lexeme();
             auto const coords =
                 m_stream.current().coords();
             lhs = handleExpr(
@@ -32,10 +30,10 @@ namespace tlc::parse {
 
         m_stream.markBacktrack();
         while (true) {
-            if (syntax::isPostfixStart(m_stream.peek().type())) {
-                if (m_stream.match(Dot)) {
+            if (syntax::isPostfixStart(m_stream.peek().lexeme())) {
+                if (m_stream.match(lexeme::dot)) {
                     auto field = [this] -> Str {
-                        if (m_stream.match(Identifier)) {
+                        if (m_stream.match(lexeme::identifier)) {
                             return m_stream.current().str();
                         }
                         collect({
@@ -61,7 +59,7 @@ namespace tlc::parse {
                 }
             }
             else if (m_stream.match(syntax::isBinaryOperator)) {
-                auto const op = m_stream.current().type();
+                auto const op = m_stream.current().lexeme();
                 auto const p = syntax::opPrecedence(
                     op, syntax::EOperator::Binary
                 );
@@ -81,7 +79,7 @@ namespace tlc::parse {
                 });
             }
             // todo: ternary
-            else if (m_stream.match(QMark)) {}
+            else if (m_stream.match(lexeme::qMark)) {}
             else {
                 break;
             }
@@ -112,33 +110,34 @@ namespace tlc::parse {
     }
 
     auto Parse::handleSingleTokenLiteral() -> ParseResult {
-        static const HashMap<token::EToken, i32> baseTable = {
-            {Integer2Literal, 2}, {Integer8Literal, 8},
-            {Integer10Literal, 10}, {Integer16Literal, 16},
+        static const HashMap<lexeme::Lexeme, i32> baseTable = {
+            {lexeme::integer2Literal, 2}, {lexeme::integer8Literal, 8},
+            {lexeme::integer10Literal, 10}, {lexeme::integer16Literal, 16},
         };
 
         return match(
-            Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
-            FloatLiteral, True, False
+            lexeme::integer2Literal, lexeme::integer8Literal,
+            lexeme::integer10Literal, lexeme::integer16Literal,
+            lexeme::floatLiteral, lexeme::true_, lexeme::false_
         )(m_stream, m_tracker).and_then([this](const auto& tokens)
             -> ParseResult {
-                switch (tokens.front().type()) {
-                case FloatLiteral:
+                switch (tokens.front().lexeme().type()) {
+                case lexeme::Lexeme::FloatLiteral:
                     return syntax::expr::Float{
                         std::stod(tokens.front().str()),
                         tokens.front().coords()
                     };
-                case True:
-                case False:
+                case lexeme::Lexeme::True:
+                case lexeme::Lexeme::False:
                     return syntax::expr::Boolean{
-                        tokens.front().type() == True,
+                        tokens.front().lexeme() == lexeme::true_,
                         tokens.front().coords()
                     };
                 default:
                     return syntax::expr::Integer{
                         std::stoll(
                             tokens.front().str(), nullptr,
-                            baseTable.at(tokens.front().type())
+                            baseTable.at(tokens.front().lexeme())
                         ),
                         tokens.front().coords()
                     };
@@ -148,20 +147,20 @@ namespace tlc::parse {
     }
 
     auto Parse::handleIdentifierLiteral() -> ParseResult {
-        if (m_stream.match(AnonymousIdentifier)) {
+        if (m_stream.match(lexeme::anonymousIdentifier)) {
             return syntax::expr::Identifier{
                 {m_stream.current().str()}, m_stream.current().coords()
             };
         }
         return seq(
-            many0(seq(match(Identifier), match(Colon2))),
-            match(Identifier)
+            many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
+            match(lexeme::identifier)
         )(m_stream, m_tracker).and_then([this](auto const& tokens)
             -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
                     | rv::filter([](auto&& token) {
-                        return token.type() == Identifier;
+                        return token.lexeme() == lexeme::identifier;
                     })
                     | rv::transform([](auto&& token) { return token.str(); })
                     | rng::to<Vec<Str>>();
@@ -174,7 +173,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTupleExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        if (!m_stream.match(LeftParen)) {
+        if (!m_stream.match(lexeme::leftParen)) {
             return defaultError();
         }
 
@@ -182,7 +181,7 @@ namespace tlc::parse {
         Vec<syntax::Node> elements;
 
         // ()
-        if (m_stream.match(RightParen)) {
+        if (m_stream.match(lexeme::rightParen)) {
             return syntax::expr::Tuple{std::move(elements), std::move(coords)};
         }
 
@@ -205,9 +204,9 @@ namespace tlc::parse {
                     })
             );
         }
-        while (m_stream.match(Comma));
+        while (m_stream.match(lexeme::comma));
 
-        if (!m_stream.match(RightParen)) {
+        if (!m_stream.match(lexeme::rightParen)) {
             collect({
                 .location = m_stream.current().coords(),
                 .context = EParseErrorContext::Tuple,
@@ -219,7 +218,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleArrayExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        if (!m_stream.match(LeftBracket)) {
+        if (!m_stream.match(lexeme::leftBracket)) {
             return defaultError();
         }
 
@@ -227,7 +226,7 @@ namespace tlc::parse {
         Vec<syntax::Node> elements;
 
         // []
-        if (m_stream.match(RightBracket)) {
+        if (m_stream.match(lexeme::rightBracket)) {
             return syntax::expr::Array{std::move(elements), std::move(coords)};
         }
 
@@ -251,9 +250,9 @@ namespace tlc::parse {
                     })
             );
         }
-        while (m_stream.match(Comma));
+        while (m_stream.match(lexeme::comma));
 
-        if (!m_stream.match(RightBracket)) {
+        if (!m_stream.match(lexeme::rightBracket)) {
             collect({
                 .location = m_stream.current().coords(),
                 .context = EParseErrorContext::Tuple,
@@ -269,14 +268,14 @@ namespace tlc::parse {
         auto coords = m_stream.peek().coords();
 
         auto type = handleTypeIdentifier();
-        if (!type || !m_stream.match(LeftBrace)) {
+        if (!type || !m_stream.match(lexeme::leftBrace)) {
             m_stream.backtrack();
             return defaultError();
         }
 
         Vec<Pair<Str, syntax::Node>> entries;
 
-        if (m_stream.match(RightBrace)) {
+        if (m_stream.match(lexeme::rightBrace)) {
             return syntax::expr::Record{
                 std::move(*type), std::move(entries), std::move(coords)
             };
@@ -284,7 +283,7 @@ namespace tlc::parse {
 
         do {
             Str key;
-            if (!m_stream.match(Identifier)) {
+            if (!m_stream.match(lexeme::identifier)) {
                 collect({
                     .location = m_stream.current().coords(),
                     .context = EParseErrorContext::Record,
@@ -295,7 +294,7 @@ namespace tlc::parse {
                 key = m_stream.current().str();
             }
 
-            if (!m_stream.match(Colon)) {
+            if (!m_stream.match(lexeme::colon)) {
                 collect({
                     .location = m_stream.current().coords(),
                     .context = EParseErrorContext::Record,
@@ -316,9 +315,9 @@ namespace tlc::parse {
 
             entries.emplace_back(std::move(key), std::move(value));
         }
-        while (m_stream.match(Comma));
+        while (m_stream.match(lexeme::comma));
 
-        if (!m_stream.match(RightBrace)) {
+        if (!m_stream.match(lexeme::rightBrace)) {
             collect({
                 .location = coords,
                 .context = EParseErrorContext::Record,

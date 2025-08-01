@@ -1,8 +1,6 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    using enum token::EToken;
-
     auto Parse::handleStmtLevelDecl() -> ParseResult {
         return handleTupleDecl().or_else([this](auto&& error) -> ParseResult {
             collect(error);
@@ -12,13 +10,13 @@ namespace tlc::parse {
 
     auto Parse::handleIdentifierDecl() -> ParseResult {
         pushCoords();
-        auto const constant = !m_stream.match(Dollar);
+        auto const constant = !m_stream.match(lexeme::dollar);
 
-        return match(Identifier)(m_stream, m_tracker).and_then(
+        return match(lexeme::identifier)(m_stream, m_tracker).and_then(
             [this, constant](auto const& tokens) -> ParseResult {
                 auto name = tokens.front().str();
 
-                if (!m_stream.match(Colon)) {
+                if (!m_stream.match(lexeme::colon)) {
                     return syntax::decl::Identifier{
                         constant, tokens.front().str(), {}, popCoords()
                     };
@@ -48,12 +46,12 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTupleDecl() -> ParseResult {
-        return match(LeftParen)(m_stream, m_tracker).and_then(
+        return match(lexeme::leftParen)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 Vec<syntax::Node> decls;
 
-                if (m_stream.match(RightParen)) {
+                if (m_stream.match(lexeme::rightParen)) {
                     return syntax::decl::Tuple{
                         std::move(decls), std::move(coords)
                     };
@@ -72,9 +70,9 @@ namespace tlc::parse {
                         )
                     );
                 }
-                while (m_stream.match(Comma));
+                while (m_stream.match(lexeme::comma));
 
-                if (!m_stream.match(RightParen)) {
+                if (!m_stream.match(lexeme::rightParen)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Tuple,

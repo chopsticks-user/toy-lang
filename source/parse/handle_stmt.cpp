@@ -1,8 +1,6 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    using enum token::EToken;
-
     auto Parse::handleStmt() -> ParseResult {
         if (auto returnStmt = handleReturnStmt(); returnStmt) {
             return returnStmt;
@@ -36,22 +34,24 @@ namespace tlc::parse {
     }
 
     auto Parse::handleLetStmt() -> ParseResult {
-        return match(Let)(m_stream, m_tracker).and_then(
+        return match(lexeme::let)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 [[maybe_unused]] auto coords = tokens.front().coords();
 
-                auto decl = *parseDecl().or_else([this](auto&& error) -> ParseResult {
-                    collect(error);
-                    collect({
-                        .location = m_stream.current().coords(),
-                        .context = EParseErrorContext::Stmt,
-                        .reason = EParseErrorReason::MissingDecl,
-                    });
-                    return {};
-                });
+                auto decl = *parseDecl().or_else(
+                    [this](auto&& error) -> ParseResult {
+                        collect(error);
+                        collect({
+                            .location = m_stream.current().coords(),
+                            .context = EParseErrorContext::Stmt,
+                            .reason = EParseErrorReason::MissingDecl,
+                        });
+                        return {};
+                    }
+                );
 
                 auto initializer =
-                    *match(Equal)(m_stream, m_tracker)
+                    *match(lexeme::equal)(m_stream, m_tracker)
                      .and_then([this](auto) -> ParseResult {
                          return *parseExpr().or_else([this](auto&& error) -> ParseResult {
                              collect(error);
@@ -59,7 +59,7 @@ namespace tlc::parse {
                          });
                      }).or_else([this](auto) -> ParseResult { return {}; });
 
-                if (!m_stream.match(Semicolon)) {
+                if (!m_stream.match(lexeme::semicolon)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Stmt,
@@ -75,7 +75,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleReturnStmt() -> ParseResult {
-        return match(Return)(m_stream, m_tracker).and_then(
+        return match(lexeme::return_)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
 
@@ -87,7 +87,7 @@ namespace tlc::parse {
                     std::move(coords),
                 };
 
-                if (!m_stream.match(Semicolon)) {
+                if (!m_stream.match(lexeme::semicolon)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Stmt,
@@ -105,7 +105,7 @@ namespace tlc::parse {
         return handleExpr().and_then([this](auto&& expr)
             -> ParseResult {
                 if (m_stream.match(syntax::isAssignmentOperator)) {
-                    auto const op = m_stream.current().type();
+                    auto const op = m_stream.current().lexeme();
                     expr = syntax::stmt::Assign{
                         expr, *handleExpr().or_else(
                             [this](auto&& error) -> ParseResult {
@@ -121,7 +121,7 @@ namespace tlc::parse {
                         op, popCoords()
                     };
                 }
-                else if (m_stream.match(EqualGreater)) {
+                else if (m_stream.match(lexeme::equalGreater)) {
                     expr = syntax::stmt::Conditional{
                         expr, *handleStmt().or_else(
                             [this](auto&& error) -> ParseResult {
@@ -141,7 +141,7 @@ namespace tlc::parse {
                     expr = syntax::stmt::Expression{expr, popCoords()};
                 }
 
-                if (!m_stream.match(Semicolon)) {
+                if (!m_stream.match(lexeme::semicolon)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Stmt,
@@ -153,7 +153,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleLoopStmt() -> ParseResult {
-        return match(For)(m_stream, m_tracker).and_then(
+        return match(lexeme::for_)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 auto decl = *handleStmtLevelDecl().or_else(
@@ -167,7 +167,7 @@ namespace tlc::parse {
                         return {};
                     }
                 );
-                if (!m_stream.match(In)) {
+                if (!m_stream.match(lexeme::in)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::LoopStmt,
@@ -205,7 +205,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleMatchStmt() -> ParseResult {
-        return match(Match)(m_stream, m_tracker).and_then(
+        return match(lexeme::match)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 auto expr = *handleExpr().or_else(
@@ -222,7 +222,7 @@ namespace tlc::parse {
 
                 Vec<syntax::Node> cases;
                 syntax::Node defaultStmt; // only the last default statement is considered
-                if (!m_stream.match(LeftBrace)) {
+                if (!m_stream.match(lexeme::leftBrace)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::MatchStmt,
@@ -232,9 +232,9 @@ namespace tlc::parse {
                         std::move(expr), {}, {}, std::move(coords)
                     };
                 }
-                while (!m_stream.match(RightBrace)) {
-                    if (m_stream.match(AnonymousIdentifier)) {
-                        if (!m_stream.match(EqualGreater)) {
+                while (!m_stream.match(lexeme::rightBrace)) {
+                    if (m_stream.match(lexeme::anonymousIdentifier)) {
+                        if (!m_stream.match(lexeme::equalGreater)) {
                             collect({
                                 .location = m_stream.current().coords(),
                                 .context = EParseErrorContext::MatchCaseDefaultStmt,
@@ -263,7 +263,7 @@ namespace tlc::parse {
                         }
                     );
                     auto cond =
-                        match(When)(m_stream, m_tracker)
+                        match(lexeme::when)(m_stream, m_tracker)
                         .and_then(
                             [this](auto&&) -> ParseResult {
                                 return handleExpr().or_else(
@@ -278,7 +278,7 @@ namespace tlc::parse {
                                     });
                             }
                         ).value_or({});
-                    if (!m_stream.match(EqualGreater)) {
+                    if (!m_stream.match(lexeme::equalGreater)) {
                         collect({
                             .location = m_stream.current().coords(),
                             .context = EParseErrorContext::MatchCaseStmt,
@@ -301,7 +301,7 @@ namespace tlc::parse {
                     });
                 }
 
-                if (m_stream.current().type() != RightBrace) {
+                if (m_stream.current().lexeme() != lexeme::rightBrace) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::MatchStmt,
@@ -317,12 +317,12 @@ namespace tlc::parse {
     }
 
     auto Parse::handleBlockStmt() -> ParseResult {
-        return match(LeftBrace)(m_stream, m_tracker).and_then(
+        return match(lexeme::leftBrace)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 [[maybe_unused]] auto coords = tokens.front().coords();
 
                 Vec<syntax::Node> statements;
-                while (!m_stream.match(RightBrace)) {
+                while (!m_stream.match(lexeme::rightBrace)) {
                     statements.push_back(*parseStmt()
                         .or_else([this](auto&& error) -> ParseResult {
                             collect(error);
@@ -336,7 +336,7 @@ namespace tlc::parse {
                     );
                 }
 
-                if (m_stream.current().type() != LeftBrace) {
+                if (m_stream.current().lexeme() != lexeme::leftBrace) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::BlockStmt,
@@ -352,7 +352,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleDeferStmt() -> ParseResult {
-        return match(Defer)(m_stream, m_tracker)
+        return match(lexeme::defer)(m_stream, m_tracker)
             .and_then([this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 return syntax::stmt::Defer{
@@ -373,7 +373,7 @@ namespace tlc::parse {
 
 
     auto Parse::handlePrefaceStmt() -> ParseResult {
-        return match(Preface)(m_stream, m_tracker)
+        return match(lexeme::preface)(m_stream, m_tracker)
             .and_then([this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
                 return syntax::stmt::Preface{
@@ -393,7 +393,7 @@ namespace tlc::parse {
     }
 
     auto Parse::handleYieldStmt() -> ParseResult {
-        return match(Yield)(m_stream, m_tracker).and_then(
+        return match(lexeme::yield)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto coords = tokens.front().coords();
 
@@ -410,7 +410,7 @@ namespace tlc::parse {
                     std::move(coords),
                 };
 
-                if (!m_stream.match(Semicolon)) {
+                if (!m_stream.match(lexeme::semicolon)) {
                     collect({
                         .location = m_stream.current().coords(),
                         .context = EParseErrorContext::Stmt,

@@ -84,22 +84,22 @@ namespace tlc::syntax {
         };
 
         struct Prefix final : detail::NodeBase {
-            Prefix(Node operand, token::EToken op, Location coords);
+            Prefix(Node operand, lexeme::Lexeme op, Location coords);
 
-            [[nodiscard]] auto op() const noexcept -> token::EToken {
+            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
 
             [[nodiscard]] auto operand() const noexcept -> Node;
 
         private:
-            token::EToken m_op;
+            lexeme::Lexeme m_op;
         };
 
         struct Binary final : detail::NodeBase {
-            Binary(Node lhs, Node rhs, token::EToken op, Location coords);
+            Binary(Node lhs, Node rhs, lexeme::Lexeme op, Location coords);
 
-            [[nodiscard]] auto op() const noexcept -> token::EToken {
+            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
 
@@ -108,7 +108,7 @@ namespace tlc::syntax {
             [[nodiscard]] auto right() const noexcept -> Node;
 
         private:
-            token::EToken m_op;
+            lexeme::Lexeme m_op;
         };
 
         // struct String final : detail::NodeBase {
@@ -429,14 +429,14 @@ namespace tlc::syntax {
         };
 
         struct Assign final : detail::NodeBase {
-            Assign(Node lhs, Node rhs, token::EToken op, Location coords);
+            Assign(Node lhs, Node rhs, lexeme::Lexeme op, Location coords);
 
-            [[nodiscard]] auto op() const noexcept -> token::EToken {
+            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
 
         private:
-            token::EToken m_op;
+            lexeme::Lexeme m_op;
         };
 
         struct Expression final : detail::NodeBase {

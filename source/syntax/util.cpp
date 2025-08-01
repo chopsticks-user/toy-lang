@@ -7,123 +7,92 @@ namespace tlc::syntax {
     }
 
     static const HashSet prefixOps = {
-        token::EToken::Exclaim,
-        token::EToken::Tilde,
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Hash,
-        token::EToken::Dot3,
+        lexeme::exclaim, lexeme::tilde, lexeme::plus,
+        lexeme::minus, lexeme::hash, lexeme::dot3,
     };
 
-    auto isPrefixOperator(token::EToken const type) -> bool {
-        return prefixOps.contains(type);
+    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return prefixOps.contains(lexeme);
     }
 
     static const HashSet postfixStart = {
-        token::EToken::Dot,
-        token::EToken::LeftParen,
-        token::EToken::LeftBracket,
-        // token::EToken::LeftBrace,
+        lexeme::dot, lexeme::leftParen, lexeme::leftBracket,
     };
 
-    auto isPostfixStart(token::EToken const type) -> bool {
-        return postfixStart.contains(type);
+    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
+        return postfixStart.contains(lexeme);
     }
 
     static const HashSet binaryOps = {
-        token::EToken::Star2,
-        token::EToken::Star,
-        token::EToken::FwdSlash,
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Greater2,
-        token::EToken::Less2,
-        token::EToken::Less,
-        token::EToken::Greater,
-        token::EToken::LessEqual,
-        token::EToken::GreaterEqual,
-        token::EToken::Equal2,
-        token::EToken::ExclaimEqual,
-        token::EToken::Ampersand,
-        token::EToken::Hat,
-        token::EToken::Bar,
-        token::EToken::Ampersand2,
-        token::EToken::Bar2,
+        lexeme::star2, lexeme::star, lexeme::fwdSlash, lexeme::plus,
+        lexeme::minus, lexeme::greater2, lexeme::less2, lexeme::less,
+        lexeme::greater, lexeme::lessEqual, lexeme::greaterEqual,
+        lexeme::equal2, lexeme::exclaimEqual, lexeme::ampersand,
+        lexeme::hat, lexeme::bar, lexeme::ampersand2, lexeme::bar2,
     };
 
-    auto isBinaryOperator(token::EToken const type) -> bool {
-        return binaryOps.contains(type);
+    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryOps.contains(lexeme);
     }
 
-    static const HashMap<token::EToken, OpPrecedence>
+    static const HashMap<lexeme::Lexeme, OpPrecedence>
     prefixOpPrecedenceTable = {
-        {token::EToken::Exclaim, 40},
-        {token::EToken::Tilde, 41},
-        {token::EToken::Plus, 42},
-        {token::EToken::Minus, 43},
-        {token::EToken::Hash, 44},
-        {token::EToken::Dot3, 45},
+        {lexeme::exclaim, 40},
+        {lexeme::tilde, 41},
+        {lexeme::plus, 42},
+        {lexeme::minus, 43},
+        {lexeme::hash, 44},
+        {lexeme::dot3, 45},
     };
 
-    static const HashMap<token::EToken, OpPrecedence>
+    static const HashMap<lexeme::Lexeme, OpPrecedence>
     binaryOpPrecedenceTable = {
-        {token::EToken::Bar2, 10},
-        {token::EToken::Ampersand2, 12},
-        {token::EToken::Bar, 14},
-        {token::EToken::Hat, 16},
-        {token::EToken::Ampersand, 18},
-        {token::EToken::ExclaimEqual, 20},
-        {token::EToken::Equal2, 20},
-        {token::EToken::GreaterEqual, 22},
-        {token::EToken::LessEqual, 22},
-        {token::EToken::Greater, 22},
-        {token::EToken::Less, 22},
-        {token::EToken::Less2, 24},
-        {token::EToken::Greater2, 24},
-        {token::EToken::Minus, 26},
-        {token::EToken::Plus, 26},
-        {token::EToken::FwdSlash, 28},
-        {token::EToken::Star, 28},
-        {token::EToken::Star2, 30},
+        {lexeme::bar2, 10},
+        {lexeme::ampersand2, 12},
+        {lexeme::bar, 14},
+        {lexeme::hat, 16},
+        {lexeme::ampersand, 18},
+        {lexeme::exclaimEqual, 20},
+        {lexeme::equal2, 20},
+        {lexeme::greaterEqual, 22},
+        {lexeme::lessEqual, 22},
+        {lexeme::greater, 22},
+        {lexeme::less, 22},
+        {lexeme::less2, 24},
+        {lexeme::greater2, 24},
+        {lexeme::minus, 26},
+        {lexeme::plus, 26},
+        {lexeme::fwdSlash, 28},
+        {lexeme::star, 28},
+        {lexeme::star2, 30},
     };
 
     auto opPrecedence(
-        token::EToken const tokenType, EOperator const opType
+        lexeme::Lexeme const& lexeme, EOperator const opType
     ) -> OpPrecedence {
         switch (opType) {
-        case EOperator::Prefix: return prefixOpPrecedenceTable.at(tokenType);
-        case EOperator::Binary: return binaryOpPrecedenceTable.at(tokenType);
+        case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
+        case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
         default: return 0;
         }
     }
 
     static const HashSet leftAssociativeOps = {
-        token::EToken::Plus,
-        token::EToken::Minus,
-        token::EToken::Star,
-        token::EToken::FwdSlash,
+        lexeme::plus, lexeme::minus, lexeme::star, lexeme::fwdSlash,
     };
 
-    auto isLeftAssociative(token::EToken const type) -> b8 {
-        return leftAssociativeOps.contains(type);
+    auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
+        return leftAssociativeOps.contains(lexeme);
     }
 
     static const HashSet assignmentOps = {
-        token::EToken::Equal,
-        token::EToken::PlusEqual,
-        token::EToken::MinusEqual,
-        token::EToken::StarEqual,
-        token::EToken::FwdSlashEqual,
-        token::EToken::PercentEqual,
-        token::EToken::Star2Equal,
-        token::EToken::AmpersandEqual,
-        token::EToken::BarEqual,
-        token::EToken::HatEqual,
-        token::EToken::Less2Equal,
-        token::EToken::Greater2Equal,
+        lexeme::equal, lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
+        lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
+        lexeme::ampersandEqual, lexeme::barEqual, lexeme::hatEqual,
+        lexeme::less2Equal, lexeme::greater2Equal,
     };
 
-    auto isAssignmentOperator(token::EToken const type) -> b8 {
-        return assignmentOps.contains(type);
+    auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
+        return assignmentOps.contains(lexeme);
     }
 }

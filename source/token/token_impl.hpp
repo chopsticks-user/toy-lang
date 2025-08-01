@@ -7,11 +7,11 @@
 namespace tlc::token {
     class Token final {
     public:
-        Token(EToken const type, StrV const str, Location coords)
-            : m_type{type}, m_str{str}, m_coords{std::move(coords)} {}
+        Token(lexeme::Lexeme type, StrV const str, Location coords)
+            : m_lexeme{std::move(type)}, m_str{str}, m_coords{std::move(coords)} {}
 
-        [[nodiscard]] auto type() const noexcept -> EToken {
-            return m_type;
+        [[nodiscard]] auto lexeme() const noexcept -> lexeme::Lexeme {
+            return m_lexeme;
         }
 
         [[nodiscard]] auto str() const noexcept -> Str {
@@ -31,7 +31,7 @@ namespace tlc::token {
         }
 
     private:
-        EToken m_type;
+        lexeme::Lexeme m_lexeme;
         Str m_str;
         Location m_coords;
     };

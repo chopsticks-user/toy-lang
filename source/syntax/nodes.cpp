@@ -76,7 +76,7 @@ namespace tlc::syntax {
         }
 
         Prefix::Prefix(
-            Node operand, token::EToken const op, Location coords
+            Node operand, lexeme::Lexeme const op, Location coords
         ): NodeBase{{std::move(operand)}, std::move(coords)},
            m_op{op} {}
 
@@ -85,7 +85,7 @@ namespace tlc::syntax {
         }
 
         Binary::Binary(
-            Node lhs, Node rhs, token::EToken const op, Location coords
+            Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
         ) : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
             m_op{op} {}
 
@@ -326,7 +326,7 @@ namespace tlc::syntax {
     }
 
     stmt::Assign::Assign(
-        Node lhs, Node rhs, token::EToken const op, Location coords
+        Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
     ): NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
        m_op{op} {}
 
