@@ -27,17 +27,22 @@ namespace tlc::lex {
         auto lexNondecimalNumeric() -> void;
         auto lexNumeric() -> void;
         auto lexSymbol() -> void;
+        auto lexString() -> void;
 
     private:
         auto classifyIdentifier(StrV lexeme) -> void;
 
-        auto markTokenCoords() -> void {
+        auto markTokenLocation() -> void {
             m_tokenLine = m_stream.line();
             m_tokenColumn = m_stream.column();
         }
 
         auto appendStr() -> void {
             m_currentStr += m_stream.current();
+        }
+
+        auto appendStr(c8 const c) -> void {
+            m_currentStr += c;
         }
 
         auto appendToken() -> void {

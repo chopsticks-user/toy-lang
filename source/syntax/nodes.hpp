@@ -125,6 +125,10 @@ namespace tlc::syntax {
                 return m_fragments;
             }
 
+            [[nodiscard]] auto nPlaceholders() const noexcept -> szt {
+                return m_fragments.size() - 1;
+            }
+
         private:
             Vec<Str> m_fragments;
         };

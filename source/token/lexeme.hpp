@@ -22,12 +22,12 @@ namespace tlc::lexeme {
 
             // Literals
             Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
-            FloatLiteral, StringLiteral,
+            FloatLiteral, StringFragment, StringPlaceholder,
 
             // Symbols
             /* Single character */ LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace,
             RightBrace, Hash, Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus,
-            FwdSlash, Percent, Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde,
+            FwdSlash, Percent, Exclaim, Equal, Greater, Less, QMark, Hat, Tilde,
             Dollar, At, AnonymousIdentifier,
             /* Double characters */ Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
             Equal2, Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
@@ -104,7 +104,8 @@ namespace tlc::lexeme {
     constexpr Lexeme integer10Literal{Lexeme::Integer10Literal, ""};
     constexpr Lexeme integer16Literal{Lexeme::Integer16Literal, ""};
     constexpr Lexeme floatLiteral{Lexeme::FloatLiteral, ""};
-    constexpr Lexeme stringLiteral{Lexeme::StringLiteral, ""};
+    constexpr Lexeme stringFragment{Lexeme::StringFragment, ""};
+    constexpr Lexeme stringPlaceholder{Lexeme::StringPlaceholder, ""};
     constexpr Lexeme leftParen{Lexeme::LeftParen, "("};
     constexpr Lexeme rightParen{Lexeme::RightParen, ")"};
     constexpr Lexeme leftBracket{Lexeme::LeftBracket, "["};
@@ -127,8 +128,6 @@ namespace tlc::lexeme {
     constexpr Lexeme equal{Lexeme::Equal, "="};
     constexpr Lexeme greater{Lexeme::Greater, ">"};
     constexpr Lexeme less{Lexeme::Less, "<"};
-    constexpr Lexeme sQuote{Lexeme::SQuote, "'"};
-    constexpr Lexeme dQuote{Lexeme::DQuote, "\""};
     constexpr Lexeme qMark{Lexeme::QMark, "?"};
     constexpr Lexeme hat{Lexeme::Hat, "^"};
     constexpr Lexeme tilde{Lexeme::Tilde, "~"};

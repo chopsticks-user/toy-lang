@@ -329,23 +329,17 @@ namespace tlc::parse {
 
     auto Parse::handleStringLiteral() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        return match(lexeme::dQuote)(m_stream, m_tracker).and_then(
+        return match(lexeme::stringFragment)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto location = tokens.front().location();
                 Vec<Str> fragments;
                 Vec<syntax::Node> placeholders;
 
-                // todo:
+                // todo: prohibit recursive string interpolation
 
-                if (!m_stream.match(lexeme::dQuote)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::String,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                return syntax::expr::String{{}, {}, location};
+                return syntax::expr::String{
+                    std::move(fragments), std::move(placeholders), location
+                };
             }
         );
     }

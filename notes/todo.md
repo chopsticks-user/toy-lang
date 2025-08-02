@@ -10,12 +10,12 @@
 - ~~Revise nodes' implementations, remove unnecessary methods~~
 - ~~Function types must be right-associate~~
 - ~~Vec<Node> implies the need for a wrapper~~
-- Implement parsing logic for strings and ternary operators.
+- Implement parsing logic for strings.
+- Implement parsing logic for ternary operators.
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector
 - Design trait, class, etc. Complete implementations and test cases
   for global definitions
-  (basically an enum convertible to a string).
 - Create a visitor to collapse single-element tuples into
   value expressions
 - Create a visitor to combine "x |> y(...)" into "y(x, ...)"

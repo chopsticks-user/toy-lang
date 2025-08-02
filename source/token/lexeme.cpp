@@ -75,8 +75,6 @@ namespace tlc::lexeme {
         {equal.str(), equal},
         {greater.str(), greater},
         {less.str(), less},
-        {sQuote.str(), sQuote},
-        {dQuote.str(), dQuote},
         {qMark.str(), qMark},
         {tilde.str(), tilde},
         {dollar.str(), dollar},
