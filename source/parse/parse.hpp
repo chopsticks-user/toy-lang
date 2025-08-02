@@ -23,20 +23,20 @@ namespace tlc::parse {
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
 
-        Parse(fs::path filepath, Vec<token::Token> tokens)
+        Parse(fs::path filepath, Vec<token::Token> tokens, Opt<Location> offset = {})
             : m_filepath{std::move(filepath)},
-              m_stream{std::move(tokens)},
-              m_tracker{m_stream} {}
+              m_stream{std::move(tokens), std::move(offset)},
+              m_tracker{m_stream}, m_isSubroutine{offset} {}
 
         auto operator()() -> syntax::Node;
 
 #ifdef TLC_CONFIG_BUILD_TESTS
-        auto parseExpr() -> ParseResult {
-            return handleExpr();
-        }
-
         auto parseType() -> ParseResult {
             return handleType();
+        }
+
+        auto parseExpr() -> ParseResult {
+            return handleExpr();
         }
 
         auto parseStmt() -> ParseResult {
@@ -114,6 +114,13 @@ namespace tlc::parse {
             return Unexpected{TError{}};
         }
 
+        [[nodiscard]] auto error(TError::Params params) const
+            -> Unexpected<TError> {
+            params.filepath = m_filepath;
+            params.location = m_tracker.current();
+            return Unexpected<TError>{std::move(params)};
+        }
+
         auto collect(TError::Params errorParams) const -> TErrorCollector& {
             errorParams.filepath = m_filepath;
             return TErrorCollector::instance().collect(std::move(errorParams));
@@ -129,6 +136,7 @@ namespace tlc::parse {
         TokenStream m_stream;
         LocationTracker m_tracker;
         Stack<Location> m_coords{};
+        b8 const m_isSubroutine;
     };
 }
 

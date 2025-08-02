@@ -1,5 +1,7 @@
 #include "parse.hpp"
 
+#include "lex/lex.hpp"
+
 namespace tlc::parse {
     auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
@@ -348,10 +350,46 @@ namespace tlc::parse {
                     };
                 }
 
-                Vec<Str> fragments;
-                Vec<syntax::Node> placeholders;
+                // prohibit recursive string interpolation
+                if (m_isSubroutine) {
+                    return error({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::String,
+                        .reason = EParseErrorReason::RestrictedAction,
+                    });
+                }
 
-                // todo: prohibit recursive string interpolation
+
+                Vec<Str> fragments = tokens | rv::enumerate
+                    | rv::filter([](Pair<szt, token::Token> const& entry) {
+                        return (entry.first & 1) == 0;
+                    }) | rv::transform([](Pair<szt, token::Token> const& entry) {
+                        return entry.second.str();
+                    }) | rng::to<Vec<Str>>();
+
+                Vec<syntax::Node> placeholders = tokens | rv::enumerate
+                    | rv::filter([](Pair<szt, token::Token> const& entry) {
+                        return entry.first & 1;
+                    }) | rv::transform([this, location, &tokens](
+                        Pair<szt, token::Token> const& entry) {
+                            std::istringstream iss;
+                            iss.str(entry.second.str());
+                            return *Parse{
+                                m_filepath, lex::Lex::operator()(std::move(iss)),
+                                Location{
+                                    .line = tokens[entry.first].location().line,
+                                    .column = tokens[entry.first].location().column -
+                                    location.column + 1
+                                }
+                            }.handleExpr().or_else([&](auto&& error) -> ParseResult {
+                                collect(error).collect({
+                                    .location = m_tracker.current(),
+                                    .context = EParseErrorContext::String,
+                                    .reason = EParseErrorReason::MissingExpr,
+                                });
+                                return {};
+                            });
+                        }) | rng::to<Vec<syntax::Node>>();
 
                 return syntax::expr::String{
                     std::move(fragments), std::move(placeholders), location

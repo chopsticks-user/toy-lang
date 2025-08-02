@@ -16,7 +16,7 @@ namespace tlc::parse {
     enum class EParseErrorReason {
         NotAnError, MissingSymbol, MissingKeyword, MissingEnclosingSymbol,
         MissingExpr, MissingType, MissingId, MissingDecl, MissingStmt,
-        MissingBody, Unknown,
+        MissingBody, RestrictedAction, Unknown,
     };
 }
 

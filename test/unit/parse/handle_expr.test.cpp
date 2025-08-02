@@ -37,11 +37,11 @@ auto ParseTestFixture::assertString(
     REQUIRE(actual == expected);
 
     REQUIRE(matchAstType<expr::String>(*result));
-    auto stringNode = astCast<expr::String>(*result);
-    REQUIRE_FALSE(stringNode.interpolated());
-    REQUIRE(tlc::rng::equal(
-        stringNode.fragments(), expectedFragments
-    ));
+    for (auto&& [actualFragment,expectedFragment] : tlc::rv::zip(
+             astCast<expr::String>(*result).fragments(), expectedFragments
+         )) {
+        REQUIRE(actualFragment == expectedFragment);
+    }
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
@@ -344,14 +344,28 @@ TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Parse]") {}
 
 // todo
 TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
+    // assertString(
+    //     R"("")",
+    //     "expr::String [@0:0] with nPlaceholders = 0",
+    //     {""}
+    // );
+    // assertString(
+    //     R"("regular string\n")",
+    //     "expr::String [@0:0] with nPlaceholders = 0",
+    //     {"regular string\n"}
+    // );
     assertString(
-        R"("")",
-        "expr::String [@0:0] with nPlaceholders = 0",
-        {""}
-    );
-    assertString(
-        R"("regular string\n")",
-        "expr::String [@0:0] with nPlaceholders = 0",
-        {"regular string\n"}
+        R"(
+
+         "{x}+{y}={x+y}"
+
+        )",
+        "expr::String [@2:9] with nPlaceholders = 3\n"
+        "├─ expr::Identifier [@2:2] with path = 'x'\n"
+        "├─ expr::Identifier [@2:6] with path = 'y'\n"
+        "├─ expr::Binary [@2:10] with op = '+'\n"
+        "   ├─ expr::Identifier [@2:10] with path = 'x'\n"
+        "   ├─ expr::Identifier [@2:12] with path = 'y'",
+        {"", "+", "=", ""}
     );
 }

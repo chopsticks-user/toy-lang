@@ -37,8 +37,19 @@ namespace tlc::parse {
         };
 
     public:
-        explicit TokenStream(token::TokenizedBuffer tokens)
-            : m_tokens{std::move(tokens)},
+        explicit TokenStream(token::TokenizedBuffer tokens, Opt<Location> offset = {})
+            : m_tokens{
+                  offset
+                      ? tokens | rv::transform([offset](token::Token const& token) {
+                          return token::Token{
+                              token.lexeme(), token.str(), Location{
+                                  .line = token.line() + offset->line,
+                                  .column = token.column() + offset->column,
+                              }
+                          };
+                      }) | rng::to<token::TokenizedBuffer>()
+                      : std::move(tokens)
+              },
               m_tokenIt{m_tokens.begin()} {}
 
         auto match(std::same_as<lexeme::Lexeme> auto... types) -> bool {
