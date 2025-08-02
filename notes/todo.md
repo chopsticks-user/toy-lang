@@ -8,7 +8,8 @@
 - ~~Replace "Vec<T> const&" and "Str const&" with Span<const T> and "StrV"
   respectively~~
 - ~~Revise nodes' implementations, remove unnecessary methods~~
-- Function types must be right-associate
+- ~~Function types must be right-associate~~
+- ~~Vec<Node> implies the need for a wrapper~~
 - Implement parsing logic for strings and ternary operators.
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector

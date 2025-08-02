@@ -25,7 +25,8 @@ namespace tlc::parse {
             return Unexpected{lhs.error()};
         }
 
-        m_stream.markBacktrack();
+        // m_stream.markBacktrack();
+        auto streamBacktrack = m_stream.scopedBacktrack();
         while (true) {
             if (syntax::isPostfixStart(m_stream.peek().lexeme())) {
                 if (m_stream.match(lexeme::dot)) {
@@ -62,7 +63,8 @@ namespace tlc::parse {
                 );
 
                 if (p <= minP) {
-                    m_stream.backtrack();
+                    // m_stream.backtrack();
+                    streamBacktrack();
                     break;
                 }
 
@@ -89,6 +91,9 @@ namespace tlc::parse {
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
         }
+        if (auto const result = handleRecordExpr(); result) {
+            return result;
+        }
         if (auto const result = handleIdentifierLiteral(); result) {
             return result;
         }
@@ -96,9 +101,6 @@ namespace tlc::parse {
             return result;
         }
         if (auto const result = handleArrayExpr(); result) {
-            return result;
-        }
-        if (auto const result = handleRecordExpr(); result) {
             return result;
         }
         return defaultError();
@@ -258,24 +260,23 @@ namespace tlc::parse {
 
     auto Parse::handleRecordExpr() -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
-        m_stream.markBacktrack();
+        auto streamBacktrack = m_stream.scopedBacktrack();
         auto const location = m_tracker.scopedLocation();
 
         auto type = handleTypeIdentifier();
         if (!type || !m_stream.match(lexeme::leftBrace)) {
-            m_stream.backtrack();
+            streamBacktrack();
             return defaultError();
         }
-
-        Vec<Pair<Str, syntax::Node>> entries;
-
         if (m_stream.match(lexeme::rightBrace)) {
             return syntax::expr::Record{
-                std::move(*type), std::move(entries), *location
+                std::move(*type), {}, *location
             };
         }
 
+        Vec<syntax::Node> entries;
         do {
+            auto entryLocation = m_tracker.scopedLocation();
             Str key;
             if (!m_stream.match(lexeme::identifier)) {
                 collect({
@@ -307,7 +308,9 @@ namespace tlc::parse {
                 }
             );
 
-            entries.emplace_back(std::move(key), std::move(value));
+            entries.push_back(syntax::expr::RecordEntry{
+                std::move(key), std::move(value), *entryLocation
+            });
         }
         while (m_stream.match(lexeme::comma));
 

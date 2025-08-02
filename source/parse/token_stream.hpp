@@ -10,6 +10,32 @@ namespace tlc::parse {
         using MatchFn = bool (*)(lexeme::Lexeme const&);
         using TokenIt = token::TokenizedBuffer::const_iterator;
 
+        class Backtrack final {
+        public:
+            explicit Backtrack(TokenStream& stream)
+                : m_stream{stream} {
+                m_stream.markBacktrack();
+            }
+
+            auto operator()() -> void {
+                if (m_executed) {
+                    return;
+                }
+                m_stream.backtrack();
+                m_executed = true;
+            }
+
+            ~Backtrack() noexcept {
+                if (!m_executed) {
+                    m_stream.removeBacktrack();
+                }
+            }
+
+        private:
+            TokenStream& m_stream;
+            bool m_executed = false;
+        };
+
     public:
         explicit TokenStream(token::TokenizedBuffer tokens)
             : m_tokens{std::move(tokens)},
@@ -35,7 +61,7 @@ namespace tlc::parse {
         }
 
         // todo: implement scoped backtrack
-        auto removeBacktrack() -> void {
+        auto removeBacktrack() noexcept -> void {
             if (m_backtrack.empty()) {
                 return;
             }
@@ -43,6 +69,10 @@ namespace tlc::parse {
         }
 
         auto backtrack() -> void;
+
+        auto scopedBacktrack() -> Backtrack {
+            return Backtrack{*this};
+        }
 
         [[nodiscard]] auto current() const -> token::Token;
 
@@ -65,7 +95,7 @@ namespace tlc::parse {
         token::TokenizedBuffer const m_tokens;
         TokenIt m_tokenIt;
         Stack<BacktrackStates> m_backtrack{};
-        b8 m_started{};
+        b8 m_started = false;
     };
 }
 

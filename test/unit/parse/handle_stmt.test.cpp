@@ -62,10 +62,12 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
         "let x = foo::Bar{x: 0, y: true};",
         "stmt::Let [@0:0]\n"
         "├─ decl::Identifier [@0:4] with (const, name) = (true, 'x')\n"
-        "├─ expr::Record [@0:8] with keys = ['x','y']\n"
-        "   ├─ type::Identifier [@0:8] with (fundamental, path) = (false, 'foo::Bar')\n"
-        "   ├─ expr::Integer [@0:20] with value = 0\n"
-        "   ├─ expr::Boolean [@0:26] with value = true"
+        "├─ expr::Record [@0:8] with size = 2\n"
+        "   ├─ type::Identifier [@0:8] with (fund, path) = (false, 'foo::Bar')\n"
+        "   ├─ expr::RecordEntry [@0:17] with key = 'x'\n"
+        "      ├─ expr::Integer [@0:20] with value = 0\n"
+        "   ├─ expr::RecordEntry [@0:23] with key = 'y'\n"
+        "      ├─ expr::Boolean [@0:26] with value = true"
     );
     assertStmt(
         "let (x, y, z: Bool) = (0, 0.0, false);",
@@ -74,7 +76,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Let statements", "[Parse]") {
         "   ├─ decl::Identifier [@0:5] with (const, name) = (true, 'x')\n"
         "   ├─ decl::Identifier [@0:8] with (const, name) = (true, 'y')\n"
         "   ├─ decl::Identifier [@0:11] with (const, name) = (true, 'z')\n"
-        "      ├─ type::Identifier [@0:14] with (fundamental, path) = (true, 'Bool')\n"
+        "      ├─ type::Identifier [@0:14] with (fund, path) = (true, 'Bool')\n"
         "├─ expr::Tuple [@0:22] with size = 3\n"
         "   ├─ expr::Integer [@0:23] with value = 0\n"
         "   ├─ expr::Float [@0:26] with value = 0\n"
@@ -120,14 +122,16 @@ TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
         "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
         "   ├─ expr::Identifier [@0:5] with path = 'y'\n"
         "├─ stmt::Expression [@0:10]\n"
-        "   ├─ expr::Record [@0:10] with keys = ['sum','product']\n"
-        "      ├─ type::Identifier [@0:10] with (fundamental, path) = (false, 'foo::Bar')\n"
-        "      ├─ expr::Binary [@0:24] with op = '+'\n"
-        "         ├─ expr::Identifier [@0:24] with path = 'x'\n"
-        "         ├─ expr::Identifier [@0:26] with path = 'y'\n"
-        "      ├─ expr::Binary [@0:38] with op = '*'\n"
-        "         ├─ expr::Identifier [@0:38] with path = 'x'\n"
-        "         ├─ expr::Identifier [@0:40] with path = 'y'"
+        "   ├─ expr::Record [@0:10] with size = 2\n"
+        "      ├─ type::Identifier [@0:10] with (fund, path) = (false, 'foo::Bar')\n"
+        "      ├─ expr::RecordEntry [@0:19] with key = 'sum'\n"
+        "         ├─ expr::Binary [@0:24] with op = '+'\n"
+        "            ├─ expr::Identifier [@0:24] with path = 'x'\n"
+        "            ├─ expr::Identifier [@0:26] with path = 'y'\n"
+        "      ├─ expr::RecordEntry [@0:29] with key = 'product'\n"
+        "         ├─ expr::Binary [@0:38] with op = '*'\n"
+        "            ├─ expr::Identifier [@0:38] with path = 'x'\n"
+        "            ├─ expr::Identifier [@0:40] with path = 'y'"
     );
 }
 
@@ -197,9 +201,9 @@ TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {
         "stmt::Loop [@0:0]\n"
         "├─ decl::Tuple [@0:4] with size = 2\n"
         "   ├─ decl::Identifier [@0:5] with (const, name) = (true, 'i')\n"
-        "      ├─ type::Identifier [@0:8] with (fundamental, path) = (true, 'Int')\n"
+        "      ├─ type::Identifier [@0:8] with (fund, path) = (true, 'Int')\n"
         "   ├─ decl::Identifier [@0:13] with (const, name) = (true, 'v')\n"
-        "      ├─ type::Identifier [@0:16] with (fundamental, path) = (true, 'Float')\n"
+        "      ├─ type::Identifier [@0:16] with (fund, path) = (true, 'Float')\n"
         "├─ expr::Identifier [@0:26] with path = 'r0'\n"
         "├─ stmt::Block [@0:29] with size = 0"
     );

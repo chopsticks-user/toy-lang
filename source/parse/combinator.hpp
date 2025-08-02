@@ -87,11 +87,11 @@ namespace tlc::parse {
     ) -> ParserCombinator {
         return TLC_PARSER_COMBINATOR_PROTOTYPE {
             token::TokenizedBuffer tokens;
-            stream.markBacktrack();
+            auto streamBacktrack = stream.scopedBacktrack();
             for (auto&& p : {pc...}) {
                 auto const result = p(stream, tracker);
                 if (!result) {
-                    stream.backtrack();
+                    streamBacktrack();
                     return Unexpected{
                         Error<EParseErrorContext, EParseErrorReason>{}
                     };

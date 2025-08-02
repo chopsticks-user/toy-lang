@@ -13,6 +13,8 @@ namespace tlc::syntax {
         struct String;
         struct Array;
         struct Tuple;
+        struct RecordEntry;
+        struct Record;
 
         // postfix
         struct FnApp;
@@ -22,8 +24,6 @@ namespace tlc::syntax {
         struct Prefix;
         struct Binary;
         // struct Ternary;
-
-        struct Record;
     }
 
     namespace type {
@@ -32,8 +32,8 @@ namespace tlc::syntax {
         struct Tuple;
         struct Function;
         struct Infer;
+        struct GenericArguments;
         struct Generic;
-        struct Binary;
     }
 
     namespace decl {
@@ -63,10 +63,10 @@ namespace tlc::syntax {
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
         expr::Tuple, expr::String, expr::FnApp, expr::Subscript, expr::Access,
-        expr::Prefix, expr::Binary, expr::Record,
+        expr::Prefix, expr::Binary, expr::RecordEntry, expr::Record,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
-        type::Generic, type::Binary,
+        type::GenericArguments, type::Generic,
 
         decl::Identifier, decl::Tuple,
 

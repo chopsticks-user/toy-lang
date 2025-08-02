@@ -164,17 +164,20 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
 TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     assertExpr(
         "foo::Bar{}",
-        "expr::Record [@0:0] with keys = []\n"
-        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'foo::Bar')"
+        "expr::Record [@0:0] with size = 0\n"
+        "├─ type::Identifier [@0:0] with (fund, path) = (false, 'foo::Bar')"
     );
 
     assertExpr(
         "Foo{x: 0, y: 1.1, z: false}\n",
-        "expr::Record [@0:0] with keys = ['x','y','z']\n"
-        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'Foo')\n"
-        "├─ expr::Integer [@0:7] with value = 0\n"
-        "├─ expr::Float [@0:13] with value = 1.1\n"
-        "├─ expr::Boolean [@0:21] with value = false"
+        "expr::Record [@0:0] with size = 3\n"
+        "├─ type::Identifier [@0:0] with (fund, path) = (false, 'Foo')\n"
+        "├─ expr::RecordEntry [@0:4] with key = 'x'\n"
+        "   ├─ expr::Integer [@0:7] with value = 0\n"
+        "├─ expr::RecordEntry [@0:10] with key = 'y'\n"
+        "   ├─ expr::Float [@0:13] with value = 1.1\n"
+        "├─ expr::RecordEntry [@0:18] with key = 'z'\n"
+        "   ├─ expr::Boolean [@0:21] with value = false"
     );
 }
 

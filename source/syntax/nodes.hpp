@@ -58,26 +58,18 @@ namespace tlc::syntax {
 
         struct FnApp final : detail::NodeBase {
             FnApp(Node callee, Node args, Location location);
-
-            [[nodiscard]] auto callee() const noexcept -> Node;
-
-            [[nodiscard]] auto args() const noexcept -> Node;
         };
 
         struct Subscript final : detail::NodeBase {
             Subscript(Node collection, Node subscript, Location location);
-
-            [[nodiscard]] auto collection() const noexcept -> Node;
-
-            [[nodiscard]] auto subscript() const noexcept -> Node;
         };
 
         struct Access final : detail::NodeBase {
             Access(Node object, Str field, Location location);
 
-            [[nodiscard]] auto object() const noexcept -> Node;
-
-            [[nodiscard]] auto field() const noexcept -> Str;
+            [[nodiscard]] auto field() const noexcept -> StrV {
+                return m_field;
+            }
 
         private:
             Str m_field;
@@ -90,8 +82,6 @@ namespace tlc::syntax {
                 return m_op;
             }
 
-            [[nodiscard]] auto operand() const noexcept -> Node;
-
         private:
             lexeme::Lexeme m_op;
         };
@@ -102,10 +92,6 @@ namespace tlc::syntax {
             [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
-
-            [[nodiscard]] auto left() const noexcept -> Node;
-
-            [[nodiscard]] auto right() const noexcept -> Node;
 
         private:
             lexeme::Lexeme m_op;
@@ -143,25 +129,21 @@ namespace tlc::syntax {
             Vec<Str> m_fragments;
         };
 
-        struct Record final : detail::NodeBase {
-            Record(Node type, Vec<Pair<Str, Node>> entries, Location location);
+        struct RecordEntry final : detail::NodeBase {
+            RecordEntry(Str key, Node value, Location location);
 
-            [[nodiscard]] auto size() const noexcept -> szt;
-
-            [[nodiscard]] auto type() const noexcept -> Node;
-
-            [[nodiscard]] auto key(szt const index) const noexcept -> Str {
-                return m_keys.at(index);
+            [[nodiscard]] auto key() const noexcept -> StrV {
+                return m_key;
             }
-
-            [[nodiscard]] auto keys() const noexcept -> Span<const Str> {
-                return m_keys;
-            }
-
-            [[nodiscard]] auto value(szt index) const noexcept -> Node const&;
 
         private:
-            Vec<Str> m_keys;
+            Str m_key;
+        };
+
+        struct Record final : detail::NodeBase {
+            Record(Node type, Vec<Node> entries, Location location);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
         };
     }
 
@@ -180,29 +162,17 @@ namespace tlc::syntax {
         struct Array final : detail::NodeBase {
             Array(Node type, Vec<Node> sizes, Location location);
 
-            [[nodiscard]] auto type() const noexcept -> Node const&;
-
-            [[nodiscard]] auto size(szt dimIndex) const noexcept -> Node const&;
-
             [[nodiscard]] auto nDims() const noexcept -> szt;
-
-            [[nodiscard]] auto fixed(szt dimIndex) const -> bool;
         };
 
         struct Tuple final : detail::NodeBase {
             Tuple(Vec<Node> types, Location location);
-
-            [[nodiscard]] auto type(szt index) const -> Node;
 
             [[nodiscard]] auto size() const -> szt;
         };
 
         struct Function final : detail::NodeBase {
             Function(Node args, Node result, Location location);
-
-            [[nodiscard]] auto args() const noexcept -> Node;
-
-            [[nodiscard]] auto result() const noexcept -> Node;
         };
 
         /**
@@ -214,19 +184,14 @@ namespace tlc::syntax {
             [[nodiscard]] auto expr() const noexcept -> Node;
         };
 
-        struct Generic final : detail::NodeBase {
-            Generic(Node type, Vec<Node> args, Location location);
+        struct GenericArguments final : detail::NodeBase {
+            GenericArguments(Vec<Node> args, Location location);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
         };
 
-        struct Binary final : detail::NodeBase {
-            Binary(Node lhs, Node rhs, lexeme::Lexeme op, Location location);
-
-            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
-                return m_op;
-            }
-
-        private:
-            lexeme::Lexeme m_op;
+        struct Generic final : detail::NodeBase {
+            Generic(Node type, Node args, Location location);
         };
     }
 
@@ -241,8 +206,6 @@ namespace tlc::syntax {
             [[nodiscard]] auto name() const noexcept -> Str const& {
                 return m_name;
             }
-
-            [[nodiscard]] auto type() const noexcept -> Node const&;
 
             [[nodiscard]] auto inferred() const noexcept -> b8;
 
@@ -264,17 +227,11 @@ namespace tlc::syntax {
         struct Let final : detail::NodeBase {
             Let(Node decl, Node initializer, Location location);
 
-            [[nodiscard]] auto decl() const noexcept -> Node const&;
-
-            [[nodiscard]] auto initializer() const noexcept -> Node const&;
-
             [[nodiscard]] auto defaultInitialized() const -> bool;
         };
 
         struct Return final : detail::NodeBase {
             Return(Node expr, Location location);
-
-            [[nodiscard]] auto expr() const noexcept -> Node const&;
         };
 
         /**
@@ -310,8 +267,6 @@ namespace tlc::syntax {
          */
         struct Yield final : detail::NodeBase {
             Yield(Node expr, Location location);
-
-            [[nodiscard]] auto expr() const noexcept -> Node const&;
         };
 
         /**
@@ -332,8 +287,6 @@ namespace tlc::syntax {
          */
         struct Preface final : detail::NodeBase {
             Preface(Node stmt, Location location);
-
-            [[nodiscard]] auto stmt() const noexcept -> Node const&;
         };
 
         /**
@@ -351,8 +304,6 @@ namespace tlc::syntax {
          */
         struct Defer final : detail::NodeBase {
             Defer(Node stmt, Location location);
-
-            [[nodiscard]] auto stmt() const noexcept -> Node const&;
         };
 
         /**

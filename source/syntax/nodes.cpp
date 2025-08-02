@@ -37,28 +37,12 @@ namespace tlc::syntax {
                 location
             } {}
 
-        auto FnApp::callee() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto FnApp::args() const noexcept -> Node {
-            return childAt(1);
-        }
-
         Subscript::Subscript(
             Node collection, Node subscript, Location const location
         ): NodeBase{
             {std::move(collection), std::move(subscript)},
             location
         } {}
-
-        auto Subscript::collection() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto Subscript::subscript() const noexcept -> Node {
-            return childAt(1);
-        }
 
         Access::Access(
             Node object, Str field, Location const location
@@ -67,77 +51,42 @@ namespace tlc::syntax {
                location
            }, m_field{std::move(field)} {}
 
-        auto Access::object() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto Access::field() const noexcept -> Str {
-            return m_field;
-        }
-
         Prefix::Prefix(
             Node operand, lexeme::Lexeme op, Location const location
         ): NodeBase{{std::move(operand)}, location},
            m_op{std::move(op)} {}
-
-        auto Prefix::operand() const noexcept -> Node {
-            return firstChild();
-        }
 
         Binary::Binary(
             Node lhs, Node rhs, lexeme::Lexeme op, Location const location
         ) : NodeBase{{std::move(lhs), std::move(rhs)}, location},
             m_op{std::move(op)} {}
 
-        auto Binary::left() const noexcept -> Node {
-            return firstChild();
-        }
-
-        auto Binary::right() const noexcept -> Node {
-            return lastChild();
-        }
-
-        String::String(Vec<Str> fragments, Vec<Node> placeholders, Location location)
+        String::String(
+            Vec<Str> fragments, Vec<Node> placeholders, Location const location
+        )
             : NodeBase{std::move(placeholders), location},
               m_fragments{std::move(fragments)} {}
 
-        Record::Record(Node type, Vec<Pair<Str, Node>> entries, Location const location)
+        RecordEntry::RecordEntry(Str key, Node value, Location const location)
+            : NodeBase{{std::move(value)}, location},
+              m_key{std::move(key)} {}
+
+        Record::Record(Node type, Vec<Node> entries, Location const location)
             : NodeBase{
-                  [&] {
-                      Vec<Node> nodes;
-                      nodes.reserve(entries.size() + 1);
-                      // todo: concat
-                      nodes.push_back(std::move(type));
-                      nodes.append_range(
-                          entries | rv::transform(
-                              [](auto const& entry) {
-                                  return entry.second;
-                              }
-                          )
-                      );
-                      return nodes;
-                  }(),
-                  location
-              }, m_keys{
-                  [&] {
-                      return entries | rv::transform(
-                          [](auto const& entry) {
-                              return entry.first;
-                          }
-                      ) | rng::to<Vec<Str>>();
-                  }()
-              } {}
+                {
+                    [&] {
+                        Vec<Node> nodes;
+                        nodes.reserve(entries.size() + 1);
+                        nodes.push_back(std::move(type));
+                        nodes.append_range(std::move(entries));
+                        return nodes;
+                    }()
+                },
+                location
+            } {}
 
         auto Record::size() const noexcept -> szt {
-            return m_keys.size() - 1;
-        }
-
-        auto Record::type() const noexcept -> Node {
-            return firstChild();
-        }
-
-        auto Record::value(szt const index) const noexcept -> Node const& {
-            return childAt(index + 1);
+            return nChildren() - 1;
         }
     }
 
@@ -160,28 +109,12 @@ namespace tlc::syntax {
             location
         } {}
 
-        auto Array::type() const noexcept -> Node const& {
-            return firstChild();
-        }
-
-        auto Array::size(szt const dimIndex) const noexcept -> Node const& {
-            return childAt(dimIndex + 1);
-        }
-
-        auto Array::nDims() const noexcept -> size_t {
+        auto Array::nDims() const noexcept -> szt {
             return nChildren() - 1;
-        }
-
-        auto Array::fixed(szt const dimIndex) const -> bool {
-            return !isEmptyNode(size(dimIndex));
         }
 
         Tuple::Tuple(Vec<Node> types, Location const location)
             : NodeBase{std::move(types), location} {}
-
-        auto Tuple::type(szt const index) const -> Node {
-            return childAt(index);
-        }
 
         auto Tuple::size() const -> szt {
             return nChildren();
@@ -190,14 +123,6 @@ namespace tlc::syntax {
         Function::Function(Node args, Node result, Location const location)
             : NodeBase{{std::move(args), std::move(result)}, location} {}
 
-        auto Function::args() const noexcept -> Node {
-            return firstChild();
-        }
-
-        auto Function::result() const noexcept -> Node {
-            return lastChild();
-        }
-
         Infer::Infer(Node expr, Location const location)
             : NodeBase{{std::move(expr)}, location} {}
 
@@ -205,24 +130,17 @@ namespace tlc::syntax {
             return firstChild();
         }
 
-        Generic::Generic(Node type, Vec<Node> args, Location const location)
-            : NodeBase{
-                {
-                    [&] {
-                        Vec<Node> nodes;
-                        nodes.reserve(args.size() + 1);
-                        nodes.push_back(std::move(type));
-                        nodes.append_range(std::move(args));
-                        return nodes;
-                    }()
-                },
-                location
-            } {}
+        GenericArguments::GenericArguments(
+            Vec<Node> args, Location const location
+        )
+            : NodeBase{std::move(args), location} {}
 
-        Binary::Binary(Node lhs, Node rhs, lexeme::Lexeme op,
-                       Location const location)
-            : NodeBase{{std::move(lhs), std::move(rhs)}, location},
-              m_op{std::move(op)} {}
+        auto GenericArguments::size() const noexcept -> szt {
+            return nChildren();
+        }
+
+        Generic::Generic(Node type, Node args, Location const location)
+            : NodeBase{{std::move(type), std::move(args)}, location} {}
     }
 
     namespace decl {
@@ -231,9 +149,6 @@ namespace tlc::syntax {
         ) : NodeBase{{std::move(type)}, location},
             m_constant{constant}, m_name{std::move(name)} {}
 
-        auto Identifier::type() const noexcept -> Node const& {
-            return firstChild();
-        }
 
         auto Identifier::inferred() const noexcept -> b8 {
             return isEmptyNode(firstChild());
@@ -254,14 +169,6 @@ namespace tlc::syntax {
     stmt::Let::Let(Node decl, Node initializer, Location const location)
         : NodeBase{{std::move(decl), std::move(initializer)}, location} {}
 
-    auto stmt::Let::decl() const noexcept -> Node const& {
-        return firstChild();
-    }
-
-    auto stmt::Let::initializer() const noexcept -> Node const& {
-        return lastChild();
-    }
-
     auto stmt::Let::defaultInitialized() const -> bool {
         return isEmptyNode(lastChild());
     }
@@ -269,30 +176,18 @@ namespace tlc::syntax {
     stmt::Return::Return(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
 
-    auto stmt::Return::expr() const noexcept -> Node const& {
-        return firstChild();
-    }
 
     stmt::Yield::Yield(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
 
-    auto stmt::Yield::expr() const noexcept -> Node const& {
-        return firstChild();
-    }
 
     stmt::Preface::Preface(Node stmt, Location const location)
         : NodeBase{{std::move(stmt)}, location} {}
 
-    auto stmt::Preface::stmt() const noexcept -> Node const& {
-        return firstChild();
-    }
 
     stmt::Defer::Defer(Node stmt, Location const location)
         : NodeBase{{std::move(stmt)}, location} {}
 
-    auto stmt::Defer::stmt() const noexcept -> Node const& {
-        return firstChild();
-    }
 
     stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location const location)
         : NodeBase{

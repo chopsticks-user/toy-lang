@@ -58,7 +58,7 @@ namespace tlc::parse {
         auto handleIdentifierLiteral() -> ParseResult;
         auto handleStringLiteral() -> ParseResult;
 
-        auto handleType(syntax::OpPrecedence minP = 0) -> ParseResult;
+        auto handleType() -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;

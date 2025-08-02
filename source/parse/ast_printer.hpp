@@ -32,6 +32,7 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Access const& node) -> Str;
         auto operator()(syntax::expr::Prefix const& node) -> Str;
         auto operator()(syntax::expr::Binary const& node) -> Str;
+        auto operator()(syntax::expr::RecordEntry const& node) -> Str;
         auto operator()(syntax::expr::Record const& node) -> Str;
 
         auto operator()(syntax::type::Identifier const& node) -> Str;
@@ -39,8 +40,8 @@ namespace tlc::parse {
         auto operator()(syntax::type::Tuple const& node) -> Str;
         auto operator()(syntax::type::Function const& node) -> Str;
         auto operator()(syntax::type::Infer const& node) -> Str;
+        auto operator()(syntax::type::GenericArguments const& node) -> Str;
         auto operator()(syntax::type::Generic const& node) -> Str;
-        auto operator()(syntax::type::Binary const& node) -> Str;
 
         auto operator()(syntax::decl::Identifier const& node) -> Str;
         auto operator()(syntax::decl::Tuple const& node) -> Str;

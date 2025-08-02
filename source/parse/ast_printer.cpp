@@ -85,38 +85,34 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
+    auto ASTPrinter::operator()(syntax::expr::RecordEntry const& node) -> Str {
+        return withDepth(std::format(
+            "expr::RecordEntry [@{}:{}] with key = '{}'",
+            node.line(), node.column(), node.key()
+        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+    }
+
     auto ASTPrinter::operator()(syntax::expr::Record const& node) -> Str {
         return withDepth(std::format(
-            "expr::Record [@{}:{}] with keys = [{}]",
-            node.line(), node.column(), node.keys() | rv::transform(
-                [](auto const& k) { return std::format("'{}'", k); }
-            ) | rv::join_with(',') | rng::to<Str>()
+            "expr::Record [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
         )) + "\n" + (
-            visitChildren(node) | rvFilterEmpty
-            | rvJoinWithEl
+            visitChildren(node) | rvFilterEmpty | rvJoinWithEl
         );
     }
 
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
         return withDepth(std::format(
-            "type::Identifier [@{}:{}] with (fundamental, path) = ({:s}, '{}')",
+            "type::Identifier [@{}:{}] with (fund, path) = ({:s}, '{}')",
             node.line(), node.column(), node.fundamental(), node.path()
         ));
     }
 
     auto ASTPrinter::operator()(syntax::type::Array const& node) -> Str {
         return withDepth(std::format(
-            "type::Array [@{}:{}] with dims = {{{}}}",
-            node.line(), node.column(),
-            rv::iota(0ull, node.nDims()) | rv::transform([&node](auto index) {
-                return std::to_string(index)
-                    + (node.fixed(index) ? ":fix" : ":dyn");
-            }) | rng::to<Vec<Str>>() | rv::join_with(',') | rng::to<Str>()
-        )) + (node.nChildren() > 0
-                  ? "\n" + (
-                      visitChildren(node) | rvFilterEmpty | rvJoinWithEl
-                  )
-                  : "");
+            "type::Array [@{}:{}] with nDims = {}",
+            node.line(), node.column(), node.nDims()
+        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
     auto ASTPrinter::operator()(syntax::type::Tuple const& node) -> Str {
@@ -142,17 +138,17 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
+    auto ASTPrinter::operator()(syntax::type::GenericArguments const& node) -> Str {
+        return withDepth(std::format(
+            "type::GenericArguments [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
+        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+    }
+
     auto ASTPrinter::operator()(syntax::type::Generic const& node) -> Str {
         return withDepth(std::format(
             "type::Generic [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
-    }
-
-    auto ASTPrinter::operator()(syntax::type::Binary const& node) -> Str {
-        return withDepth(std::format(
-            "type::Binary [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
