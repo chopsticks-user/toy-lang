@@ -62,9 +62,12 @@ Void
 String
 Any
 Opt
+Own
+Ref
+Obs
         )");
 
-        assertTokenCount(8);
+        assertTokenCount(11);
         assertTokenAt(0, tlc::lexeme::fundamentalType, "Int", 1, 0);
         assertTokenAt(1, tlc::lexeme::fundamentalType, "Float", 2, 0);
         assertTokenAt(2, tlc::lexeme::fundamentalType, "Bool", 3, 0);
@@ -73,6 +76,9 @@ Opt
         assertTokenAt(5, tlc::lexeme::fundamentalType, "String", 6, 0);
         assertTokenAt(6, tlc::lexeme::fundamentalType, "Any", 7, 0);
         assertTokenAt(7, tlc::lexeme::fundamentalType, "Opt", 8, 0);
+        assertTokenAt(8, tlc::lexeme::fundamentalType, "Own", 9, 0);
+        assertTokenAt(9, tlc::lexeme::fundamentalType, "Ref", 10, 0);
+        assertTokenAt(10, tlc::lexeme::fundamentalType, "Obs", 11, 0);
     }
 
     SECTION("Identifiers") {

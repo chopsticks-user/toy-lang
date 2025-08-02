@@ -3,7 +3,8 @@
 
 #define TLC_CONFIG_BUILD_TESTS
 #define TLC_CONFIG_BUILD_EXAMPLES
-/* #undef TLC_CONFIG_BUILD_DEBUG */
+#define TLC_CONFIG_BUILD_DEBUG
+/* #undef TLC_CONFIG_ENABLE_LOGGING */
 #define TLC_CONFIG_VERSION_MAJOR 0
 #define TLC_CONFIG_VERSION_MINOR 0
 #define TLC_CONFIG_VERSION_LLVM 17
@@ -21,7 +22,7 @@ namespace tlc::config {
     constexpr auto buildTests = false;
 #endif
 
-#ifdef TLC_CONFIG_BUILD_DEBUG
+#if defined(TLC_CONFIG_BUILD_DEBUG) && defined(TLC_CONFIG_ENABLE_LOGGING)
     constexpr auto debugging = true;
 #else
     constexpr auto debugging = false;

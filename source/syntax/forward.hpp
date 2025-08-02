@@ -10,7 +10,7 @@ namespace tlc::syntax {
         struct Float;
         struct Boolean;
         struct Identifier;
-        // struct String;
+        struct String;
         struct Array;
         struct Tuple;
 
@@ -32,8 +32,8 @@ namespace tlc::syntax {
         struct Tuple;
         struct Function;
         struct Infer;
-        struct Sum;
-        struct Product;
+        struct Generic;
+        struct Binary;
     }
 
     namespace decl {
@@ -62,10 +62,12 @@ namespace tlc::syntax {
 
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
-        expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
-        expr::Binary, expr::Record,
+        expr::Tuple, expr::String, expr::FnApp, expr::Subscript, expr::Access,
+        expr::Prefix, expr::Binary, expr::Record,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
+        type::Generic, type::Binary,
+
         decl::Identifier, decl::Tuple,
 
         stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Loop,

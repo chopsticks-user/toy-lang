@@ -178,8 +178,8 @@ template <>
 struct std::hash<tlc::lexeme::Lexeme> {
     constexpr auto operator()(
         tlc::lexeme::Lexeme const& lexeme
-    ) const noexcept -> size_t {
-        return hash<int>()(static_cast<tlc::szt>(lexeme.type()));
+    ) const noexcept -> tlc::szt {
+        return hash<tlc::szt>()(static_cast<tlc::szt>(lexeme.type()));
     }
 };
 

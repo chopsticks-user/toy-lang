@@ -142,3 +142,50 @@ TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse]") {
     //     ""
     // );
 }
+
+TEST_CASE_WITH_FIXTURE("Parse: Generic types", "[Parse]") {
+    assertType(
+        "Own<foo::Bar>",
+        "type::Generic [@0:0]\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Own')\n"
+        "├─ type::Identifier [@0:4] with (fundamental, path) = (false, 'foo::Bar')"
+    );
+    assertType(
+        "Ref<Int>",
+        "type::Generic [@0:0]\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Ref')\n"
+        "├─ type::Identifier [@0:4] with (fundamental, path) = (true, 'Int')"
+    );
+    assertType(
+        "foo::Bar<Int, Float, Bool>",
+        "type::Generic [@0:0]\n"
+        "├─ type::Identifier [@0:0] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "├─ type::Identifier [@0:9] with (fundamental, path) = (true, 'Int')\n"
+        "├─ type::Identifier [@0:14] with (fundamental, path) = (true, 'Float')\n"
+        "├─ type::Identifier [@0:21] with (fundamental, path) = (true, 'Bool')"
+    );
+}
+
+TEST_CASE_WITH_FIXTURE("Parse: Binary type-expressions", "[Parse]") {
+    assertType(
+        "Int | (Float, Int) | foo::Bar",
+        "type::Binary [@0:0] with op = '|'\n"
+        "├─ type::Binary [@0:0] with op = '|'\n"
+        "   ├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ type::Tuple [@0:6] with size = 2\n"
+        "      ├─ type::Identifier [@0:7] with (fundamental, path) = (true, 'Float')\n"
+        "      ├─ type::Identifier [@0:14] with (fundamental, path) = (true, 'Int')\n"
+        "├─ type::Identifier [@0:21] with (fundamental, path) = (false, 'foo::Bar')"
+    );
+    assertType(
+        "Int | foo::Bar<Int, Float> | foo::Baz",
+        "type::Binary [@0:0] with op = '|'\n"
+        "├─ type::Binary [@0:0] with op = '|'\n"
+        "   ├─ type::Identifier [@0:0] with (fundamental, path) = (true, 'Int')\n"
+        "   ├─ type::Generic [@0:6]\n"
+        "      ├─ type::Identifier [@0:6] with (fundamental, path) = (false, 'foo::Bar')\n"
+        "      ├─ type::Identifier [@0:15] with (fundamental, path) = (true, 'Int')\n"
+        "      ├─ type::Identifier [@0:20] with (fundamental, path) = (true, 'Float')\n"
+        "├─ type::Identifier [@0:29] with (fundamental, path) = (false, 'foo::Baz')"
+    );
+}

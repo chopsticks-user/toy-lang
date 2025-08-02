@@ -323,4 +323,27 @@ namespace tlc::parse {
             std::move(*type), std::move(entries), *location
         };
     }
+
+    auto Parse::handleStringLiteral() -> ParseResult {
+        TLC_SCOPE_REPORTER();
+        return match(lexeme::dQuote)(m_stream, m_tracker).and_then(
+            [this](auto const& tokens) -> ParseResult {
+                auto location = tokens.front().location();
+                Vec<Str> fragments;
+                Vec<syntax::Node> placeholders;
+
+                // todo:
+
+                if (!m_stream.match(lexeme::dQuote)) {
+                    collect({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::String,
+                        .reason = EParseErrorReason::MissingEnclosingSymbol,
+                    });
+                }
+
+                return syntax::expr::String{{}, {}, location};
+            }
+        );
+    }
 }

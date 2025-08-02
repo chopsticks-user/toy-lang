@@ -142,6 +142,20 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
+    auto ASTPrinter::operator()(syntax::type::Generic const& node) -> Str {
+        return withDepth(std::format(
+            "type::Generic [@{}:{}]",
+            node.line(), node.column()
+        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Binary const& node) -> Str {
+        return withDepth(std::format(
+            "type::Binary [@{}:{}] with op = '{}'",
+            node.line(), node.column(), node.op().str()
+        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+    }
+
     auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
         return withDepth(std::format(
             "decl::Identifier [@{}:{}] with (const, name) = ({}, '{}')",

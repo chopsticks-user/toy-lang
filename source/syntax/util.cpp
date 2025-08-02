@@ -9,6 +9,7 @@ namespace tlc::syntax {
     static const HashSet prefixOps = {
         lexeme::exclaim, lexeme::tilde, lexeme::plus,
         lexeme::minus, lexeme::hash, lexeme::dot3,
+        lexeme::ampersand,
     };
 
     auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
@@ -29,12 +30,14 @@ namespace tlc::syntax {
         lexeme::greater, lexeme::lessEqual, lexeme::greaterEqual,
         lexeme::equal2, lexeme::exclaimEqual, lexeme::ampersand,
         lexeme::hat, lexeme::bar, lexeme::ampersand2, lexeme::bar2,
+        lexeme::barGreater,
     };
 
     auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
         return binaryOps.contains(lexeme);
     }
 
+    // todo: check C operator precedence
     static const HashMap<lexeme::Lexeme, OpPrecedence>
     prefixOpPrecedenceTable = {
         {lexeme::exclaim, 40},
@@ -43,6 +46,7 @@ namespace tlc::syntax {
         {lexeme::minus, 43},
         {lexeme::hash, 44},
         {lexeme::dot3, 45},
+        {lexeme::ampersand, 46},
     };
 
     static const HashMap<lexeme::Lexeme, OpPrecedence>
@@ -65,6 +69,7 @@ namespace tlc::syntax {
         {lexeme::fwdSlash, 28},
         {lexeme::star, 28},
         {lexeme::star2, 30},
+        {lexeme::barGreater, 32},
     };
 
     auto opPrecedence(
@@ -78,7 +83,12 @@ namespace tlc::syntax {
     }
 
     static const HashSet leftAssociativeOps = {
-        lexeme::plus, lexeme::minus, lexeme::star, lexeme::fwdSlash,
+        lexeme::bar2, lexeme::ampersand2, lexeme::bar, lexeme::hat,
+        lexeme::ampersand, lexeme::exclaimEqual, lexeme::equal2,
+        lexeme::greaterEqual, lexeme::lessEqual, lexeme::greater,
+        lexeme::less, lexeme::less2, lexeme::greater2, lexeme::plus,
+        lexeme::minus, lexeme::star, lexeme::fwdSlash, lexeme::star2,
+        lexeme::barGreater,
     };
 
     auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {

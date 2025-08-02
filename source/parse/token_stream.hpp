@@ -34,6 +34,14 @@ namespace tlc::parse {
             m_backtrack.push({m_tokenIt, m_started});
         }
 
+        // todo: implement scoped backtrack
+        auto removeBacktrack() -> void {
+            if (m_backtrack.empty()) {
+                return;
+            }
+            m_backtrack.pop();
+        }
+
         auto backtrack() -> void;
 
         [[nodiscard]] auto current() const -> token::Token;

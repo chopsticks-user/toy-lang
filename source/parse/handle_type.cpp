@@ -1,7 +1,7 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleType() -> ParseResult { // NOLINT(*-no-recursion)
+    auto Parse::handleType(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
         auto const location = m_tracker.scopedLocation();
         auto lhs =
@@ -18,9 +18,37 @@ namespace tlc::parse {
             return Unexpected{lhs.error()};
         }
 
+        if (m_stream.match(lexeme::less)) {
+            Vec<syntax::Node> types;
+            do {
+                types.push_back(*handleType().or_else(
+                    [this](auto&& error) -> ParseResult {
+                        collect(error).collect({
+                            .location = m_tracker.current(),
+                            .context = EParseErrorContext::GenericTypeTuple,
+                            .reason = EParseErrorReason::MissingType,
+                        });
+                        return {};
+                    }
+                ));
+            }
+            while (m_stream.match(lexeme::comma));
+
+            if (!m_stream.match(lexeme::greater)) {
+                collect({
+                    .location = m_tracker.current(),
+                    .context = EParseErrorContext::GenericTypeTuple,
+                    .reason = EParseErrorReason::MissingEnclosingSymbol,
+                });
+            }
+
+            lhs = syntax::type::Generic{*lhs, std::move(types), *location};
+        }
+
         m_stream.markBacktrack();
         while (true) {
             if (m_stream.peek().lexeme() == lexeme::leftBracket) {
+                // todo:
                 Vec<syntax::Node> dimSizes;
                 while (m_stream.match(lexeme::leftBracket)) {
                     dimSizes.emplace_back(handleExpr().value_or({}));
@@ -46,8 +74,33 @@ namespace tlc::parse {
                     *lhs, std::move(*fnResultType), *location
                 };
             }
-            else if (false) {
-                // todo: binary operators on types
+            else if (m_stream.match(lexeme::bar, lexeme::ampersand, lexeme::barGreater)) {
+                auto op = m_stream.current().lexeme();
+                auto const p = syntax::opPrecedence(
+                    op, syntax::EOperator::Binary
+                );
+                if (p <= minP) {
+                    m_stream.backtrack();
+                    break;
+                }
+                lhs = handleType(syntax::isLeftAssociative(op) ? p + 1 : p)
+                      .and_then([&](auto const& rhs) -> ParseResult {
+                              return syntax::type::Binary{
+                                  *lhs, rhs, op, *location
+                              };
+                          }
+                      ).or_else([this](auto&& error) -> ParseResult {
+                          collect(error).collect({
+                              .location = m_tracker.current(),
+                              .context = EParseErrorContext::BinaryTypeExpr,
+                              .reason = EParseErrorReason::MissingType,
+                          });
+                          return {};
+                      });
+
+                // if (!lhs) {
+                //     break;
+                // }
             }
             else {
                 break;
@@ -102,7 +155,7 @@ namespace tlc::parse {
                                     .context = EParseErrorContext::Tuple,
                                     .reason = EParseErrorReason::MissingType,
                                 });
-                                return syntax::Node{};
+                                return {};
                             }
                         )
                     );
