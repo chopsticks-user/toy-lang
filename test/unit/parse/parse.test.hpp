@@ -28,6 +28,11 @@ protected:
         std::source_location location = std::source_location::current()
     ) -> void;
 
+    static auto assertString(
+        tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
+        std::source_location location = std::source_location::current()
+    ) -> void;
+
     static auto assertType(
         tlc::Str source, tlc::Str expected,
         std::source_location location = std::source_location::current()

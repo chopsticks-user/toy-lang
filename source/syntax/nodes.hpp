@@ -129,6 +129,10 @@ namespace tlc::syntax {
                 return m_fragments.size() - 1;
             }
 
+            [[nodiscard]] auto interpolated() const noexcept -> b8 {
+                return nPlaceholders() > 0;
+            }
+
         private:
             Vec<Str> m_fragments;
         };

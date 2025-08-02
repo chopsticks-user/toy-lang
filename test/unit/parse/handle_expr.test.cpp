@@ -20,6 +20,30 @@ auto ParseTestFixture::assertExpr(
     REQUIRE(actual == expected);
 }
 
+auto ParseTestFixture::assertString(
+    tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
+    std::source_location location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
+
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }.parseExpr();
+    REQUIRE(result.has_value());
+
+    auto const actual = tlc::parse::ASTPrinter::operator()(*result);
+    REQUIRE(actual == expected);
+
+    REQUIRE(matchAstType<expr::String>(*result));
+    auto stringNode = astCast<expr::String>(*result);
+    REQUIRE_FALSE(stringNode.interpolated());
+    REQUIRE(tlc::rng::equal(
+        stringNode.fragments(), expectedFragments
+    ));
+}
+
 TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
     assertExpr(
         "31415",
@@ -100,9 +124,6 @@ TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {
         "expr::Boolean [@0:0] with value = false"
     );
 }
-
-// todo
-TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {}
 
 TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
     assertExpr(
@@ -320,3 +341,17 @@ TEST_CASE_WITH_FIXTURE("Parse: Ternary expressions", "[Parse]") {}
 
 // todo
 TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Parse]") {}
+
+// todo
+TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
+    assertString(
+        R"("")",
+        "expr::String [@0:0] with nPlaceholders = 0",
+        {""}
+    );
+    assertString(
+        R"("regular string\n")",
+        "expr::String [@0:0] with nPlaceholders = 0",
+        {"regular string\n"}
+    );
+}

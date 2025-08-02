@@ -97,6 +97,9 @@ namespace tlc::parse {
         if (auto const result = handleIdentifierLiteral(); result) {
             return result;
         }
+        if (auto const result = handleString(); result) {
+            return result;
+        }
         if (auto const result = handleTupleExpr(); result) {
             return result;
         }
@@ -327,11 +330,24 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleStringLiteral() -> ParseResult {
+    auto Parse::handleString() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        return match(lexeme::stringFragment)(m_stream, m_tracker).and_then(
+        return seq(
+            match(lexeme::stringFragment),
+            many0(seq(
+                match(lexeme::stringPlaceholder),
+                match(lexeme::stringFragment)
+            ))
+        )(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto location = tokens.front().location();
+
+                if (tokens.size() == 1) {
+                    return syntax::expr::String{
+                        {tokens.front().str()}, {}, location
+                    };
+                }
+
                 Vec<Str> fragments;
                 Vec<syntax::Node> placeholders;
 

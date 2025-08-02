@@ -101,6 +101,15 @@ namespace tlc::parse {
         );
     }
 
+    auto ASTPrinter::operator()(syntax::expr::String const& node) -> Str {
+        return withDepth(std::format(
+            "expr::String [@{}:{}] with nPlaceholders = {}",
+            node.line(), node.column(), node.nPlaceholders()
+        )) + (node.interpolated()
+                  ? "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl)
+                  : "");
+    }
+
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
         return withDepth(std::format(
             "type::Identifier [@{}:{}] with (fund, path) = ({:s}, '{}')",
