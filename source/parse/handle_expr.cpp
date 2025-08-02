@@ -359,7 +359,6 @@ namespace tlc::parse {
                     });
                 }
 
-
                 Vec<Str> fragments = tokens | rv::enumerate
                     | rv::filter([](Pair<szt, token::Token> const& entry) {
                         return (entry.first & 1) == 0;

@@ -342,30 +342,29 @@ TEST_CASE_WITH_FIXTURE("Parse: Ternary expressions", "[Parse]") {}
 // todo
 TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Parse]") {}
 
-// todo
 TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
-    // assertString(
-    //     R"("")",
-    //     "expr::String [@0:0] with nPlaceholders = 0",
-    //     {""}
-    // );
-    // assertString(
-    //     R"("regular string\n")",
-    //     "expr::String [@0:0] with nPlaceholders = 0",
-    //     {"regular string\n"}
-    // );
+    assertString(
+        R"("")",
+        "expr::String [@0:0] with nPlaceholders = 0",
+        {""}
+    );
+    assertString(
+        R"("regular string\n")",
+        "expr::String [@0:0] with nPlaceholders = 0",
+        {"regular string\n"}
+    );
     assertString(
         R"(
 
-         "{x}+{y}={x+y}"
+         "{x} + {y} = {x + y}"
 
         )",
         "expr::String [@2:9] with nPlaceholders = 3\n"
         "├─ expr::Identifier [@2:2] with path = 'x'\n"
-        "├─ expr::Identifier [@2:6] with path = 'y'\n"
-        "├─ expr::Binary [@2:10] with op = '+'\n"
-        "   ├─ expr::Identifier [@2:10] with path = 'x'\n"
-        "   ├─ expr::Identifier [@2:12] with path = 'y'",
-        {"", "+", "=", ""}
+        "├─ expr::Identifier [@2:8] with path = 'y'\n"
+        "├─ expr::Binary [@2:14] with op = '+'\n"
+        "   ├─ expr::Identifier [@2:14] with path = 'x'\n"
+        "   ├─ expr::Identifier [@2:18] with path = 'y'",
+        {"", " + ", " = ", ""}
     );
 }
