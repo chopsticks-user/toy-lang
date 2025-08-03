@@ -96,10 +96,10 @@ namespace tlc::syntax {
     }
 
     static const HashSet assignmentOps = {
-        lexeme::equal, lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
+        lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
         lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
         lexeme::ampersandEqual, lexeme::barEqual, lexeme::hatEqual,
-        lexeme::less2Equal, lexeme::greater2Equal,
+        lexeme::less2Equal, lexeme::greater2Equal, lexeme::colonEqual,
     };
 
     auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {

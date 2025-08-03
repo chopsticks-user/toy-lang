@@ -2,22 +2,28 @@
 
 namespace tlc::lexeme {
     const HashMap<StrV, Lexeme> nonTypeKeywordTable = {
-        /* Visibility */{module.str(), module}, {import_.str(), import_},
-        {export_.str(), export_}, {internal.str(), internal},
-        {local.str(), local}, {extern_.str(), extern_},
+        /* Module */{module.str(), module}, {import_.str(), import_},
+
+        /* Visibility */ {pub.str(), pub}, {prv.str(), prv},
+
+        /* Storage */ {isolated.str(), isolated}, {static_.str(), static_},
+
         /* Definition */{let.str(), let}, {fn.str(), fn}, {trait.str(), trait},
         {type.str(), type}, {enum_.str(), enum_}, {flag.str(), flag},
+
         /* Control */{for_.str(), for_}, {return_.str(), return_},
-        {yield.str(), yield}, {match.str(), match}, {defer.str(), defer},
-        {preface.str(), preface},
-        /* Adverb */{by.str(), by}, {of.str(), of}, {in.str(), in},
-        {when.str(), when},
+        {match.str(), match}, {defer.str(), defer},
+        {preface.str(), preface}, {break_.str(), break_},
+        {continue_.str(), continue_},
+
+        /* Adverb */{in.str(), in}, {when.str(), when}, {impl.str(), impl},
+
+        /* Reserved */{self.str(), self}, {main_.str(), main_},
+
         /* Boolean */{true_.str(), true_}, {false_.str(), false_},
-        /* Object */{self.str(), self}, {pub.str(), pub}, {prv.str(), prv},
-        {impl.str(), impl},
     };
 
-    const HashMap<StrV, Lexeme> operatorTable = {
+    const HashMap<StrV, Lexeme> symbolTable = {
         /* Triple characters */
         {greater2Equal.str(), greater2Equal},
         {less2Equal.str(), less2Equal},
@@ -36,6 +42,7 @@ namespace tlc::lexeme {
         {lessEqual.str(), lessEqual},
         {plusEqual.str(), plusEqual},
         {minusEqual.str(), minusEqual},
+        {colonEqual.str(), colonEqual},
         {barGreater.str(), barGreater},
         {minusGreater.str(), minusGreater},
         {equalGreater.str(), equalGreater},
@@ -89,7 +96,7 @@ namespace tlc::lexeme {
     const OpGraph3 opGraph = [] {
         OpGraph3 graph;
         rng::for_each(
-            operatorTable
+            symbolTable
             | rv::transform([](auto const& entry) {
                 return entry.first;
             }), [&graph](StrV const op) {

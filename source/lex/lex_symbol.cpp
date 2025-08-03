@@ -5,7 +5,7 @@ namespace tlc::lex {
     auto Lex::lexSymbol() -> void {
         appendStr();
         if (isUnnamedIdentifier(m_stream.current())) {
-            m_currentLexeme = lexeme::anonymousIdentifier;
+            m_currentLexeme = lexeme::anonymous;
             appendToken();
             return;
         }
@@ -29,7 +29,7 @@ namespace tlc::lex {
             return;
         }
 
-        m_currentLexeme = lexeme::operatorTable.at(m_currentStr);
+        m_currentLexeme = lexeme::symbolTable.at(m_currentStr);
         appendToken();
     }
 }

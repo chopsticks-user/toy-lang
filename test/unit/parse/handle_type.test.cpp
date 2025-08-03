@@ -78,12 +78,12 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse]") {
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
-    // assertType(
-    //     "Int[5]",
-    //     "type::Array [@0:0] with nDims = 1\n"
-    //     "├─ type::Identifier [@0:0] with (fund, path) = (true, 'Int')\n"
-    //     "├─ expr::Integer [@0:4] with value = 5"
-    // );
+    assertType(
+        "Int[5]",
+        "type::Array [@0:0] with nDims = 1\n"
+        "├─ type::Identifier [@0:0] with (fund, path) = (true, 'Int')\n"
+        "├─ expr::Integer [@0:4] with value = 5"
+    );
     assertType(
         "[[x]][5, y+z]",
         "type::Array [@0:0] with nDims = 2\n"

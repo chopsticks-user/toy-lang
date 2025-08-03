@@ -44,7 +44,6 @@ namespace tlc::syntax {
     namespace stmt {
         struct Let;
         struct Return;
-        struct Yield;
         struct Preface;
         struct Defer;
         struct MatchCase;
@@ -70,7 +69,7 @@ namespace tlc::syntax {
 
         decl::Identifier, decl::Tuple,
 
-        stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Loop,
+        stmt::Let, stmt::Return, stmt::Preface, stmt::Defer, stmt::Loop,
         stmt::Match, stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
         stmt::Expression,
 

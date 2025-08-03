@@ -1,54 +1,22 @@
-module foo;
+module std.rng;
 
-import std::io;
-import std::rng;
-
-local fn eval: (x: Float, y: Float) -> (sum: Float, product: Float) {
-    sum = x + y;
-    return (sum, x * y);
+trait IsIterator {
 }
 
-export fn double: (x: Float) -> {
-    return (x: Float) -> Float {
-        let (_, dbl: Float) = eval(x, 2);
-        return dbl;
-    };
+type Iterator {
 }
 
-fn main: () -> {
-    let x: Int, _: Bool, y: Int = 5;
+trait <T> IsRangeOf {
+    pub fn length: () -> Int;
+    pub fn start: () -> It<T>;
+    pub fn end: () -> It<T>;
+}
 
-    (x, y) :=> {
-        (_, _) if x > 4 && y > 4 => x |> io::println;
-        (_, 8) if x > 8 => x |> io::println;
-        (8, _) if y <= 8 => x * 2 |> io::println;
-        _ => io::println(":(");
-    }
+type Policy {
+}
 
-    let r1: Rng<Int> = 0 .. 5 @ 1;
-    let r2 = 5 .. 10;
-    let r3 = r1 |> rng::concat(r2) |> rng::filter(i: Int -> Bool i % 2 == 0);
-    let r4 = r3 |> rng::first(3);
+pub fn <T> each: ($range: IsRangeOf<T>, action, policy: ?Policy) -> {
+    for element: T in range {
 
-    r4 |> rng::each(i: (Int) -> { "{i} -> {i |> double}" |> io::println; });
-
-    let x: $Int?;
-    r4 |> rng::diff(r1)
-       |> rng::each(
-            // like functions, '(v: Int, _: Int) ->' and '(v: Int, _) -> ' are also acceptable
-            v: Int -> {
-                $x = v |> double;
-                "{v} -> {$x}" |> io::println; // $x!! != null
-            }
-       );
-
-    let r5: Rng<Int, Double> = r1 |> rng::zip(0.0 .. 5.0 @ 1.0);
-
-    (v1: Int, v2: Float, i: Int) in r5 :~> {
-        "{i}: ({v1}, {v2}) -> ({v1 |> double}, {v2 |> double})" |> io::println;
-    }
-
-    (v1: Int, v2: Float) in r5 :~> {
-        "({v1}, {v2}) -> ({v1 |> double}, {v2 |> double})" |> io::println;
     }
 }

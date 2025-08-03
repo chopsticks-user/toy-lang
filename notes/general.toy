@@ -1,0 +1,25 @@
+module foo;
+
+import std.rng;
+import meta = std.meta;
+import io = std.io;
+
+prv trait IsAddible = meta.IsAddible;
+
+prv type Fund = meta.IsFundamental;
+
+pub fn eval(x: IsAddible, y: IsAddible) -> (sum, product) {
+    sum := x + y;
+    product := x * y;
+    return (sum, product);
+}
+
+fn main: () -> {
+    (x: Int, y: Int) = (5, 10);
+
+    (sum, product) = eval(x, y);
+    io.println("for (x, y) = ({x}, {y}), (sum, product) = ({sum}, {product})");
+
+    (sum, product) := eval(x, y);
+    io.println("for (x, y) = ({sum}, {product}), (sum, product) = ({sum}, {product})");
+}

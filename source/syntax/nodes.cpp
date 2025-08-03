@@ -176,18 +176,12 @@ namespace tlc::syntax {
     stmt::Return::Return(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
 
-
-    stmt::Yield::Yield(Node expr, Location const location)
-        : NodeBase{{std::move(expr)}, location} {}
-
-
     stmt::Preface::Preface(Node stmt, Location const location)
         : NodeBase{{std::move(stmt)}, location} {}
 
 
     stmt::Defer::Defer(Node stmt, Location const location)
         : NodeBase{{std::move(stmt)}, location} {}
-
 
     stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location const location)
         : NodeBase{

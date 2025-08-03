@@ -15,9 +15,6 @@ namespace tlc::parse {
         if (auto prefaceStmt = handlePrefaceStmt(); prefaceStmt) {
             return prefaceStmt;
         }
-        if (auto yieldStmt = handleYieldStmt(); yieldStmt) {
-            return yieldStmt;
-        }
         if (auto blockStmt = handleBlockStmt(); blockStmt) {
             return blockStmt;
         }
@@ -240,7 +237,7 @@ namespace tlc::parse {
                     };
                 }
                 while (!m_stream.match(lexeme::rightBrace)) {
-                    if (m_stream.match(lexeme::anonymousIdentifier)) {
+                    if (m_stream.match(lexeme::anonymous)) {
                         if (!m_stream.match(lexeme::equalGreater)) {
                             collect({
                                 .location = m_tracker.current(),
@@ -398,37 +395,5 @@ namespace tlc::parse {
                     location
                 };
             });
-    }
-
-    auto Parse::handleYieldStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::yield)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-
-                auto yieldStmt = syntax::stmt::Yield{
-                    *parseExpr().or_else([this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::YieldStmt,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return {};
-                    }),
-                    location,
-                };
-
-                if (!m_stream.match(lexeme::semicolon)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Stmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                return yieldStmt;
-            }
-        );
     }
 }

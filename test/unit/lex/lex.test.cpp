@@ -108,23 +108,37 @@ Fo0
     }
 
     SECTION("Keywords") {
-        SECTION("Visibility") {
+        SECTION("Module") {
             lex(R"(
 module
 import
-export
-internal
-local
-extern
             )");
 
-            assertTokenCount(6);
+            assertTokenCount(2);
             assertTokenAt(0, tlc::lexeme::module, "module", 1, 0);
             assertTokenAt(1, tlc::lexeme::import_, "import", 2, 0);
-            assertTokenAt(2, tlc::lexeme::export_, "export", 3, 0);
-            assertTokenAt(3, tlc::lexeme::internal, "internal", 4, 0);
-            assertTokenAt(4, tlc::lexeme::local, "local", 5, 0);
-            assertTokenAt(5, tlc::lexeme::extern_, "extern", 6, 0);
+        }
+
+        SECTION("Visibility") {
+            lex(R"(
+pub
+prv
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::pub, "pub", 1, 0);
+            assertTokenAt(1, tlc::lexeme::prv, "prv", 2, 0);
+        }
+
+        SECTION("Storage") {
+            lex(R"(
+isolated
+static
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::isolated, "isolated", 1, 0);
+            assertTokenAt(1, tlc::lexeme::static_, "static", 2, 0);
         }
 
         SECTION("Definition") {
@@ -151,27 +165,44 @@ flag
 for
 return
 match
+defer
+preface
+break
+continue
             )");
 
-            assertTokenCount(3);
+            assertTokenCount(7);
             assertTokenAt(0, tlc::lexeme::for_, "for", 1, 0);
             assertTokenAt(1, tlc::lexeme::return_, "return", 2, 0);
             assertTokenAt(2, tlc::lexeme::match, "match", 3, 0);
+            assertTokenAt(3, tlc::lexeme::defer, "defer", 4, 0);
+            assertTokenAt(4, tlc::lexeme::preface, "preface", 5, 0);
+            assertTokenAt(5, tlc::lexeme::break_, "break", 6, 0);
+            assertTokenAt(6, tlc::lexeme::continue_, "continue", 7, 0);
         }
 
         SECTION("Adverb") {
             lex(R"(
-by
-of
 in
 when
+impl
             )");
 
-            assertTokenCount(4);
-            assertTokenAt(0, tlc::lexeme::by, "by", 1, 0);
-            assertTokenAt(1, tlc::lexeme::of, "of", 2, 0);
-            assertTokenAt(2, tlc::lexeme::in, "in", 3, 0);
-            assertTokenAt(3, tlc::lexeme::when, "when", 4, 0);
+            assertTokenCount(3);
+            assertTokenAt(0, tlc::lexeme::in, "in", 1, 0);
+            assertTokenAt(1, tlc::lexeme::when, "when", 2, 0);
+            assertTokenAt(2, tlc::lexeme::impl, "impl", 3, 0);
+        }
+
+        SECTION("Reserved") {
+            lex(R"(
+self
+main
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::self, "self", 1, 0);
+            assertTokenAt(1, tlc::lexeme::main_, "main", 2, 0);
         }
 
         SECTION("Boolean") {
@@ -183,21 +214,6 @@ false
             assertTokenCount(2);
             assertTokenAt(0, tlc::lexeme::true_, "true", 1, 0);
             assertTokenAt(1, tlc::lexeme::false_, "false", 2, 0);
-        }
-
-        SECTION("Object") {
-            lex(R"(
-self
-pub
-prv
-impl
-            )");
-
-            assertTokenCount(4);
-            assertTokenAt(0, tlc::lexeme::self, "self", 1, 0);
-            assertTokenAt(1, tlc::lexeme::pub, "pub", 2, 0);
-            assertTokenAt(2, tlc::lexeme::prv, "prv", 3, 0);
-            assertTokenAt(3, tlc::lexeme::impl, "impl", 4, 0);
         }
     }
 }

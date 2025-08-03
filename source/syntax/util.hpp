@@ -53,15 +53,6 @@ namespace tlc::syntax {
     auto opPrecedence(lexeme::Lexeme const& lexeme, EOperator opType) -> OpPrecedence;
     auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> bool;
     auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> bool;
-
-    // const HashSet<Str> assignmentOps = {
-    //   "=", "+=", "-=", "*=", "/=", "%=", "**=",
-    //   "&=", "|=", "^=", "<<=", ">>=",
-    // };
-    // const HashSet<Str> overloadableOps = {
-    //   "+", "-", "*", "/",
-    //   "==", "!=",
-    // };
 }
 
 #endif // TLC_SYNTAX_UTIL_HPP

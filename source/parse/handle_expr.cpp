@@ -88,7 +88,7 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
+    auto Parse::handlePrimaryExpr() -> ParseResult {
         TLC_SCOPE_REPORTER();
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
@@ -151,7 +151,7 @@ namespace tlc::parse {
 
     auto Parse::handleIdentifierLiteral() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        if (m_stream.match(lexeme::anonymousIdentifier)) {
+        if (m_stream.match(lexeme::anonymous)) {
             return syntax::expr::Identifier{
                 {m_stream.current().str()}, m_stream.current().location()
             };

@@ -1,3 +1,4 @@
+### Lexing and Parsing
 - ~~"defer" and "preface" statements that can only be used inside a function scope~~
 - ~~"yield" statement that can be used inside any arbitrary scope~~
 - ~~Update operators in the "syntax" module~~
@@ -16,6 +17,8 @@
 - Add more test cases for lexing and parsing to test ErrorCollector
 - Design trait, class, etc. Complete implementations and test cases
   for global definitions
+
+### Static phase
 - Create a visitor to collapse single-element tuples into
   value expressions
 - Create a visitor to combine "x |> y(...)" into "y(x, ...)"

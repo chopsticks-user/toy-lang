@@ -189,18 +189,6 @@ namespace tlc::parse {
         )) + suffix;
     }
 
-    auto ASTPrinter::operator()(syntax::stmt::Yield const& node) -> Str {
-        Str suffix = visitChildren(node).front();
-        if (!suffix.empty()) {
-            suffix = std::format("\n{}", suffix);
-        }
-
-        return withDepth(std::format(
-            "stmt::Yield [@{}:{}]",
-            node.line(), node.column()
-        )) + suffix;
-    }
-
     auto ASTPrinter::operator()(syntax::stmt::Let const& node) -> Str {
         auto suffix = visitChildren(node) | rvFilterEmpty
             | rvJoinWithEl;

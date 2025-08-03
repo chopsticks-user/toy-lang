@@ -245,41 +245,6 @@ namespace tlc::syntax {
         /**
          * Syntax:
          *      \code
-         *          "yield" expr? ";"
-         *      \endcode
-         *
-         * Examples:
-         *      \code
-         *          export fn f: (n: Int) -> {
-         *              let x = {
-         *                  yield n * n;
-         *              };
-         *              ...
-         *          }
-         *      \endcode
-         *
-         * Notes:
-         *      - Among all statements, conditional statement is the only
-         *      statement capable of returning a value to its lhs expression.
-         *      Other scope-owner statements, except for a few exceptions such as
-         *      "defer" and "preface", can achieve value semantics by using the
-         *      "yield" statement. Thus, it can be said that "yield" makes the
-         *      language a partially expression-oriented language.
-         *      - Cannot be placed inside a 1st-level scope of a function.
-         *      - Used to exit the current scope and indicate that the value evaluated
-         *      by "expr" will be returned and effectively make the statement owning
-         *      the exited scope an expression returning the value.
-         *      - Unlike "return", "yield" cannot be a scope owner, and it is a syntax
-         *      error if "expr" is neither present nor evaluating to a non-void value.
-         *      - Like "return", "yield" is a pure statement.
-         */
-        struct Yield final : detail::NodeBase {
-            Yield(Node expr, Location location);
-        };
-
-        /**
-         * Syntax:
-         *      \code
          *          "preface" ("{" stmt* "}" | expr ";")
          *      \endcode
          *
