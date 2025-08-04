@@ -92,9 +92,10 @@ namespace tlc::syntax {
 
     namespace type {
         Identifier::Identifier(
-            Vec<Str> path, b8 const fundamental, Location const location
-        ): NodeBase{{}, location},
-           IdentifierBase{std::move(path)}, m_fundamental{fundamental} {}
+            b8 const constant, Vec<Str> path, b8 const fundamental,
+            Location const location
+        ): NodeBase{{}, location}, IdentifierBase{std::move(path)},
+           m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
             Node type, Vec<Node> sizes, Location const location
@@ -145,9 +146,9 @@ namespace tlc::syntax {
 
     namespace decl {
         Identifier::Identifier(
-            b8 const constant, Str name, Node type, Location const location
+            Str name, Node type, Location const location
         ) : NodeBase{{std::move(type)}, location},
-            m_constant{constant}, m_name{std::move(name)} {}
+            m_name{std::move(name)} {}
 
 
         auto Identifier::inferred() const noexcept -> b8 {
@@ -166,19 +167,15 @@ namespace tlc::syntax {
         }
     }
 
-    stmt::Let::Let(Node decl, Node initializer, Location const location)
+    stmt::Decl::Decl(Node decl, Node initializer, Location const location)
         : NodeBase{{std::move(decl), std::move(initializer)}, location} {}
 
-    auto stmt::Let::defaultInitialized() const -> bool {
+    auto stmt::Decl::defaultInitialized() const -> bool {
         return isEmptyNode(lastChild());
     }
 
     stmt::Return::Return(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
-
-    stmt::Preface::Preface(Node stmt, Location const location)
-        : NodeBase{{std::move(stmt)}, location} {}
-
 
     stmt::Defer::Defer(Node stmt, Location const location)
         : NodeBase{{std::move(stmt)}, location} {}

@@ -6,14 +6,8 @@ namespace tlc::parse {
         if (auto returnStmt = handleReturnStmt(); returnStmt) {
             return returnStmt;
         }
-        if (auto letStmt = handleLetStmt(); letStmt) {
-            return letStmt;
-        }
         if (auto deferStmt = handleDeferStmt(); deferStmt) {
             return deferStmt;
-        }
-        if (auto prefaceStmt = handlePrefaceStmt(); prefaceStmt) {
-            return prefaceStmt;
         }
         if (auto blockStmt = handleBlockStmt(); blockStmt) {
             return blockStmt;
@@ -24,39 +18,37 @@ namespace tlc::parse {
         if (auto loopStmt = handleLoopStmt(); loopStmt) {
             return loopStmt;
         }
+        if (auto declStmt = handleDeclStmt(); declStmt) {
+            return declStmt;
+        }
         if (auto exprStmt = handleExprPrefixedStmt(); exprStmt) {
             return exprStmt;
         }
+
         // todo:
         return {};
     }
 
-    auto Parse::handleLetStmt() -> ParseResult {
+    auto Parse::handleDeclStmt() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        return match(lexeme::let)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
+        auto const location = m_tracker.scopedLocation();
+        auto backtrack = m_stream.scopedBacktrack();
+        return handleDecl().and_then(
+            [&](syntax::Node&& decl) -> ParseResult {
+                if (!match(lexeme::equal)(m_stream, m_tracker)) {
+                    backtrack();
+                    return defaultError();
+                }
 
-                auto decl = *parseDecl().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
+                auto initializer = *parseExpr()
+                    .or_else([this](auto&& error) -> ParseResult {
+                        collect(error).collect({
                             .location = m_tracker.current(),
                             .context = EParseErrorContext::Stmt,
-                            .reason = EParseErrorReason::MissingDecl,
+                            .reason = EParseErrorReason::MissingExpr,
                         });
                         return {};
-                    }
-                );
-
-                auto initializer =
-                    *match(lexeme::equal)(m_stream, m_tracker)
-                     .and_then([this](auto) -> ParseResult {
-                         return *parseExpr().or_else([this](auto&& error) -> ParseResult {
-                             collect(error);
-                             return {};
-                         });
-                     }).or_else([this](auto) -> ParseResult { return {}; });
+                    });
 
                 if (!m_stream.match(lexeme::semicolon)) {
                     collect({
@@ -65,9 +57,8 @@ namespace tlc::parse {
                         .reason = EParseErrorReason::MissingEnclosingSymbol,
                     });
                 }
-
-                return syntax::stmt::Let{
-                    std::move(decl), std::move(initializer), location
+                return syntax::stmt::Decl{
+                    std::move(decl), std::move(initializer), *location
                 };
             }
         );
@@ -159,7 +150,7 @@ namespace tlc::parse {
         return match(lexeme::for_)(m_stream, m_tracker).and_then(
             [this](auto const& tokens) -> ParseResult {
                 auto location = tokens.front().location();
-                auto decl = *handleStmtLevelDecl().or_else(
+                auto decl = *handleDecl().or_else(
                     [this](auto&& error) -> ParseResult {
                         collect(error);
                         collect({
@@ -366,28 +357,6 @@ namespace tlc::parse {
                             collect({
                                 .location = m_tracker.current(),
                                 .context = EParseErrorContext::DeferStmt,
-                                .reason = EParseErrorReason::MissingStmt,
-                            });
-                            return {};
-                        }),
-                    location
-                };
-            });
-    }
-
-
-    auto Parse::handlePrefaceStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::preface)(m_stream, m_tracker)
-            .and_then([this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-                return syntax::stmt::Preface{
-                    *handleStmt().or_else(
-                        [this, &location](auto&& error) -> ParseResult {
-                            collect(error);
-                            collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::PrefaceStmt,
                                 .reason = EParseErrorReason::MissingStmt,
                             });
                             return {};

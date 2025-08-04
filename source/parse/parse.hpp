@@ -44,7 +44,7 @@ namespace tlc::parse {
         }
 
         auto parseDecl() -> ParseResult {
-            return handleStmtLevelDecl();
+            return handleDecl();
         }
 #endif
 
@@ -63,12 +63,12 @@ namespace tlc::parse {
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
 
-        auto handleStmtLevelDecl() -> ParseResult;
+        auto handleDecl() -> ParseResult;
         auto handleIdentifierDecl() -> ParseResult;
         auto handleTupleDecl() -> ParseResult;
 
         auto handleStmt() -> ParseResult;
-        auto handleLetStmt() -> ParseResult;
+        auto handleDeclStmt() -> ParseResult;
         auto handleReturnStmt() -> ParseResult;
         auto handleDeferStmt() -> ParseResult;
         auto handlePrefaceStmt() -> ParseResult;

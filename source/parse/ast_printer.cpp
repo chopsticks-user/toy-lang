@@ -112,8 +112,10 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
         return withDepth(std::format(
-            "type::Identifier [@{}:{}] with (fund, path) = ({:s}, '{}')",
-            node.line(), node.column(), node.fundamental(), node.path()
+            "type::Identifier [@{}:{}] with (const, fund, path) "
+            "= ({:s}, {:s}, '{}')",
+            node.line(), node.column(), node.constant(),
+            node.fundamental(), node.path()
         ));
     }
 
@@ -163,8 +165,8 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
         return withDepth(std::format(
-            "decl::Identifier [@{}:{}] with (const, name) = ({}, '{}')",
-            node.line(), node.column(), node.constant(), node.name()
+            "decl::Identifier [@{}:{}] with name = '{}'",
+            node.line(), node.column(), node.name()
         )) + (node.inferred() ? "" : "\n" + visitChildren(node).front());
     }
 
@@ -189,7 +191,7 @@ namespace tlc::parse {
         )) + suffix;
     }
 
-    auto ASTPrinter::operator()(syntax::stmt::Let const& node) -> Str {
+    auto ASTPrinter::operator()(syntax::stmt::Decl const& node) -> Str {
         auto suffix = visitChildren(node) | rvFilterEmpty
             | rvJoinWithEl;
         if (!suffix.empty()) {
@@ -197,7 +199,7 @@ namespace tlc::parse {
         }
 
         return withDepth(std::format(
-            "stmt::Let [@{}:{}]",
+            "stmt::Decl [@{}:{}]",
             node.line(), node.column()
         )) + suffix;
     }
@@ -237,13 +239,6 @@ namespace tlc::parse {
                 ? ""
                 : "\n" + (visitChildren(node) | rvJoinWithEl)
         );
-    }
-
-    auto ASTPrinter::operator()(syntax::stmt::Preface const& node) -> Str {
-        return withDepth(std::format(
-            "stmt::Preface [@{}:{}]",
-            node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Defer const& node) -> Str {

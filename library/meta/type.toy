@@ -1,0 +1,12 @@
+module meta.type;
+
+type <T> Identity = T |> @builtin("type", "identity");
+type <T> Mutable = $T;
+type <T> Immutable = T;
+type <T> MaybeMutable = T | $T;
+
+type <E> SideEffectResult = Void |> Result<E>;
+type <T, E> SideEffect = MaybeMutable<T> -> E |> SideEffectResult;
+
+type <E> PredicateResult = Bool |> Result<E>;
+type <T, E> Predicate = T -> E |> PredicateResult;

@@ -157,14 +157,21 @@ namespace tlc::syntax {
 
     namespace type {
         struct Identifier : detail::NodeBase, detail::IdentifierBase {
-            Identifier(Vec<Str> path, b8 fundamental, Location location);
+            Identifier(
+                b8 constant, Vec<Str> path, b8 fundamental, Location location
+            );
 
             [[nodiscard]] auto fundamental() const noexcept -> bool {
                 return m_fundamental;
             }
 
+            [[nodiscard]] auto constant() const noexcept -> bool {
+                return m_constant;
+            }
+
         private:
             b8 m_fundamental;
+            b8 m_constant;
         };
 
         struct Array final : detail::NodeBase {
@@ -205,11 +212,7 @@ namespace tlc::syntax {
 
     namespace decl {
         struct Identifier final : detail::NodeBase {
-            Identifier(b8 constant, Str name, Node type, Location location);
-
-            [[nodiscard]] auto constant() const noexcept -> b8 {
-                return m_constant;
-            }
+            Identifier(Str name, Node type, Location location);
 
             [[nodiscard]] auto name() const noexcept -> Str const& {
                 return m_name;
@@ -218,7 +221,6 @@ namespace tlc::syntax {
             [[nodiscard]] auto inferred() const noexcept -> b8;
 
         private:
-            b8 m_constant;
             Str m_name;
         };
 
@@ -232,34 +234,14 @@ namespace tlc::syntax {
     }
 
     namespace stmt {
-        struct Let final : detail::NodeBase {
-            Let(Node decl, Node initializer, Location location);
+        struct Decl final : detail::NodeBase {
+            Decl(Node decl, Node initializer, Location location);
 
             [[nodiscard]] auto defaultInitialized() const -> bool;
         };
 
         struct Return final : detail::NodeBase {
             Return(Node expr, Location location);
-        };
-
-        /**
-         * Syntax:
-         *      \code
-         *          "preface" ("{" stmt* "}" | expr ";")
-         *      \endcode
-         *
-         * Examples:
-         *
-         * Notes:
-         *      - There can only be at most one "preface" statement in a
-         *      function's scope, and it must be placed at the beginning of
-         *      the scope.
-         *      - "preface" accepts one statement, which can be a block statement.
-         *      - Like its counter-part, "defer", "preface" is a pure statement
-         *      and can be a scope owner.
-         */
-        struct Preface final : detail::NodeBase {
-            Preface(Node stmt, Location location);
         };
 
         /**

@@ -23,17 +23,17 @@ auto ParseTestFixture::assertDecl(
 TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
     assertDecl(
         "x: Foo",
-        "decl::Identifier [@0:0] with (const, name) = (true, 'x')\n"
-        "├─ type::Identifier [@0:3] with (fund, path) = (false, 'Foo')"
+        "decl::Identifier [@0:0] with name = 'x'\n"
+        "├─ type::Identifier [@0:3] with (const, fund, path) = (true, false, 'Foo')"
     );
     assertDecl(
-        "$x: Float",
-        "decl::Identifier [@0:0] with (const, name) = (false, 'x')\n"
-        "├─ type::Identifier [@0:4] with (fund, path) = (true, 'Float')"
+        "x: $Float",
+        "decl::Identifier [@0:0] with name = 'x'\n"
+        "├─ type::Identifier [@0:3] with (const, fund, path) = (false, true, 'Float')"
     );
     assertDecl(
-        "$x",
-        "decl::Identifier [@0:0] with (const, name) = (false, 'x')"
+        "x",
+        "decl::Identifier [@0:0] with name = 'x'"
     );
 }
 
@@ -43,28 +43,23 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
         "decl::Tuple [@0:0] with size = 0"
     );
     assertDecl(
-        "($x)",
-        "decl::Tuple [@0:0] with size = 1\n"
-        "├─ decl::Identifier [@0:1] with (const, name) = (false, 'x')"
+        "(x: Int, y: Float, z)",
+        "decl::Tuple [@0:0] with size = 3\n"
+        "├─ decl::Identifier [@0:1] with name = 'x'\n"
+        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, true, 'Int')\n"
+        "├─ decl::Identifier [@0:9] with name = 'y'\n"
+        "   ├─ type::Identifier [@0:12] with (const, fund, path) = (true, true, 'Float')\n"
+        "├─ decl::Identifier [@0:19] with name = 'z'"
     );
     assertDecl(
-        "(x: Int, $y: Float, z)",
+        "(x: Int, y: $Float, (z, t))",
         "decl::Tuple [@0:0] with size = 3\n"
-        "├─ decl::Identifier [@0:1] with (const, name) = (true, 'x')\n"
-        "   ├─ type::Identifier [@0:4] with (fund, path) = (true, 'Int')\n"
-        "├─ decl::Identifier [@0:9] with (const, name) = (false, 'y')\n"
-        "   ├─ type::Identifier [@0:13] with (fund, path) = (true, 'Float')\n"
-        "├─ decl::Identifier [@0:20] with (const, name) = (true, 'z')"
-    );
-    assertDecl(
-        "(x: Int, $y: Float, ($z, t))",
-        "decl::Tuple [@0:0] with size = 3\n"
-        "├─ decl::Identifier [@0:1] with (const, name) = (true, 'x')\n"
-        "   ├─ type::Identifier [@0:4] with (fund, path) = (true, 'Int')\n"
-        "├─ decl::Identifier [@0:9] with (const, name) = (false, 'y')\n"
-        "   ├─ type::Identifier [@0:13] with (fund, path) = (true, 'Float')\n"
+        "├─ decl::Identifier [@0:1] with name = 'x'\n"
+        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, true, 'Int')\n"
+        "├─ decl::Identifier [@0:9] with name = 'y'\n"
+        "   ├─ type::Identifier [@0:12] with (const, fund, path) = (false, true, 'Float')\n"
         "├─ decl::Tuple [@0:20] with size = 2\n"
-        "   ├─ decl::Identifier [@0:21] with (const, name) = (false, 'z')\n"
-        "   ├─ decl::Identifier [@0:25] with (const, name) = (true, 't')"
+        "   ├─ decl::Identifier [@0:21] with name = 'z'\n"
+        "   ├─ decl::Identifier [@0:24] with name = 't'"
     );
 }

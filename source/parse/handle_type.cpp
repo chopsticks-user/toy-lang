@@ -100,11 +100,13 @@ namespace tlc::parse {
 
     auto Parse::handleTypeIdentifier() -> ParseResult {
         TLC_SCOPE_REPORTER();
+        auto const constant = !m_stream.match(lexeme::dollar);
+        auto const location = m_tracker.current();
         return seq(
             many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
             match(lexeme::fundamentalType, lexeme::userDefinedType)
         )(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
+            [&](auto const& tokens) -> ParseResult {
                 auto path = tokens
                     | rv::take(tokens.size() - 1)
                     | rv::filter([](auto&& token) {
@@ -114,9 +116,9 @@ namespace tlc::parse {
                     | rng::to<Vec<Str>>();
                 path.push_back(Str{tokens.back().str()});
                 return syntax::type::Identifier{
-                    std::move(path),
+                    constant, std::move(path),
                     m_stream.current().lexeme() == lexeme::fundamentalType,
-                    tokens.front().location()
+                    constant ? tokens.front().location() : location
                 };
             }
         );

@@ -186,13 +186,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     assertExpr(
         "foo::Bar{}",
         "expr::Record [@0:0] with size = 0\n"
-        "├─ type::Identifier [@0:0] with (fund, path) = (false, 'foo::Bar')"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo::Bar')"
     );
 
     assertExpr(
         "Foo{x: 0, y: 1.1, z: false}\n",
         "expr::Record [@0:0] with size = 3\n"
-        "├─ type::Identifier [@0:0] with (fund, path) = (false, 'Foo')\n"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'Foo')\n"
         "├─ expr::RecordEntry [@0:4] with key = 'x'\n"
         "   ├─ expr::Integer [@0:7] with value = 0\n"
         "├─ expr::RecordEntry [@0:10] with key = 'y'\n"
