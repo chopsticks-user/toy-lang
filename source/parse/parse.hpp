@@ -21,12 +21,13 @@ namespace tlc::parse {
         using ParseResult = Expected<syntax::Node, TError>;
 
     public:
-        static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
+        static auto operator()(fs::path filepath, Vec<token::Token> tokens)
+            -> syntax::Node;
 
-        Parse(fs::path filepath, Vec<token::Token> tokens, Opt<Location> offset = {})
+        Parse(fs::path filepath, Vec<token::Token> tokens)
             : m_filepath{std::move(filepath)},
-              m_stream{std::move(tokens), std::move(offset)},
-              m_tracker{m_stream}, m_isSubroutine{offset} {}
+              m_stream{std::move(tokens)},
+              m_tracker{m_stream}, m_isSubroutine{false} {}
 
         auto operator()() -> syntax::Node;
 
@@ -51,6 +52,12 @@ namespace tlc::parse {
             return handleGenericParamsDecl();
         }
 #endif
+
+    private:
+        Parse(fs::path filepath, Vec<token::Token> tokens, Location offset)
+            : m_filepath{std::move(filepath)},
+              m_stream{std::move(tokens), std::move(offset)},
+              m_tracker{m_stream}, m_isSubroutine{true} {}
 
     private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
