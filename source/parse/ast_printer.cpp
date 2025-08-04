@@ -297,6 +297,22 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
     }
 
+    auto ASTPrinter::operator()(
+        syntax::global::FunctionPrototype const& node
+    ) -> Str {
+        return withDepth(std::format(
+            "global::FunctionPrototype [@{}:{}] with name = '{}'",
+            node.line(), node.column(), node.name()
+        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+    }
+
+    auto ASTPrinter::operator()(syntax::global::Function const& node) -> Str {
+        return withDepth(std::format(
+            "global::Function [@{}:{}] with visibility = '{}'",
+            node.line(), node.column(), node.visibility().str()
+        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+    }
+
     auto ASTPrinter::operator()(syntax::TranslationUnit const& node) -> Str {
         return visitChildren(node) | rvJoinWithEl;
     }

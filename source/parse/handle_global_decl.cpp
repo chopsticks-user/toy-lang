@@ -13,9 +13,25 @@ namespace tlc::parse {
         else { definitions.push_back(std::move(*moduleDecl)); }
 
         while (m_stream.peek().lexeme() != lexeme::invalid) {
-            // todo: force all import statements to be located right after module declaration
-            if (auto importDecl = handleImportDecl(); importDecl) {
-                definitions.push_back(std::move(*importDecl));
+            auto importDecl = handleImportDecl();
+            if (!importDecl) {
+                break;
+            }
+            definitions.push_back(std::move(*importDecl));
+        }
+
+        static const auto createDefaultVisibility =
+            [this] -> token::Token {
+            return {lexeme::empty, "", m_stream.peek().location()};
+        };
+        while (m_stream.peek().lexeme() != lexeme::invalid) {
+            auto const visibility =
+                m_stream.match(lexeme::pub, lexeme::prv)
+                    ? m_stream.current()
+                    : createDefaultVisibility();
+
+            if (auto fnDef = handleFunctionDef(visibility); fnDef) {
+                definitions.push_back(std::move(*fnDef));
             }
         }
 

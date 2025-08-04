@@ -89,12 +89,12 @@ namespace tlc::parse {
         auto handleMatchStmt() -> ParseResult;
         auto handleBlockStmt() -> ParseResult;
 
-        auto handleFunctionDef() -> ParseResult;
+        auto handleFunctionDef(token::Token const& visibility) -> ParseResult;
         auto handleFunctionPrototype() -> ParseResult;
-        auto handleTypeDef() -> ParseResult;
-        auto handleEnumDef() -> ParseResult;
-        auto handleTraitDef() -> ParseResult;
-        auto handleFlagDef() -> ParseResult;
+        auto handleTypeDef(token::Token const& visibility) -> ParseResult;
+        auto handleEnumDef(token::Token const& visibility) -> ParseResult;
+        auto handleTraitDef(token::Token const& visibility) -> ParseResult;
+        auto handleFlagDef(token::Token const& visibility) -> ParseResult;
         auto handleModuleDecl() -> ParseResult;
         auto handleImportDecl() -> ParseResult;
         auto handleTranslationUnit() -> ParseResult;

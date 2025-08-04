@@ -354,6 +354,31 @@ namespace tlc::syntax {
         struct ImportDecl final : detail::NodeBase {
             ImportDecl(Node alias, Node path, Location location);
         };
+
+        struct FunctionPrototype final : detail::NodeBase {
+            FunctionPrototype(Node genericDecl, Str name, Node paramsDecl,
+                              Node returnsDecl, Location location);
+
+            [[nodiscard]] auto name() const noexcept -> StrV {
+                return m_name;
+            }
+
+        private:
+            Str m_name;
+        };
+
+        struct Function final : detail::NodeBase {
+            Function(lexeme::Lexeme visibility, Node prototype, Node body,
+                     Location location);
+
+            [[nodiscard]] auto visibility() const noexcept
+                -> lexeme::Lexeme const& {
+                return m_visibility;
+            }
+
+        private:
+            lexeme::Lexeme m_visibility;
+        };
     }
 
     struct TranslationUnit final : detail::NodeBase {

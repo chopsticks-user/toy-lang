@@ -7,7 +7,8 @@
 namespace tlc::token {
     class Token final {
     public:
-        Token(lexeme::Lexeme type, StrV const str, Location const location)
+        constexpr Token(lexeme::Lexeme type, StrV const str,
+                        Location const location)
             : m_lexeme{std::move(type)}, m_str{str}, m_location{location} {}
 
         [[nodiscard]] auto lexeme() const noexcept -> lexeme::Lexeme {

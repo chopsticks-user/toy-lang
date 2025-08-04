@@ -30,7 +30,7 @@ type <T, E> Predicate = T |> ImmutableDomain |> meta.type.Predicate<E>;
 type <T, E> MapResult = ;
 type <T, U, E> Map = T |> ImmutableDomain |> meta.type.Map<U, E>;
 
-prv fn<P, R, T> invoke: (action: P -> R, index: Int, value: T) -> R {
+prv fn <P, R, T> invoke: (action: P -> R, index: Int, value: T) -> R {
     require R == (Int, T) || R == T;
     return match P {
         T => value |> action;
@@ -39,9 +39,9 @@ prv fn<P, R, T> invoke: (action: P -> R, index: Int, value: T) -> R {
 }
 
 pub fn <T, E> each: (
-    $range: IsRangeOf<T>, sideEffect: T |> SideEffect<E>, policy: ?Policy
+    range: $IsRangeOf<T>, sideEffect: T |> SideEffect<E>, policy: ?Policy
 ) -> E |> meta.type.SideEffectResult {
-    for (i: Int, $v: T) in range {
+    for (i: Int, v: $T) in range {
         try action |> invoke(i, v);
     }
 }
@@ -77,12 +77,8 @@ pub fn <T, U, E> map: (
     range: IsRangeOf<T>, map: T |> Map<U, E>, policy: ?Policy
 ) -> U |> meta.type.MapResult {
     result: U[range.length()];
-    for (i: Int, $u: U, v: T) in result |> zip(range) {
+    for (i: Int, u: $U, v: T) in result |> zip(range) {
         u = try map |> invoke(i, v);
     }
     return result;
 }
-
-pub fn <T, E> filter: (
-    range: IsRangeOf<T>, map: T |> Predicate<E>, policy: ?Policy
-) -> T |>

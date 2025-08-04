@@ -15,7 +15,7 @@
 - ~~Implement parsing logic for strings.~~
 - ~~Handle "try" expressions~~.
 - Remove the "str" field and getter in token, use the one provided by lexeme instead
-- Type params should be handled by a dedicated parsing method
+- ~~Type params should be handled by a dedicated parsing method~~
 - Implement parsing logic for ternary operators.
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector

@@ -6,6 +6,9 @@
 
 #include "parse/parse.hpp"
 
+#define TEST_CASE_WITH_FIXTURE(...) \
+    TEST_CASE_METHOD(ParseTestFixture, __VA_ARGS__)
+
 class ParseTestFixture {
 protected:
     using FnNode = void (*)(tlc::syntax::Node const&);
@@ -59,7 +62,22 @@ protected:
     ) -> void;
 };
 
-#define TEST_CASE_WITH_FIXTURE(...) \
-    TEST_CASE_METHOD(ParseTestFixture, __VA_ARGS__)
+inline auto ParseTestFixture::assertTranslationUnit(
+    tlc::Str source, tlc::Str expected, std::source_location location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
+
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }();
+    REQUIRE(matchAstType<tlc::syntax::TranslationUnit>(result));
+    REQUIRE(astCast<tlc::syntax::TranslationUnit>(result).sourcePath()
+        == filepath);
+
+    auto const actual = tlc::parse::ASTPrinter::operator()(std::move(result));
+    REQUIRE(actual == expected);
+}
 
 #endif // TLC_TEST_UNIT_PARSE_TEST_HPP

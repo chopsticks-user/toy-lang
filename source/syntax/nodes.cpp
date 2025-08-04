@@ -241,6 +241,24 @@ namespace tlc::syntax {
     global::ImportDecl::ImportDecl(Node alias, Node path, Location const location)
         : NodeBase{{std::move(alias), std::move(path)}, location} {}
 
+    global::FunctionPrototype::FunctionPrototype(
+        Node genericDecl, Str name, Node paramsDecl,
+        Node returnsDecl, Location const location
+    ): NodeBase{
+           {
+               std::move(genericDecl), std::move(paramsDecl),
+               std::move(returnsDecl)
+           },
+           location
+       },
+       m_name{std::move(name)} {}
+
+    global::Function::Function(
+        lexeme::Lexeme visibility, Node prototype, Node body,
+        Location const location
+    ): NodeBase{{std::move(prototype), std::move(body)}, location},
+       m_visibility{std::move(visibility)} {}
+
     TranslationUnit::TranslationUnit(fs::path sourcePath, Vec<Node> definitions)
         : NodeBase{std::move(definitions), {}},
           m_sourcePath{std::move(sourcePath)} {}
