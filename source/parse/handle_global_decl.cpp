@@ -12,6 +12,13 @@ namespace tlc::parse {
         }
         else { definitions.push_back(std::move(*moduleDecl)); }
 
+        while (m_stream.peek().lexeme() != lexeme::invalid) {
+            // todo: force all import statements to be located right after module declaration
+            if (auto importDecl = handleImportDecl(); importDecl) {
+                definitions.push_back(std::move(*importDecl));
+            }
+        }
+
         return syntax::TranslationUnit{m_filepath, std::move(definitions)};
     }
 
@@ -43,6 +50,45 @@ namespace tlc::parse {
 
 
     auto Parse::handleImportDecl() -> ParseResult {
-        return {};
+        if (!m_stream.match(lexeme::import_)) {
+            return defaultError();
+        }
+
+        auto location = m_tracker.current();
+        auto path_or_alias = *handleIdentifierLiteral().or_else(
+            [this](auto&& err) -> ParseResult {
+                collect(err).collect({
+                    .location = m_tracker.current(),
+                    .context = EParseErrorContext::ImportDecl,
+                    .reason = EParseErrorReason::MissingId,
+                });
+                return {};
+            }
+        );
+
+        syntax::Node path;
+        if (m_stream.match(lexeme::equal)) {
+            path = *handleIdentifierLiteral().or_else(
+                [this](auto&& err) -> ParseResult {
+                    collect(err).collect({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::ImportDecl,
+                        .reason = EParseErrorReason::MissingExpr,
+                    });
+                    return {};
+                }
+            );
+        }
+
+        if (!m_stream.match(lexeme::semicolon)) {
+            collect({
+                .location = m_tracker.current(),
+                .context = EParseErrorContext::ImportDecl,
+                .reason = EParseErrorReason::MissingEnclosingSymbol,
+            });
+        }
+        return syntax::global::ImportDecl{
+            std::move(path_or_alias), std::move(path), std::move(location)
+        };
     }
 }

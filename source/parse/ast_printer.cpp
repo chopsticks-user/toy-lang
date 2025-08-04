@@ -291,7 +291,11 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
-    auto ASTPrinter::operator()(syntax::global::ImportDecl const& node) -> Str {}
+    auto ASTPrinter::operator()(syntax::global::ImportDecl const& node) -> Str {
+        return withDepth(std::format(
+            "global::ImportDecl [@{}:{}]", node.line(), node.column()
+        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+    }
 
     auto ASTPrinter::operator()(syntax::TranslationUnit const& node) -> Str {
         return visitChildren(node) | rvJoinWithEl;
