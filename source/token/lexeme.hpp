@@ -14,7 +14,7 @@ namespace tlc::lexeme {
             /* Module */ Module, Import,
             /* Visibility */ Pub, Prv,
             /* Storage */ Isolated, Static,
-            /* Definition */ Let, Fn, Trait, Type, Enum, Flag,
+            /* Definition */ Let, Fn, Trait, Type, Enum, Flag, Try,
             /* Control */ For, Match, Return, Defer, Preface, Break, Continue,
             /* Adverb */ In, When, Impl,
             /* Reserved */ Self, Main,
@@ -96,9 +96,9 @@ namespace tlc::lexeme {
     constexpr Lexeme match{Lexeme::Match, "match"};
     constexpr Lexeme return_{Lexeme::Return, "return"};
     constexpr Lexeme defer{Lexeme::Defer, "defer"};
-    constexpr Lexeme preface{Lexeme::Preface, "preface"};
     constexpr Lexeme break_{Lexeme::Break, "break"};
     constexpr Lexeme continue_{Lexeme::Continue, "continue"};
+    constexpr Lexeme try_{Lexeme::Try, "try"};
 
     // adverb
     constexpr Lexeme in{Lexeme::In, "in"};

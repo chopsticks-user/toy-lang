@@ -110,6 +110,13 @@ namespace tlc::parse {
                   : "");
     }
 
+    auto ASTPrinter::operator()(syntax::expr::Try const& node) -> Str {
+        return withDepth(std::format(
+            "expr::Try [@{}:{}]",
+            node.line(), node.column()
+        )) + +"\n" + (visitChildren(node) | rvJoinWithEl);
+    }
+
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
         return withDepth(std::format(
             "type::Identifier [@{}:{}] with (const, fund, path) "

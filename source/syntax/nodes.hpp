@@ -153,6 +153,10 @@ namespace tlc::syntax {
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
+
+        struct Try final : detail::NodeBase {
+            Try(Node expr, Location location);
+        };
     }
 
     namespace type {

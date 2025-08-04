@@ -12,9 +12,8 @@ namespace tlc::lexeme {
         {type.str(), type}, {enum_.str(), enum_}, {flag.str(), flag},
 
         /* Control */{for_.str(), for_}, {return_.str(), return_},
-        {match.str(), match}, {defer.str(), defer},
-        {preface.str(), preface}, {break_.str(), break_},
-        {continue_.str(), continue_},
+        {match.str(), match}, {defer.str(), defer}, {break_.str(), break_},
+        {continue_.str(), continue_}, {try_.str(), try_},
 
         /* Adverb */{in.str(), in}, {when.str(), when}, {impl.str(), impl},
 

@@ -88,8 +88,12 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parse::handlePrimaryExpr() -> ParseResult {
+    auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
+        // todo:
+        if (auto const result = handleTryExpr(); result) {
+            return result;
+        }
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
         }
@@ -313,7 +317,7 @@ namespace tlc::parse {
                 }
             );
 
-            entries.push_back(syntax::expr::RecordEntry{
+            entries.emplace_back(syntax::expr::RecordEntry{
                 std::move(key), std::move(value), *entryLocation
             });
         }
@@ -392,6 +396,24 @@ namespace tlc::parse {
 
                 return syntax::expr::String{
                     std::move(fragments), std::move(placeholders), location
+                };
+            }
+        );
+    }
+
+    auto Parse::handleTryExpr() -> ParseResult {
+        return match(lexeme::try_)(m_stream, m_tracker).and_then(
+            [this](auto const& tokens) -> ParseResult {
+                return syntax::expr::Try{
+                    *handleExpr().or_else([&](auto&& error) -> ParseResult {
+                        collect(error).collect({
+                            .location = m_tracker.current(),
+                            .context = EParseErrorContext::TryExpr,
+                            .reason = EParseErrorReason::MissingExpr,
+                        });
+                        return {};
+                    }),
+                    tokens.front().location()
                 };
             }
         );

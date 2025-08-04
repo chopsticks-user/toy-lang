@@ -57,6 +57,7 @@ namespace tlc::parse {
         auto handleSingleTokenLiteral() -> ParseResult;
         auto handleIdentifierLiteral() -> ParseResult;
         auto handleString() -> ParseResult;
+        auto handleTryExpr() -> ParseResult;
 
         auto handleType() -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
@@ -71,7 +72,6 @@ namespace tlc::parse {
         auto handleDeclStmt() -> ParseResult;
         auto handleReturnStmt() -> ParseResult;
         auto handleDeferStmt() -> ParseResult;
-        auto handlePrefaceStmt() -> ParseResult;
         auto handleExprPrefixedStmt() -> ParseResult;
         auto handleLoopStmt() -> ParseResult;
         auto handleMatchStmt() -> ParseResult;

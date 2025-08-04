@@ -15,6 +15,7 @@ namespace tlc::syntax {
         struct Tuple;
         struct RecordEntry;
         struct Record;
+        struct Try;
 
         // postfix
         struct FnApp;
@@ -61,7 +62,7 @@ namespace tlc::syntax {
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
         expr::Tuple, expr::String, expr::FnApp, expr::Subscript, expr::Access,
-        expr::Prefix, expr::Binary, expr::RecordEntry, expr::Record,
+        expr::Prefix, expr::Binary, expr::RecordEntry, expr::Record, expr::Try,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
         type::GenericArguments, type::Generic,

@@ -88,6 +88,9 @@ namespace tlc::syntax {
         auto Record::size() const noexcept -> szt {
             return nChildren() - 1;
         }
+
+        Try::Try(Node expr, Location const location)
+            : NodeBase{{std::move(expr)}, location} {}
     }
 
     namespace type {

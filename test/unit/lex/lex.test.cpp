@@ -166,9 +166,9 @@ for
 return
 match
 defer
-preface
 break
 continue
+try
             )");
 
             assertTokenCount(7);
@@ -176,9 +176,9 @@ continue
             assertTokenAt(1, tlc::lexeme::return_, "return", 2, 0);
             assertTokenAt(2, tlc::lexeme::match, "match", 3, 0);
             assertTokenAt(3, tlc::lexeme::defer, "defer", 4, 0);
-            assertTokenAt(4, tlc::lexeme::preface, "preface", 5, 0);
-            assertTokenAt(5, tlc::lexeme::break_, "break", 6, 0);
-            assertTokenAt(6, tlc::lexeme::continue_, "continue", 7, 0);
+            assertTokenAt(4, tlc::lexeme::break_, "break", 5, 0);
+            assertTokenAt(5, tlc::lexeme::continue_, "continue", 6, 0);
+            assertTokenAt(6, tlc::lexeme::try_, "try", 7, 0);
         }
 
         SECTION("Adverb") {

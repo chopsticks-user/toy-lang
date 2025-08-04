@@ -1,4 +1,5 @@
 ### Lexing and Parsing
+
 - ~~"defer" and "preface" statements that can only be used inside a function scope~~
 - ~~"yield" statement that can be used inside any arbitrary scope~~
 - ~~Update operators in the "syntax" module~~
@@ -12,6 +13,8 @@
 - ~~Function types must be right-associate~~
 - ~~Vec<Node> implies the need for a wrapper~~
 - ~~Implement parsing logic for strings.~~
+- Handle "try" expressions.
+- Type params should be handled by a dedicated parsing method
 - Implement parsing logic for ternary operators.
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector
@@ -19,6 +22,7 @@
   for global definitions
 
 ### Static phase
+
 - Create a visitor to collapse single-element tuples into
   value expressions
 - Create a visitor to combine "x |> y(...)" into "y(x, ...)"

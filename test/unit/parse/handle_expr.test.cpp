@@ -368,3 +368,11 @@ TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
         {"", " + ", " = ", ""}
     );
 }
+
+TEST_CASE_WITH_FIXTURE("Parse: Try expression", "[Parse]") {
+    assertExpr(
+        "try x",
+        "expr::Try [@0:0]\n"
+        "├─ expr::Identifier [@0:4] with path = 'x'"
+    );
+}
