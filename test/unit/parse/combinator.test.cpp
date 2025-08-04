@@ -323,12 +323,12 @@ TEST_CASE_WITH_FIXTURE(
     using namespace tlc;
 
     static auto parser = parse::seq(
-        parse::many0(parse::seq(parse::match(identifier), parse::match(colon2))),
+        parse::many0(parse::seq(parse::match(identifier), parse::match(dot))),
         parse::match(identifier, fundamentalType, userDefinedType)
     );
 
     SECTION("Imported identifier") {
-        initialize("foo::bar");
+        initialize("foo.bar");
 
         auto const result = invoke(parser);
         REQUIRE(result);
@@ -338,7 +338,7 @@ TEST_CASE_WITH_FIXTURE(
             *result | tlc::rv::transform([](auto const& token) {
                 return token.str();
                 }),
-            tlc::Vec{"foo", "::", "bar"}
+            tlc::Vec{"foo", ".", "bar"}
         ));
     }
 

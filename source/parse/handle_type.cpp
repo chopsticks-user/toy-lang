@@ -103,7 +103,7 @@ namespace tlc::parse {
         auto const constant = !m_stream.match(lexeme::dollar);
         auto const location = m_tracker.current();
         return seq(
-            many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
+            many0(seq(match(lexeme::identifier), match(lexeme::dot))),
             match(lexeme::fundamentalType, lexeme::userDefinedType)
         )(m_stream, m_tracker).and_then(
             [&](auto const& tokens) -> ParseResult {

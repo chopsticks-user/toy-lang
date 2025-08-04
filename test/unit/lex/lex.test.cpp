@@ -408,7 +408,6 @@ $
 |>
 ->
 =>
-::
 **
 &&
 ||
@@ -421,7 +420,7 @@ $
 ..
         )");
 
-        assertTokenCount(25);
+        assertTokenCount(24);
         assertTokenAt(0, tlc::lexeme::exclaimEqual, "!=", 1, 0);
         assertTokenAt(1, tlc::lexeme::starEqual, "*=", 2, 0);
         assertTokenAt(2, tlc::lexeme::ampersandEqual, "&=", 3, 0);
@@ -436,17 +435,16 @@ $
         assertTokenAt(11, tlc::lexeme::barGreater, "|>", 12, 0);
         assertTokenAt(12, tlc::lexeme::minusGreater, "->", 13, 0);
         assertTokenAt(13, tlc::lexeme::equalGreater, "=>", 14, 0);
-        assertTokenAt(14, tlc::lexeme::colon2, "::", 15, 0);
-        assertTokenAt(15, tlc::lexeme::star2, "**", 16, 0);
-        assertTokenAt(16, tlc::lexeme::ampersand2, "&&", 17, 0);
-        assertTokenAt(17, tlc::lexeme::bar2, "||", 18, 0);
-        assertTokenAt(18, tlc::lexeme::plus2, "++", 19, 0);
-        assertTokenAt(19, tlc::lexeme::minus2, "--", 20, 0);
-        assertTokenAt(20, tlc::lexeme::equal2, "==", 21, 0);
-        assertTokenAt(21, tlc::lexeme::greater2, ">>", 22, 0);
-        assertTokenAt(22, tlc::lexeme::less2, "<<", 23, 0);
-        assertTokenAt(23, tlc::lexeme::qMark2, "??", 24, 0);
-        assertTokenAt(24, tlc::lexeme::dot2, "..", 25, 0);
+        assertTokenAt(14, tlc::lexeme::star2, "**", 15, 0);
+        assertTokenAt(15, tlc::lexeme::ampersand2, "&&", 16, 0);
+        assertTokenAt(16, tlc::lexeme::bar2, "||", 17, 0);
+        assertTokenAt(17, tlc::lexeme::plus2, "++", 18, 0);
+        assertTokenAt(18, tlc::lexeme::minus2, "--", 19, 0);
+        assertTokenAt(19, tlc::lexeme::equal2, "==", 20, 0);
+        assertTokenAt(20, tlc::lexeme::greater2, ">>", 21, 0);
+        assertTokenAt(21, tlc::lexeme::less2, "<<", 22, 0);
+        assertTokenAt(22, tlc::lexeme::qMark2, "??", 23, 0);
+        assertTokenAt(23, tlc::lexeme::dot2, "..", 24, 0);
     }
 
     SECTION("Triple characters") {

@@ -26,8 +26,8 @@ TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
         "type::Identifier [@0:0] with (const, fund, path) = (true, true, 'Int')"
     );
     assertType(
-        "$foo::bar::Baz",
-        "type::Identifier [@0:0] with (const, fund, path) = (false, false, 'foo::bar::Baz')"
+        "$foo.bar.Baz",
+        "type::Identifier [@0:0] with (const, fund, path) = (false, false, 'foo.bar.Baz')"
     );
 }
 
@@ -68,12 +68,12 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse]") {
         "├─ type::Identifier [@0:6] with (const, fund, path) = (false, true, 'Bool')"
     );
     assertType(
-        "(Int, Float, Bool, $foo::Bar)",
+        "(Int, Float, Bool, $foo.Bar)",
         "type::Tuple [@0:0] with size = 4\n"
         "├─ type::Identifier [@0:1] with (const, fund, path) = (true, true, 'Int')\n"
         "├─ type::Identifier [@0:6] with (const, fund, path) = (true, true, 'Float')\n"
         "├─ type::Identifier [@0:13] with (const, fund, path) = (true, true, 'Bool')\n"
-        "├─ type::Identifier [@0:19] with (const, fund, path) = (false, false, 'foo::Bar')"
+        "├─ type::Identifier [@0:19] with (const, fund, path) = (false, false, 'foo.Bar')"
     );
 }
 
@@ -95,15 +95,15 @@ TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
         "   ├─ expr::Identifier [@0:11] with path = 'z'"
     );
     assertType(
-        "foo::Bar[3, x+1, 1, 4]",
+        "foo.Bar[3, x+1, 1, 4]",
         "type::Array [@0:0] with nDims = 4\n"
-        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "├─ expr::Integer [@0:9] with value = 3\n"
-        "├─ expr::Binary [@0:12] with op = '+'\n"
-        "   ├─ expr::Identifier [@0:12] with path = 'x'\n"
-        "   ├─ expr::Integer [@0:14] with value = 1\n"
-        "├─ expr::Integer [@0:17] with value = 1\n"
-        "├─ expr::Integer [@0:20] with value = 4"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "├─ expr::Integer [@0:8] with value = 3\n"
+        "├─ expr::Binary [@0:11] with op = '+'\n"
+        "   ├─ expr::Identifier [@0:11] with path = 'x'\n"
+        "   ├─ expr::Integer [@0:13] with value = 1\n"
+        "├─ expr::Integer [@0:16] with value = 1\n"
+        "├─ expr::Integer [@0:19] with value = 4"
     );
 }
 
@@ -127,42 +127,42 @@ TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse]") {
         "├─ type::Identifier [@0:7] with (const, fund, path) = (true, true, 'Bool')"
     );
     assertType(
-        "(Int, Float) -> foo::Bar",
+        "(Int, Float) -> foo.Bar",
         "type::Function [@0:0]\n"
         "├─ type::Tuple [@0:0] with size = 2\n"
         "   ├─ type::Identifier [@0:1] with (const, fund, path) = (true, true, 'Int')\n"
         "   ├─ type::Identifier [@0:6] with (const, fund, path) = (true, true, 'Float')\n"
-        "├─ type::Identifier [@0:16] with (const, fund, path) = (true, false, 'foo::Bar')"
+        "├─ type::Identifier [@0:16] with (const, fund, path) = (true, false, 'foo.Bar')"
     );
     assertType(
-        "(Int, foo::Bar) -> (Int, Bool)",
+        "(Int, foo.Bar) -> (Int, Bool)",
         "type::Function [@0:0]\n"
         "├─ type::Tuple [@0:0] with size = 2\n"
         "   ├─ type::Identifier [@0:1] with (const, fund, path) = (true, true, 'Int')\n"
-        "   ├─ type::Identifier [@0:6] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "├─ type::Tuple [@0:19] with size = 2\n"
-        "   ├─ type::Identifier [@0:20] with (const, fund, path) = (true, true, 'Int')\n"
-        "   ├─ type::Identifier [@0:25] with (const, fund, path) = (true, true, 'Bool')"
+        "   ├─ type::Identifier [@0:6] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "├─ type::Tuple [@0:18] with size = 2\n"
+        "   ├─ type::Identifier [@0:19] with (const, fund, path) = (true, true, 'Int')\n"
+        "   ├─ type::Identifier [@0:24] with (const, fund, path) = (true, true, 'Bool')"
     );
     assertType(
-        "Int -> Float -> Bool -> foo::Bar",
+        "Int -> Float -> Bool -> foo.Bar",
         "type::Function [@0:0]\n"
         "├─ type::Identifier [@0:0] with (const, fund, path) = (true, true, 'Int')\n"
         "├─ type::Function [@0:7]\n"
         "   ├─ type::Identifier [@0:7] with (const, fund, path) = (true, true, 'Float')\n"
         "   ├─ type::Function [@0:16]\n"
         "      ├─ type::Identifier [@0:16] with (const, fund, path) = (true, true, 'Bool')\n"
-        "      ├─ type::Identifier [@0:24] with (const, fund, path) = (true, false, 'foo::Bar')"
+        "      ├─ type::Identifier [@0:24] with (const, fund, path) = (true, false, 'foo.Bar')"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Generic types", "[Parse]") {
     assertType(
-        "Own<foo::Bar>",
+        "Own<foo.Bar>",
         "type::Generic [@0:0]\n"
         "├─ type::Identifier [@0:0] with (const, fund, path) = (true, true, 'Own')\n"
         "├─ type::GenericArguments [@0:3] with size = 1\n"
-        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, false, 'foo::Bar')"
+        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, false, 'foo.Bar')"
     );
     assertType(
         "Ref<Int>",
@@ -172,24 +172,24 @@ TEST_CASE_WITH_FIXTURE("Parse: Generic types", "[Parse]") {
         "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, true, 'Int')"
     );
     assertType(
-        "foo::Bar<Int, Float, Bool>",
+        "foo.Bar<Int, Float, Bool>",
         "type::Generic [@0:0]\n"
-        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "├─ type::GenericArguments [@0:8] with size = 3\n"
-        "   ├─ type::Identifier [@0:9] with (const, fund, path) = (true, true, 'Int')\n"
-        "   ├─ type::Identifier [@0:14] with (const, fund, path) = (true, true, 'Float')\n"
-        "   ├─ type::Identifier [@0:21] with (const, fund, path) = (true, true, 'Bool')"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "├─ type::GenericArguments [@0:7] with size = 3\n"
+        "   ├─ type::Identifier [@0:8] with (const, fund, path) = (true, true, 'Int')\n"
+        "   ├─ type::Identifier [@0:13] with (const, fund, path) = (true, true, 'Float')\n"
+        "   ├─ type::Identifier [@0:20] with (const, fund, path) = (true, true, 'Bool')"
     );
     assertType(
-        "foo::Bar<foo::Baz<Int, Float>, Bool>",
+        "foo.Bar<foo.Baz<Int, Float>, Bool>",
         "type::Generic [@0:0]\n"
-        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "├─ type::GenericArguments [@0:8] with size = 2\n"
-        "   ├─ type::Generic [@0:9]\n"
-        "      ├─ type::Identifier [@0:9] with (const, fund, path) = (true, false, 'foo::Baz')\n"
-        "      ├─ type::GenericArguments [@0:17] with size = 2\n"
-        "         ├─ type::Identifier [@0:18] with (const, fund, path) = (true, true, 'Int')\n"
-        "         ├─ type::Identifier [@0:23] with (const, fund, path) = (true, true, 'Float')\n"
-        "   ├─ type::Identifier [@0:31] with (const, fund, path) = (true, true, 'Bool')"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "├─ type::GenericArguments [@0:7] with size = 2\n"
+        "   ├─ type::Generic [@0:8]\n"
+        "      ├─ type::Identifier [@0:8] with (const, fund, path) = (true, false, 'foo.Baz')\n"
+        "      ├─ type::GenericArguments [@0:15] with size = 2\n"
+        "         ├─ type::Identifier [@0:16] with (const, fund, path) = (true, true, 'Int')\n"
+        "         ├─ type::Identifier [@0:21] with (const, fund, path) = (true, true, 'Float')\n"
+        "   ├─ type::Identifier [@0:29] with (const, fund, path) = (true, true, 'Bool')"
     );
 }

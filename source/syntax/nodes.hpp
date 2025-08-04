@@ -64,17 +64,6 @@ namespace tlc::syntax {
             Subscript(Node collection, Node subscript, Location location);
         };
 
-        struct Access final : detail::NodeBase {
-            Access(Node object, Str field, Location location);
-
-            [[nodiscard]] auto field() const noexcept -> StrV {
-                return m_field;
-            }
-
-        private:
-            Str m_field;
-        };
-
         struct Prefix final : detail::NodeBase {
             Prefix(Node operand, lexeme::Lexeme op, Location location);
 

@@ -31,23 +31,7 @@ namespace tlc::parse {
         auto streamBacktrack = m_stream.scopedBacktrack();
         while (true) {
             if (syntax::isPostfixStart(m_stream.peek().lexeme())) {
-                if (m_stream.match(lexeme::dot)) {
-                    auto field = [this] -> Str {
-                        if (m_stream.match(lexeme::identifier)) {
-                            return m_stream.current().str();
-                        }
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::Access,
-                            .reason = EParseErrorReason::MissingId,
-                        });
-                        return "";
-                    }();
-                    lhs = syntax::expr::Access{
-                        *lhs, std::move(field), *location
-                    };
-                }
-                else if (auto const tuple = handleTupleExpr(); tuple) {
+                if (auto const tuple = handleTupleExpr(); tuple) {
                     lhs = syntax::expr::FnApp{
                         *lhs, *tuple, *location
                     };
@@ -161,7 +145,7 @@ namespace tlc::parse {
             };
         }
         return seq(
-            many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
+            many0(seq(match(lexeme::identifier), match(lexeme::dot))),
             match(lexeme::identifier)
         )(m_stream, m_tracker).and_then([this](auto const& tokens)
             -> ParseResult {

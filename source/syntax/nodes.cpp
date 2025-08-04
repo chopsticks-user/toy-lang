@@ -44,13 +44,6 @@ namespace tlc::syntax {
             location
         } {}
 
-        Access::Access(
-            Node object, Str field, Location const location
-        ): NodeBase{
-               {std::move(object)},
-               location
-           }, m_field{std::move(field)} {}
-
         Prefix::Prefix(
             Node operand, lexeme::Lexeme op, Location const location
         ): NodeBase{{std::move(operand)}, location},

@@ -30,7 +30,7 @@ namespace tlc::lexeme {
             RightBrace, Hash, Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus,
             FwdSlash, Percent, Exclaim, Equal, Greater, Less, QMark, Hat, Tilde,
             Dollar, At, Anonymous,
-            /* Double characters */ Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
+            /* Double characters */ Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
             Equal2, Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
             FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual,
             ColonEqual, BarGreater, MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
@@ -156,7 +156,6 @@ namespace tlc::lexeme {
     constexpr Lexeme anonymous{Lexeme::Anonymous, "_"};
 
     // two-character symbols
-    constexpr Lexeme colon2{Lexeme::Colon2, "::"};
     constexpr Lexeme star2{Lexeme::Star2, "**"};
     constexpr Lexeme ampersand2{Lexeme::Ampersand2, "&&"};
     constexpr Lexeme bar2{Lexeme::Bar2, "||"};

@@ -29,7 +29,6 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Tuple const& node) -> Str;
         auto operator()(syntax::expr::FnApp const& node) -> Str;
         auto operator()(syntax::expr::Subscript const& node) -> Str;
-        auto operator()(syntax::expr::Access const& node) -> Str;
         auto operator()(syntax::expr::Prefix const& node) -> Str;
         auto operator()(syntax::expr::Binary const& node) -> Str;
         auto operator()(syntax::expr::RecordEntry const& node) -> Str;

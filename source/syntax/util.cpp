@@ -17,7 +17,7 @@ namespace tlc::syntax {
     }
 
     static const HashSet postfixStart = {
-        lexeme::dot, lexeme::leftParen, lexeme::leftBracket,
+        lexeme::leftParen, lexeme::leftBracket,
     };
 
     auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {

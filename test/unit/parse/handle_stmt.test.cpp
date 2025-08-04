@@ -31,25 +31,25 @@ TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Parse]") {
         "├─ expr::Identifier [@0:7] with path = 'x'"
     );
     assertStmt(
-        "return (foo::bar, 0);",
+        "return (foo.bar, 0);",
         "stmt::Return [@0:0]\n"
         "├─ expr::Tuple [@0:7] with size = 2\n"
-        "   ├─ expr::Identifier [@0:8] with path = 'foo::bar'\n"
-        "   ├─ expr::Integer [@0:18] with value = 0"
+        "   ├─ expr::Identifier [@0:8] with path = 'foo.bar'\n"
+        "   ├─ expr::Integer [@0:17] with value = 0"
     );
 }
 
 TEST_CASE_WITH_FIXTURE("Parse: Declaration statements", "[Parse]") {
     assertStmt(
-        "x = foo::Bar{x: 0, y: true};",
+        "x = foo.Bar{x: 0, y: true};",
         "stmt::Decl [@0:0]\n"
         "├─ decl::Identifier [@0:0] with name = 'x'\n"
         "├─ expr::Record [@0:4] with size = 2\n"
-        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "   ├─ expr::RecordEntry [@0:13] with key = 'x'\n"
-        "      ├─ expr::Integer [@0:16] with value = 0\n"
-        "   ├─ expr::RecordEntry [@0:19] with key = 'y'\n"
-        "      ├─ expr::Boolean [@0:22] with value = true"
+        "   ├─ type::Identifier [@0:4] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "   ├─ expr::RecordEntry [@0:12] with key = 'x'\n"
+        "      ├─ expr::Integer [@0:15] with value = 0\n"
+        "   ├─ expr::RecordEntry [@0:18] with key = 'y'\n"
+        "      ├─ expr::Boolean [@0:21] with value = true"
     );
     assertStmt(
         "(x, y, z: Bool) = (0, 0.0, false);",
@@ -68,11 +68,11 @@ TEST_CASE_WITH_FIXTURE("Parse: Declaration statements", "[Parse]") {
 
 TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
     assertStmt(
-        "foo::bar();",
+        "foo.bar();",
         "stmt::Expression [@0:0]\n"
         "├─ expr::FnApp [@0:0]\n"
-        "   ├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
-        "   ├─ expr::Tuple [@0:8] with size = 0"
+        "   ├─ expr::Identifier [@0:0] with path = 'foo.bar'\n"
+        "   ├─ expr::Tuple [@0:7] with size = 0"
     );
     assertStmt(
         "x := 5;",
@@ -98,22 +98,22 @@ TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
         "      ├─ expr::Identifier [@0:21] with path = 'y'"
     );
     assertStmt(
-        "x == y => foo::Bar{sum: x+y, product: x*y};",
+        "x == y => foo.Bar{sum: x+y, product: x*y};",
         "stmt::Conditional [@0:0]\n"
         "├─ expr::Binary [@0:0] with op = '=='\n"
         "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
         "   ├─ expr::Identifier [@0:5] with path = 'y'\n"
         "├─ stmt::Expression [@0:10]\n"
         "   ├─ expr::Record [@0:10] with size = 2\n"
-        "      ├─ type::Identifier [@0:10] with (const, fund, path) = (true, false, 'foo::Bar')\n"
-        "      ├─ expr::RecordEntry [@0:19] with key = 'sum'\n"
-        "         ├─ expr::Binary [@0:24] with op = '+'\n"
-        "            ├─ expr::Identifier [@0:24] with path = 'x'\n"
-        "            ├─ expr::Identifier [@0:26] with path = 'y'\n"
-        "      ├─ expr::RecordEntry [@0:29] with key = 'product'\n"
-        "         ├─ expr::Binary [@0:38] with op = '*'\n"
-        "            ├─ expr::Identifier [@0:38] with path = 'x'\n"
-        "            ├─ expr::Identifier [@0:40] with path = 'y'"
+        "      ├─ type::Identifier [@0:10] with (const, fund, path) = (true, false, 'foo.Bar')\n"
+        "      ├─ expr::RecordEntry [@0:18] with key = 'sum'\n"
+        "         ├─ expr::Binary [@0:23] with op = '+'\n"
+        "            ├─ expr::Identifier [@0:23] with path = 'x'\n"
+        "            ├─ expr::Identifier [@0:25] with path = 'y'\n"
+        "      ├─ expr::RecordEntry [@0:28] with key = 'product'\n"
+        "         ├─ expr::Binary [@0:37] with op = '*'\n"
+        "            ├─ expr::Identifier [@0:37] with path = 'x'\n"
+        "            ├─ expr::Identifier [@0:39] with path = 'y'"
     );
 }
 
@@ -141,13 +141,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {
 
 TEST_CASE_WITH_FIXTURE("Parse: Defer statements", "[Parse]") {
     assertStmt(
-        "defer io::println(x)",
+        "defer io.println(x)",
         "stmt::Defer [@0:0]\n"
         "├─ stmt::Expression [@0:6]\n"
         "   ├─ expr::FnApp [@0:6]\n"
-        "      ├─ expr::Identifier [@0:6] with path = 'io::println'\n"
-        "      ├─ expr::Tuple [@0:17] with size = 1\n"
-        "         ├─ expr::Identifier [@0:18] with path = 'x'"
+        "      ├─ expr::Identifier [@0:6] with path = 'io.println'\n"
+        "      ├─ expr::Tuple [@0:16] with size = 1\n"
+        "         ├─ expr::Identifier [@0:17] with path = 'x'"
     );
 }
 

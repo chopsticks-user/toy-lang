@@ -53,7 +53,7 @@ namespace tlc::syntax::detail {
         }
 
         for (StrV s : m_path | rv::drop(1)) {
-            pathStr += "::"s + Str(s);
+            pathStr += "."s + Str(s);
         }
 
         return pathStr;

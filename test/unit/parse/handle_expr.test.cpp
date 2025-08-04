@@ -135,12 +135,12 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
         "expr::Identifier [@0:0] with path = '_'"
     );
     assertExpr(
-        "foo::bar",
-        "expr::Identifier [@0:0] with path = 'foo::bar'"
+        "foo.bar",
+        "expr::Identifier [@0:0] with path = 'foo.bar'"
     );
     assertExpr(
-        "foo::bar::baz::boo",
-        "expr::Identifier [@0:0] with path = 'foo::bar::baz::boo'"
+        "foo.bar.baz.boo",
+        "expr::Identifier [@0:0] with path = 'foo.bar.baz.boo'"
     );
 }
 
@@ -184,9 +184,9 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
 
 TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     assertExpr(
-        "foo::Bar{}",
+        "foo.Bar{}",
         "expr::Record [@0:0] with size = 0\n"
-        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo::Bar')"
+        "├─ type::Identifier [@0:0] with (const, fund, path) = (true, false, 'foo.Bar')"
     );
 
     assertExpr(
@@ -202,37 +202,15 @@ TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Access expressions", "[Parse]") {
-    assertExpr(
-        "foo.bar",
-        "expr::Access [@0:0] with field = 'bar'\n"
-        "├─ expr::Identifier [@0:0] with path = 'foo'"
-    );
-    assertExpr(
-        "tmp::foo.bar.baz",
-        "expr::Access [@0:0] with field = 'baz'\n"
-        "├─ expr::Access [@0:0] with field = 'bar'\n"
-        "   ├─ expr::Identifier [@0:0] with path = 'tmp::foo'"
-    );
-    assertExpr(
-        "[0,1,2].foo",
-        "expr::Access [@0:0] with field = 'foo'\n"
-        "├─ expr::Array [@0:0] with size = 3\n"
-        "   ├─ expr::Integer [@0:1] with value = 0\n"
-        "   ├─ expr::Integer [@0:3] with value = 1\n"
-        "   ├─ expr::Integer [@0:5] with value = 2"
-    );
-}
-
 TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     assertExpr(
-        "foo::bar(0,1,2)",
+        "foo.bar(0,1,2)",
         "expr::FnApp [@0:0]\n"
-        "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
-        "├─ expr::Tuple [@0:8] with size = 3\n"
-        "   ├─ expr::Integer [@0:9] with value = 0\n"
-        "   ├─ expr::Integer [@0:11] with value = 1\n"
-        "   ├─ expr::Integer [@0:13] with value = 2"
+        "├─ expr::Identifier [@0:0] with path = 'foo.bar'\n"
+        "├─ expr::Tuple [@0:7] with size = 3\n"
+        "   ├─ expr::Integer [@0:8] with value = 0\n"
+        "   ├─ expr::Integer [@0:10] with value = 1\n"
+        "   ├─ expr::Integer [@0:12] with value = 2"
     );
     assertExpr(
         "foo()",
@@ -256,13 +234,13 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
 
 TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     assertExpr(
-        "foo::bar[0,1,2]",
+        "foo.bar[0,1,2]",
         "expr::Subscript [@0:0]\n"
-        "├─ expr::Identifier [@0:0] with path = 'foo::bar'\n"
-        "├─ expr::Array [@0:8] with size = 3\n"
-        "   ├─ expr::Integer [@0:9] with value = 0\n"
-        "   ├─ expr::Integer [@0:11] with value = 1\n"
-        "   ├─ expr::Integer [@0:13] with value = 2"
+        "├─ expr::Identifier [@0:0] with path = 'foo.bar'\n"
+        "├─ expr::Array [@0:7] with size = 3\n"
+        "   ├─ expr::Integer [@0:8] with value = 0\n"
+        "   ├─ expr::Integer [@0:10] with value = 1\n"
+        "   ├─ expr::Integer [@0:12] with value = 2"
     );
     assertExpr(
         "foo[x]",

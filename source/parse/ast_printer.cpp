@@ -64,13 +64,6 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvJoinWithEl);
     }
 
-    auto ASTPrinter::operator()(syntax::expr::Access const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Access [@{}:{}] with field = '{}'",
-            node.line(), node.column(), node.field()
-        )) + "\n" + visitChildren(node).front();
-    }
-
     auto ASTPrinter::operator()(syntax::expr::Prefix const& node) -> Str {
         return withDepth(std::format(
             "expr::Prefix [@{}:{}] with op = '{}'",

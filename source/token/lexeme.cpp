@@ -45,7 +45,6 @@ namespace tlc::lexeme {
         {barGreater.str(), barGreater},
         {minusGreater.str(), minusGreater},
         {equalGreater.str(), equalGreater},
-        {colon2.str(), colon2},
         {star2.str(), star2},
         {ampersand2.str(), ampersand2},
         {bar2.str(), bar2},
