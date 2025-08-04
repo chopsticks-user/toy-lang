@@ -2,7 +2,7 @@
 
 namespace tlc::lexeme {
     const HashMap<StrV, Lexeme> nonTypeKeywordTable = {
-        /* Module */{module.str(), module}, {import_.str(), import_},
+        /* Module */{module_.str(), module_}, {import_.str(), import_},
 
         /* Visibility */ {pub.str(), pub}, {prv.str(), prv},
 

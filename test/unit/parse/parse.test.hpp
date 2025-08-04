@@ -52,6 +52,11 @@ protected:
         tlc::Str source, tlc::Str expected,
         std::source_location location = std::source_location::current()
     ) -> void;
+
+    static auto assertTranslationUnit(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

@@ -11,7 +11,7 @@ namespace tlc::parse {
         IdDecl, TupleDecl, Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt,
         AssignStmt, ExprStmt, CondStmt, YieldStmt, LoopStmt, MatchStmt,
         MatchCaseStmt, MatchCaseDefaultStmt, GenericTypeArguments, BinaryTypeExpr,
-        TryExpr, GenericParamsDecl
+        TryExpr, GenericParamsDecl, TranslationUnit, ModuleDecl, ImportDecl,
     };
 
     enum class EParseErrorReason {

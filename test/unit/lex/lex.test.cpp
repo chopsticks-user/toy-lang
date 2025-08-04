@@ -46,7 +46,7 @@ foo Bar    Float
     assertTokenAt(0, tlc::lexeme::identifier, "foo", 1, 0);
     assertTokenAt(1, tlc::lexeme::userDefinedType, "Bar", 1, 4);
     assertTokenAt(2, tlc::lexeme::fundamentalType, "Float", 1, 11);
-    assertTokenAt(3, tlc::lexeme::module, "module", 3, 4);
+    assertTokenAt(3, tlc::lexeme::module_, "module", 3, 4);
 }
 
 TEST_CASE_WITH_FIXTURE("Lex: Comments", "[Lex]") {}
@@ -115,7 +115,7 @@ import
             )");
 
             assertTokenCount(2);
-            assertTokenAt(0, tlc::lexeme::module, "module", 1, 0);
+            assertTokenAt(0, tlc::lexeme::module_, "module", 1, 0);
             assertTokenAt(1, tlc::lexeme::import_, "import", 2, 0);
         }
 

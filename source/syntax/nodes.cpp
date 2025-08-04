@@ -234,4 +234,18 @@ namespace tlc::syntax {
 
     stmt::Expression::Expression(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
+
+    global::ModuleDecl::ModuleDecl(Node path, Location const location)
+        : NodeBase{{std::move(path)}, location} {}
+
+    global::ImportDecl::ImportDecl(Node alias, Node path, Location const location)
+        : NodeBase{{std::move(alias), std::move(path)}, location} {}
+
+    TranslationUnit::TranslationUnit(fs::path sourcePath, Vec<Node> definitions)
+        : NodeBase{std::move(definitions), {}},
+          m_sourcePath{std::move(sourcePath)} {}
+
+    auto TranslationUnit::size() const noexcept -> szt {
+        return nChildren();
+    }
 }

@@ -72,7 +72,7 @@ namespace tlc::lexeme {
     constexpr Lexeme invalid{Lexeme::Invalid, ""};
 
     // module
-    constexpr Lexeme module{Lexeme::Module, "module"};
+    constexpr Lexeme module_{Lexeme::Module, "module"};
     constexpr Lexeme import_{Lexeme::Import, "import"};
 
     // visibility

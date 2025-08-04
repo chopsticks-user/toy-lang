@@ -60,6 +60,11 @@ namespace tlc::parse {
         auto operator()(syntax::stmt::MatchCase const& node) -> Str;
         auto operator()(syntax::stmt::Match const& node) -> Str;
 
+        auto operator()(syntax::global::ModuleDecl const& node) -> Str;
+        auto operator()(syntax::global::ImportDecl const& node) -> Str;
+
+        auto operator()(syntax::TranslationUnit const& node) -> Str;
+
     private:
         static constexpr auto rvJoinWithEl =
             rv::join_with('\n') | rng::to<Str>();

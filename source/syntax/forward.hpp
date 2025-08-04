@@ -56,7 +56,10 @@ namespace tlc::syntax {
         struct Expression;
     }
 
-    namespace def {}
+    namespace global {
+        struct ModuleDecl;
+        struct ImportDecl;
+    }
 
     struct TranslationUnit;
 
@@ -74,6 +77,8 @@ namespace tlc::syntax {
         stmt::Decl, stmt::Return, stmt::Defer, stmt::Loop, stmt::Match,
         stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
         stmt::Expression,
+
+        global::ModuleDecl, global::ImportDecl,
 
         TranslationUnit
     >;

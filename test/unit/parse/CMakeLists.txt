@@ -9,6 +9,7 @@ target_sources(
     handle_type.test.cpp
     handle_decl.test.cpp
     handle_stmt.test.cpp
+    handle_global_decl.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_parse PRIVATE

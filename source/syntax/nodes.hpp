@@ -346,12 +346,27 @@ namespace tlc::syntax {
         };
     }
 
-    namespace global {}
+    namespace global {
+        struct ModuleDecl final : detail::NodeBase {
+            ModuleDecl(Node path, Location location);
+        };
 
-    namespace def {}
+        struct ImportDecl final : detail::NodeBase {
+            ImportDecl(Node alias, Node path, Location location);
+        };
+    }
 
     struct TranslationUnit final : detail::NodeBase {
-        // explicit TranslationUnit(Vec<Node> definitions);
+        TranslationUnit(fs::path sourcePath, Vec<Node> definitions);
+
+        [[nodiscard]] auto sourcePath() const noexcept -> fs::path const& {
+            return m_sourcePath;
+        }
+
+        [[nodiscard]] auto size() const noexcept -> szt;
+
+    private:
+        fs::path m_sourcePath;
     };
 }
 
