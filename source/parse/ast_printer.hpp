@@ -47,6 +47,8 @@ namespace tlc::parse {
 
         auto operator()(syntax::decl::Identifier const& node) -> Str;
         auto operator()(syntax::decl::Tuple const& node) -> Str;
+        auto operator()(syntax::decl::GenericIdentifier const& node) -> Str;
+        auto operator()(syntax::decl::GenericParameters const& node) -> Str;
 
         auto operator()(syntax::stmt::Return const& node) -> Str;
         auto operator()(syntax::stmt::Decl const& node) -> Str;

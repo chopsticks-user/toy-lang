@@ -40,6 +40,8 @@ namespace tlc::syntax {
     namespace decl {
         struct Identifier;
         struct Tuple;
+        struct GenericIdentifier;
+        struct GenericParameters;
     }
 
     namespace stmt {
@@ -67,7 +69,8 @@ namespace tlc::syntax {
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
         type::GenericArguments, type::Generic,
 
-        decl::Identifier, decl::Tuple,
+        decl::Identifier, decl::Tuple, decl::GenericIdentifier,
+        decl::GenericParameters,
 
         stmt::Decl, stmt::Return, stmt::Defer, stmt::Loop, stmt::Match,
         stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,

@@ -14,6 +14,7 @@
 - ~~Vec<Node> implies the need for a wrapper~~
 - ~~Implement parsing logic for strings.~~
 - Handle "try" expressions.
+- Remove the "str" field and getter in token, use the one provided by lexeme instead
 - Type params should be handled by a dedicated parsing method
 - Implement parsing logic for ternary operators.
 - Add test cases to ensure correct operator precedence

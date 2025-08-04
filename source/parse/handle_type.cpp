@@ -48,14 +48,14 @@ namespace tlc::parse {
                 lhs = syntax::type::Array{*lhs, std::move(sizes), *location};
             }
             else if (m_stream.match(lexeme::less)) {
-                auto argsLocation = m_tracker.current();
+                auto const argsLocation = m_tracker.current();
                 Vec<syntax::Node> types;
                 do {
                     types.push_back(*handleType().or_else(
                         [this](auto&& error) -> ParseResult {
                             collect(error).collect({
                                 .location = m_tracker.current(),
-                                .context = EParseErrorContext::GenericTypeTuple,
+                                .context = EParseErrorContext::GenericTypeArguments,
                                 .reason = EParseErrorReason::MissingType,
                             });
                             return {};
@@ -67,7 +67,7 @@ namespace tlc::parse {
                 if (!m_stream.match(lexeme::greater)) {
                     collect({
                         .location = m_tracker.current(),
-                        .context = EParseErrorContext::GenericTypeTuple,
+                        .context = EParseErrorContext::GenericTypeArguments,
                         .reason = EParseErrorReason::MissingEnclosingSymbol,
                     });
                 }

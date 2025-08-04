@@ -32,7 +32,7 @@ namespace tlc::parse {
                     -> ParseResult {
                         collect(error);
                         return syntax::decl::Identifier{
-                            name, {}, *location
+                            Str(name), {}, *location
                         };
                     });
             }
@@ -83,5 +83,53 @@ namespace tlc::parse {
                 return syntax::decl::Tuple{std::move(decls), location};
             }
         );
+    }
+
+    auto Parse::handleGenericParamsDecl() -> ParseResult {
+        return match(lexeme::less)(m_stream, m_tracker).and_then(
+            [this](auto const&) -> ParseResult {
+                auto const location = m_tracker.current();
+
+                if (m_stream.match(lexeme::greater)) {
+                    return syntax::decl::GenericParameters{{}, location};
+                }
+
+                Vec<syntax::Node> types;
+                do {
+                    types.push_back(
+                        *match(lexeme::userDefinedType)
+                         (m_stream, m_tracker)
+                         .and_then([&](auto&& typeId) -> ParseResult {
+                             return syntax::decl::GenericIdentifier{
+                                 Str(typeId.front().str()),
+                                 m_tracker.current()
+                             };
+                         })
+                         .or_else(
+                             [this](auto&& error) -> ParseResult {
+                                 collect(error).collect({
+                                     .location = m_tracker.current(),
+                                     .context = EParseErrorContext::GenericParamsDecl,
+                                     .reason = EParseErrorReason::MissingId,
+                                 });
+                                 return {};
+                             }
+                         )
+                    );
+                }
+                while (m_stream.match(lexeme::comma));
+
+                if (!m_stream.match(lexeme::greater)) {
+                    collect({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::GenericParamsDecl,
+                        .reason = EParseErrorReason::MissingEnclosingSymbol,
+                    });
+                }
+
+                return syntax::decl::GenericParameters{
+                    std::move(types), location
+                };
+            });
     }
 }

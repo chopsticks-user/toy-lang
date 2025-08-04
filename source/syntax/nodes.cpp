@@ -168,6 +168,17 @@ namespace tlc::syntax {
         auto Tuple::size() const -> szt {
             return nChildren();
         }
+
+        GenericIdentifier::GenericIdentifier(Str name, Location const location)
+            : NodeBase{{}, location}, m_name{std::move(name)} {}
+
+        GenericParameters::GenericParameters(
+            Vec<Node> params, Location const location)
+            : NodeBase{std::move(params), location} {}
+
+        auto GenericParameters::size() const -> szt {
+            return nChildren();
+        }
     }
 
     stmt::Decl::Decl(Node decl, Node initializer, Location const location)

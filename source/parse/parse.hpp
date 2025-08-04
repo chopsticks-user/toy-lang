@@ -46,6 +46,10 @@ namespace tlc::parse {
         auto parseDecl() -> ParseResult {
             return handleDecl();
         }
+
+        auto parseGenericParamsDecl() -> ParseResult {
+            return handleGenericParamsDecl();
+        }
 #endif
 
     private:
@@ -67,6 +71,7 @@ namespace tlc::parse {
         auto handleDecl() -> ParseResult;
         auto handleIdentifierDecl() -> ParseResult;
         auto handleTupleDecl() -> ParseResult;
+        auto handleGenericParamsDecl() -> ParseResult;
 
         auto handleStmt() -> ParseResult;
         auto handleDeclStmt() -> ParseResult;

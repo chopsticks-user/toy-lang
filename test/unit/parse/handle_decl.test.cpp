@@ -20,6 +20,25 @@ auto ParseTestFixture::assertDecl(
     REQUIRE(actual == expected);
 }
 
+auto ParseTestFixture::assertGenericParamsDecl(
+    tlc::Str source, tlc::Str expected,
+    std::source_location location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    std::istringstream iss;
+    iss.str(std::move(source));
+
+    auto result = tlc::parse::Parse{
+        filepath, tlc::lex::Lex::operator()(std::move(iss))
+    }.parseGenericParamsDecl();
+    REQUIRE(result.has_value());
+
+    auto const actual = tlc::parse::ASTPrinter::operator()(
+        std::move(*result)
+    );
+    REQUIRE(actual == expected);
+}
+
 TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
     assertDecl(
         "x: Foo",
@@ -61,5 +80,19 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
         "├─ decl::Tuple [@0:20] with size = 2\n"
         "   ├─ decl::Identifier [@0:21] with name = 'z'\n"
         "   ├─ decl::Identifier [@0:24] with name = 't'"
+    );
+}
+
+TEST_CASE_WITH_FIXTURE("Parse: Generic params decl", "[Parse]") {
+    assertGenericParamsDecl(
+        "<>",
+        "decl::GenericParameters [@0:0] with size = 0"
+    );
+    assertGenericParamsDecl(
+        "<T, U, V>",
+        "decl::GenericParameters [@0:0] with size = 3\n"
+        "├─ decl::GenericIdentifier [@0:1] with name = 'T'\n"
+        "├─ decl::GenericIdentifier [@0:4] with name = 'U'\n"
+        "├─ decl::GenericIdentifier [@0:7] with name = 'V'"
     );
 }

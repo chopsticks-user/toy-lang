@@ -235,6 +235,23 @@ namespace tlc::syntax {
 
             [[nodiscard]] auto size() const -> szt;
         };
+
+        struct GenericIdentifier final : detail::NodeBase {
+            GenericIdentifier(Str name, Location location);
+
+            [[nodiscard]] auto name() const noexcept -> StrV {
+                return m_name;
+            }
+
+        private:
+            Str m_name;
+        };
+
+        struct GenericParameters final : detail::NodeBase {
+            GenericParameters(Vec<Node> params, Location location);
+
+            [[nodiscard]] auto size() const -> szt;
+        };
     }
 
     namespace stmt {

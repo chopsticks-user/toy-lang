@@ -43,6 +43,11 @@ protected:
         std::source_location location = std::source_location::current()
     ) -> void;
 
+    static auto assertGenericParamsDecl(
+        tlc::Str source, tlc::Str expected,
+        std::source_location location = std::source_location::current()
+    ) -> void;
+
     static auto assertStmt(
         tlc::Str source, tlc::Str expected,
         std::source_location location = std::source_location::current()

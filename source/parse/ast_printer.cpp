@@ -186,6 +186,22 @@ namespace tlc::parse {
                   : "");
     }
 
+    auto ASTPrinter::operator()(syntax::decl::GenericIdentifier const& node) -> Str {
+        return withDepth(std::format(
+            "decl::GenericIdentifier [@{}:{}] with name = '{}'",
+            node.line(), node.column(), node.name()
+        ));
+    }
+
+    auto ASTPrinter::operator()(syntax::decl::GenericParameters const& node) -> Str {
+        return withDepth(std::format(
+            "decl::GenericParameters [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
+        )) + (node.size() > 0
+                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
+                  : "");
+    }
+
     auto ASTPrinter::operator()(syntax::stmt::Return const& node) -> Str {
         Str suffix = visitChildren(node).front();
         if (!suffix.empty()) {
