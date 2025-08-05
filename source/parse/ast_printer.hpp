@@ -2,8 +2,7 @@
 #define  TLC_SYNTAX_AST_PRINTER_HPP
 
 #include "core/core.hpp"
-#include "syntax/nodes.hpp"
-#include "syntax/visitor.hpp"
+#include "syntax/syntax.hpp"
 
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
@@ -14,10 +13,9 @@ namespace tlc::parse {
 
     public:
         using SyntaxTreeVisitor::operator();
-        using SyntaxTreeVisitor::Visitable;
 
-        static auto operator()(syntax::Node node) -> Str {
-            return tlc::visit<ASTPrinter>(std::move(node));
+        static auto operator()(syntax::Node const& node) -> Str {
+            return std::visit(ASTPrinter{}, node);
         }
 
     public:

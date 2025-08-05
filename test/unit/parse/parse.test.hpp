@@ -90,21 +90,23 @@ inline auto ParseTestFixture::assertExprWithParams(
     }.parseExpr();
     REQUIRE(result);
 
-    params.expectedAstPrint.transform([&](auto&& expectedAstPrint) {
-        auto const actualAstPrint = tlc::parse::ASTPrinter::operator()(
-            // todo
-            std::move(*result)
-        );
-        REQUIRE(actualAstPrint == expectedAstPrint);
-        return "";
-    });
-
-    params.expectedPrettyPrint.transform(
-        [&]([[maybe_unused]] auto&& expectedPrettyPrint) {
+    params.expectedAstPrint.transform(
+        [&](auto&& expectedAstPrint) {
+            auto const actualAstPrint =
+                tlc::parse::ASTPrinter::operator()(*result);
+            REQUIRE(actualAstPrint == expectedAstPrint);
             return "";
         }
     );
 
+    params.expectedPrettyPrint.transform(
+        [&]([[maybe_unused]] auto&& expectedPrettyPrint) {
+            auto const actualPrettyPrint =
+                tlc::parse::PrettyPrint::operator()(std::move(*result));
+            REQUIRE(actualPrettyPrint == expectedPrettyPrint);
+            return "";
+        }
+    );
 
     auto const actualErrors =
         ErrCollector::instance().errors();

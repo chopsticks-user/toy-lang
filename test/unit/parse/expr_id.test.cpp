@@ -1,0 +1,70 @@
+#include "parse.test.hpp"
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Local",
+    "[Unit][Parse][Expr]"
+) {
+    assertExpr(
+        "baz",
+        "expr::Identifier [@0:0] with path = 'baz'"
+    );
+
+    assertExprWithParams({
+        .source =
+        "baz",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = 'baz'",
+
+        .expectedPrettyPrint =
+        "baz",
+    });
+}
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Imported",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "foo.bar",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = 'foo.bar'",
+
+        .expectedPrettyPrint =
+        "foo.bar",
+    });
+}
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Nested",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "foo.bar.baz.boo",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = 'foo.bar.baz.boo'",
+
+        .expectedPrettyPrint =
+        "foo.bar.baz.boo",
+    });
+}
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Anonymous",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "_",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = '_'",
+
+        .expectedPrettyPrint =
+        "_",
+    });
+}

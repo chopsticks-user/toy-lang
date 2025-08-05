@@ -2,8 +2,30 @@
 #define  TLC_SYNTAX_PRETTY_PRINTER_HPP
 
 #include "core/core.hpp"
-#include "syntax/nodes.hpp"
+#include "syntax/syntax.hpp"
 
-namespace tlc::parse {}
+namespace tlc::parse {
+    class PrettyPrint final : public syntax::SyntaxTreeVisitor<Str> {
+        static constexpr StrV indent = "    ";
+        static constexpr StrV empty = "{?}";
+        static constexpr StrV required = "{!}";
+
+    public:
+        using SyntaxTreeVisitor::operator();
+
+        static auto operator()(syntax::Node node) -> Str {
+            return tlc::visit<PrettyPrint>(std::move(node));
+        }
+
+    public:
+        auto operator()(syntax::expr::Integer const& node) -> Str;
+        auto operator()(syntax::expr::Float const& node) -> Str;
+        auto operator()(syntax::expr::Boolean const& node) -> Str;
+        auto operator()(syntax::expr::Identifier const& node) -> Str;
+
+    private:
+        [[nodiscard]] auto withDepth(StrV s) const -> Str;
+    };
+}
 
 #endif // TLC_SYNTAX_PRETTY_PRINTER_HPP
