@@ -15,6 +15,8 @@
 - ~~Implement parsing logic for strings.~~
 - ~~Handle "try" expressions~~.
 - Remove the "str" field and getter in token, use the one provided by lexeme instead
+- Remove "invalid" lexeme, Lex should insert an "empty" lexeme at the end of the
+  token buffer
 - ~~Type params should be handled by a dedicated parsing method~~
 - Implement parsing logic for ternary operators.
 - Add test cases to ensure correct operator precedence

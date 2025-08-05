@@ -381,6 +381,10 @@ namespace tlc::syntax {
         };
     }
 
+    struct RequiredButMissing final : detail::NodeBase {
+        explicit RequiredButMissing();
+    };
+
     struct TranslationUnit final : detail::NodeBase {
         TranslationUnit(fs::path sourcePath, Vec<Node> definitions);
 

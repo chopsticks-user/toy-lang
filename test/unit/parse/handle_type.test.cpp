@@ -20,7 +20,7 @@ auto ParseTestFixture::assertType(
     REQUIRE(actual == expected);
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse][Type]") {
     assertType(
         "Int",
         "type::Identifier [@0:0] with (const, fund, path) = (true, true, 'Int')"
@@ -31,7 +31,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse][Type]") {
     assertType(
         "[[x]]",
         "type::Infer [@0:0]\n"
@@ -51,7 +51,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse][Type]") {
     assertType(
         "()",
         "type::Tuple [@0:0] with size = 0"
@@ -77,7 +77,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple types", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse][Type]") {
     assertType(
         "Int[5]",
         "type::Array [@0:0] with nDims = 1\n"
@@ -107,7 +107,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Array types", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse][Type]") {
     assertType(
         "() -> Void",
         "type::Function [@0:0]\n"
@@ -156,7 +156,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function types", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Generic types", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Generic types", "[Parse][Type]") {
     assertType(
         "Own<foo.Bar>",
         "type::Generic [@0:0]\n"

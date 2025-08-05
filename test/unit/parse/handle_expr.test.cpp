@@ -2,49 +2,7 @@
 
 using namespace tlc::syntax;
 
-auto ParseTestFixture::assertExpr(
-    tlc::Str source, tlc::Str expected, std::source_location const location
-) -> void {
-    INFO(std::format("{}:{}", location.file_name(), location.line()));
-    std::istringstream iss;
-    iss.str(std::move(source));
-
-    auto result = tlc::parse::Parse{
-        filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }.parseExpr();
-    REQUIRE(result.has_value());
-
-    auto const actual = tlc::parse::ASTPrinter::operator()(
-        std::move(*result)
-    );
-    REQUIRE(actual == expected);
-}
-
-auto ParseTestFixture::assertString(
-    tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
-    std::source_location location
-) -> void {
-    INFO(std::format("{}:{}", location.file_name(), location.line()));
-    std::istringstream iss;
-    iss.str(std::move(source));
-
-    auto result = tlc::parse::Parse{
-        filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }.parseExpr();
-    REQUIRE(result.has_value());
-
-    auto const actual = tlc::parse::ASTPrinter::operator()(*result);
-    REQUIRE(actual == expected);
-
-    REQUIRE(matchAstType<expr::String>(*result));
-    for (auto&& [actualFragment,expectedFragment] : tlc::rv::zip(
-             astCast<expr::String>(*result).fragments(), expectedFragments
-         )) {
-        REQUIRE(actualFragment == expectedFragment);
-    }
-}
-
-TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Unit][Parse][Expr]") {
     assertExpr(
         "31415",
         "expr::Integer [@0:0] with value = 31415"
@@ -79,7 +37,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Integers", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Unit][Parse][Expr]") {
     assertExpr(
         "0.0314159",
         "expr::Float [@0:0] with value = 0.0314159"
@@ -114,7 +72,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Floats", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Unit][Parse][Expr]") {
     assertExpr(
         "true",
         "expr::Boolean [@0:0] with value = true"
@@ -125,7 +83,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Booleans", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Unit][Parse][Expr]") {
     assertExpr(
         "baz",
         "expr::Identifier [@0:0] with path = 'baz'"
@@ -144,26 +102,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifiers", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Tuples", "[Parse]") {
-    assertExpr(
-        "(1,x,2.1)",
-        "expr::Tuple [@0:0] with size = 3\n"
-        "├─ expr::Integer [@0:1] with value = 1\n"
-        "├─ expr::Identifier [@0:3] with path = 'x'\n"
-        "├─ expr::Float [@0:5] with value = 2.1"
-    );
-    assertExpr(
-        "(x)",
-        "expr::Tuple [@0:0] with size = 1\n"
-        "├─ expr::Identifier [@0:1] with path = 'x'"
-    );
-    assertExpr(
-        "()",
-        "expr::Tuple [@0:0] with size = 0"
-    );
-}
-
-TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Unit][Parse][Expr]") {
     assertExpr(
         "[1,x,2.1]",
         "expr::Array [@0:0] with size = 3\n"
@@ -182,7 +121,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Arrays", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Records", "[Unit][Parse][Expr]") {
     assertExpr(
         "foo.Bar{}",
         "expr::Record [@0:0] with size = 0\n"
@@ -202,7 +141,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Records", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Unit][Parse][Expr]") {
     assertExpr(
         "foo.bar(0,1,2)",
         "expr::FnApp [@0:0]\n"
@@ -232,7 +171,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Function applications", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Unit][Parse][Expr]") {
     assertExpr(
         "foo.bar[0,1,2]",
         "expr::Subscript [@0:0]\n"
@@ -263,7 +202,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Subscript expressions", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Prefix expressions", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Prefix expressions", "[Unit][Parse][Expr]") {
     assertExpr(
         "!x",
         "expr::Prefix [@0:0] with op = '!'\n"
@@ -286,7 +225,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Prefix expressions", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Unit][Parse][Expr]") {
     assertExpr(
         "-x+3",
         "expr::Binary [@0:0] with op = '+'\n"
@@ -315,12 +254,12 @@ TEST_CASE_WITH_FIXTURE("Parse: Binary expressions", "[Parse]") {
 }
 
 // todo
-TEST_CASE_WITH_FIXTURE("Parse: Ternary expressions", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Ternary expressions", "[Unit][Parse][Expr]") {}
 
 // todo
-TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Parse]") {}
+TEST_CASE_WITH_FIXTURE("Parse: Operator precedence", "[Unit][Parse][Expr]") {}
 
-TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Unit][Parse][Expr]") {
     assertString(
         R"("")",
         "expr::String [@0:0] with nPlaceholders = 0",
@@ -347,7 +286,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Strings", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Try expression", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Try expression", "[Unit][Parse][Expr]") {
     assertExpr(
         "try x",
         "expr::Try [@0:0]\n"

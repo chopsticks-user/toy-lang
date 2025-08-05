@@ -20,7 +20,7 @@ auto ParseTestFixture::assertStmt(
     REQUIRE(actual == expected);
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "return;",
         "stmt::Return [@0:0]"
@@ -39,7 +39,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Return statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Declaration statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Declaration statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "x = foo.Bar{x: 0, y: true};",
         "stmt::Decl [@0:0]\n"
@@ -66,7 +66,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Declaration statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "foo.bar();",
         "stmt::Expression [@0:0]\n"
@@ -117,7 +117,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Expr-prefixed statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "{}",
         "stmt::Block [@0:0] with size = 0"
@@ -139,7 +139,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Block statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Defer statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Defer statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "defer io.println(x)",
         "stmt::Defer [@0:0]\n"
@@ -151,7 +151,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Defer statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "for e in r0 {}",
         "stmt::Loop [@0:0]\n"
@@ -172,7 +172,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Loop statements", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Match statements", "[Unit][Parse][Stmt]") {
     assertStmt(
         "match x {\n"
         "    5 => y := x * 5;\n"

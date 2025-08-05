@@ -47,16 +47,8 @@ namespace tlc::lexeme {
             return m_type == other.m_type;
         }
 
-        auto constexpr operator==(Lexeme&& other) const -> b8 {
-            return m_type == other.m_type;
-        }
-
         auto constexpr operator!=(Lexeme const& other) const -> b8 {
             return !(*this == other);
-        }
-
-        auto constexpr operator!=(Lexeme&& other) const -> b8 {
-            return !(*this != other);
         }
 
         [[nodiscard]] auto constexpr type() const -> EType { return m_type; }

@@ -100,27 +100,6 @@ namespace tlc::parse {
         auto handleTranslationUnit() -> ParseResult;
 
     private:
-        // todo: move a to separate class
-        auto pushCoords() -> void {
-            // todo: eof
-            return m_coords.push(m_stream.peek().location());
-        }
-
-        auto popCoords() -> Location {
-            auto const coords = currentCoords();
-            m_coords.pop();
-            return coords;
-        }
-
-        auto currentCoords() -> Location {
-            if (m_coords.empty()) {
-                throw InternalException{
-                    "Parser::popCoords: m_markedCoords.empty()"
-                };
-            }
-            return m_coords.top();
-        }
-
         static auto defaultError() -> ParseResult {
             return Unexpected{TError{}};
         }
@@ -134,12 +113,22 @@ namespace tlc::parse {
 
         auto collect(TError::Params errorParams) const -> TErrorCollector& {
             errorParams.filepath = m_filepath;
-            return TErrorCollector::instance().collect(std::move(errorParams));
+            return collect(TError{std::move(errorParams)});
         }
 
         auto collect(TError error) const -> TErrorCollector& {
+            static auto& collector = TErrorCollector::instance();
+
+            if (error.reason() == EParseErrorReason::NotAnError) {
+                return collector;
+            }
+
             error.filepath(m_filepath);
-            return TErrorCollector::instance().collect(std::move(error));
+            return collector.collect(std::move(error));
+        }
+
+        [[nodiscard]] auto createDefaultVisibility() const -> token::Token {
+            return {lexeme::empty, "", m_stream.peek().location()};
         }
 
     private:

@@ -63,6 +63,7 @@ namespace tlc::syntax {
         struct Function;
     }
 
+    struct RequiredButMissing;
     struct TranslationUnit;
 
     using Node = Poly<
@@ -83,7 +84,7 @@ namespace tlc::syntax {
         global::ModuleDecl, global::ImportDecl, global::FunctionPrototype,
         global::Function,
 
-        TranslationUnit
+        RequiredButMissing, TranslationUnit
     >;
 }
 

@@ -15,6 +15,7 @@ target_sources(
     tlc_core PRIVATE
     core.hpp platform.hpp type.hpp utility.hpp utility.cpp range.hpp
     exception.hpp concept.hpp visitor.hpp singleton.hpp config.in.hpp
+    mixin.hpp
 )
 target_include_directories(tlc_core INTERFACE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(

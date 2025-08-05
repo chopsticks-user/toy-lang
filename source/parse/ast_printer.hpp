@@ -7,10 +7,10 @@
 
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
-        static constexpr StrV prefixSymbol = "├─ ";
+        static constexpr StrV prefix = "├─ ";
         static constexpr StrV space = "   ";
-        static constexpr StrV emptyNodeStr = "(empty)";
-        static constexpr StrV requireButEmptyNodeStr = "(required but empty)";
+        static constexpr StrV empty = "(empty)";
+        static constexpr StrV required = "(required)";
 
     public:
         using SyntaxTreeVisitor::operator();
@@ -65,6 +65,7 @@ namespace tlc::parse {
         auto operator()(syntax::global::FunctionPrototype const& node) -> Str;
         auto operator()(syntax::global::Function const& node) -> Str;
 
+        auto operator()(syntax::RequiredButMissing const&) -> Str;
         auto operator()(syntax::TranslationUnit const& node) -> Str;
 
     private:
@@ -78,12 +79,7 @@ namespace tlc::parse {
 
         static constexpr auto rvTransformEmpty =
             rv::transform([](auto const& s) {
-                return s.empty() ? emptyNodeStr : s;
-            });
-
-        static constexpr auto rvRequiredButEmpty =
-            rv::transform([](auto const& s) {
-                return s.empty() ? requireButEmptyNodeStr : s;
+                return s.empty() ? empty : s;
             });
 
         [[nodiscard]] auto withDepth(Str s) const -> Str;

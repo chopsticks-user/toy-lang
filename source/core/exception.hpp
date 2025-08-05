@@ -95,11 +95,12 @@ namespace tlc {
             };
         }
 
-        auto filepath(Opt<fs::path> fp = {}) -> fs::path {
-            if (!fp) {
-                m_params.filepath = std::move(*fp);
-            }
+        auto filepath() const noexcept -> fs::path const& {
             return m_params.filepath;
+        }
+
+        auto filepath(fs::path fp) {
+            return m_params.filepath = std::move(fp);
         }
 
         [[nodiscard]] auto context() const -> EContext {
@@ -108,6 +109,10 @@ namespace tlc {
 
         [[nodiscard]] auto reason() const -> EReason {
             return m_params.reason;
+        }
+
+        [[nodiscard]] auto location() const -> Location {
+            return m_params.location;
         }
 
         [[nodiscard]] auto message() const -> Str;
@@ -121,14 +126,6 @@ namespace tlc {
         TLC_CORE_GENERATE_SINGLETON_BODY_PREFIX(ErrorCollector)
 
     public:
-        [[nodiscard]] auto size() const -> szt {
-            return m_collected.size();
-        }
-
-        [[nodiscard]] auto empty() const -> szt {
-            return m_collected.empty();
-        }
-
         auto collect(typename Error<EContext, EReason>::Params errorParams)
             -> ErrorCollector& {
             m_collected.emplace_back(errorParams);
@@ -139,6 +136,18 @@ namespace tlc {
             -> ErrorCollector& {
             m_collected.push_back(std::move(error));
             return *this;
+        }
+
+        [[nodiscard]] auto size() const -> szt {
+            return m_collected.size();
+        }
+
+        [[nodiscard]] auto empty() const -> szt {
+            return m_collected.empty();
+        }
+
+        [[nodiscard]] auto errors() -> auto {
+            return std::exchange(m_collected, {});
         }
 
     private:

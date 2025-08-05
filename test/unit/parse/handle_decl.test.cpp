@@ -39,7 +39,7 @@ auto ParseTestFixture::assertGenericParamsDecl(
     REQUIRE(actual == expected);
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse][Decl]") {
     assertDecl(
         "x: Foo",
         "decl::Identifier [@0:0] with name = 'x'\n"
@@ -56,7 +56,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Identifier decl", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse][Decl]") {
     assertDecl(
         "()",
         "decl::Tuple [@0:0] with size = 0"
@@ -83,7 +83,7 @@ TEST_CASE_WITH_FIXTURE("Parse: Tuple decl", "[Parse]") {
     );
 }
 
-TEST_CASE_WITH_FIXTURE("Parse: Generic params decl", "[Parse]") {
+TEST_CASE_WITH_FIXTURE("Parse: Generic params decl", "[Parse][Decl]") {
     assertGenericParamsDecl(
         "<>",
         "decl::GenericParameters [@0:0] with size = 0"

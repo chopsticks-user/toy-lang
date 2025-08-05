@@ -1,3 +1,5 @@
+// ReSharper disable CppIncompleteSwitchStatement
+// ReSharper disable CppDefaultCaseNotHandledInSwitchStatement
 #include "parse_error.hpp"
 
 namespace tlc {
@@ -7,8 +9,6 @@ namespace tlc {
         using parse::EParseErrorContext;
         using parse::EParseErrorReason;
 
-        // ReSharper disable once CppDefaultCaseNotHandledInSwitchStatement
-        // ReSharper disable once CppIncompleteSwitchStatement
         switch (m_params.context) {
         case EParseErrorContext::Unknown: {
             switch (m_params.reason) {

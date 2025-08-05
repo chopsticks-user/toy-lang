@@ -3,7 +3,7 @@
 namespace tlc::parse {
     auto Parse::handleFunctionDef(token::Token const& visibility) -> ParseResult {
         return handleFunctionPrototype().and_then(
-            [&](auto&& prototype) -> ParseResult {
+            [this, &visibility](syntax::Node&& prototype) -> ParseResult {
                 auto body = handleBlockStmt();
                 if (!body) {
                     return error({

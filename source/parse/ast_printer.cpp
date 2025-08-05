@@ -225,7 +225,9 @@ namespace tlc::parse {
         return withDepth(std::format(
             "stmt::Expression [@{}:{}]",
             node.line(), node.column()
-        )) + Str(suffix.empty() ? emptyNodeStr : std::format("\n{}", suffix));
+        )) + Str(suffix.empty()
+                     ? empty
+                     : std::format("\n{}", suffix));
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Assign const& node) -> Str {
@@ -313,6 +315,10 @@ namespace tlc::parse {
         )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
     }
 
+    auto ASTPrinter::operator()(syntax::RequiredButMissing const&) -> Str {
+        return withDepth(Str(required));
+    }
+
     auto ASTPrinter::operator()(syntax::TranslationUnit const& node) -> Str {
         return visitChildren(node) | rvJoinWithEl;
     }
@@ -322,11 +328,11 @@ namespace tlc::parse {
             [&] -> Vec<StrV> {
                 switch (auto const d = depth(); d) {
                 case 0: return {};
-                case 1: return {prefixSymbol};
+                case 1: return {prefix};
                 default: {
                     // todo: fix rv::concat impl
                     auto v = Vec(d, space);
-                    v.back() = prefixSymbol;
+                    v.back() = prefix;
                     return v;
                 }
                 }

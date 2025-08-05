@@ -259,6 +259,9 @@ namespace tlc::syntax {
     ): NodeBase{{std::move(prototype), std::move(body)}, location},
        m_visibility{std::move(visibility)} {}
 
+    RequiredButMissing::RequiredButMissing()
+        : NodeBase{{}, {}} {}
+
     TranslationUnit::TranslationUnit(fs::path sourcePath, Vec<Node> definitions)
         : NodeBase{std::move(definitions), {}},
           m_sourcePath{std::move(sourcePath)} {}

@@ -190,7 +190,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::Tuple,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return syntax::Node{};
+                        return syntax::RequiredButMissing{};
                     })
             );
         }

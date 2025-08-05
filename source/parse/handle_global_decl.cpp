@@ -20,10 +20,6 @@ namespace tlc::parse {
             definitions.push_back(std::move(*importDecl));
         }
 
-        static const auto createDefaultVisibility =
-            [this] -> token::Token {
-            return {lexeme::empty, "", m_stream.peek().location()};
-        };
         while (m_stream.peek().lexeme() != lexeme::invalid) {
             auto const visibility =
                 m_stream.match(lexeme::pub, lexeme::prv)
