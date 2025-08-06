@@ -57,15 +57,17 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::expr::Subscript const& node) -> Str {
         return std::format(
-            "expr::Subscript [@{}:{}]", node.line(), node.column()
-        ) + this->visitChildren(node);
+            "expr::Subscript [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::Prefix const& node) -> Str {
         return std::format(
-            "expr::Prefix [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
-        ) + "\n" + this->visitChildren(node).front();
+            "expr::Prefix [@{}:{}] with op = '{}'{}",
+            node.line(), node.column(), node.op().str(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::Binary const& node) -> Str {
@@ -291,7 +293,7 @@ namespace tlc::parse {
         ) + "\n" + this->visitChildren(node);
     }
 
-    auto ASTPrinter::operator()(std::monostate const&) -> Str {
+    auto ASTPrinter::operator()(syntax::Empty const&) -> Str {
         return Str{empty};
     }
 
@@ -303,22 +305,20 @@ namespace tlc::parse {
         return SyntaxTreeVisitor::visitChildren(node) | rvJoinWithEl;
     }
 
-    auto ASTPrinter::addDepthPrefix(
-        Vec<Str> children, szt& depth
-    ) -> Vec<Str> {
-        Str depthPrefix;
-        if (depth == 1) {
-            depthPrefix = prefix;
-        }
-        else if (depth > 1) {
-            depthPrefix = (Vec(depth - 1, space) | rv::join
-                | rng::to<Str>()) + prefix;
-        }
+    auto ASTPrinter::visitChildren(auto node) -> Str {
+        Str const depthPrefix = [](szt const d) constexpr static {
+            if (d == 0) {
+                return prefix;
+            }
+            return (Vec(d, space) | rv::join | rng::to<Str>()) + prefix;
+        }(m_depth++);
 
-        for (auto& s : children) {
-            s = depthPrefix + s;
-        }
-        --depth;
-        return children;
+        auto result = SyntaxTreeVisitor::visitChildren(node)
+            | rv::transform([depthPrefix](Str const& child) {
+                return depthPrefix + child;
+            })
+            | rvJoinWithEl;
+        m_depth = std::max(1ul, m_depth) - 1;
+        return result.empty() ? "" : std::format("\n{}", std::move(result));
     }
 }

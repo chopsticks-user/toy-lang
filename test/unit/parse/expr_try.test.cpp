@@ -4,7 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Try: Empty",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "try",
 
@@ -25,7 +25,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Try: Identifier as operand",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "try foo.bar.baz",
 

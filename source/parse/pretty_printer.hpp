@@ -28,17 +28,32 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Record const& node) -> Str;
         auto operator()(syntax::expr::Try const& node) -> Str;
         auto operator()(syntax::expr::String const& node) -> Str;
+        auto operator()(syntax::expr::FnApp const& node) -> Str;
+        auto operator()(syntax::expr::Subscript const& node) -> Str;
+        auto operator()(syntax::expr::Prefix const& node) -> Str;
+        auto operator()(syntax::expr::Binary const& node) -> Str;
 
         auto operator()(syntax::type::Identifier const& node) -> Str;
+        // auto operator()(syntax::type::Array const& node) -> Str;
+        // auto operator()(syntax::type::Tuple const& node) -> Str;
+        // auto operator()(syntax::type::Function const& node) -> Str;
+        // auto operator()(syntax::type::Infer const& node) -> Str;
+        // auto operator()(syntax::type::GenericArguments const& node) -> Str;
+        // auto operator()(syntax::type::Generic const& node) -> Str;
+        //
+        // auto operator()(syntax::decl::Identifier const& node) -> Str;
+        // auto operator()(syntax::decl::Tuple const& node) -> Str;
+        // auto operator()(syntax::decl::GenericIdentifier const& node) -> Str;
+        // auto operator()(syntax::decl::GenericParameters const& node) -> Str;
 
-        auto operator()(std::monostate const&) -> Str;
+        auto operator()(syntax::Empty const&) -> Str;
         auto operator()(syntax::RequiredButMissing const&) -> Str;
 
     private:
         static constexpr auto rvJoinWithComma =
-            rv::join_with(", "sv) | rng::to<Str>();
+            rv::join_with(", "s) | rng::to<Str>();
 
-        [[nodiscard]] auto withDepth(StrV s) const -> Str;
+        // [[nodiscard]] auto withDepth(StrV s) const -> Str;
     };
 }
 

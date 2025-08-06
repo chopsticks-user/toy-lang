@@ -4,7 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::String: Empty",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "\"\"",
 
@@ -20,7 +20,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::String: Non-interpolated string",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "\"just\\t a normal string\\n\"",
 
@@ -36,7 +36,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::String: 4 fragments, 3 placeholders",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "\"Array: [{0}, { x }, { false}]\"",
 
@@ -51,4 +51,4 @@ TEST_CASE_WITH_FIXTURE(
     });
 }
 
-// todo: errors
+// todo: errors cases

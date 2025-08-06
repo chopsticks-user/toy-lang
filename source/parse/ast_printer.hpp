@@ -63,24 +63,15 @@ namespace tlc::parse {
         auto operator()(syntax::global::FunctionPrototype const& node) -> Str;
         auto operator()(syntax::global::Function const& node) -> Str;
 
-        auto operator()(std::monostate const&) -> Str;
+        auto operator()(syntax::Empty const&) -> Str;
         auto operator()(syntax::RequiredButMissing const&) -> Str;
         auto operator()(syntax::TranslationUnit const& node) -> Str;
 
     private:
-        static auto addDepthPrefix(
-            Vec<Str> children, szt& depth
-        ) -> Vec<Str>;
-
         static constexpr auto rvJoinWithEl =
             rv::join_with('\n') | rng::to<Str>();
 
-        constexpr auto visitChildren(auto node) -> Str {
-            auto result = addDepthPrefix(
-                SyntaxTreeVisitor::visitChildren(node), ++m_depth
-            ) | rvJoinWithEl;
-            return result.empty() ? "" : "\n" + result;
-        }
+        auto visitChildren(auto node) -> Str;
 
     private:
         szt m_depth = 0;

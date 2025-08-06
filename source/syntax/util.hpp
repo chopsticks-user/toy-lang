@@ -47,6 +47,13 @@ namespace tlc::syntax {
         Prefix, Postfix, Binary, Ternary
     };
 
+#ifdef TLC_CONFIG_BUILD_TESTS
+    extern const HashMap<lexeme::Lexeme, OpPrecedence> prefixOpPrecedenceTable;
+    extern const HashMap<lexeme::Lexeme, OpPrecedence> binaryOpPrecedenceTable;
+    extern const HashSet<lexeme::Lexeme> leftAssociativeOps;
+    extern const HashSet<lexeme::Lexeme> assignmentOps;
+#endif // TLC_CONFIG_BUILD_TESTS
+
     auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool;
     auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool;
     auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool;

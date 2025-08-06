@@ -69,11 +69,41 @@ namespace tlc::parse {
         );
     }
 
+    auto PrettyPrint::operator()(syntax::expr::FnApp const& node) -> Str {
+        auto children = visitChildren(node);
+        return std::format(
+            "{}{}", children.front(),
+            children | rv::as_rvalue | rv::drop(1) | rvJoinWithComma
+        );
+    }
+
+    auto PrettyPrint::operator()(syntax::expr::Subscript const& node) -> Str {
+        auto children = visitChildren(node);
+        return std::format(
+            "{}{}", children.front(),
+            children | rv::as_rvalue | rv::drop(1) | rvJoinWithComma
+        );
+    }
+
+    auto PrettyPrint::operator()(syntax::expr::Prefix const& node) -> Str {
+        return std::format(
+            "{}{}", node.op().str(), visitChildren(node).front()
+        );
+    }
+
+    auto PrettyPrint::operator()(syntax::expr::Binary const& node) -> Str {
+        return std::format(
+            "({})", visitChildren(node) | rv::join_with(
+                std::format(" {} ", node.op().str())
+            ) | rng::to<Str>()
+        );
+    }
+
     auto PrettyPrint::operator()(syntax::type::Identifier const& node) -> Str {
         return node.path();
     }
 
-    auto PrettyPrint::operator()(std::monostate const&) -> Str {
+    auto PrettyPrint::operator()(syntax::Empty const&) -> Str {
         return Str{empty};
     }
 

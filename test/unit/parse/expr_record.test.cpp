@@ -4,7 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Record: Empty",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "{}",
 
@@ -21,7 +21,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Record: Type present, 0 entries",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "foo.Bar{}",
 
@@ -38,7 +38,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Record: Type present, 3 entries",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "foo.Bar{x:5,y:3.14,z:true}",
 
@@ -61,7 +61,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Record: Nested",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "{x:5,y:{},z:{zx: foo.Baz{x: foo.bar, zxy: 0}} }",
 

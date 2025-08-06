@@ -1,6 +1,6 @@
 #include "parse.test.hpp"
 
-auto ParseTestFixture::assertExprWithParams(
+auto ParseTestFixture::assertExpr(
     AssertParams params, SLoc location
 ) -> void {
     INFO(std::format("{}:{}", location.file_name(), location.line()));
@@ -24,7 +24,7 @@ auto ParseTestFixture::assertExprWithParams(
     params.expectedPrettyPrint.transform(
         [&]([[maybe_unused]] auto&& expectedPrettyPrint) {
             auto const actualPrettyPrint =
-                tlc::parse::PrettyPrint::operator()(std::move(*result));
+                tlc::parse::PrettyPrint::operator()(*result);
             REQUIRE(actualPrettyPrint == expectedPrettyPrint);
             return "";
         }
@@ -41,64 +41,46 @@ auto ParseTestFixture::assertExprWithParams(
     }
 }
 
-auto ParseTestFixture::assertTranslationUnit(
-    tlc::Str source, tlc::Str expected, SLoc location
-) -> void {
-    INFO(std::format("{}:{}", location.file_name(), location.line()));
-    std::istringstream iss;
-    iss.str(std::move(source));
+// auto ParseTestFixture::assertTranslationUnit(
+//     tlc::Str source, tlc::Str expected, SLoc location
+// ) -> void {
+//     INFO(std::format("{}:{}", location.file_name(), location.line()));
+//     std::istringstream iss;
+//     iss.str(std::move(source));
+//
+//     auto result = tlc::parse::Parse{
+//         filepath, tlc::lex::Lex::operator()(std::move(iss))
+//     }();
+//     REQUIRE(matchAstType<TranslationUnit>(result));
+//     REQUIRE(astCast<TranslationUnit>(result).sourcePath()
+//         == filepath);
+//
+//     auto const actual = tlc::parse::ASTPrinter::operator()(std::move(result));
+//     REQUIRE(actual == expected);
+// }
 
-    auto result = tlc::parse::Parse{
-        filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }();
-    REQUIRE(matchAstType<TranslationUnit>(result));
-    REQUIRE(astCast<TranslationUnit>(result).sourcePath()
-        == filepath);
-
-    auto const actual = tlc::parse::ASTPrinter::operator()(std::move(result));
-    REQUIRE(actual == expected);
-}
-
-auto ParseTestFixture::assertExpr(
-    tlc::Str source, tlc::Str expected, SLoc const location
-) -> void {
-    INFO(std::format("{}:{}", location.file_name(), location.line()));
-    std::istringstream iss;
-    iss.str(std::move(source));
-
-    auto result = tlc::parse::Parse{
-        filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }.parseExpr();
-    REQUIRE(result.has_value());
-
-    auto const actual = tlc::parse::ASTPrinter::operator()(
-        std::move(*result)
-    );
-    REQUIRE(actual == expected);
-}
-
-auto ParseTestFixture::assertString(
-    tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
-    SLoc location
-) -> void {
-    INFO(std::format("{}:{}", location.file_name(), location.line()));
-    std::istringstream iss;
-    iss.str(std::move(source));
-
-    auto result = tlc::parse::Parse{
-        filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }.parseExpr();
-    REQUIRE(result.has_value());
-
-    auto const actual = tlc::parse::ASTPrinter::operator()(*result);
-    REQUIRE(actual == expected);
-
-    REQUIRE(matchAstType<expr::String>(*result));
-    for (auto&& [actualFragment,expectedFragment]
-         : tlc::rv::zip(
-             astCast<expr::String>(
-                 *result).fragments(), expectedFragments
-         )) {
-        REQUIRE(actualFragment == expectedFragment);
-    }
-}
+// auto ParseTestFixture::assertString(
+//     tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
+//     SLoc location
+// ) -> void {
+//     INFO(std::format("{}:{}", location.file_name(), location.line()));
+//     std::istringstream iss;
+//     iss.str(std::move(source));
+//
+//     auto result = tlc::parse::Parse{
+//         filepath, tlc::lex::Lex::operator()(std::move(iss))
+//     }.parseExpr();
+//     REQUIRE(result.has_value());
+//
+//     auto const actual = tlc::parse::ASTPrinter::operator()(*result);
+//     REQUIRE(actual == expected);
+//
+//     REQUIRE(matchAstType<expr::String>(*result));
+//     for (auto&& [actualFragment,expectedFragment]
+//          : tlc::rv::zip(
+//              astCast<expr::String>(
+//                  *result).fragments(), expectedFragments
+//          )) {
+//         REQUIRE(actualFragment == expectedFragment);
+//     }
+// }

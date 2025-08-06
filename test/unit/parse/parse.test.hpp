@@ -41,37 +41,33 @@ protected:
     }
 
     static auto assertExpr(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
+        AssertParams params, SLoc location = SLoc::current()
     ) -> void;
 
-    static auto assertString(
-        tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
-        SLoc location = SLoc::current()
-    ) -> void;
+    // static auto assertString(
+    //     tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
+    //     SLoc location = SLoc::current()
+    // ) -> void;
 
     static auto assertType(
         tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
     ) -> void;
 
-    static auto assertDecl(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    ) -> void;
-
-    static auto assertGenericParamsDecl(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    ) -> void;
-
-    static auto assertStmt(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    ) -> void;
-
-    static auto assertTranslationUnit(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    ) -> void;
-
-    static auto assertExprWithParams(
-        AssertParams params, SLoc location = SLoc::current()
-    ) -> void;
+    // static auto assertDecl(
+    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
+    // ) -> void;
+    //
+    // static auto assertGenericParamsDecl(
+    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
+    // ) -> void;
+    //
+    // static auto assertStmt(
+    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
+    // ) -> void;
+    //
+    // static auto assertTranslationUnit(
+    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
+    // ) -> void;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

@@ -4,12 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Local",
     "[Unit][Parse][Expr]"
 ) {
-    assertExpr(
-        "baz",
-        "expr::Identifier [@0:0] with path = 'baz'"
-    );
-
-    assertExprWithParams({
+    assertExpr({
         .source =
         "baz",
 
@@ -25,7 +20,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Imported",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "foo.bar",
 
@@ -41,7 +36,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Nested",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "foo.bar.baz.boo",
 
@@ -57,7 +52,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Anonymous",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "_",
 
@@ -73,9 +68,9 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Longest valid identifier",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
-        "foo.bar.baz..boo",
+        "foo.bar.baz_boo",
 
         .expectedAstPrint =
         "expr::Identifier [@0:0] with path = 'foo.bar.baz'",
@@ -89,7 +84,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: Sub-identifiers of an anonymous identifier are ignored",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "_.foo.bar.baz",
 
@@ -105,7 +100,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Identifier: snake_case is undefined and divided into multiple parts",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "foo_bar_baz",
 

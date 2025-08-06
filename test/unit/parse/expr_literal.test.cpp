@@ -4,7 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Literal: Integer",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "31415",
 
@@ -14,7 +14,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "31415",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0",
 
@@ -24,7 +24,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0x123456789abcdef",
 
@@ -34,7 +34,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "81985529216486895",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0x0",
 
@@ -44,7 +44,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "01234567",
 
@@ -54,7 +54,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "342391",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "00",
 
@@ -64,7 +64,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0b1010101001",
 
@@ -74,7 +74,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "681",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0b0",
 
@@ -90,7 +90,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Literal: Float",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0.0314159",
 
@@ -100,7 +100,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0.0314159",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "3145.1926",
 
@@ -110,7 +110,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "3145.1926",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0.314159",
 
@@ -120,7 +120,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0.314159",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "00.31415",
 
@@ -130,7 +130,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0.31415",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "000.3141",
 
@@ -140,7 +140,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0.3141",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "0.000",
 
@@ -150,7 +150,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "00.00",
 
@@ -160,7 +160,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "0",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "000.0",
 
@@ -176,7 +176,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Literal: Boolean",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "true",
 
@@ -186,7 +186,7 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "true",
     });
-    assertExprWithParams({
+    assertExpr({
         .source =
         "false",
 

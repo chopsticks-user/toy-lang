@@ -5,7 +5,6 @@
 
 namespace tlc::syntax {
     namespace expr {
-        // primary
         struct Integer;
         struct Float;
         struct Boolean;
@@ -16,14 +15,10 @@ namespace tlc::syntax {
         struct RecordEntry;
         struct Record;
         struct Try;
-
-        // postfix
         struct FnApp;
         struct Subscript;
-
         struct Prefix;
         struct Binary;
-        // struct Ternary;
     }
 
     namespace type {
@@ -63,6 +58,7 @@ namespace tlc::syntax {
         struct Function;
     }
 
+    using Empty = std::monostate;
     struct RequiredButMissing;
     struct TranslationUnit;
 

@@ -4,7 +4,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Empty",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "()",
 
@@ -20,7 +20,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: 1 argument",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(x)",
 
@@ -37,7 +37,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: 3 arguments",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(1,x,2.1)",
 
@@ -56,7 +56,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Nested",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(((())), 0,x,(1, (2)))",
 
@@ -78,7 +78,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Missing an argument",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(1,,x)",
 
@@ -98,7 +98,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Missing all arguments",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(,,,,)",
 
@@ -124,7 +124,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Missing the enclosing parenthesis",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(1,0.1,x",
 
@@ -144,7 +144,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Missing an argument and the enclosing parenthesis",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "(1,,x",
 
@@ -165,7 +165,7 @@ TEST_CASE_WITH_FIXTURE(
     "Parse::Tuple: Not a tuple if missing the opening parenthesis",
     "[Unit][Parse][Expr]"
 ) {
-    assertExprWithParams({
+    assertExpr({
         .source =
         "1,0.1,x)",
 

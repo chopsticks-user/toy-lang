@@ -19,7 +19,6 @@ target_sources(
     expr_subscript.test.cpp
     expr_prefix.test.cpp
     expr_binary.test.cpp
-    expr_ternary.test.cpp
 
     handle_expr.test.cpp
     handle_type.test.cpp

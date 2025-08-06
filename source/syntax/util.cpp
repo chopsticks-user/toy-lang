@@ -1,44 +1,20 @@
 #include "util.hpp"
 #include "nodes.hpp"
 
+#ifdef TLC_CONFIG_BUILD_TESTS
+#define TLC_STATIC_IF_NOT_BUILD_TESTS
+#else
+#define TLC_STATIC_IF_NOT_BUILD_TESTS static
+#endif // TLC_CONFIG_BUILD_TESTS
+
 namespace tlc::syntax {
     auto isEmptyNode(Node const& node) -> bool {
         return std::holds_alternative<std::monostate>(node);
     }
 
-    static const HashSet prefixOps = {
-        lexeme::exclaim, lexeme::tilde, lexeme::plus,
-        lexeme::minus, lexeme::hash, lexeme::dot3,
-        lexeme::ampersand,
-    };
-
-    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
-        return prefixOps.contains(lexeme);
-    }
-
-    static const HashSet postfixStart = {
-        lexeme::leftParen, lexeme::leftBracket,
-    };
-
-    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
-        return postfixStart.contains(lexeme);
-    }
-
-    static const HashSet binaryOps = {
-        lexeme::star2, lexeme::star, lexeme::fwdSlash, lexeme::plus,
-        lexeme::minus, lexeme::greater2, lexeme::less2, lexeme::less,
-        lexeme::greater, lexeme::lessEqual, lexeme::greaterEqual,
-        lexeme::equal2, lexeme::exclaimEqual, lexeme::ampersand,
-        lexeme::hat, lexeme::bar, lexeme::ampersand2, lexeme::bar2,
-        lexeme::barGreater,
-    };
-
-    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
-        return binaryOps.contains(lexeme);
-    }
-
     // todo: check C operator precedence
-    static const HashMap<lexeme::Lexeme, OpPrecedence>
+    TLC_STATIC_IF_NOT_BUILD_TESTS
+    const HashMap<lexeme::Lexeme, OpPrecedence>
     prefixOpPrecedenceTable = {
         {lexeme::exclaim, 40},
         {lexeme::tilde, 41},
@@ -49,7 +25,8 @@ namespace tlc::syntax {
         {lexeme::ampersand, 46},
     };
 
-    static const HashMap<lexeme::Lexeme, OpPrecedence>
+    TLC_STATIC_IF_NOT_BUILD_TESTS
+    const HashMap<lexeme::Lexeme, OpPrecedence>
     binaryOpPrecedenceTable = {
         {lexeme::bar2, 10},
         {lexeme::ampersand2, 12},
@@ -64,13 +41,48 @@ namespace tlc::syntax {
         {lexeme::less, 22},
         {lexeme::less2, 24},
         {lexeme::greater2, 24},
-        {lexeme::minus, 26},
-        {lexeme::plus, 26},
-        {lexeme::fwdSlash, 28},
-        {lexeme::star, 28},
-        {lexeme::star2, 30},
-        {lexeme::barGreater, 32},
+        {lexeme::dot2, 26},
+        {lexeme::minus, 28},
+        {lexeme::plus, 28},
+        {lexeme::fwdSlash, 30},
+        {lexeme::star, 30},
+        {lexeme::star2, 32},
+        {lexeme::barGreater, 34},
     };
+
+    TLC_STATIC_IF_NOT_BUILD_TESTS
+    const HashSet<lexeme::Lexeme> leftAssociativeOps = {
+        lexeme::bar2, lexeme::ampersand2, lexeme::bar, lexeme::hat,
+        lexeme::ampersand, lexeme::exclaimEqual, lexeme::equal2,
+        lexeme::greaterEqual, lexeme::lessEqual, lexeme::greater,
+        lexeme::less, lexeme::less2, lexeme::greater2, lexeme::plus,
+        lexeme::minus, lexeme::star, lexeme::fwdSlash, lexeme::star2,
+        lexeme::barGreater, lexeme::dot2,
+    };
+
+    TLC_STATIC_IF_NOT_BUILD_TESTS
+    const HashSet<lexeme::Lexeme> assignmentOps = {
+        lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
+        lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
+        lexeme::ampersandEqual, lexeme::barEqual, lexeme::hatEqual,
+        lexeme::less2Equal, lexeme::greater2Equal, lexeme::colonEqual,
+    };
+
+    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return prefixOpPrecedenceTable.contains(lexeme);
+    }
+
+    static const HashSet postfixStart = {
+        lexeme::leftParen, lexeme::leftBracket,
+    };
+
+    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
+        return postfixStart.contains(lexeme);
+    }
+
+    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryOpPrecedenceTable.contains(lexeme);
+    }
 
     auto opPrecedence(
         lexeme::Lexeme const& lexeme, EOperator const opType
@@ -82,25 +94,9 @@ namespace tlc::syntax {
         }
     }
 
-    static const HashSet leftAssociativeOps = {
-        lexeme::bar2, lexeme::ampersand2, lexeme::bar, lexeme::hat,
-        lexeme::ampersand, lexeme::exclaimEqual, lexeme::equal2,
-        lexeme::greaterEqual, lexeme::lessEqual, lexeme::greater,
-        lexeme::less, lexeme::less2, lexeme::greater2, lexeme::plus,
-        lexeme::minus, lexeme::star, lexeme::fwdSlash, lexeme::star2,
-        lexeme::barGreater,
-    };
-
     auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
         return leftAssociativeOps.contains(lexeme);
     }
-
-    static const HashSet assignmentOps = {
-        lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
-        lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
-        lexeme::ampersandEqual, lexeme::barEqual, lexeme::hatEqual,
-        lexeme::less2Equal, lexeme::greater2Equal, lexeme::colonEqual,
-    };
 
     auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
         return assignmentOps.contains(lexeme);

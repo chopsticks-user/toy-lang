@@ -86,27 +86,6 @@ namespace tlc::syntax {
             lexeme::Lexeme m_op;
         };
 
-        // struct Ternary final : detail::NodeBase {
-        //     Ternary(
-        //         Node operand1,
-        //         Node operand2,
-        //         Node operand3,
-        //         Str op1, Str op2
-        //     );
-        //
-        //     [[nodiscard]] auto firstOp() const noexcept -> StrV {
-        //         return m_op1;
-        //     }
-        //
-        //     [[nodiscard]] auto secondOp() const noexcept -> StrV {
-        //         return m_op2;
-        //     }
-        //
-        // private:
-        //     Str m_op1;
-        //     Str m_op2;
-        // };
-
         struct String final : detail::NodeBase {
             String(Vec<Str> fragments, Vec<Node> placeholders, Location location);
 
