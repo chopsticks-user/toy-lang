@@ -1,7 +1,7 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleTypeDef(token::Token const& visibility) -> ParseResult {
+    auto Parse::handleTypeDef([[maybe_unused]] token::Token const& visibility) -> ParseResult {
         return {};
     }
 }

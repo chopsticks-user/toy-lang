@@ -1,7 +1,9 @@
 #include "parse.test.hpp"
 
-TEST_CASE_WITH_FIXTURE("Parse::Array: Empty",
-                       "[Unit][Parse][Expr]") {
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Array: Empty",
+    "[Unit][Parse][Expr]"
+) {
     assertExprWithParams({
         .source =
         "[]",
@@ -31,8 +33,10 @@ TEST_CASE_WITH_FIXTURE(
     });
 }
 
-TEST_CASE_WITH_FIXTURE("Parse::Array: 3 arguments",
-                       "[Unit][Parse][Expr]") {
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Array: 3 arguments",
+    "[Unit][Parse][Expr]"
+) {
     assertExprWithParams({
         .source =
         "[1,x,2.1]",

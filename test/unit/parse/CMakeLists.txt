@@ -11,6 +11,9 @@ target_sources(
     expr_id.test.cpp
     expr_tuple.test.cpp
     expr_array.test.cpp
+    expr_record.test.cpp
+    expr_try.test.cpp
+    expr_string.test.cpp
 
     handle_expr.test.cpp
     handle_type.test.cpp

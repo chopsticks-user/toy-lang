@@ -63,6 +63,7 @@ namespace tlc::parse {
         auto operator()(syntax::global::FunctionPrototype const& node) -> Str;
         auto operator()(syntax::global::Function const& node) -> Str;
 
+        auto operator()(std::monostate const&) -> Str;
         auto operator()(syntax::RequiredButMissing const&) -> Str;
         auto operator()(syntax::TranslationUnit const& node) -> Str;
 

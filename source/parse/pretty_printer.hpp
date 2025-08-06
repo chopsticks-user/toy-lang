@@ -24,6 +24,12 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Identifier const& node) -> Str;
         auto operator()(syntax::expr::Tuple const& node) -> Str;
         auto operator()(syntax::expr::Array const& node) -> Str;
+        auto operator()(syntax::expr::RecordEntry const& node) -> Str;
+        auto operator()(syntax::expr::Record const& node) -> Str;
+        auto operator()(syntax::expr::Try const& node) -> Str;
+        auto operator()(syntax::expr::String const& node) -> Str;
+
+        auto operator()(syntax::type::Identifier const& node) -> Str;
 
         auto operator()(std::monostate const&) -> Str;
         auto operator()(syntax::RequiredButMissing const&) -> Str;

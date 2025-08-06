@@ -84,9 +84,10 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::expr::Record const& node) -> Str {
         return std::format(
-            "expr::Record [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + "\n" + (this->visitChildren(node));
+            "expr::Record [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::String const& node) -> Str {
@@ -98,9 +99,9 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::expr::Try const& node) -> Str {
         return std::format(
-            "expr::Try [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "expr::Try [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
@@ -290,8 +291,12 @@ namespace tlc::parse {
         ) + "\n" + this->visitChildren(node);
     }
 
+    auto ASTPrinter::operator()(std::monostate const&) -> Str {
+        return Str{empty};
+    }
+
     auto ASTPrinter::operator()(syntax::RequiredButMissing const&) -> Str {
-        return Str(required);
+        return Str{required};
     }
 
     auto ASTPrinter::operator()(syntax::TranslationUnit const& node) -> Str {

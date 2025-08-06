@@ -256,14 +256,14 @@ namespace tlc::parse {
         auto streamBacktrack = m_stream.scopedBacktrack();
         auto const location = m_tracker.scopedLocation();
 
-        auto type = handleTypeIdentifier();
-        if (!type || !m_stream.match(lexeme::leftBrace)) {
+        auto type = handleTypeIdentifier().value_or({});
+        if (!m_stream.match(lexeme::leftBrace)) {
             streamBacktrack();
             return defaultError();
         }
         if (m_stream.match(lexeme::rightBrace)) {
             return syntax::expr::Record{
-                std::move(*type), {}, *location
+                std::move(type), {}, *location
             };
         }
 
@@ -316,7 +316,7 @@ namespace tlc::parse {
         }
 
         return syntax::expr::Record{
-            std::move(*type), std::move(entries), *location
+            std::move(type), std::move(entries), *location
         };
     }
 
@@ -395,7 +395,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::TryExpr,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return {};
+                        return syntax::RequiredButMissing{};
                     }),
                     tokens.front().location()
                 };
