@@ -2,7 +2,6 @@
 #define TLC_TEST_UNIT_PARSE_TEST_HPP
 
 #include <catch2/catch_test_macros.hpp>
-// #include <catch2/generators/catch_generators.hpp>
 #include <source_location>
 
 #include "parse/parse.hpp"

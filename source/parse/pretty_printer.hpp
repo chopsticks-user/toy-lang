@@ -13,8 +13,8 @@ namespace tlc::parse {
     public:
         using SyntaxTreeVisitor::operator();
 
-        static auto operator()(syntax::Node node) -> Str {
-            return tlc::visit<PrettyPrint>(std::move(node));
+        static auto operator()(syntax::Node const& node) -> Str {
+            return std::visit(PrettyPrint{}, node);
         }
 
     public:
@@ -22,8 +22,16 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Float const& node) -> Str;
         auto operator()(syntax::expr::Boolean const& node) -> Str;
         auto operator()(syntax::expr::Identifier const& node) -> Str;
+        auto operator()(syntax::expr::Tuple const& node) -> Str;
+        auto operator()(syntax::expr::Array const& node) -> Str;
+
+        auto operator()(std::monostate const&) -> Str;
+        auto operator()(syntax::RequiredButMissing const&) -> Str;
 
     private:
+        static constexpr auto rvJoinWithComma =
+            rv::join_with(", "sv) | rng::to<Str>();
+
         [[nodiscard]] auto withDepth(StrV s) const -> Str;
     };
 }

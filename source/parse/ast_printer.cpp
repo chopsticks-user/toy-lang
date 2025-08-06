@@ -5,336 +5,315 @@
 
 namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::expr::Integer const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "expr::Integer [@{}:{}] with value = {}",
             node.line(), node.column(), node.value()
-        ));
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Float const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Float [@{}:{}] with value = {}",
-            node.line(), node.column(), node.value()
-        ));
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Boolean const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Boolean [@{}:{}] with value = {:s}",
-            node.line(), node.column(), node.value()
-        ));
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Identifier const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Identifier [@{}:{}] with path = '{}'",
-            node.line(), node.column(), node.path()
-        ));
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Array const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Array [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        )) + (node.size() != 0
-                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
-                  : "");
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Tuple const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Tuple [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        )) + (node.size() != 0
-                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
-                  : "");
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::FnApp const& node) -> Str {
-        return withDepth(std::format(
-            "expr::FnApp [@{}:{}]", node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Subscript const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Subscript [@{}:{}]", node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Prefix const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Prefix [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
-        )) + "\n" + visitChildren(node).front();
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Binary const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Binary [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::RecordEntry const& node) -> Str {
-        return withDepth(std::format(
-            "expr::RecordEntry [@{}:{}] with key = '{}'",
-            node.line(), node.column(), node.key()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
-    }
-
-    auto ASTPrinter::operator()(syntax::expr::Record const& node) -> Str {
-        return withDepth(std::format(
-            "expr::Record [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        )) + "\n" + (
-            visitChildren(node) | rvFilterEmpty | rvJoinWithEl
         );
     }
 
+    auto ASTPrinter::operator()(syntax::expr::Float const& node) -> Str {
+        return std::format(
+            "expr::Float [@{}:{}] with value = {}",
+            node.line(), node.column(), node.value()
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Boolean const& node) -> Str {
+        return std::format(
+            "expr::Boolean [@{}:{}] with value = {:s}",
+            node.line(), node.column(), node.value()
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Identifier const& node) -> Str {
+        return std::format(
+            "expr::Identifier [@{}:{}] with path = '{}'",
+            node.line(), node.column(), node.path()
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Array const& node) -> Str {
+        return std::format(
+            "expr::Array [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Tuple const& node) -> Str {
+        return std::format(
+            "expr::Tuple [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::FnApp const& node) -> Str {
+        return std::format(
+            "expr::FnApp [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Subscript const& node) -> Str {
+        return std::format(
+            "expr::Subscript [@{}:{}]", node.line(), node.column()
+        ) + this->visitChildren(node);
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Prefix const& node) -> Str {
+        return std::format(
+            "expr::Prefix [@{}:{}] with op = '{}'",
+            node.line(), node.column(), node.op().str()
+        ) + "\n" + this->visitChildren(node).front();
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Binary const& node) -> Str {
+        return std::format(
+            "expr::Binary [@{}:{}] with op = '{}'",
+            node.line(), node.column(), node.op().str()
+        ) + this->visitChildren(node);
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::RecordEntry const& node) -> Str {
+        return std::format(
+            "expr::RecordEntry [@{}:{}] with key = '{}'",
+            node.line(), node.column(), node.key()
+        ) + this->visitChildren(node);
+    }
+
+    auto ASTPrinter::operator()(syntax::expr::Record const& node) -> Str {
+        return std::format(
+            "expr::Record [@{}:{}] with size = {}",
+            node.line(), node.column(), node.size()
+        ) + "\n" + (this->visitChildren(node));
+    }
+
     auto ASTPrinter::operator()(syntax::expr::String const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "expr::String [@{}:{}] with nPlaceholders = {}",
             node.line(), node.column(), node.nPlaceholders()
-        )) + (node.interpolated()
-                  ? "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl)
-                  : "");
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::expr::Try const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "expr::Try [@{}:{}]",
             node.line(), node.column()
-        )) + +"\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::type::Identifier const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Identifier [@{}:{}] with (const, fund, path) "
             "= ({:s}, {:s}, '{}')",
             node.line(), node.column(), node.constant(),
             node.fundamental(), node.path()
-        ));
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Array const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Array [@{}:{}] with nDims = {}",
             node.line(), node.column(), node.nDims()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::type::Tuple const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Tuple [@{}:{}] with size = {}",
             node.line(), node.column(), node.size()
-        )) + (node.size() > 0
-                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
-                  : "");
+        ) + (node.size() > 0
+                 ? this->visitChildren(node)
+                 : "");
     }
 
     auto ASTPrinter::operator()(syntax::type::Function const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Function [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::type::Infer const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Infer [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::type::GenericArguments const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::GenericArguments [@{}:{}] with size = {}",
             node.line(), node.column(), node.size()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::type::Generic const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "type::Generic [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "decl::Identifier [@{}:{}] with name = '{}'",
             node.line(), node.column(), node.name()
-        )) + (node.inferred() ? "" : "\n" + visitChildren(node).front());
+        ) + (node.inferred() ? "" : "\n" + this->visitChildren(node).front());
     }
 
     auto ASTPrinter::operator()(syntax::decl::Tuple const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "decl::Tuple [@{}:{}] with size = {}",
             node.line(), node.column(), node.size()
-        )) + (node.size() > 0
-                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
-                  : "");
+        ) + (node.size() > 0
+                 ? this->visitChildren(node)
+                 : "");
     }
 
     auto ASTPrinter::operator()(syntax::decl::GenericIdentifier const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "decl::GenericIdentifier [@{}:{}] with name = '{}'",
             node.line(), node.column(), node.name()
-        ));
+        );
     }
 
     auto ASTPrinter::operator()(syntax::decl::GenericParameters const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "decl::GenericParameters [@{}:{}] with size = {}",
             node.line(), node.column(), node.size()
-        )) + (node.size() > 0
-                  ? "\n" + (visitChildren(node) | rvJoinWithEl)
-                  : "");
+        ) + (node.size() > 0
+                 ? this->visitChildren(node)
+                 : "");
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Return const& node) -> Str {
-        Str suffix = visitChildren(node).front();
-        if (!suffix.empty()) {
-            suffix = std::format("\n{}", suffix);
-        }
-
-        return withDepth(std::format(
+        return std::format(
             "stmt::Return [@{}:{}]",
             node.line(), node.column()
-        )) + suffix;
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Decl const& node) -> Str {
-        auto suffix = visitChildren(node) | rvFilterEmpty
-            | rvJoinWithEl;
-        if (!suffix.empty()) {
-            suffix = std::format("\n{}", suffix);
-        }
-
-        return withDepth(std::format(
+        return std::format(
             "stmt::Decl [@{}:{}]",
             node.line(), node.column()
-        )) + suffix;
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Expression const& node) -> Str {
-        auto suffix = visitChildren(node).front();
-        return withDepth(std::format(
+        return std::format(
             "stmt::Expression [@{}:{}]",
             node.line(), node.column()
-        )) + Str(suffix.empty()
-                     ? empty
-                     : std::format("\n{}", suffix));
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Assign const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Assign [@{}:{}] with op = '{}'",
             node.line(), node.column(), node.op().str()
-        )) + ("\n" + (visitChildren(node) | rvTransformEmpty |
-                rvJoinWithEl)
-        );
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Conditional const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Conditional [@{}:{}]",
             node.line(), node.column()
-        )) + ("\n" + (visitChildren(node) | rvTransformEmpty |
-                rvJoinWithEl)
-        );
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Block const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Block [@{}:{}] with size = {}",
             node.line(), node.column(), node.size()
-        )) + (
+        ) + (
             node.size() == 0
                 ? ""
-                : "\n" + (visitChildren(node) | rvJoinWithEl)
+                : this->visitChildren(node)
         );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Defer const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Defer [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Loop const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Loop [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::MatchCase const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::MatchCase [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+        ) + "\n" + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Match const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "stmt::Match [@{}:{}]",
             node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::global::ModuleDecl const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "global::ModuleDecl [@{}:{}]", node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::global::ImportDecl const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "global::ImportDecl [@{}:{}]", node.line(), node.column()
-        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+        ) + "\n" + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(
         syntax::global::FunctionPrototype const& node
     ) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "global::FunctionPrototype [@{}:{}] with name = '{}'",
             node.line(), node.column(), node.name()
-        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+        ) + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::global::Function const& node) -> Str {
-        return withDepth(std::format(
+        return std::format(
             "global::Function [@{}:{}] with visibility = '{}'",
             node.line(), node.column(), node.visibility().str()
-        )) + "\n" + (visitChildren(node) | rvFilterEmpty | rvJoinWithEl);
+        ) + "\n" + this->visitChildren(node);
     }
 
     auto ASTPrinter::operator()(syntax::RequiredButMissing const&) -> Str {
-        return withDepth(Str(required));
+        return Str(required);
     }
 
     auto ASTPrinter::operator()(syntax::TranslationUnit const& node) -> Str {
-        return visitChildren(node) | rvJoinWithEl;
+        return SyntaxTreeVisitor::visitChildren(node) | rvJoinWithEl;
     }
 
-    auto ASTPrinter::withDepth(Str s) const -> Str {
-        return (
-            [&] -> Vec<StrV> {
-                switch (auto const d = depth(); d) {
-                case 0: return {};
-                case 1: return {prefix};
-                default: {
-                    // todo: fix rv::concat impl
-                    auto v = Vec(d, space);
-                    v.back() = prefix;
-                    return v;
-                }
-                }
-            }() | rv::join | rng::to<Str>()
-        ) + std::move(s);
+    auto ASTPrinter::addDepthPrefix(
+        Vec<Str> children, szt& depth
+    ) -> Vec<Str> {
+        Str depthPrefix;
+        if (depth == 1) {
+            depthPrefix = prefix;
+        }
+        else if (depth > 1) {
+            depthPrefix = (Vec(depth - 1, space) | rv::join
+                | rng::to<Str>()) + prefix;
+        }
+
+        for (auto& s : children) {
+            s = depthPrefix + s;
+        }
+        --depth;
+        return children;
     }
 }

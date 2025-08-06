@@ -6,7 +6,7 @@
 
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {
-        static constexpr StrV prefix = "├─ ";
+        static constexpr Str prefix = "├─ ";
         static constexpr StrV space = "   ";
         static constexpr StrV empty = "(empty)";
         static constexpr StrV required = "(required)";
@@ -67,20 +67,22 @@ namespace tlc::parse {
         auto operator()(syntax::TranslationUnit const& node) -> Str;
 
     private:
+        static auto addDepthPrefix(
+            Vec<Str> children, szt& depth
+        ) -> Vec<Str>;
+
         static constexpr auto rvJoinWithEl =
             rv::join_with('\n') | rng::to<Str>();
 
-        static constexpr auto rvFilterEmpty =
-            rv::filter([](auto const& s) {
-                return !s.empty();
-            });
+        constexpr auto visitChildren(auto node) -> Str {
+            auto result = addDepthPrefix(
+                SyntaxTreeVisitor::visitChildren(node), ++m_depth
+            ) | rvJoinWithEl;
+            return result.empty() ? "" : "\n" + result;
+        }
 
-        static constexpr auto rvTransformEmpty =
-            rv::transform([](auto const& s) {
-                return s.empty() ? empty : s;
-            });
-
-        [[nodiscard]] auto withDepth(Str s) const -> Str;
+    private:
+        szt m_depth = 0;
     };
 }
 

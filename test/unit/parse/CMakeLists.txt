@@ -10,6 +10,7 @@ target_sources(
     expr_literal.test.cpp
     expr_id.test.cpp
     expr_tuple.test.cpp
+    expr_array.test.cpp
 
     handle_expr.test.cpp
     handle_type.test.cpp

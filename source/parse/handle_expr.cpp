@@ -234,7 +234,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::Array,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return syntax::Node{};
+                        return syntax::RequiredButMissing{};
                     })
             );
         }
@@ -243,7 +243,7 @@ namespace tlc::parse {
         if (!m_stream.match(lexeme::rightBracket)) {
             collect({
                 .location = m_tracker.current(),
-                .context = EParseErrorContext::Tuple,
+                .context = EParseErrorContext::Array,
                 .reason = EParseErrorReason::MissingEnclosingSymbol,
             });
         }

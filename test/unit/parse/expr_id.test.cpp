@@ -68,3 +68,51 @@ TEST_CASE_WITH_FIXTURE(
         "_",
     });
 }
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Longest valid identifier",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "foo.bar.baz..boo",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = 'foo.bar.baz'",
+
+        .expectedPrettyPrint =
+        "foo.bar.baz",
+    });
+}
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: Sub-identifiers of an anonymous identifier are ignored",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "_.foo.bar.baz",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = '_'",
+
+        .expectedPrettyPrint =
+        "_",
+    });
+}
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse::Identifier: snake_case is undefined and divided into multiple parts",
+    "[Unit][Parse][Expr]"
+) {
+    assertExprWithParams({
+        .source =
+        "foo_bar_baz",
+
+        .expectedAstPrint =
+        "expr::Identifier [@0:0] with path = 'foo'",
+
+        .expectedPrettyPrint =
+        "foo",
+    });
+}
