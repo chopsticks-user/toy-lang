@@ -3,6 +3,7 @@ add_executable(tlc::test::unit::parse ALIAS tlc_test_unit_parse)
 target_sources(
     tlc_test_unit_parse PRIVATE
     parse.test.hpp
+    parse.test.cpp
 
     token_stream.test.cpp
     combinator.test.cpp
@@ -14,6 +15,11 @@ target_sources(
     expr_record.test.cpp
     expr_try.test.cpp
     expr_string.test.cpp
+    expr_fnapp.test.cpp
+    expr_subscript.test.cpp
+    expr_prefix.test.cpp
+    expr_binary.test.cpp
+    expr_ternary.test.cpp
 
     handle_expr.test.cpp
     handle_type.test.cpp
