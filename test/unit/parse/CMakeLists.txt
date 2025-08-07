@@ -25,6 +25,7 @@ target_sources(
     type_generic.test.cpp
     type_id.test.cpp
     type_tuple.test.cpp
+    type_binary.test.cpp
 
     decl_generic.test.cpp
     decl_id.test.cpp

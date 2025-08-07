@@ -147,9 +147,7 @@ namespace tlc::syntax {
         };
 
         struct Array final : detail::NodeBase {
-            Array(Node type, Vec<Node> sizes, Location location);
-
-            [[nodiscard]] auto nDims() const noexcept -> szt;
+            Array(Node type, Node sizes, Location location);
         };
 
         struct Tuple final : detail::NodeBase {
@@ -176,6 +174,13 @@ namespace tlc::syntax {
 
         struct Generic final : detail::NodeBase {
             Generic(Node type, Node args, Location location);
+        };
+
+        struct Binary final : detail::NodeBase {
+            Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location);
+
+        private:
+            lexeme::Lexeme m_op;
         };
     }
 

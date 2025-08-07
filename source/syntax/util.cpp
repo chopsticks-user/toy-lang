@@ -50,6 +50,12 @@ namespace tlc::syntax {
         {lexeme::barGreater, 34},
     };
 
+    const HashSet<lexeme::Lexeme> binaryTypeOpTable = {
+        lexeme::bar, lexeme::ampersand,
+        lexeme::equal2, lexeme::exclaimEqual,
+        lexeme::barGreater,
+    };
+
     TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashSet<lexeme::Lexeme> leftAssociativeOps = {
         lexeme::bar2, lexeme::ampersand2, lexeme::bar, lexeme::hat,
@@ -82,6 +88,10 @@ namespace tlc::syntax {
 
     auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
         return binaryOpPrecedenceTable.contains(lexeme);
+    }
+
+    auto isBinaryTypeOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryTypeOpTable.contains(lexeme);
     }
 
     auto opPrecedence(

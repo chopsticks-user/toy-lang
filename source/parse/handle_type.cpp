@@ -1,85 +1,37 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleType() -> ParseResult { // NOLINT(*-no-recursion)
+    auto Parse::handleType(syntax::OpPrecedence const minP) -> ParseResult {
         TLC_SCOPE_REPORTER();
         auto const location = m_tracker.scopedLocation();
-        auto lhs =
-            handleTypeInfer().or_else(
-                [this](auto const&) -> ParseResult {
-                    return handleTypeTuple().or_else(
-                        [this](auto const&) -> ParseResult {
-                            return handleTypeIdentifier();
-                        }
-                    );
-                }
-            );
+        auto lhs = [this] {
+            if (auto infer = handleTypeInfer(); infer) {
+                return infer;
+            }
+            if (auto tuple = handleTypeTuple(); tuple) {
+                return tuple;
+            }
+            return handleTypeIdentifier();
+        }();
         if (!lhs) {
-            return Unexpected{lhs.error()};
+            return defaultError();
         }
 
+        auto streamBacktrack = m_stream.scopedBacktrack();
         while (true) {
-            if (m_stream.match(lexeme::leftBracket)) {
-                // todo:
-                Vec<syntax::Node> sizes;
-                do {
-                    sizes.push_back(*handleExpr().or_else(
-                            [this](auto&& error) -> ParseResult {
-                                collect(error).collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::Array,
-                                    .reason = EParseErrorReason::MissingExpr,
-                                });
-                                return {};
-                            }
-                        )
-                    );
-                }
-                while (m_stream.match(lexeme::comma));
-
-                if (!m_stream.match(lexeme::rightBracket)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Array,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                lhs = syntax::type::Array{*lhs, std::move(sizes), *location};
-            }
-            else if (m_stream.match(lexeme::less)) {
-                auto const argsLocation = m_tracker.current();
-                Vec<syntax::Node> types;
-                do {
-                    types.push_back(*handleType().or_else(
-                        [this](auto&& error) -> ParseResult {
-                            collect(error).collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::GenericTypeArguments,
-                                .reason = EParseErrorReason::MissingType,
-                            });
-                            return {};
-                        }
-                    ));
-                }
-                while (m_stream.match(lexeme::comma));
-
-                if (!m_stream.match(lexeme::greater)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::GenericTypeArguments,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                lhs = syntax::type::Generic{
-                    *lhs, syntax::type::GenericArguments{
-                        std::move(types), argsLocation
-                    },
-                    *location
+            if (auto array = handleArrayExpr(); array) {
+                lhs = syntax::type::Array{
+                    *lhs, std::move(*array), *location
                 };
+                continue;
             }
-            else if (m_stream.match(lexeme::minusGreater)) {
+            if (auto genericArgs = handleGenericArguments(); genericArgs) {
+                lhs = syntax::type::Generic{
+                    *lhs, std::move(*genericArgs), *location
+                };
+                continue;
+            }
+            if (m_stream.match(lexeme::minusGreater)) {
                 auto fnResultType = handleType()
                     .or_else([this]([[maybe_unused]] auto&& error)
                         -> ParseResult {
@@ -89,10 +41,29 @@ namespace tlc::parse {
                 lhs = syntax::type::Function{
                     *lhs, std::move(*fnResultType), *location
                 };
+                continue;
             }
-            else {
-                break;
+            if (m_stream.match(syntax::isBinaryTypeOperator)) {
+                auto const op = m_stream.current().lexeme();
+                auto const p = syntax::opPrecedence(
+                    op, syntax::EOperator::Binary
+                );
+
+                if (p <= minP) {
+                    streamBacktrack();
+                    break;
+                }
+
+                lhs = handleType(
+                    syntax::isLeftAssociative(op) ? p + 1 : p
+                ).and_then([&](auto const& rhs) -> ParseResult {
+                    return syntax::type::Binary{
+                        *lhs, op, rhs, *location
+                    };
+                });
+                continue;
             }
+            break;
         }
 
         return lhs;
@@ -188,5 +159,38 @@ namespace tlc::parse {
                     );
                 }
             );
+    }
+
+    auto Parse::handleGenericArguments() -> ParseResult {
+        if (!m_stream.match(lexeme::less)) {
+            return defaultError();
+        }
+
+        auto location = m_tracker.current();
+        Vec<syntax::Node> args;
+        do {
+            args.push_back(*handleType().or_else(
+                [this](auto&& error) -> ParseResult {
+                    collect(error).collect({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::GenericTypeArguments,
+                        .reason = EParseErrorReason::MissingType,
+                    });
+                    return {};
+                }
+            ));
+        }
+        while (m_stream.match(lexeme::comma));
+
+        if (!m_stream.match(lexeme::greater)) {
+            collect({
+                .location = m_tracker.current(),
+                .context = EParseErrorContext::GenericTypeArguments,
+                .reason = EParseErrorReason::MissingEnclosingSymbol,
+            });
+        }
+        return syntax::type::GenericArguments{
+            std::move(args), std::move(location)
+        };
     }
 }

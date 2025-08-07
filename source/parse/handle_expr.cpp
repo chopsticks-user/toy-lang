@@ -49,7 +49,6 @@ namespace tlc::parse {
                 );
 
                 if (p <= minP) {
-                    // m_stream.backtrack();
                     streamBacktrack();
                     break;
                 }

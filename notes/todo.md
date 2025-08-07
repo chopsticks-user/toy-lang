@@ -18,7 +18,7 @@
 - Remove "invalid" lexeme, Lex should insert an "empty" lexeme at the end of the
   token buffer
 - ~~Type params should be handled by a dedicated parsing method~~
-- Implement parsing logic for ternary operators.
+- Replace Expected in parse with Opt
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector
 - Design trait, class, etc. Complete implementations and test cases

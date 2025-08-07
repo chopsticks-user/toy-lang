@@ -29,6 +29,7 @@ namespace tlc::syntax {
         struct Infer;
         struct GenericArguments;
         struct Generic;
+        struct Binary;
     }
 
     namespace decl {
@@ -68,7 +69,7 @@ namespace tlc::syntax {
         expr::Binary, expr::RecordEntry, expr::Record, expr::Try,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
-        type::GenericArguments, type::Generic,
+        type::GenericArguments, type::Generic, type::Binary,
 
         decl::Identifier, decl::Tuple, decl::GenericIdentifier,
         decl::GenericParameters,

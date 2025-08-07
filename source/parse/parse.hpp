@@ -70,10 +70,11 @@ namespace tlc::parse {
         auto handleString() -> ParseResult;
         auto handleTryExpr() -> ParseResult;
 
-        auto handleType() -> ParseResult;
+        auto handleType(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
+        auto handleGenericArguments() -> ParseResult;
 
         auto handleDecl() -> ParseResult;
         auto handleIdentifierDecl() -> ParseResult;

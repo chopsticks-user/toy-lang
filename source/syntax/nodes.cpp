@@ -94,21 +94,17 @@ namespace tlc::syntax {
            m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
-            Node type, Vec<Node> sizes, Location const location
+            Node type, Node sizes, Location const location
         ): NodeBase{
             [&] {
                 Vec<Node> nodes;
-                nodes.reserve(sizes.size() + 1);
-                nodes.emplace_back(type);
-                nodes.append_range(std::move(sizes));
+                nodes.reserve(2);
+                nodes.push_back(std::move(type));
+                nodes.push_back(std::move(sizes));
                 return nodes;
             }(),
             location
         } {}
-
-        auto Array::nDims() const noexcept -> szt {
-            return nChildren() - 1;
-        }
 
         Tuple::Tuple(Vec<Node> types, Location const location)
             : NodeBase{std::move(types), location} {}
@@ -138,6 +134,10 @@ namespace tlc::syntax {
 
         Generic::Generic(Node type, Node args, Location const location)
             : NodeBase{{std::move(type), std::move(args)}, location} {}
+
+        Binary::Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location)
+            : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(location)},
+              m_op{std::move(op)} {}
     }
 
     namespace decl {

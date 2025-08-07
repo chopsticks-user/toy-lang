@@ -117,9 +117,9 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::type::Array const& node) -> Str {
         return std::format(
-            "type::Array [@{}:{}] with nDims = {}",
-            node.line(), node.column(), node.nDims()
-        ) + this->visitChildren(node);
+            "type::Array [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Tuple const& node) -> Str {
