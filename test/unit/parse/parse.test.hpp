@@ -34,40 +34,24 @@ protected:
     };
 
 protected:
+    static auto assertExpr(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
+    static auto assertType(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
+private:
     template <IsASTNode T>
     static auto cast(Node const& node) -> T {
         REQUIRE(matchAstType<T>(node));
         return astCast<T>(node);
     }
 
-    static auto assertExpr(
-        AssertParams params, SLoc location = SLoc::current()
+    static auto parseAndAssert(
+        AssertParams params, Node (*fn)(tlc::parse::Parse)
     ) -> void;
-
-    // static auto assertString(
-    //     tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
-    //     SLoc location = SLoc::current()
-    // ) -> void;
-
-    static auto assertType(
-        tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    ) -> void;
-
-    // static auto assertDecl(
-    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    // ) -> void;
-    //
-    // static auto assertGenericParamsDecl(
-    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    // ) -> void;
-    //
-    // static auto assertStmt(
-    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    // ) -> void;
-    //
-    // static auto assertTranslationUnit(
-    //     tlc::Str source, tlc::Str expected, SLoc location = SLoc::current()
-    // ) -> void;
 };
 
 #define TEST_CASE_WITH_FIXTURE(...) \

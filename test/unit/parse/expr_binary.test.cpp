@@ -27,3 +27,5 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint = std::format("(x {} y)", op),
     });
 }
+
+// todo: boundary cases

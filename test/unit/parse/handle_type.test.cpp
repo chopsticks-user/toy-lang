@@ -1,36 +1,3 @@
-// #include "parse.test.hpp"
-//
-// using namespace tlc::syntax;
-//
-// auto ParseTestFixture::assertType(
-//     tlc::Str source, tlc::Str expected, std::source_location const location
-// ) -> void {
-//     INFO(std::format("{}:{}", location.file_name(), location.line()));
-//     std::istringstream iss;
-//     iss.str(std::move(source));
-//
-//     auto result = tlc::parse::Parse{
-//         filepath, tlc::lex::Lex::operator()(std::move(iss))
-//     }.parseType();
-//     REQUIRE(result.has_value());
-//
-//     auto const actual = tlc::parse::ASTPrinter::operator()(
-//         std::move(*result)
-//     );
-//     REQUIRE(actual == expected);
-// }
-//
-// TEST_CASE_WITH_FIXTURE("Parse: Type identifiers", "[Parse][Type]") {
-//     assertType(
-//         "Int",
-//         "type::Identifier [@0:0] with (const, fund, path) = (true, true, 'Int')"
-//     );
-//     assertType(
-//         "$foo.bar.Baz",
-//         "type::Identifier [@0:0] with (const, fund, path) = (false, false, 'foo.bar.Baz')"
-//     );
-// }
-//
 // TEST_CASE_WITH_FIXTURE("Parse: Type inference operator", "[Parse][Type]") {
 //     assertType(
 //         "[[x]]",

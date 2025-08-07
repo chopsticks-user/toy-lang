@@ -20,12 +20,21 @@ target_sources(
     expr_prefix.test.cpp
     expr_binary.test.cpp
 
-    handle_expr.test.cpp
-    handle_type.test.cpp
-    handle_decl.test.cpp
-    handle_stmt.test.cpp
-    handle_global_decl.test.cpp
-    handle_function_def.test.cpp
+    type_array.test.cpp
+    type_function.test.cpp
+    type_generic.test.cpp
+    type_id.test.cpp
+    type_tuple.test.cpp
+
+    decl_generic.test.cpp
+    decl_id.test.cpp
+    decl_tuple.test.cpp
+
+    #    handle_type.test.cpp
+    #    handle_decl.test.cpp
+    #    handle_stmt.test.cpp
+    #    handle_global_decl.test.cpp
+    #    handle_function_def.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_parse PRIVATE

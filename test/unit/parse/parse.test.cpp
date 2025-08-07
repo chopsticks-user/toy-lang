@@ -1,21 +1,40 @@
 #include "parse.test.hpp"
 
 auto ParseTestFixture::assertExpr(
-    AssertParams params, SLoc location
+    AssertParams params, SLoc const location
 ) -> void {
     INFO(std::format("{}:{}", location.file_name(), location.line()));
+    parseAndAssert(std::move(params), [](tlc::parse::Parse parse) {
+        auto result = parse.parseExpr();
+        REQUIRE(result);
+        return *result;
+    });
+}
+
+auto ParseTestFixture::assertType(
+    AssertParams params, SLoc const location
+) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    parseAndAssert(std::move(params), [](tlc::parse::Parse parse) {
+        auto result = parse.parseType();
+        REQUIRE(result);
+        return *result;
+    });
+}
+
+auto ParseTestFixture::parseAndAssert(
+    AssertParams params, Node (*fn)(tlc::parse::Parse)
+) -> void {
     std::istringstream iss;
     iss.str(std::move(params.source));
-
-    auto result = tlc::parse::Parse{
+    auto result = fn(tlc::parse::Parse{
         filepath, tlc::lex::Lex::operator()(std::move(iss))
-    }.parseExpr();
-    REQUIRE(result);
+    });
 
     params.expectedAstPrint.transform(
         [&](auto&& expectedAstPrint) {
             auto const actualAstPrint =
-                tlc::parse::ASTPrinter::operator()(*result);
+                tlc::parse::ASTPrinter::operator()(result);
             REQUIRE(actualAstPrint == expectedAstPrint);
             return "";
         }
@@ -24,7 +43,7 @@ auto ParseTestFixture::assertExpr(
     params.expectedPrettyPrint.transform(
         [&]([[maybe_unused]] auto&& expectedPrettyPrint) {
             auto const actualPrettyPrint =
-                tlc::parse::PrettyPrint::operator()(*result);
+                tlc::parse::PrettyPrint::operator()(result);
             REQUIRE(actualPrettyPrint == expectedPrettyPrint);
             return "";
         }
@@ -57,30 +76,4 @@ auto ParseTestFixture::assertExpr(
 //
 //     auto const actual = tlc::parse::ASTPrinter::operator()(std::move(result));
 //     REQUIRE(actual == expected);
-// }
-
-// auto ParseTestFixture::assertString(
-//     tlc::Str source, tlc::Str expected, tlc::Vec<tlc::Str> expectedFragments,
-//     SLoc location
-// ) -> void {
-//     INFO(std::format("{}:{}", location.file_name(), location.line()));
-//     std::istringstream iss;
-//     iss.str(std::move(source));
-//
-//     auto result = tlc::parse::Parse{
-//         filepath, tlc::lex::Lex::operator()(std::move(iss))
-//     }.parseExpr();
-//     REQUIRE(result.has_value());
-//
-//     auto const actual = tlc::parse::ASTPrinter::operator()(*result);
-//     REQUIRE(actual == expected);
-//
-//     REQUIRE(matchAstType<expr::String>(*result));
-//     for (auto&& [actualFragment,expectedFragment]
-//          : tlc::rv::zip(
-//              astCast<expr::String>(
-//                  *result).fragments(), expectedFragments
-//          )) {
-//         REQUIRE(actualFragment == expectedFragment);
-//     }
 // }

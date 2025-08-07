@@ -13,7 +13,7 @@ namespace tlc::parse {
     public:
         using SyntaxTreeVisitor::operator();
 
-        static auto operator()(syntax::Node const& node) -> Str {
+        static constexpr auto operator()(syntax::Node const& node) -> Str {
             return std::visit(PrettyPrint{}, node);
         }
 
@@ -34,10 +34,10 @@ namespace tlc::parse {
         auto operator()(syntax::expr::Binary const& node) -> Str;
 
         auto operator()(syntax::type::Identifier const& node) -> Str;
+        auto operator()(syntax::type::Infer const& node) -> Str;
         // auto operator()(syntax::type::Array const& node) -> Str;
         // auto operator()(syntax::type::Tuple const& node) -> Str;
         // auto operator()(syntax::type::Function const& node) -> Str;
-        // auto operator()(syntax::type::Infer const& node) -> Str;
         // auto operator()(syntax::type::GenericArguments const& node) -> Str;
         // auto operator()(syntax::type::Generic const& node) -> Str;
         //

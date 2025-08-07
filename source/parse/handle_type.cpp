@@ -168,10 +168,10 @@ namespace tlc::parse {
     auto Parse::handleTypeInfer() -> ParseResult {
         TLC_SCOPE_REPORTER();
         return seq(match(lexeme::leftBracket), match(lexeme::leftBracket))
-            (m_stream, m_tracker).and_then([this](auto const& tokens)
-                -> ParseResult {
-                    return handleExpr().and_then([this, &tokens](auto const& expr)
-                        -> ParseResult {
+            (m_stream, m_tracker).and_then(
+                [this](auto const& tokens) -> ParseResult {
+                    return handleExpr().and_then(
+                        [this, &tokens](auto const& expr) -> ParseResult {
                             if (!seq(match(lexeme::rightBracket),
                                      match(lexeme::rightBracket))
                                 (m_stream, m_tracker)) {
@@ -184,7 +184,8 @@ namespace tlc::parse {
                             return syntax::type::Infer{
                                 expr, tokens.front().location()
                             };
-                        });
+                        }
+                    );
                 }
             );
     }

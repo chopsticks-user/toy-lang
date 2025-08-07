@@ -62,8 +62,6 @@ namespace tlc::parse {
                     };
                 });
             }
-            // todo: ternary
-            else if (m_stream.match(lexeme::qMark)) {}
             else {
                 break;
             }

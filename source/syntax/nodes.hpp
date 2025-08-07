@@ -162,9 +162,6 @@ namespace tlc::syntax {
             Function(Node args, Node result, Location location);
         };
 
-        /**
-         * [[expr]]
-         */
         struct Infer final : detail::NodeBase {
             Infer(Node expr, Location location);
 
@@ -233,72 +230,23 @@ namespace tlc::syntax {
             Return(Node expr, Location location);
         };
 
-        /**
-         * Syntax:
-         *      \code
-         *          "defer" ("{" stmt* "}" | expr ";")
-         *      \endcode
-         *
-         * Examples:
-         *
-         * Notes:
-         *      - "defer" accepts one statement, which can be a block statement.
-         *      - Like its counter-part, "preface", "defer" is a pure statement
-         *      and can be a scope owner.
-         */
         struct Defer final : detail::NodeBase {
             Defer(Node stmt, Location location);
         };
 
-        /**
-         *
-         */
         struct MatchCase final : detail::NodeBase {
             MatchCase(Node value, Node cond, Node stmt, Location location);
         };
 
-        /**
-         *
-         */
         struct Match final : detail::NodeBase {
             Match(Node expr, Vec<Node> cases, Node defaultStmt, Location location);
         };
 
 
-        /**
-         *
-         */
         struct Loop final : detail::NodeBase {
             Loop(Node decl, Node range, Node body, Location location);
         };
 
-        /**
-         * Syntax:
-         *      \code
-         *          expr "=>" stmt ";"
-         *      \endcode
-         *
-         * Examples:
-         *      \code
-         *          x > 0 => io::println(x);
-         *      \endcode
-         *      \code
-         *          x < 0 => {
-         *              ...
-         *          }
-         *      \endcode
-         *      \code
-         *          x = y > 0 => y * 2;
-         *      \endcode
-         *      \code
-         *          return x == 0 => y;
-         *      \endcode
-         *
-         * Notes:
-         *      - If "stmt" is an expression statement, conditional statement returns
-         *      the yields the value of the expression, thus making it the only default
-         *      value-semantics statement.
-         */
         struct Conditional final : detail::NodeBase {
             Conditional(Node cond, Node then, Location location);
         };

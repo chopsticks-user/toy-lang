@@ -50,22 +50,17 @@ namespace tlc::parse {
     }
 
     auto PrettyPrint::operator()(syntax::expr::String const& node) -> Str {
-        auto [fragmentsExceptLast, lastFragment] =
-            [&] {
-                auto const fragments = node.fragments();
-                Str last = fragments.back();
-                return std::make_pair(
-                    fragments.first(fragments.size() - 1), std::move(last)
-                );
-            }();
+        auto const fragments = node.fragments();
         return std::format(
             "\"{}{}\"",
-            rv::zip(fragmentsExceptLast, visitChildren(node))
-            | rv::transform([](std::tuple<Str, Str> const& t) {
-                auto const& [fragment, placeholder] = t;
-                return std::format("{}{{{}}}", fragment, placeholder);
-            })
-            | rv::join | rng::to<Str>(), lastFragment
+            rv::zip(
+                fragments | rv::take(fragments.size() - 1), visitChildren(node)
+            ) | rv::transform([](std::tuple<Str, Str> const& t) {
+                auto [fragment, placeholder] = t;
+                return std::format(
+                    "{}{{{}}}", std::move(fragment), std::move(placeholder)
+                );
+            }) | rv::join | rng::to<Str>(), fragments.back()
         );
     }
 
@@ -101,6 +96,10 @@ namespace tlc::parse {
 
     auto PrettyPrint::operator()(syntax::type::Identifier const& node) -> Str {
         return node.path();
+    }
+
+    auto PrettyPrint::operator()(syntax::type::Infer const& node) -> Str {
+        return std::format("[[ {} ]]", visitChildren(node).front());
     }
 
     auto PrettyPrint::operator()(syntax::Empty const&) -> Str {
