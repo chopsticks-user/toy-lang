@@ -35,7 +35,7 @@ namespace tlc::parse {
         auto backtrack = m_stream.scopedBacktrack();
         return handleDecl().and_then(
             [&](syntax::Node&& decl) -> ParseResult {
-                if (!match(lexeme::equal)(m_stream, m_tracker)) {
+                if (!m_stream.match(lexeme::equal)) {
                     backtrack();
                     return defaultError();
                 }
@@ -47,7 +47,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::Stmt,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return {};
+                        return syntax::RequiredButMissing{};
                     });
 
                 if (!m_stream.match(lexeme::semicolon)) {
@@ -115,7 +115,7 @@ namespace tlc::parse {
                     };
                 }
                 else if (m_stream.match(lexeme::equalGreater)) {
-                    expr = syntax::stmt::Conditional{
+                    return syntax::stmt::Conditional{
                         expr, *handleStmt().or_else(
                             [&](auto&& error) -> ParseResult {
                                 collect(error);
@@ -332,7 +332,7 @@ namespace tlc::parse {
                     );
                 }
 
-                if (m_stream.current().lexeme() != lexeme::leftBrace) {
+                if (m_stream.current().lexeme() != lexeme::rightBrace) {
                     collect({
                         .location = m_tracker.current(),
                         .context = EParseErrorContext::BlockStmt,

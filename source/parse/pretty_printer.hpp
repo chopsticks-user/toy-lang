@@ -47,6 +47,17 @@ namespace tlc::parse {
         auto operator()(syntax::decl::GenericIdentifier const& node) -> Str;
         auto operator()(syntax::decl::GenericParameters const& node) -> Str;
 
+        auto operator()(syntax::stmt::Decl const& node) -> Str;
+        auto operator()(syntax::stmt::Return const& node) -> Str;
+        auto operator()(syntax::stmt::Expression const& node) -> Str;
+        auto operator()(syntax::stmt::Assign const& node) -> Str;
+        auto operator()(syntax::stmt::Conditional const& node) -> Str;
+        auto operator()(syntax::stmt::Block const& node) -> Str;
+        auto operator()(syntax::stmt::Defer const& node) -> Str;
+        auto operator()(syntax::stmt::Loop const& node) -> Str;
+        auto operator()(syntax::stmt::MatchCase const& node) -> Str;
+        auto operator()(syntax::stmt::Match const& node) -> Str;
+
         auto operator()(syntax::global::ModuleDecl const& node) -> Str;
         auto operator()(syntax::global::ImportDecl const& node) -> Str;
         auto operator()(syntax::global::ImportDeclGroup const& node) -> Str;
@@ -62,7 +73,12 @@ namespace tlc::parse {
         static constexpr auto rvJoin =
             rv::join | rng::to<Str>();
 
-        // [[nodiscard]] auto withDepth(StrV s) const -> Str;
+        auto depthPrefix() const -> StrV {
+            return rv::repeat(indent, m_depth) | rv::join | rng::to<Str>();
+        }
+
+    private:
+        szt m_depth = 0;
     };
 }
 
