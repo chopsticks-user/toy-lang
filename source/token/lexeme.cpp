@@ -88,7 +88,7 @@ namespace tlc::lexeme {
 
     const HashSet<StrV> fundamentalTypes = {
         "Int", "Float", "Bool", "Char", "Void", "String", "Any", "Opt",
-        "Own", "Ref", "Obs", "MutOwn", "MutRef", "MutObs"
+        "Own", "Ref", "Obs",
     };
 
     const OpGraph3 opGraph = [] {

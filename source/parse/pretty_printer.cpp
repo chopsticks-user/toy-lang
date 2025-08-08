@@ -95,11 +95,50 @@ namespace tlc::parse {
     }
 
     auto PrettyPrint::operator()(syntax::type::Identifier const& node) -> Str {
-        return node.path();
+        return node.constant() ? node.path() : "$" + node.path();
     }
 
     auto PrettyPrint::operator()(syntax::type::Infer const& node) -> Str {
         return std::format("[[ {} ]]", visitChildren(node).front());
+    }
+
+    auto PrettyPrint::operator()(syntax::type::Array const& node) -> Str {
+        return visitChildren(node) | rvJoin;
+    }
+
+    auto PrettyPrint::operator()(syntax::type::Tuple const& node) -> Str {
+        return std::format("({})", visitChildren(node) | rvJoinWithComma);
+    }
+
+    auto PrettyPrint::operator()(syntax::type::Function const& node) -> Str {
+        return std::format(
+            "({})", visitChildren(node) | rv::join_with(" -> "sv)
+            | rng::to<Str>()
+        );
+    }
+
+    auto PrettyPrint::operator()(syntax::type::GenericArguments const& node) -> Str {
+        return std::format("<{}>", visitChildren(node) | rvJoinWithComma);
+    }
+
+    auto PrettyPrint::operator()(syntax::type::Generic const& node) -> Str {
+        return visitChildren(node) | rvJoin;
+    }
+
+    auto PrettyPrint::operator()(syntax::decl::Identifier const& node) -> Str {
+        return std::format("{}: {}", node.name(), visitChildren(node).front());
+    }
+
+    auto PrettyPrint::operator()(syntax::decl::Tuple const& node) -> Str {
+        return std::format("({})", visitChildren(node) | rvJoinWithComma);
+    }
+
+    auto PrettyPrint::operator()(syntax::decl::GenericIdentifier const& node) -> Str {
+        return Str{node.name()};
+    }
+
+    auto PrettyPrint::operator()(syntax::decl::GenericParameters const& node) -> Str {
+        return std::format("<{}>", visitChildren(node) | rvJoinWithComma);
     }
 
     auto PrettyPrint::operator()(syntax::Empty const&) -> Str {

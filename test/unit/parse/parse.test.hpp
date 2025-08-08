@@ -42,6 +42,14 @@ protected:
         AssertParams params, SLoc location = SLoc::current()
     ) -> void;
 
+    static auto assertDecl(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
+    static auto assertGenericDecl(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
 private:
     template <IsASTNode T>
     static auto cast(Node const& node) -> T {

@@ -161,9 +161,10 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
         return std::format(
-            "decl::Identifier [@{}:{}] with name = '{}'",
-            node.line(), node.column(), node.name()
-        ) + (node.inferred() ? "" : "\n" + this->visitChildren(node).front());
+            "decl::Identifier [@{}:{}] with name = '{}'{}",
+            node.line(), node.column(), node.name(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::decl::Tuple const& node) -> Str {

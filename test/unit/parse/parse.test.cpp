@@ -22,6 +22,24 @@ auto ParseTestFixture::assertType(
     });
 }
 
+auto ParseTestFixture::assertDecl(AssertParams params, SLoc const location) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    parseAndAssert(std::move(params), [](tlc::parse::Parse parse) {
+        auto result = parse.parseDecl();
+        REQUIRE(result);
+        return *result;
+    });
+}
+
+auto ParseTestFixture::assertGenericDecl(AssertParams params, SLoc const location) -> void {
+    INFO(std::format("{}:{}", location.file_name(), location.line()));
+    parseAndAssert(std::move(params), [](tlc::parse::Parse parse) {
+        auto result = parse.parseGenericParamsDecl();
+        REQUIRE(result);
+        return *result;
+    });
+}
+
 auto ParseTestFixture::parseAndAssert(
     AssertParams params, Node (*fn)(tlc::parse::Parse)
 ) -> void {
