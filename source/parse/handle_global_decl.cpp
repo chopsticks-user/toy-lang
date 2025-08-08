@@ -2,24 +2,33 @@
 
 namespace tlc::parse {
     auto Parse::handleTranslationUnit() -> ParseResult {
-        Vec<syntax::Node> definitions;
-
-        if (auto moduleDecl = handleModuleDecl(); !moduleDecl) {
+        auto moduleDecl = handleModuleDecl();
+        if (!moduleDecl) {
             return error({
                 .context = EParseErrorContext::TranslationUnit,
                 .reason = EParseErrorReason::MissingDecl,
             });
         }
-        else { definitions.push_back(std::move(*moduleDecl)); }
 
+        Vec<syntax::Node> imports;
+        Location importGroupLocation = m_tracker.push();
+        syntax::Node importGroup;
         while (m_stream.peek().lexeme() != lexeme::invalid) {
             auto importDecl = handleImportDecl();
             if (!importDecl) {
+                m_tracker.pop();
                 break;
             }
-            definitions.push_back(std::move(*importDecl));
+            imports.push_back(std::move(*importDecl));
+        }
+        if (!imports.empty()) {
+            importGroup = syntax::global::ImportDeclGroup{
+                std::move(imports), std::move(importGroupLocation)
+            };
         }
 
+
+        Vec<syntax::Node> definitions;
         while (m_stream.peek().lexeme() != lexeme::invalid) {
             auto const visibility =
                 m_stream.match(lexeme::pub, lexeme::prv)
@@ -31,7 +40,10 @@ namespace tlc::parse {
             }
         }
 
-        return syntax::TranslationUnit{m_filepath, std::move(definitions)};
+        return syntax::TranslationUnit{
+            m_filepath, std::move(*moduleDecl),
+            std::move(importGroup), std::move(definitions)
+        };
     }
 
     auto Parse::handleModuleDecl() -> ParseResult {
@@ -68,26 +80,26 @@ namespace tlc::parse {
 
         auto location = m_tracker.current();
         auto path_or_alias = *handleIdentifierLiteral().or_else(
-            [this](auto&& err) -> ParseResult {
+            [&](auto&& err) -> ParseResult {
                 collect(err).collect({
                     .location = m_tracker.current(),
                     .context = EParseErrorContext::ImportDecl,
                     .reason = EParseErrorReason::MissingId,
                 });
-                return {};
+                return syntax::RequiredButMissing{};
             }
         );
 
         syntax::Node path;
         if (m_stream.match(lexeme::equal)) {
             path = *handleIdentifierLiteral().or_else(
-                [this](auto&& err) -> ParseResult {
+                [&](auto&& err) -> ParseResult {
                     collect(err).collect({
                         .location = m_tracker.current(),
                         .context = EParseErrorContext::ImportDecl,
                         .reason = EParseErrorReason::MissingExpr,
                     });
-                    return {};
+                    return syntax::RequiredButMissing{};
                 }
             );
         }

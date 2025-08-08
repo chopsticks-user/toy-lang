@@ -287,6 +287,12 @@ namespace tlc::syntax {
             ModuleDecl(Node path, Location location);
         };
 
+        struct ImportDeclGroup final : detail::NodeBase {
+            ImportDeclGroup(Vec<Node> imports, Location location);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
+        };
+
         struct ImportDecl final : detail::NodeBase {
             ImportDecl(Node alias, Node path, Location location);
         };
@@ -322,7 +328,10 @@ namespace tlc::syntax {
     };
 
     struct TranslationUnit final : detail::NodeBase {
-        TranslationUnit(fs::path sourcePath, Vec<Node> definitions);
+        TranslationUnit(
+            fs::path sourcePath, Node moduleDecl,
+            Node importDeclGroup, Vec<Node> definitions
+        );
 
         [[nodiscard]] auto sourcePath() const noexcept -> fs::path const& {
             return m_sourcePath;

@@ -238,6 +238,14 @@ namespace tlc::syntax {
     global::ModuleDecl::ModuleDecl(Node path, Location const location)
         : NodeBase{{std::move(path)}, location} {}
 
+    global::ImportDeclGroup::ImportDeclGroup(
+        Vec<Node> imports, Location location
+    ) : NodeBase{std::move(imports), std::move(location)} {}
+
+    auto global::ImportDeclGroup::size() const noexcept -> szt {
+        return nChildren();
+    }
+
     global::ImportDecl::ImportDecl(Node alias, Node path, Location const location)
         : NodeBase{{std::move(alias), std::move(path)}, location} {}
 
@@ -262,9 +270,20 @@ namespace tlc::syntax {
     RequiredButMissing::RequiredButMissing()
         : NodeBase{{}, {}} {}
 
-    TranslationUnit::TranslationUnit(fs::path sourcePath, Vec<Node> definitions)
-        : NodeBase{std::move(definitions), {}},
-          m_sourcePath{std::move(sourcePath)} {}
+    TranslationUnit::TranslationUnit(
+        fs::path sourcePath, Node moduleDecl,
+        Node importDeclGroup, Vec<Node> definitions
+    ) : NodeBase{
+            [&] {
+                Vec<Node> nodes;
+                nodes.reserve(2 + definitions.size());
+                nodes.push_back(std::move(moduleDecl));
+                nodes.push_back(std::move(importDeclGroup));
+                nodes.append_range(std::move(definitions));
+                return nodes;
+            }(),
+            {}
+        }, m_sourcePath{std::move(sourcePath)} {}
 
     auto TranslationUnit::size() const noexcept -> szt {
         return nChildren();

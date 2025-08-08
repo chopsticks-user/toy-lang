@@ -47,8 +47,13 @@ namespace tlc::parse {
         auto operator()(syntax::decl::GenericIdentifier const& node) -> Str;
         auto operator()(syntax::decl::GenericParameters const& node) -> Str;
 
+        auto operator()(syntax::global::ModuleDecl const& node) -> Str;
+        auto operator()(syntax::global::ImportDecl const& node) -> Str;
+        auto operator()(syntax::global::ImportDeclGroup const& node) -> Str;
+
         auto operator()(syntax::Empty const&) -> Str;
         auto operator()(syntax::RequiredButMissing const&) -> Str;
+        auto operator()(syntax::TranslationUnit const& node) -> Str;
 
     private:
         static constexpr auto rvJoinWithComma =

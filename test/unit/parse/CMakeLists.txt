@@ -29,6 +29,9 @@ target_sources(
     decl/decl_generic.test.cpp
     decl/decl_id.test.cpp
     decl/decl_tuple.test.cpp
+
+    global/global_module.test.cpp
+    global/global_import.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_parse PRIVATE

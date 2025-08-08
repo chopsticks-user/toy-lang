@@ -61,6 +61,7 @@ namespace tlc::parse {
 
         auto operator()(syntax::global::ModuleDecl const& node) -> Str;
         auto operator()(syntax::global::ImportDecl const& node) -> Str;
+        auto operator()(syntax::global::ImportDeclGroup const& node) -> Str;
         auto operator()(syntax::global::FunctionPrototype const& node) -> Str;
         auto operator()(syntax::global::Function const& node) -> Str;
 

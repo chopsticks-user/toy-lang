@@ -149,12 +149,62 @@ namespace tlc::parse {
         return std::format("<{}>", visitChildren(node) | rvJoinWithComma);
     }
 
+    auto PrettyPrint::operator()(syntax::global::ModuleDecl const& node) -> Str {
+        return std::format("module {};", visitChildren(node).front());
+    }
+
+    auto PrettyPrint::operator()(syntax::global::ImportDecl const& node) -> Str {
+        auto children = visitChildren(node);
+        if (children.back() == empty) {
+            return std::format("import {};", children.front());
+        }
+        return std::format(
+            "import {} = {};", children.front(), children.back()
+        );
+    }
+
+    auto PrettyPrint::operator()(syntax::global::ImportDeclGroup const& node) -> Str {
+        return std::format(
+            "{}", visitChildren(node) | rv::join_with('\n') | rng::to<Str>()
+        );
+    }
+
     auto PrettyPrint::operator()(syntax::Empty const&) -> Str {
         return Str{empty};
     }
 
     auto PrettyPrint::operator()(syntax::RequiredButMissing const&) -> Str {
         return Str{required};
+    }
+
+    auto PrettyPrint::operator()(syntax::TranslationUnit const& node) -> Str {
+        auto children = visitChildren(node);
+        auto moduleDecl = children.front();
+        auto importDeclGroup = children[1];
+
+        if (moduleDecl == required) {
+            return "";
+        }
+        if (children.size() < 3) {
+            if (importDeclGroup == empty) {
+                return std::format("{}", std::move(moduleDecl));
+            }
+            return std::format(
+                "{}\n\n{}", std::move(moduleDecl), std::move(importDeclGroup)
+            );
+        }
+
+        auto definitions = children | rv::as_rvalue | rv::drop(2)
+            | rv::join_with("\n\n"sv) | rng::to<Str>();
+        if (importDeclGroup == empty) {
+            return std::format(
+                "{}\n\n{}", std::move(moduleDecl), std::move(definitions)
+            );
+        }
+        return std::format(
+            "{}\n\n{}\n\n{}", std::move(moduleDecl),
+            std::move(importDeclGroup), std::move(definitions)
+        );
     }
 
     // auto PrettyPrint::withDepth(StrV s) const -> Str {

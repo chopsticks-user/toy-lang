@@ -274,14 +274,22 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::global::ModuleDecl const& node) -> Str {
         return std::format(
-            "global::ModuleDecl [@{}:{}]{}", node.line(), node.column(),
-            this->visitChildren(node)
+            "global::ModuleDecl [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
         );
     }
 
     auto ASTPrinter::operator()(syntax::global::ImportDecl const& node) -> Str {
         return std::format(
             "global::ImportDecl [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::global::ImportDeclGroup const& node) -> Str {
+        return std::format(
+            "global::ImportDeclGroup [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
             this->visitChildren(node)
         );
     }

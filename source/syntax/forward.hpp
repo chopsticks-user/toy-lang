@@ -55,6 +55,7 @@ namespace tlc::syntax {
     namespace global {
         struct ModuleDecl;
         struct ImportDecl;
+        struct ImportDeclGroup;
         struct FunctionPrototype;
         struct Function;
     }
@@ -79,7 +80,7 @@ namespace tlc::syntax {
         stmt::Expression,
 
         global::ModuleDecl, global::ImportDecl, global::FunctionPrototype,
-        global::Function,
+        global::Function, global::ImportDeclGroup,
 
         RequiredButMissing, TranslationUnit
     >;

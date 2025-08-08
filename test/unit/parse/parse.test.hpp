@@ -50,6 +50,14 @@ protected:
         AssertParams params, SLoc location = SLoc::current()
     ) -> void;
 
+    static auto assertStmt(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
+    static auto assertTranslationUnit(
+        AssertParams params, SLoc location = SLoc::current()
+    ) -> void;
+
 private:
     template <IsASTNode T>
     static auto cast(Node const& node) -> T {
