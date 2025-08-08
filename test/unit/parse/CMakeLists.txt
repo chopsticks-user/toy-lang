@@ -30,6 +30,16 @@ target_sources(
     decl/decl_id.test.cpp
     decl/decl_tuple.test.cpp
 
+    stmt/stmt_decl.test.cpp
+    stmt/stmt_return.test.cpp
+    stmt/stmt_expr.test.cpp
+    stmt/stmt_assign.test.cpp
+    stmt/stmt_cond.test.cpp
+    stmt/stmt_defer.test.cpp
+    stmt/stmt_block.test.cpp
+    stmt/stmt_loop.test.cpp
+    stmt/stmt_match.test.cpp
+
     global/global_module.test.cpp
     global/global_import.test.cpp
 )
