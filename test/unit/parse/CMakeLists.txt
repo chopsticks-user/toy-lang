@@ -2,11 +2,10 @@ add_executable(tlc_test_unit_parse)
 add_executable(tlc::test::unit::parse ALIAS tlc_test_unit_parse)
 target_sources(
     tlc_test_unit_parse PRIVATE
-    parse.test.hpp
-    parse.test.cpp
-
     token_stream.test.cpp
     combinator.test.cpp
+    parse.test.hpp
+    parse.test.cpp
 
     expr/expr_literal.test.cpp
     expr/expr_id.test.cpp
@@ -30,12 +29,6 @@ target_sources(
     decl/decl_generic.test.cpp
     decl/decl_id.test.cpp
     decl/decl_tuple.test.cpp
-
-    #    handle_type.test.cpp
-    #    handle_decl.test.cpp
-    #    handle_stmt.test.cpp
-    #    handle_global_decl.test.cpp
-    #    handle_function_def.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_parse PRIVATE

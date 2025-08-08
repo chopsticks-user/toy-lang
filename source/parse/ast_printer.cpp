@@ -72,16 +72,18 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::expr::Binary const& node) -> Str {
         return std::format(
-            "expr::Binary [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
-        ) + this->visitChildren(node);
+            "expr::Binary [@{}:{}] with op = '{}'{}",
+            node.line(), node.column(), node.op().str(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::RecordEntry const& node) -> Str {
         return std::format(
-            "expr::RecordEntry [@{}:{}] with key = '{}'",
-            node.line(), node.column(), node.key()
-        ) + this->visitChildren(node);
+            "expr::RecordEntry [@{}:{}] with key = '{}'{}",
+            node.line(), node.column(), node.key(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::Record const& node) -> Str {
@@ -94,9 +96,10 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::expr::String const& node) -> Str {
         return std::format(
-            "expr::String [@{}:{}] with nPlaceholders = {}",
-            node.line(), node.column(), node.nPlaceholders()
-        ) + this->visitChildren(node);
+            "expr::String [@{}:{}] with nPlaceholders = {}{}",
+            node.line(), node.column(), node.nPlaceholders(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::expr::Try const& node) -> Str {
@@ -124,39 +127,46 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::type::Tuple const& node) -> Str {
         return std::format(
-            "type::Tuple [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + (node.size() > 0
-                 ? this->visitChildren(node)
-                 : "");
+            "type::Tuple [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Function const& node) -> Str {
         return std::format(
-            "type::Function [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "type::Function [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Infer const& node) -> Str {
         return std::format(
-            "type::Infer [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "type::Infer [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::GenericArguments const& node) -> Str {
         return std::format(
-            "type::GenericArguments [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + this->visitChildren(node);
+            "type::GenericArguments [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::type::Generic const& node) -> Str {
         return std::format(
-            "type::Generic [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "type::Generic [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
+    }
+
+    auto ASTPrinter::operator()(syntax::type::Binary const& node) -> Str {
+        return std::format(
+            "type::Binary [@{}:{}] with op = '{}'{}",
+            node.line(), node.column(), node.op().str(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::decl::Identifier const& node) -> Str {
@@ -169,11 +179,10 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::decl::Tuple const& node) -> Str {
         return std::format(
-            "decl::Tuple [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + (node.size() > 0
-                 ? this->visitChildren(node)
-                 : "");
+            "decl::Tuple [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::decl::GenericIdentifier const& node) -> Str {
@@ -185,113 +194,114 @@ namespace tlc::parse {
 
     auto ASTPrinter::operator()(syntax::decl::GenericParameters const& node) -> Str {
         return std::format(
-            "decl::GenericParameters [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + (node.size() > 0
-                 ? this->visitChildren(node)
-                 : "");
+            "decl::GenericParameters [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Return const& node) -> Str {
         return std::format(
-            "stmt::Return [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Return [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Decl const& node) -> Str {
         return std::format(
-            "stmt::Decl [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Decl [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Expression const& node) -> Str {
         return std::format(
-            "stmt::Expression [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Expression [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Assign const& node) -> Str {
         return std::format(
-            "stmt::Assign [@{}:{}] with op = '{}'",
-            node.line(), node.column(), node.op().str()
-        ) + this->visitChildren(node);
+            "stmt::Assign [@{}:{}] with op = '{}'{}",
+            node.line(), node.column(), node.op().str(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Conditional const& node) -> Str {
         return std::format(
-            "stmt::Conditional [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Conditional [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Block const& node) -> Str {
         return std::format(
-            "stmt::Block [@{}:{}] with size = {}",
-            node.line(), node.column(), node.size()
-        ) + (
-            node.size() == 0
-                ? ""
-                : this->visitChildren(node)
+            "stmt::Block [@{}:{}] with size = {}{}",
+            node.line(), node.column(), node.size(),
+            this->visitChildren(node)
         );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Defer const& node) -> Str {
         return std::format(
-            "stmt::Defer [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Defer [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Loop const& node) -> Str {
         return std::format(
-            "stmt::Loop [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Loop [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::MatchCase const& node) -> Str {
         return std::format(
-            "stmt::MatchCase [@{}:{}]",
-            node.line(), node.column()
-        ) + "\n" + this->visitChildren(node);
+            "stmt::MatchCase [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::stmt::Match const& node) -> Str {
         return std::format(
-            "stmt::Match [@{}:{}]",
-            node.line(), node.column()
-        ) + this->visitChildren(node);
+            "stmt::Match [@{}:{}]{}",
+            node.line(), node.column(), this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::global::ModuleDecl const& node) -> Str {
         return std::format(
-            "global::ModuleDecl [@{}:{}]", node.line(), node.column()
-        ) + this->visitChildren(node);
+            "global::ModuleDecl [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::global::ImportDecl const& node) -> Str {
         return std::format(
-            "global::ImportDecl [@{}:{}]", node.line(), node.column()
-        ) + "\n" + this->visitChildren(node);
+            "global::ImportDecl [@{}:{}]{}", node.line(), node.column(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(
         syntax::global::FunctionPrototype const& node
     ) -> Str {
         return std::format(
-            "global::FunctionPrototype [@{}:{}] with name = '{}'",
-            node.line(), node.column(), node.name()
-        ) + this->visitChildren(node);
+            "global::FunctionPrototype [@{}:{}] with name = '{}'{}",
+            node.line(), node.column(), node.name(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::global::Function const& node) -> Str {
         return std::format(
-            "global::Function [@{}:{}] with visibility = '{}'",
-            node.line(), node.column(), node.visibility().str()
-        ) + "\n" + this->visitChildren(node);
+            "global::Function [@{}:{}] with visibility = '{}'{}",
+            node.line(), node.column(), node.visibility().str(),
+            this->visitChildren(node)
+        );
     }
 
     auto ASTPrinter::operator()(syntax::Empty const&) -> Str {

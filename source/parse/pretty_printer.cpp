@@ -125,6 +125,14 @@ namespace tlc::parse {
         return visitChildren(node) | rvJoin;
     }
 
+    auto PrettyPrint::operator()(syntax::type::Binary const& node) -> Str {
+        auto children = visitChildren(node);
+        return std::format(
+            "({} {} {})", std::move(children.front()), node.op().str(),
+            visitChildren(node).back()
+        );
+    }
+
     auto PrettyPrint::operator()(syntax::decl::Identifier const& node) -> Str {
         return std::format("{}: {}", node.name(), visitChildren(node).front());
     }

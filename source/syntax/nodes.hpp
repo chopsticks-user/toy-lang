@@ -179,6 +179,10 @@ namespace tlc::syntax {
         struct Binary final : detail::NodeBase {
             Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location);
 
+            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
+                return m_op;
+            }
+
         private:
             lexeme::Lexeme m_op;
         };
