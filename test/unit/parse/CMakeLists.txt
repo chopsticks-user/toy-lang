@@ -42,6 +42,11 @@ target_sources(
 
     global/global_module.test.cpp
     global/global_import.test.cpp
+    global/global_function.test.cpp
+    global/global_type.test.cpp
+    global/global_trait.test.cpp
+    global/global_enum.test.cpp
+    global/global_flag.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_parse PRIVATE
