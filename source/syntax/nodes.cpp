@@ -3,235 +3,156 @@
 
 namespace tlc::syntax {
     namespace expr {
-        Integer::Integer(i64 const value, Location coords)
-            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+        Integer::Integer(i64 const value, Location const location)
+            : NodeBase{{}, location}, m_value{value} {}
 
-        Float::Float(f64 const value, Location coords)
-            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+        Float::Float(f64 const value, Location const location)
+            : NodeBase{{}, location}, m_value{value} {}
 
-        Boolean::Boolean(b8 const value, Location coords)
-            : NodeBase{{}, std::move(coords)}, m_value{value} {}
+        Boolean::Boolean(b8 const value, Location const location)
+            : NodeBase{{}, location}, m_value{value} {}
 
         Identifier::Identifier(
-            Vec<Str> path, Location coords
-        ) : NodeBase{{}, std::move(coords)},
+            Vec<Str> path, Location const location
+        ) : NodeBase{{}, location},
             IdentifierBase{std::move(path)} {}
 
-        Array::Array(Vec<Node> elements, Location coords)
-            : NodeBase{std::move(elements), std::move(coords)} {}
+        Array::Array(Vec<Node> elements, Location const location)
+            : NodeBase{std::move(elements), location} {}
 
         auto Array::size() const noexcept -> szt {
             return nChildren();
         }
 
-        Tuple::Tuple(Vec<Node> elements, Location coords)
-            : NodeBase{std::move(elements), std::move(coords)} {}
+        Tuple::Tuple(Vec<Node> elements, Location const location)
+            : NodeBase{std::move(elements), location} {}
 
         auto Tuple::size() const noexcept -> szt {
             return nChildren();
         }
 
-        FnApp::FnApp(Node callee, Node args, Location coords)
+        FnApp::FnApp(Node callee, Node args, Location const location)
             : NodeBase{
                 {std::move(callee), std::move(args)},
-                std::move(coords)
+                location
             } {}
 
-        auto FnApp::callee() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto FnApp::args() const noexcept -> Node {
-            return childAt(1);
-        }
-
         Subscript::Subscript(
-            Node collection, Node subscript, Location coords
+            Node collection, Node subscript, Location const location
         ): NodeBase{
             {std::move(collection), std::move(subscript)},
-            std::move(coords)
+            location
         } {}
 
-        auto Subscript::collection() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto Subscript::subscript() const noexcept -> Node {
-            return childAt(1);
-        }
-
-        Access::Access(
-            Node object, Str field, Location coords
-        ): NodeBase{
-               {std::move(object)},
-               std::move(coords)
-           }, m_field{std::move(field)} {}
-
-        auto Access::object() const noexcept -> Node {
-            return childAt(0);
-        }
-
-        auto Access::field() const noexcept -> Str {
-            return m_field;
-        }
-
         Prefix::Prefix(
-            Node operand, lexeme::Lexeme const op, Location coords
-        ): NodeBase{{std::move(operand)}, std::move(coords)},
-           m_op{op} {}
-
-        auto Prefix::operand() const noexcept -> Node {
-            return firstChild();
-        }
+            Node operand, lexeme::Lexeme op, Location const location
+        ): NodeBase{{std::move(operand)}, location},
+           m_op{std::move(op)} {}
 
         Binary::Binary(
-            Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
-        ) : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
-            m_op{op} {}
+            Node lhs, Node rhs, lexeme::Lexeme op, Location const location
+        ) : NodeBase{{std::move(lhs), std::move(rhs)}, location},
+            m_op{std::move(op)} {}
 
-        auto Binary::left() const noexcept -> Node {
-            return firstChild();
-        }
+        String::String(
+            Vec<Str> fragments, Vec<Node> placeholders, Location const location
+        )
+            : NodeBase{std::move(placeholders), location},
+              m_fragments{std::move(fragments)} {}
 
-        auto Binary::right() const noexcept -> Node {
-            return lastChild();
-        }
+        RecordEntry::RecordEntry(Str key, Node value, Location const location)
+            : NodeBase{{std::move(value)}, location},
+              m_key{std::move(key)} {}
 
-        Record::Record(Node type, Vec<Pair<Str, Node>> entries, Location coords)
+        Record::Record(Node type, Vec<Node> entries, Location const location)
             : NodeBase{
-                  [&] {
-                      Vec<Node> nodes;
-                      nodes.reserve(entries.size() + 1);
-                      // todo: concat
-                      nodes.push_back(std::move(type));
-                      nodes.append_range(
-                          entries | rv::transform(
-                              [](auto const& entry) {
-                                  return entry.second;
-                              }
-                          )
-                      );
-                      return nodes;
-                  }(),
-                  std::move(coords)
-              }, m_keys{
-                  [&] {
-                      return entries | rv::transform(
-                          [](auto const& entry) {
-                              return entry.first;
-                          }
-                      ) | rng::to<Vec<Str>>();
-                  }()
-              } {}
+                {
+                    [&] {
+                        Vec<Node> nodes;
+                        nodes.reserve(entries.size() + 1);
+                        nodes.push_back(std::move(type));
+                        nodes.append_range(std::move(entries));
+                        return nodes;
+                    }()
+                },
+                location
+            } {}
 
         auto Record::size() const noexcept -> szt {
-            return m_keys.size() - 1;
+            return nChildren() - 1;
         }
 
-        auto Record::type() const noexcept -> Node {
-            return firstChild();
-        }
-
-        auto Record::value(szt const index) const noexcept -> Node const& {
-            return childAt(index + 1);
-        }
+        Try::Try(Node expr, Location const location)
+            : NodeBase{{std::move(expr)}, location} {}
     }
 
     namespace type {
         Identifier::Identifier(
-            Vec<Str> path, b8 const fundamental, Location coords
-        ): NodeBase{{}, std::move(coords)},
-           IdentifierBase{std::move(path)}, m_fundamental{fundamental} {}
+            b8 const constant, Vec<Str> path, b8 const fundamental,
+            Location const location
+        ): NodeBase{{}, location}, IdentifierBase{std::move(path)},
+           m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
-            Node type, Vec<Node> sizes, Location coords
+            Node type, Node sizes, Location const location
         ): NodeBase{
             [&] {
                 Vec<Node> nodes;
-                nodes.reserve(sizes.size() + 1);
-                nodes.emplace_back(type);
-                nodes.append_range(std::move(sizes));
+                nodes.reserve(2);
+                nodes.push_back(std::move(type));
+                nodes.push_back(std::move(sizes));
                 return nodes;
             }(),
-            std::move(coords)
+            location
         } {}
 
-        auto Array::type() const noexcept -> Node const& {
-            return firstChild();
-        }
-
-        auto Array::size(szt const dimIndex) const noexcept -> Node const& {
-            return childAt(dimIndex + 1);
-        }
-
-        auto Array::nDims() const noexcept -> size_t {
-            return nChildren() - 1;
-        }
-
-        auto Array::fixed(szt const dimIndex) const -> bool {
-            return !isEmptyNode(size(dimIndex));
-        }
-
-        Tuple::Tuple(Vec<Node> types, Location coords)
-            : NodeBase{std::move(types), std::move(coords)} {}
-
-        auto Tuple::type(szt const index) const -> Node {
-            return childAt(index);
-        }
+        Tuple::Tuple(Vec<Node> types, Location const location)
+            : NodeBase{std::move(types), location} {}
 
         auto Tuple::size() const -> szt {
             return nChildren();
         }
 
-        Function::Function(Node args, Node result, Location coords)
-            : NodeBase{{std::move(args), std::move(result)}, std::move(coords)} {}
+        Function::Function(Node args, Node result, Location const location)
+            : NodeBase{{std::move(args), std::move(result)}, location} {}
 
-        auto Function::args() const noexcept -> Node {
-            return firstChild();
-        }
-
-        auto Function::result() const noexcept -> Node {
-            return lastChild();
-        }
-
-        Infer::Infer(Node expr, Location coords)
-            : NodeBase{{std::move(expr)}, std::move(coords)} {}
+        Infer::Infer(Node expr, Location const location)
+            : NodeBase{{std::move(expr)}, location} {}
 
         auto Infer::expr() const noexcept -> Node {
             return firstChild();
         }
 
-        Sum::Sum(Vec<Node> types, Location coords)
-            : NodeBase{std::move(types), std::move(coords)} {}
+        GenericArguments::GenericArguments(
+            Vec<Node> args, Location const location
+        )
+            : NodeBase{std::move(args), location} {}
 
-        auto Sum::type(szt const index) const -> Node {
-            return childAt(index);
+        auto GenericArguments::size() const noexcept -> szt {
+            return nChildren();
         }
 
-        Product::Product(Vec<Node> types, Location coords)
-            : NodeBase{std::move(types), std::move(coords)} {}
+        Generic::Generic(Node type, Node args, Location const location)
+            : NodeBase{{std::move(type), std::move(args)}, location} {}
 
-        auto Product::type(szt const index) const -> Node {
-            return childAt(index);
-        }
+        Binary::Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location)
+            : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(location)},
+              m_op{std::move(op)} {}
     }
 
     namespace decl {
         Identifier::Identifier(
-            b8 const constant, Str name, Node type, Location coords
-        ) : NodeBase{{std::move(type)}, std::move(coords)},
-            m_constant{constant}, m_name{std::move(name)} {}
+            Str name, Node type, Location const location
+        ) : NodeBase{{std::move(type)}, location},
+            m_name{std::move(name)} {}
 
-        auto Identifier::type() const noexcept -> Node const& {
-            return firstChild();
-        }
 
         auto Identifier::inferred() const noexcept -> b8 {
             return isEmptyNode(firstChild());
         }
 
-        Tuple::Tuple(Vec<Node> decls, Location coords)
-            : NodeBase{std::move(decls), std::move(coords)} {}
+        Tuple::Tuple(Vec<Node> decls, Location const location)
+            : NodeBase{std::move(decls), location} {}
 
         auto Tuple::decl(szt const index) const -> Node {
             return childAt(index);
@@ -240,58 +161,39 @@ namespace tlc::syntax {
         auto Tuple::size() const -> szt {
             return nChildren();
         }
+
+        GenericIdentifier::GenericIdentifier(Str name, Location const location)
+            : NodeBase{{}, location}, m_name{std::move(name)} {}
+
+        GenericParameters::GenericParameters(
+            Vec<Node> params, Location const location)
+            : NodeBase{std::move(params), location} {}
+
+        auto GenericParameters::size() const -> szt {
+            return nChildren();
+        }
     }
 
-    stmt::Let::Let(Node decl, Node initializer, Location coords)
-        : NodeBase{{std::move(decl), std::move(initializer)}, std::move(coords)} {}
+    stmt::Decl::Decl(Node decl, Node initializer, Location const location)
+        : NodeBase{{std::move(decl), std::move(initializer)}, location} {}
 
-    auto stmt::Let::decl() const noexcept -> Node const& {
-        return firstChild();
-    }
-
-    auto stmt::Let::initializer() const noexcept -> Node const& {
-        return lastChild();
-    }
-
-    auto stmt::Let::defaultInitialized() const -> bool {
+    auto stmt::Decl::defaultInitialized() const -> bool {
         return isEmptyNode(lastChild());
     }
 
-    stmt::Return::Return(Node expr, Location coords)
-        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+    stmt::Return::Return(Node expr, Location const location)
+        : NodeBase{{std::move(expr)}, location} {}
 
-    auto stmt::Return::expr() const noexcept -> Node const& {
-        return firstChild();
-    }
+    stmt::Defer::Defer(Node stmt, Location const location)
+        : NodeBase{{std::move(stmt)}, location} {}
 
-    stmt::Yield::Yield(Node expr, Location coords)
-        : NodeBase{{std::move(expr)}, std::move(coords)} {}
-
-    auto stmt::Yield::expr() const noexcept -> Node const& {
-        return firstChild();
-    }
-
-    stmt::Preface::Preface(Node stmt, Location coords)
-        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
-
-    auto stmt::Preface::stmt() const noexcept -> Node const& {
-        return firstChild();
-    }
-
-    stmt::Defer::Defer(Node stmt, Location coords)
-        : NodeBase{{std::move(stmt)}, std::move(coords)} {}
-
-    auto stmt::Defer::stmt() const noexcept -> Node const& {
-        return firstChild();
-    }
-
-    stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location coords)
+    stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location const location)
         : NodeBase{
             {std::move(value), std::move(cond), std::move(stmt)},
-            std::move(coords)
+            location
         } {}
 
-    stmt::Match::Match(Node expr, Vec<Node> cases, Node defaultStmt, Location coords)
+    stmt::Match::Match(Node expr, Vec<Node> cases, Node defaultStmt, Location const location)
         : NodeBase{
             {
                 [&] {
@@ -303,33 +205,87 @@ namespace tlc::syntax {
                     return nodes;
                 }()
             },
-            std::move(coords)
+            location
         } {}
 
-    stmt::Loop::Loop(Node decl, Node range, Node body, Location coords)
+    stmt::Loop::Loop(Node decl, Node range, Node body, Location const location)
         : NodeBase{
             {std::move(decl), std::move(range), std::move(body)},
-            std::move(coords)
+            location
         } {}
 
-    stmt::Conditional::Conditional(Node cond, Node then, Location coords)
+    stmt::Conditional::Conditional(Node cond, Node then, Location const location)
         : NodeBase{
             {std::move(cond), std::move(then)},
-            std::move(coords)
+            location
         } {}
 
-    stmt::Block::Block(Vec<Node> statements, Location coords)
-        : NodeBase{std::move(statements), std::move(coords)} {}
+    stmt::Block::Block(Vec<Node> statements, Location const location)
+        : NodeBase{std::move(statements), location} {}
 
     auto stmt::Block::size() const noexcept -> szt {
         return nChildren();
     }
 
     stmt::Assign::Assign(
-        Node lhs, Node rhs, lexeme::Lexeme const op, Location coords
-    ): NodeBase{{std::move(lhs), std::move(rhs)}, std::move(coords)},
-       m_op{op} {}
+        Node lhs, Node rhs, lexeme::Lexeme op, Location const location
+    ): NodeBase{{std::move(lhs), std::move(rhs)}, location},
+       m_op{std::move(op)} {}
 
-    stmt::Expression::Expression(Node expr, Location coords)
-        : NodeBase{{std::move(expr)}, std::move(coords)} {}
+    stmt::Expression::Expression(Node expr, Location const location)
+        : NodeBase{{std::move(expr)}, location} {}
+
+    global::ModuleDecl::ModuleDecl(Node path, Location const location)
+        : NodeBase{{std::move(path)}, location} {}
+
+    global::ImportDeclGroup::ImportDeclGroup(
+        Vec<Node> imports, Location location
+    ) : NodeBase{std::move(imports), std::move(location)} {}
+
+    auto global::ImportDeclGroup::size() const noexcept -> szt {
+        return nChildren();
+    }
+
+    global::ImportDecl::ImportDecl(Node alias, Node path, Location const location)
+        : NodeBase{{std::move(alias), std::move(path)}, location} {}
+
+    global::FunctionPrototype::FunctionPrototype(
+        Node genericDecl, Str name, Node paramsDecl,
+        Node returnsDecl, Location const location
+    ): NodeBase{
+           {
+               std::move(genericDecl), std::move(paramsDecl),
+               std::move(returnsDecl)
+           },
+           location
+       },
+       m_name{std::move(name)} {}
+
+    global::Function::Function(
+        lexeme::Lexeme visibility, Node prototype, Node body,
+        Location const location
+    ): NodeBase{{std::move(prototype), std::move(body)}, location},
+       m_visibility{std::move(visibility)} {}
+
+    RequiredButMissing::RequiredButMissing()
+        : NodeBase{{}, {}} {}
+
+    TranslationUnit::TranslationUnit(
+        fs::path sourcePath, Node moduleDecl,
+        Node importDeclGroup, Vec<Node> definitions
+    ) : NodeBase{
+            [&] {
+                Vec<Node> nodes;
+                nodes.reserve(2 + definitions.size());
+                nodes.push_back(std::move(moduleDecl));
+                nodes.push_back(std::move(importDeclGroup));
+                nodes.append_range(std::move(definitions));
+                return nodes;
+            }(),
+            {}
+        }, m_sourcePath{std::move(sourcePath)} {}
+
+    auto TranslationUnit::size() const noexcept -> szt {
+        return nChildren();
+    }
 }

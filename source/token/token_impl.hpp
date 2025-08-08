@@ -7,19 +7,23 @@
 namespace tlc::token {
     class Token final {
     public:
-        Token(lexeme::Lexeme type, StrV const str, Location const location)
+        constexpr Token(lexeme::Lexeme type, StrV const str,
+                        Location const location)
             : m_lexeme{std::move(type)}, m_str{str}, m_location{location} {}
 
-        [[nodiscard]] auto lexeme() const noexcept -> lexeme::Lexeme {
-            return m_lexeme;
+        template <typename S>
+        [[nodiscard]] auto lexeme(this S&& self) noexcept -> auto&& {
+            return std::forward<S>(self).m_lexeme;
         }
 
-        [[nodiscard]] auto str() const noexcept -> Str {
-            return m_str;
+        template <typename S>
+        [[nodiscard]] auto str(this S&& self) noexcept -> auto&& {
+            return std::forward<S>(self).m_str;
         }
 
-        [[nodiscard]] auto location() const noexcept -> Location {
-            return m_location;
+        template <typename S>
+        [[nodiscard]] auto location(this S&& self) noexcept -> auto&& {
+            return std::forward<S>(self).m_location;
         }
 
         [[nodiscard]] auto line() const noexcept -> szt {

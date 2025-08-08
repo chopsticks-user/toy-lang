@@ -76,3 +76,6 @@ gen
 
 # Misc
 dump
+
+# Generated hpp/cpp
+source/core/config.hpp

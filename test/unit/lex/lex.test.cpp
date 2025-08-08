@@ -46,7 +46,7 @@ foo Bar    Float
     assertTokenAt(0, tlc::lexeme::identifier, "foo", 1, 0);
     assertTokenAt(1, tlc::lexeme::userDefinedType, "Bar", 1, 4);
     assertTokenAt(2, tlc::lexeme::fundamentalType, "Float", 1, 11);
-    assertTokenAt(3, tlc::lexeme::module, "module", 3, 4);
+    assertTokenAt(3, tlc::lexeme::module_, "module", 3, 4);
 }
 
 TEST_CASE_WITH_FIXTURE("Lex: Comments", "[Lex]") {}
@@ -62,9 +62,12 @@ Void
 String
 Any
 Opt
+Own
+Ref
+Obs
         )");
 
-        assertTokenCount(8);
+        assertTokenCount(11);
         assertTokenAt(0, tlc::lexeme::fundamentalType, "Int", 1, 0);
         assertTokenAt(1, tlc::lexeme::fundamentalType, "Float", 2, 0);
         assertTokenAt(2, tlc::lexeme::fundamentalType, "Bool", 3, 0);
@@ -73,6 +76,9 @@ Opt
         assertTokenAt(5, tlc::lexeme::fundamentalType, "String", 6, 0);
         assertTokenAt(6, tlc::lexeme::fundamentalType, "Any", 7, 0);
         assertTokenAt(7, tlc::lexeme::fundamentalType, "Opt", 8, 0);
+        assertTokenAt(8, tlc::lexeme::fundamentalType, "Own", 9, 0);
+        assertTokenAt(9, tlc::lexeme::fundamentalType, "Ref", 10, 0);
+        assertTokenAt(10, tlc::lexeme::fundamentalType, "Obs", 11, 0);
     }
 
     SECTION("Identifiers") {
@@ -102,23 +108,37 @@ Fo0
     }
 
     SECTION("Keywords") {
-        SECTION("Visibility") {
+        SECTION("Module") {
             lex(R"(
 module
 import
-export
-internal
-local
-extern
             )");
 
-            assertTokenCount(6);
-            assertTokenAt(0, tlc::lexeme::module, "module", 1, 0);
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::module_, "module", 1, 0);
             assertTokenAt(1, tlc::lexeme::import_, "import", 2, 0);
-            assertTokenAt(2, tlc::lexeme::export_, "export", 3, 0);
-            assertTokenAt(3, tlc::lexeme::internal, "internal", 4, 0);
-            assertTokenAt(4, tlc::lexeme::local, "local", 5, 0);
-            assertTokenAt(5, tlc::lexeme::extern_, "extern", 6, 0);
+        }
+
+        SECTION("Visibility") {
+            lex(R"(
+pub
+prv
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::pub, "pub", 1, 0);
+            assertTokenAt(1, tlc::lexeme::prv, "prv", 2, 0);
+        }
+
+        SECTION("Storage") {
+            lex(R"(
+isolated
+static
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::isolated, "isolated", 1, 0);
+            assertTokenAt(1, tlc::lexeme::static_, "static", 2, 0);
         }
 
         SECTION("Definition") {
@@ -145,27 +165,44 @@ flag
 for
 return
 match
+defer
+break
+continue
+try
             )");
 
-            assertTokenCount(3);
+            assertTokenCount(7);
             assertTokenAt(0, tlc::lexeme::for_, "for", 1, 0);
             assertTokenAt(1, tlc::lexeme::return_, "return", 2, 0);
             assertTokenAt(2, tlc::lexeme::match, "match", 3, 0);
+            assertTokenAt(3, tlc::lexeme::defer, "defer", 4, 0);
+            assertTokenAt(4, tlc::lexeme::break_, "break", 5, 0);
+            assertTokenAt(5, tlc::lexeme::continue_, "continue", 6, 0);
+            assertTokenAt(6, tlc::lexeme::try_, "try", 7, 0);
         }
 
         SECTION("Adverb") {
             lex(R"(
-by
-of
 in
 when
+impl
             )");
 
-            assertTokenCount(4);
-            assertTokenAt(0, tlc::lexeme::by, "by", 1, 0);
-            assertTokenAt(1, tlc::lexeme::of, "of", 2, 0);
-            assertTokenAt(2, tlc::lexeme::in, "in", 3, 0);
-            assertTokenAt(3, tlc::lexeme::when, "when", 4, 0);
+            assertTokenCount(3);
+            assertTokenAt(0, tlc::lexeme::in, "in", 1, 0);
+            assertTokenAt(1, tlc::lexeme::when, "when", 2, 0);
+            assertTokenAt(2, tlc::lexeme::impl, "impl", 3, 0);
+        }
+
+        SECTION("Reserved") {
+            lex(R"(
+self
+main
+            )");
+
+            assertTokenCount(2);
+            assertTokenAt(0, tlc::lexeme::self, "self", 1, 0);
+            assertTokenAt(1, tlc::lexeme::main_, "main", 2, 0);
         }
 
         SECTION("Boolean") {
@@ -177,21 +214,6 @@ false
             assertTokenCount(2);
             assertTokenAt(0, tlc::lexeme::true_, "true", 1, 0);
             assertTokenAt(1, tlc::lexeme::false_, "false", 2, 0);
-        }
-
-        SECTION("Object") {
-            lex(R"(
-self
-pub
-prv
-impl
-            )");
-
-            assertTokenCount(4);
-            assertTokenAt(0, tlc::lexeme::self, "self", 1, 0);
-            assertTokenAt(1, tlc::lexeme::pub, "pub", 2, 0);
-            assertTokenAt(2, tlc::lexeme::prv, "prv", 3, 0);
-            assertTokenAt(3, tlc::lexeme::impl, "impl", 4, 0);
         }
     }
 }
@@ -334,15 +356,13 @@ TEST_CASE_WITH_FIXTURE("Lex: Symbols", "[Lex]") {
 =
 >
 <
-'
-"
 ?
 ~
 $
 @
         )");
 
-        assertTokenCount(29);
+        assertTokenCount(27);
         assertTokenAt(0, tlc::lexeme::leftParen, "(", 1, 0);
         assertTokenAt(1, tlc::lexeme::rightParen, ")", 2, 0);
         assertTokenAt(2, tlc::lexeme::leftBracket, "[", 3, 0);
@@ -366,12 +386,10 @@ $
         assertTokenAt(20, tlc::lexeme::equal, "=", 21, 0);
         assertTokenAt(21, tlc::lexeme::greater, ">", 22, 0);
         assertTokenAt(22, tlc::lexeme::less, "<", 23, 0);
-        assertTokenAt(23, tlc::lexeme::sQuote, "'", 24, 0);
-        assertTokenAt(24, tlc::lexeme::dQuote, "\"", 25, 0);
-        assertTokenAt(25, tlc::lexeme::qMark, "?", 26, 0);
-        assertTokenAt(26, tlc::lexeme::tilde, "~", 27, 0);
-        assertTokenAt(27, tlc::lexeme::dollar, "$", 28, 0);
-        assertTokenAt(28, tlc::lexeme::at, "@", 29, 0);
+        assertTokenAt(23, tlc::lexeme::qMark, "?", 24, 0);
+        assertTokenAt(24, tlc::lexeme::tilde, "~", 25, 0);
+        assertTokenAt(25, tlc::lexeme::dollar, "$", 26, 0);
+        assertTokenAt(26, tlc::lexeme::at, "@", 27, 0);
     }
 
     SECTION("Double characters") {
@@ -390,7 +408,6 @@ $
 |>
 ->
 =>
-::
 **
 &&
 ||
@@ -403,7 +420,7 @@ $
 ..
         )");
 
-        assertTokenCount(25);
+        assertTokenCount(24);
         assertTokenAt(0, tlc::lexeme::exclaimEqual, "!=", 1, 0);
         assertTokenAt(1, tlc::lexeme::starEqual, "*=", 2, 0);
         assertTokenAt(2, tlc::lexeme::ampersandEqual, "&=", 3, 0);
@@ -418,17 +435,16 @@ $
         assertTokenAt(11, tlc::lexeme::barGreater, "|>", 12, 0);
         assertTokenAt(12, tlc::lexeme::minusGreater, "->", 13, 0);
         assertTokenAt(13, tlc::lexeme::equalGreater, "=>", 14, 0);
-        assertTokenAt(14, tlc::lexeme::colon2, "::", 15, 0);
-        assertTokenAt(15, tlc::lexeme::star2, "**", 16, 0);
-        assertTokenAt(16, tlc::lexeme::ampersand2, "&&", 17, 0);
-        assertTokenAt(17, tlc::lexeme::bar2, "||", 18, 0);
-        assertTokenAt(18, tlc::lexeme::plus2, "++", 19, 0);
-        assertTokenAt(19, tlc::lexeme::minus2, "--", 20, 0);
-        assertTokenAt(20, tlc::lexeme::equal2, "==", 21, 0);
-        assertTokenAt(21, tlc::lexeme::greater2, ">>", 22, 0);
-        assertTokenAt(22, tlc::lexeme::less2, "<<", 23, 0);
-        assertTokenAt(23, tlc::lexeme::qMark2, "??", 24, 0);
-        assertTokenAt(24, tlc::lexeme::dot2, "..", 25, 0);
+        assertTokenAt(14, tlc::lexeme::star2, "**", 15, 0);
+        assertTokenAt(15, tlc::lexeme::ampersand2, "&&", 16, 0);
+        assertTokenAt(16, tlc::lexeme::bar2, "||", 17, 0);
+        assertTokenAt(17, tlc::lexeme::plus2, "++", 18, 0);
+        assertTokenAt(18, tlc::lexeme::minus2, "--", 19, 0);
+        assertTokenAt(19, tlc::lexeme::equal2, "==", 20, 0);
+        assertTokenAt(20, tlc::lexeme::greater2, ">>", 21, 0);
+        assertTokenAt(21, tlc::lexeme::less2, "<<", 22, 0);
+        assertTokenAt(22, tlc::lexeme::qMark2, "??", 23, 0);
+        assertTokenAt(23, tlc::lexeme::dot2, "..", 24, 0);
     }
 
     SECTION("Triple characters") {
@@ -444,5 +460,88 @@ $
         assertTokenAt(1, tlc::lexeme::less2Equal, "<<=", 2, 0);
         assertTokenAt(2, tlc::lexeme::star2Equal, "**=", 3, 0);
         assertTokenAt(3, tlc::lexeme::dot3, "...", 4, 0);
+    }
+}
+
+TEST_CASE_WITH_FIXTURE("Lex: Strings", "[Lex]") {
+    // todo: \n, \r
+    SECTION("Literals") {
+        lex(R"(
+""
+"hello, world!\n"
+"\{ \}"
+"\t \\ \b \a \f"
+        )");
+
+        // \n \t \r \b \f \a \\ \' \"
+
+        assertTokenCount(4);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringFragment, "hello, world!\n", 2, 0);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "{ }", 3, 0);
+        assertTokenAt(3, tlc::lexeme::stringFragment, "\t \\ \b \a \f", 4, 0);
+    }
+
+    SECTION("Only placeholder") {
+        lex(R"(
+"{}"
+                )");
+
+        assertTokenCount(3);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringPlaceholder, "", 1, 1);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "", 1, 3);
+    }
+
+    SECTION("Placeholder at the beginning") {
+        lex(R"(
+"{x}{5}text"
+                )");
+
+        assertTokenCount(5);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringPlaceholder, "x", 1, 1);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "", 1, 4);
+        assertTokenAt(3, tlc::lexeme::stringPlaceholder, "5", 1, 4);
+        assertTokenAt(4, tlc::lexeme::stringFragment, "text", 1, 7);
+    }
+
+    SECTION("Placeholder at the end") {
+        lex(R"(
+"text{""}{"inner"}"
+                    )");
+
+        assertTokenCount(5);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "text", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringPlaceholder, "\"\"", 1, 5);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "", 1, 9);
+        assertTokenAt(3, tlc::lexeme::stringPlaceholder, "\"inner\"", 1, 9);
+        assertTokenAt(4, tlc::lexeme::stringFragment, "", 1, 18);
+    }
+
+    SECTION("Placeholder in the middle") {
+        lex(R"(
+"left{}right"
+                    )");
+
+        assertTokenCount(3);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "left", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringPlaceholder, "", 1, 5);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "right", 1, 7);
+    }
+
+    SECTION("{x}+{y}={x+y}") {
+        lex(R"(
+"{x}+{y}={x+y}"
+                    )");
+
+        assertTokenCount(7);
+        assertTokenAt(0, tlc::lexeme::stringFragment, "", 1, 0);
+        assertTokenAt(1, tlc::lexeme::stringPlaceholder, "x", 1, 1);
+        assertTokenAt(2, tlc::lexeme::stringFragment, "+", 1, 4);
+        assertTokenAt(3, tlc::lexeme::stringPlaceholder, "y", 1, 5);
+        assertTokenAt(4, tlc::lexeme::stringFragment, "=", 1, 8);
+        assertTokenAt(5, tlc::lexeme::stringPlaceholder, "x+y", 1, 9);
+        assertTokenAt(6, tlc::lexeme::stringFragment, "", 1, 14);
     }
 }

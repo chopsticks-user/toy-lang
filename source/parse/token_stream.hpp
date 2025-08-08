@@ -10,9 +10,46 @@ namespace tlc::parse {
         using MatchFn = bool (*)(lexeme::Lexeme const&);
         using TokenIt = token::TokenizedBuffer::const_iterator;
 
+        class Backtrack final {
+        public:
+            explicit Backtrack(TokenStream& stream)
+                : m_stream{stream} {
+                m_stream.markBacktrack();
+            }
+
+            auto operator()() -> void {
+                if (m_executed) {
+                    return;
+                }
+                m_stream.backtrack();
+                m_executed = true;
+            }
+
+            ~Backtrack() noexcept {
+                if (!m_executed) {
+                    m_stream.removeBacktrack();
+                }
+            }
+
+        private:
+            TokenStream& m_stream;
+            bool m_executed = false;
+        };
+
     public:
-        explicit TokenStream(token::TokenizedBuffer tokens)
-            : m_tokens{std::move(tokens)},
+        explicit TokenStream(token::TokenizedBuffer tokens, Opt<Location> offset = {})
+            : m_tokens{
+                  offset
+                      ? tokens | rv::transform([offset](token::Token const& token) {
+                          return token::Token{
+                              token.lexeme(), token.str(), Location{
+                                  .line = token.line() + offset->line,
+                                  .column = token.column() + offset->column,
+                              }
+                          };
+                      }) | rng::to<token::TokenizedBuffer>()
+                      : std::move(tokens)
+              },
               m_tokenIt{m_tokens.begin()} {}
 
         auto match(std::same_as<lexeme::Lexeme> auto... types) -> bool {
@@ -34,7 +71,19 @@ namespace tlc::parse {
             m_backtrack.push({m_tokenIt, m_started});
         }
 
+        // todo: implement scoped backtrack
+        auto removeBacktrack() noexcept -> void {
+            if (m_backtrack.empty()) {
+                return;
+            }
+            m_backtrack.pop();
+        }
+
         auto backtrack() -> void;
+
+        auto scopedBacktrack() -> Backtrack {
+            return Backtrack{*this};
+        }
 
         [[nodiscard]] auto current() const -> token::Token;
 
@@ -57,7 +106,7 @@ namespace tlc::parse {
         token::TokenizedBuffer const m_tokens;
         TokenIt m_tokenIt;
         Stack<BacktrackStates> m_backtrack{};
-        b8 m_started{};
+        b8 m_started = false;
     };
 }
 

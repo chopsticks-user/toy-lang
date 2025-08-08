@@ -18,23 +18,27 @@ namespace tlc::lex {
             m_currentLexeme = lexeme::invalid;
 
             if (m_stream.match(isCommentOuter)) {
-                markTokenCoords();
+                markTokenLocation();
                 appendStr();
                 lexComment();
             }
             else if (m_stream.match(isDigit)) {
-                markTokenCoords();
+                markTokenLocation();
                 appendStr();
                 lexNumeric();
             }
             else if (m_stream.match(isLetter)) {
-                markTokenCoords();
+                markTokenLocation();
                 appendStr();
                 lexIdentifier();
             }
+            else if (m_stream.match(isStringTerminator)) {
+                markTokenLocation();
+                lexString();
+            }
             else {
                 m_stream.advance();
-                markTokenCoords();
+                markTokenLocation();
                 lexSymbol();
             }
 

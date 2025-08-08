@@ -1,7 +1,7 @@
 #include "parse.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleStmtLevelDecl() -> ParseResult {
+    auto Parse::handleDecl() -> ParseResult {
         TLC_SCOPE_REPORTER();
         return handleTupleDecl().or_else([this](auto&& error) -> ParseResult {
             collect(error);
@@ -12,7 +12,6 @@ namespace tlc::parse {
     auto Parse::handleIdentifierDecl() -> ParseResult {
         TLC_SCOPE_REPORTER();
         auto const location = m_tracker.scopedLocation();
-        auto const constant = !m_stream.match(lexeme::dollar);
 
         return match(lexeme::identifier)(m_stream, m_tracker).and_then(
             [&](auto const& tokens) -> ParseResult {
@@ -20,20 +19,20 @@ namespace tlc::parse {
 
                 if (!m_stream.match(lexeme::colon)) {
                     return syntax::decl::Identifier{
-                        constant, tokens.front().str(), {}, *location
+                        tokens.front().str(), {}, *location
                     };
                 }
 
                 return handleType().and_then([&](auto const& type)
                     -> ParseResult {
                         return syntax::decl::Identifier{
-                            constant, name, type, *location
+                            name, type, *location
                         };
                     }).or_else([&]([[maybe_unused]] auto&& error)
                     -> ParseResult {
                         collect(error);
                         return syntax::decl::Identifier{
-                            constant, name, {}, *location
+                            Str(name), {}, *location
                         };
                     });
             }
@@ -59,7 +58,7 @@ namespace tlc::parse {
                 }
 
                 do {
-                    decls.push_back(*handleStmtLevelDecl().or_else(
+                    decls.push_back(*handleDecl().or_else(
                             [this](auto&& error) -> ParseResult {
                                 collect(error).collect({
                                     .location = m_tracker.current(),
@@ -84,5 +83,53 @@ namespace tlc::parse {
                 return syntax::decl::Tuple{std::move(decls), location};
             }
         );
+    }
+
+    auto Parse::handleGenericParamsDecl() -> ParseResult {
+        return match(lexeme::less)(m_stream, m_tracker).and_then(
+            [this](auto const&) -> ParseResult {
+                auto const location = m_tracker.current();
+
+                if (m_stream.match(lexeme::greater)) {
+                    return syntax::decl::GenericParameters{{}, location};
+                }
+
+                Vec<syntax::Node> types;
+                do {
+                    types.push_back(
+                        *match(lexeme::userDefinedType)
+                         (m_stream, m_tracker)
+                         .and_then([&](auto&& typeId) -> ParseResult {
+                             return syntax::decl::GenericIdentifier{
+                                 Str(typeId.front().str()),
+                                 m_tracker.current()
+                             };
+                         })
+                         .or_else(
+                             [this](auto&& error) -> ParseResult {
+                                 collect(error).collect({
+                                     .location = m_tracker.current(),
+                                     .context = EParseErrorContext::GenericParamsDecl,
+                                     .reason = EParseErrorReason::MissingId,
+                                 });
+                                 return {};
+                             }
+                         )
+                    );
+                }
+                while (m_stream.match(lexeme::comma));
+
+                if (!m_stream.match(lexeme::greater)) {
+                    collect({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::GenericParamsDecl,
+                        .reason = EParseErrorReason::MissingEnclosingSymbol,
+                    });
+                }
+
+                return syntax::decl::GenericParameters{
+                    std::move(types), location
+                };
+            });
     }
 }

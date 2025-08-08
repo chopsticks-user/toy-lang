@@ -21,11 +21,11 @@ namespace tlc::syntax::detail {
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
         [[nodiscard]] auto line() const noexcept -> szt {
-            return m_coords.line;
+            return m_location.line;
         }
 
         [[nodiscard]] auto column() const noexcept -> szt {
-            return m_coords.column;
+            return m_location.column;
         }
 
     protected:
@@ -39,7 +39,7 @@ namespace tlc::syntax::detail {
 
     private:
         Vec<Node> m_children;
-        Location m_coords;
+        Location m_location;
     };
 
     class IdentifierBase {

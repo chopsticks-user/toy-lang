@@ -3,7 +3,7 @@
 
 namespace tlc::syntax::detail {
     NodeBase::NodeBase(Vec<Node> children, Location coords) noexcept
-        : m_children(std::move(children)), m_coords(std::move(coords)) {}
+        : m_children(std::move(children)), m_location(std::move(coords)) {}
 
     auto NodeBase::children() const noexcept -> Span<Node const> {
         return m_children;
@@ -53,7 +53,7 @@ namespace tlc::syntax::detail {
         }
 
         for (StrV s : m_path | rv::drop(1)) {
-            pathStr += "::"s + Str(s);
+            pathStr += "."s + Str(s);
         }
 
         return pathStr;

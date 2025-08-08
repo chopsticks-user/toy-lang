@@ -9,6 +9,7 @@ target_sources(
     lex_identifier.cpp
     lex_numeric.cpp
     lex_symbol.cpp
+    lex_string.cpp
 )
 target_link_libraries(
     tlc_lex

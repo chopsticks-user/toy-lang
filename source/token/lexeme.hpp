@@ -7,32 +7,33 @@ namespace tlc::lexeme {
     class Lexeme final {
     public: // private is fine, added to hide linter errors
         enum class EType {
-            Invalid,
+            // Misc
+            Empty, Invalid,
 
             // Keywords
-            /* Visibility */ Module, Import, Export, Internal, Local, Extern, Static,
-            /* Definition */ Let, Fn, Trait, Type, Enum, Flag,
-            /* Control */ For, Match, Return, Yield, Defer, Preface,
-            /* Adverb */ By, Of, In, When,
+            /* Module */ Module, Import,
+            /* Visibility */ Pub, Prv,
+            /* Storage */ Isolated, Static,
+            /* Definition */ Let, Fn, Trait, Type, Enum, Flag, Try,
+            /* Control */ For, Match, Return, Defer, Preface, Break, Continue,
+            /* Adverb */ In, When, Impl,
+            /* Reserved */ Self, Main,
             /* Boolean */ True, False,
-            /* Object */ Self, Pub, Prv, Impl,
-
-            // Identifiers
-            Identifier, FundamentalType, UserDefinedType,
 
             // Literals
+            Identifier, FundamentalType, UserDefinedType,
             Integer2Literal, Integer8Literal, Integer10Literal, Integer16Literal,
-            FloatLiteral, StringLiteral,
+            FloatLiteral, StringFragment, StringPlaceholder,
 
             // Symbols
             /* Single character */ LeftParen, RightParen, LeftBracket, RightBracket, LeftBrace,
             RightBrace, Hash, Dot, Comma, Colon, Semicolon, Star, Ampersand, Bar, Plus, Minus,
-            FwdSlash, Percent, Exclaim, Equal, Greater, Less, SQuote, DQuote, QMark, Hat, Tilde,
-            Dollar, At, AnonymousIdentifier,
-            /* Double characters */ Colon2, Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
+            FwdSlash, Percent, Exclaim, Equal, Greater, Less, QMark, Hat, Tilde,
+            Dollar, At, Anonymous,
+            /* Double characters */ Star2, Ampersand2, Bar2, Plus2, Minus2, Exclaim2,
             Equal2, Greater2, Less2, QMark2, ExclaimEqual, StarEqual, AmpersandEqual, BarEqual,
-            FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual, BarGreater,
-            MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
+            FwdSlashEqual, PercentEqual, GreaterEqual, LessEqual, PlusEqual, MinusEqual,
+            ColonEqual, BarGreater, MinusGreater, LessMinus, Dot2, HatEqual, EqualGreater,
             /* Triple characters */ Dot3, Greater2Equal, Less2Equal, Star2Equal,
         };
 
@@ -46,16 +47,8 @@ namespace tlc::lexeme {
             return m_type == other.m_type;
         }
 
-        auto constexpr operator==(Lexeme&& other) const -> b8 {
-            return m_type == other.m_type;
-        }
-
         auto constexpr operator!=(Lexeme const& other) const -> b8 {
             return !(*this == other);
-        }
-
-        auto constexpr operator!=(Lexeme&& other) const -> b8 {
-            return !(*this != other);
         }
 
         [[nodiscard]] auto constexpr type() const -> EType { return m_type; }
@@ -66,36 +59,53 @@ namespace tlc::lexeme {
         Str m_str;
     };
 
+    // misc
+    constexpr Lexeme empty{Lexeme::Empty, ""};
     constexpr Lexeme invalid{Lexeme::Invalid, ""};
-    constexpr Lexeme module{Lexeme::Module, "module"};
+
+    // module
+    constexpr Lexeme module_{Lexeme::Module, "module"};
     constexpr Lexeme import_{Lexeme::Import, "import"};
-    constexpr Lexeme export_{Lexeme::Export, "export"};
-    constexpr Lexeme internal{Lexeme::Internal, "internal"};
-    constexpr Lexeme local{Lexeme::Local, "local"};
-    constexpr Lexeme extern_{Lexeme::Extern, "extern"};
+
+    // visibility
+    constexpr Lexeme pub{Lexeme::Pub, "pub"};
+    constexpr Lexeme prv{Lexeme::Prv, "prv"};
+
+    // storage
+    constexpr Lexeme isolated{Lexeme::Isolated, "isolated"};
     constexpr Lexeme static_{Lexeme::Static, "static"};
+
+    // definition
     constexpr Lexeme let{Lexeme::Let, "let"};
     constexpr Lexeme fn{Lexeme::Fn, "fn"};
     constexpr Lexeme trait{Lexeme::Trait, "trait"};
     constexpr Lexeme type{Lexeme::Type, "type"};
     constexpr Lexeme enum_{Lexeme::Enum, "enum"};
     constexpr Lexeme flag{Lexeme::Flag, "flag"};
+
+    // control
     constexpr Lexeme for_{Lexeme::For, "for"};
     constexpr Lexeme match{Lexeme::Match, "match"};
     constexpr Lexeme return_{Lexeme::Return, "return"};
-    constexpr Lexeme yield{Lexeme::Yield, "yield"};
     constexpr Lexeme defer{Lexeme::Defer, "defer"};
-    constexpr Lexeme preface{Lexeme::Preface, "preface"};
-    constexpr Lexeme by{Lexeme::By, "by"};
-    constexpr Lexeme of{Lexeme::Of, "of"};
+    constexpr Lexeme break_{Lexeme::Break, "break"};
+    constexpr Lexeme continue_{Lexeme::Continue, "continue"};
+    constexpr Lexeme try_{Lexeme::Try, "try"};
+
+    // adverb
     constexpr Lexeme in{Lexeme::In, "in"};
     constexpr Lexeme when{Lexeme::When, "when"};
+    constexpr Lexeme impl{Lexeme::Impl, "impl"};
+
+    // reserved
+    constexpr Lexeme self{Lexeme::Self, "self"};
+    constexpr Lexeme main_{Lexeme::Main, "main"};
+
+    // boolean
     constexpr Lexeme true_{Lexeme::True, "true"};
     constexpr Lexeme false_{Lexeme::False, "false"};
-    constexpr Lexeme self{Lexeme::Self, "self"};
-    constexpr Lexeme pub{Lexeme::Pub, "pub"};
-    constexpr Lexeme prv{Lexeme::Prv, "prv"};
-    constexpr Lexeme impl{Lexeme::Impl, "impl"};
+
+    // literals
     constexpr Lexeme identifier{Lexeme::Identifier, ""};
     constexpr Lexeme fundamentalType{Lexeme::FundamentalType, ""};
     constexpr Lexeme userDefinedType{Lexeme::UserDefinedType, ""};
@@ -104,7 +114,10 @@ namespace tlc::lexeme {
     constexpr Lexeme integer10Literal{Lexeme::Integer10Literal, ""};
     constexpr Lexeme integer16Literal{Lexeme::Integer16Literal, ""};
     constexpr Lexeme floatLiteral{Lexeme::FloatLiteral, ""};
-    constexpr Lexeme stringLiteral{Lexeme::StringLiteral, ""};
+    constexpr Lexeme stringFragment{Lexeme::StringFragment, ""};
+    constexpr Lexeme stringPlaceholder{Lexeme::StringPlaceholder, ""};
+
+    // one-character symbols
     constexpr Lexeme leftParen{Lexeme::LeftParen, "("};
     constexpr Lexeme rightParen{Lexeme::RightParen, ")"};
     constexpr Lexeme leftBracket{Lexeme::LeftBracket, "["};
@@ -127,15 +140,14 @@ namespace tlc::lexeme {
     constexpr Lexeme equal{Lexeme::Equal, "="};
     constexpr Lexeme greater{Lexeme::Greater, ">"};
     constexpr Lexeme less{Lexeme::Less, "<"};
-    constexpr Lexeme sQuote{Lexeme::SQuote, "'"};
-    constexpr Lexeme dQuote{Lexeme::DQuote, "\""};
     constexpr Lexeme qMark{Lexeme::QMark, "?"};
     constexpr Lexeme hat{Lexeme::Hat, "^"};
     constexpr Lexeme tilde{Lexeme::Tilde, "~"};
     constexpr Lexeme dollar{Lexeme::Dollar, "$"};
     constexpr Lexeme at{Lexeme::At, "@"};
-    constexpr Lexeme anonymousIdentifier{Lexeme::AnonymousIdentifier, "_"};
-    constexpr Lexeme colon2{Lexeme::Colon2, "::"};
+    constexpr Lexeme anonymous{Lexeme::Anonymous, "_"};
+
+    // two-character symbols
     constexpr Lexeme star2{Lexeme::Star2, "**"};
     constexpr Lexeme ampersand2{Lexeme::Ampersand2, "&&"};
     constexpr Lexeme bar2{Lexeme::Bar2, "||"};
@@ -156,19 +168,22 @@ namespace tlc::lexeme {
     constexpr Lexeme lessEqual{Lexeme::LessEqual, "<="};
     constexpr Lexeme plusEqual{Lexeme::PlusEqual, "+="};
     constexpr Lexeme minusEqual{Lexeme::MinusEqual, "-="};
+    constexpr Lexeme colonEqual{Lexeme::ColonEqual, ":="};
     constexpr Lexeme barGreater{Lexeme::BarGreater, "|>"};
     constexpr Lexeme minusGreater{Lexeme::MinusGreater, "->"};
     constexpr Lexeme lessMinus{Lexeme::LessMinus, "<-"};
     constexpr Lexeme dot2{Lexeme::Dot2, ".."};
     constexpr Lexeme hatEqual{Lexeme::HatEqual, "^="};
     constexpr Lexeme equalGreater{Lexeme::EqualGreater, "=>"};
+
+    // three-character symbols
     constexpr Lexeme dot3{Lexeme::Dot3, "..."};
     constexpr Lexeme greater2Equal{Lexeme::Greater2Equal, ">>="};
     constexpr Lexeme less2Equal{Lexeme::Less2Equal, "<<="};
     constexpr Lexeme star2Equal{Lexeme::Star2Equal, "**="};
 
     extern const HashMap<StrV, Lexeme> nonTypeKeywordTable;
-    extern const HashMap<StrV, Lexeme> operatorTable;
+    extern const HashMap<StrV, Lexeme> symbolTable;
     extern const HashSet<StrV> fundamentalTypes;
     using OpGraph3 = HashMap<c8, HashMap<c8, HashSet<c8>>>;
     extern const OpGraph3 opGraph;
@@ -178,8 +193,8 @@ template <>
 struct std::hash<tlc::lexeme::Lexeme> {
     constexpr auto operator()(
         tlc::lexeme::Lexeme const& lexeme
-    ) const noexcept -> size_t {
-        return hash<int>()(static_cast<tlc::szt>(lexeme.type()));
+    ) const noexcept -> tlc::szt {
+        return hash<tlc::szt>()(static_cast<tlc::szt>(lexeme.type()));
     }
 };
 

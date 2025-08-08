@@ -59,6 +59,10 @@ namespace tlc::lex {
     constexpr auto isHexadecimalDigit(char const c) -> bool {
         return isDigit(c) || (c >= 'a' && c <= 'f');
     }
+
+    constexpr auto isStringTerminator(char const c) -> bool {
+        return c == '"';
+    }
 }
 
 #endif // TLC_LEX_UTIL_HPP

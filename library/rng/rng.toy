@@ -1,0 +1,84 @@
+module std.rng;
+
+import meta = std.meta;
+
+trait IsIterator {
+}
+
+type Iterator {
+}
+
+trait <T> IsRangeOf {
+    pub fn length: () -> Int;
+    pub fn start: () -> It<T>;
+    pub fn end: () -> It<T>;
+}
+
+type Policy {
+}
+
+type MaybeMutableDomain = (T |> meta.type.MaybeMutable)
+    | (Int, T |> meta.type.MaybeMutable);
+type ImmutableDomain = T | (Int, T);
+
+type SideEffectResult = meta.type.SideEffectResult;
+type <T, E> SideEffect = T |> MaybeMutableDomain |> meta.type.SideEffect<E>;
+
+type PredicateResult = meta.type.PredicateResult;
+type <T, E> Predicate = T |> ImmutableDomain |> meta.type.Predicate<E>;
+
+type <T, E> MapResult = ;
+type <T, U, E> Map = T |> ImmutableDomain |> meta.type.Map<U, E>;
+
+prv fn <P, R, T> invoke: (action: P -> R, index: Int, value: T) -> R {
+    require R == (Int, T) || R == T;
+    return match P {
+        T => value |> action;
+        _ => index |> action(value);
+    }
+}
+
+pub fn <T, E> each: (
+    range: $IsRangeOf<T>, sideEffect: T |> SideEffect<E>, policy: ?Policy
+) -> E |> meta.type.SideEffectResult {
+    for (i: Int, v: $T) in range {
+        try action |> invoke(i, v);
+    }
+}
+
+pub fn <T, E> any: (
+    range: IsRangeOf<T>, predicate: T |> Predicate<E>, policy: ?Policy
+) -> E |> meta.type.PredicateResult {
+    for (i: Int, v: T) in range {
+        try predicate |> invoke(i, v) => return true;
+    }
+    return false;
+}
+
+pub fn <T, E> all: (
+    range: IsRangeOf<T>, predicate: T |> Predicate<E>, policy: ?Policy
+) -> E |> meta.type.PredicateResult {
+    for (i: Int, v: T) in range {
+        !(try predicate |> invoke(i, v)) => return false;
+    }
+    return true;
+}
+
+pub fn <T, E> none: (
+    range: IsRangeOf<T>, predicate: T |> Predicate<E>, policy: ?Policy
+) -> E |> meta.type.PredicateResult {
+    for (i: Int, v: T) in range {
+        try predicate |> invoke(i, v) => return false;
+    }
+    return true;
+}
+
+pub fn <T, U, E> map: (
+    range: IsRangeOf<T>, map: T |> Map<U, E>, policy: ?Policy
+) -> U |> meta.type.MapResult {
+    result: U[range.length()];
+    for (i: Int, u: $U, v: T) in result |> zip(range) {
+        u = try map |> invoke(i, v);
+    }
+    return result;
+}

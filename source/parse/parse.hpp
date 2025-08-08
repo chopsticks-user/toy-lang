@@ -21,22 +21,23 @@ namespace tlc::parse {
         using ParseResult = Expected<syntax::Node, TError>;
 
     public:
-        static auto operator()(fs::path filepath, Vec<token::Token> tokens) -> syntax::Node;
+        static auto operator()(fs::path filepath, Vec<token::Token> tokens)
+            -> syntax::Node;
 
         Parse(fs::path filepath, Vec<token::Token> tokens)
             : m_filepath{std::move(filepath)},
               m_stream{std::move(tokens)},
-              m_tracker{m_stream} {}
+              m_tracker{m_stream}, m_isSubroutine{false} {}
 
         auto operator()() -> syntax::Node;
 
 #ifdef TLC_CONFIG_BUILD_TESTS
-        auto parseExpr() -> ParseResult {
-            return handleExpr();
-        }
-
         auto parseType() -> ParseResult {
             return handleType();
+        }
+
+        auto parseExpr() -> ParseResult {
+            return handleExpr();
         }
 
         auto parseStmt() -> ParseResult {
@@ -44,9 +45,19 @@ namespace tlc::parse {
         }
 
         auto parseDecl() -> ParseResult {
-            return handleStmtLevelDecl();
+            return handleDecl();
+        }
+
+        auto parseGenericParamsDecl() -> ParseResult {
+            return handleGenericParamsDecl();
         }
 #endif
+
+    private:
+        Parse(fs::path filepath, Vec<token::Token> tokens, Location offset)
+            : m_filepath{std::move(filepath)},
+              m_stream{std::move(tokens), std::move(offset)},
+              m_tracker{m_stream}, m_isSubroutine{true} {}
 
     private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
@@ -56,71 +67,69 @@ namespace tlc::parse {
         auto handleArrayExpr() -> ParseResult;
         auto handleSingleTokenLiteral() -> ParseResult;
         auto handleIdentifierLiteral() -> ParseResult;
+        auto handleString() -> ParseResult;
+        auto handleTryExpr() -> ParseResult;
 
-        auto handleType() -> ParseResult;
+        auto handleType(syntax::OpPrecedence minP = 0) -> ParseResult;
         auto handleTypeIdentifier() -> ParseResult;
         auto handleTypeTuple() -> ParseResult;
         auto handleTypeInfer() -> ParseResult;
+        auto handleGenericArguments() -> ParseResult;
 
-        auto handleStmtLevelDecl() -> ParseResult;
+        auto handleDecl() -> ParseResult;
         auto handleIdentifierDecl() -> ParseResult;
         auto handleTupleDecl() -> ParseResult;
+        auto handleGenericParamsDecl() -> ParseResult;
 
         auto handleStmt() -> ParseResult;
-        auto handleLetStmt() -> ParseResult;
+        auto handleDeclStmt() -> ParseResult;
         auto handleReturnStmt() -> ParseResult;
         auto handleDeferStmt() -> ParseResult;
-        auto handlePrefaceStmt() -> ParseResult;
-        auto handleYieldStmt() -> ParseResult;
         auto handleExprPrefixedStmt() -> ParseResult;
         auto handleLoopStmt() -> ParseResult;
         auto handleMatchStmt() -> ParseResult;
         auto handleBlockStmt() -> ParseResult;
 
-        auto handleFunctionDef() -> ParseResult;
+        auto handleFunctionDef(token::Token const& visibility) -> ParseResult;
         auto handleFunctionPrototype() -> ParseResult;
-        auto handleTypeDef() -> ParseResult;
-        auto handleEnumDef() -> ParseResult;
-        auto handleTraitDef() -> ParseResult;
-        auto handleFlagDef() -> ParseResult;
+        auto handleTypeDef(token::Token const& visibility) -> ParseResult;
+        auto handleEnumDef(token::Token const& visibility) -> ParseResult;
+        auto handleTraitDef(token::Token const& visibility) -> ParseResult;
+        auto handleFlagDef(token::Token const& visibility) -> ParseResult;
         auto handleModuleDecl() -> ParseResult;
         auto handleImportDecl() -> ParseResult;
         auto handleTranslationUnit() -> ParseResult;
 
     private:
-        // todo: move a to separate class
-        auto pushCoords() -> void {
-            // todo: eof
-            return m_coords.push(m_stream.peek().location());
-        }
-
-        auto popCoords() -> Location {
-            auto const coords = currentCoords();
-            m_coords.pop();
-            return coords;
-        }
-
-        auto currentCoords() -> Location {
-            if (m_coords.empty()) {
-                throw InternalException{
-                    "Parser::popCoords: m_markedCoords.empty()"
-                };
-            }
-            return m_coords.top();
-        }
-
         static auto defaultError() -> ParseResult {
             return Unexpected{TError{}};
         }
 
+        [[nodiscard]] auto error(TError::Params params) const
+            -> Unexpected<TError> {
+            params.filepath = m_filepath;
+            params.location = m_tracker.current();
+            return Unexpected<TError>{std::move(params)};
+        }
+
         auto collect(TError::Params errorParams) const -> TErrorCollector& {
             errorParams.filepath = m_filepath;
-            return TErrorCollector::instance().collect(std::move(errorParams));
+            return collect(TError{std::move(errorParams)});
         }
 
         auto collect(TError error) const -> TErrorCollector& {
+            static auto& collector = TErrorCollector::instance();
+
+            if (error.reason() == EParseErrorReason::NotAnError) {
+                return collector;
+            }
+
             error.filepath(m_filepath);
-            return TErrorCollector::instance().collect(std::move(error));
+            return collector.collect(std::move(error));
+        }
+
+        [[nodiscard]] auto createDefaultVisibility() const -> token::Token {
+            return {lexeme::empty, "", m_stream.peek().location()};
         }
 
     private:
@@ -128,6 +137,7 @@ namespace tlc::parse {
         TokenStream m_stream;
         LocationTracker m_tracker;
         Stack<Location> m_coords{};
+        b8 const m_isSubroutine;
     };
 }
 

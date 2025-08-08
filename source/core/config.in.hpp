@@ -3,7 +3,8 @@
 
 #cmakedefine TLC_CONFIG_BUILD_TESTS
 #cmakedefine TLC_CONFIG_BUILD_EXAMPLES
-// #cmakedefine TLC_CONFIG_BUILD_DEBUG
+#cmakedefine TLC_CONFIG_BUILD_DEBUG
+#cmakedefine TLC_CONFIG_ENABLE_LOGGING
 #define TLC_CONFIG_VERSION_MAJOR @tlc_VERSION_MAJOR@
 #define TLC_CONFIG_VERSION_MINOR @tlc_VERSION_MINOR@
 #define TLC_CONFIG_VERSION_LLVM @TLC_CONFIG_VERSION_LLVM@
@@ -21,7 +22,7 @@ namespace tlc::config {
     constexpr auto buildTests = false;
 #endif
 
-#ifdef TLC_CONFIG_BUILD_DEBUG
+#if defined(TLC_CONFIG_BUILD_DEBUG) && defined(TLC_CONFIG_ENABLE_LOGGING)
     constexpr auto debugging = true;
 #else
     constexpr auto debugging = false;

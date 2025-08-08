@@ -8,7 +8,7 @@
 namespace tlc::syntax {
     namespace expr {
         struct Integer final : detail::NodeBase {
-            Integer(i64 value, Location coords);
+            Integer(i64 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> i64 {
                 return m_value;
@@ -19,7 +19,7 @@ namespace tlc::syntax {
         };
 
         struct Float final : detail::NodeBase {
-            Float(f64 value, Location coords);
+            Float(f64 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> double {
                 return m_value;
@@ -30,7 +30,7 @@ namespace tlc::syntax {
         };
 
         struct Boolean final : detail::NodeBase {
-            Boolean(b8 value, Location coords);
+            Boolean(b8 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> b8 {
                 return m_value;
@@ -41,395 +41,233 @@ namespace tlc::syntax {
         };
 
         struct Identifier : detail::NodeBase, detail::IdentifierBase {
-            Identifier(Vec<Str> path, Location coords);
+            Identifier(Vec<Str> path, Location location);
         };
 
         struct Array final : detail::NodeBase {
-            Array(Vec<Node> elements, Location coords);
+            Array(Vec<Node> elements, Location location);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> elements, Location coords);
+            Tuple(Vec<Node> elements, Location location);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct FnApp final : detail::NodeBase {
-            FnApp(Node callee, Node args, Location coords);
-
-            [[nodiscard]] auto callee() const noexcept -> Node;
-
-            [[nodiscard]] auto args() const noexcept -> Node;
+            FnApp(Node callee, Node args, Location location);
         };
 
         struct Subscript final : detail::NodeBase {
-            Subscript(Node collection, Node subscript, Location coords);
-
-            [[nodiscard]] auto collection() const noexcept -> Node;
-
-            [[nodiscard]] auto subscript() const noexcept -> Node;
-        };
-
-        struct Access final : detail::NodeBase {
-            Access(Node object, Str field, Location coords);
-
-            [[nodiscard]] auto object() const noexcept -> Node;
-
-            [[nodiscard]] auto field() const noexcept -> Str;
-
-        private:
-            Str m_field;
+            Subscript(Node collection, Node subscript, Location location);
         };
 
         struct Prefix final : detail::NodeBase {
-            Prefix(Node operand, lexeme::Lexeme op, Location coords);
+            Prefix(Node operand, lexeme::Lexeme op, Location location);
 
             [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
-
-            [[nodiscard]] auto operand() const noexcept -> Node;
 
         private:
             lexeme::Lexeme m_op;
         };
 
         struct Binary final : detail::NodeBase {
-            Binary(Node lhs, Node rhs, lexeme::Lexeme op, Location coords);
+            Binary(Node lhs, Node rhs, lexeme::Lexeme op, Location location);
 
             [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
             }
 
-            [[nodiscard]] auto left() const noexcept -> Node;
-
-            [[nodiscard]] auto right() const noexcept -> Node;
-
         private:
             lexeme::Lexeme m_op;
         };
 
-        // struct String final : detail::NodeBase {
-        //     explicit String(
-        //         Str value,
-        //         Vec<Node> placeholders
-        //     );
-        //
-        //     [[nodiscard]] auto value() const noexcept -> StrV {
-        //         return m_value;
-        //     }
-        //
-        //     // auto placeholder(const sz index) const noexcept -> ASTNode const& {
-        //     //   return childAt(index);
-        //     // }
-        //
-        // private:
-        //     Str m_value;
-        // };
+        struct String final : detail::NodeBase {
+            String(Vec<Str> fragments, Vec<Node> placeholders, Location location);
 
-        // struct Ternary final : detail::NodeBase {
-        //     Ternary(
-        //         Node operand1,
-        //         Node operand2,
-        //         Node operand3,
-        //         Str op1, Str op2
-        //     );
-        //
-        //     [[nodiscard]] auto firstOp() const noexcept -> StrV {
-        //         return m_op1;
-        //     }
-        //
-        //     [[nodiscard]] auto secondOp() const noexcept -> StrV {
-        //         return m_op2;
-        //     }
-        //
-        // private:
-        //     Str m_op1;
-        //     Str m_op2;
-        // };
-
-        struct Record final : detail::NodeBase {
-            Record(Node type, Vec<Pair<Str, Node>> entries, Location coords);
-
-            [[nodiscard]] auto size() const noexcept -> szt;
-
-            [[nodiscard]] auto type() const noexcept -> Node;
-
-            [[nodiscard]] auto key(szt const index) const noexcept -> Str {
-                return m_keys.at(index);
+            [[nodiscard]] auto fragments() const noexcept -> Span<Str const> {
+                return m_fragments;
             }
 
-            [[nodiscard]] auto keys() const noexcept -> Span<const Str> {
-                return m_keys;
+            [[nodiscard]] auto nPlaceholders() const noexcept -> szt {
+                return m_fragments.size() - 1;
             }
 
-            [[nodiscard]] auto value(szt index) const noexcept -> Node const&;
+            [[nodiscard]] auto interpolated() const noexcept -> b8 {
+                return nPlaceholders() > 0;
+            }
 
         private:
-            Vec<Str> m_keys;
+            Vec<Str> m_fragments;
+        };
+
+        struct RecordEntry final : detail::NodeBase {
+            RecordEntry(Str key, Node value, Location location);
+
+            [[nodiscard]] auto key() const noexcept -> StrV {
+                return m_key;
+            }
+
+        private:
+            Str m_key;
+        };
+
+        struct Record final : detail::NodeBase {
+            Record(Node type, Vec<Node> entries, Location location);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
+        };
+
+        struct Try final : detail::NodeBase {
+            Try(Node expr, Location location);
         };
     }
 
     namespace type {
         struct Identifier : detail::NodeBase, detail::IdentifierBase {
-            Identifier(Vec<Str> path, b8 fundamental, Location coords);
+            Identifier(
+                b8 constant, Vec<Str> path, b8 fundamental, Location location
+            );
 
             [[nodiscard]] auto fundamental() const noexcept -> bool {
                 return m_fundamental;
             }
 
+            [[nodiscard]] auto constant() const noexcept -> bool {
+                return m_constant;
+            }
+
         private:
             b8 m_fundamental;
+            b8 m_constant;
         };
 
         struct Array final : detail::NodeBase {
-            Array(Node type, Vec<Node> sizes, Location coords);
-
-            [[nodiscard]] auto type() const noexcept -> Node const&;
-
-            [[nodiscard]] auto size(szt dimIndex) const noexcept -> Node const&;
-
-            [[nodiscard]] auto nDims() const noexcept -> szt;
-
-            [[nodiscard]] auto fixed(szt dimIndex) const -> bool;
+            Array(Node type, Node sizes, Location location);
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> types, Location coords);
-
-            [[nodiscard]] auto type(szt index) const -> Node;
+            Tuple(Vec<Node> types, Location location);
 
             [[nodiscard]] auto size() const -> szt;
         };
 
         struct Function final : detail::NodeBase {
-            Function(Node args, Node result, Location coords);
-
-            [[nodiscard]] auto args() const noexcept -> Node;
-
-            [[nodiscard]] auto result() const noexcept -> Node;
+            Function(Node args, Node result, Location location);
         };
 
-        /**
-         * [[expr]]
-         */
         struct Infer final : detail::NodeBase {
-            Infer(Node expr, Location coords);
+            Infer(Node expr, Location location);
 
             [[nodiscard]] auto expr() const noexcept -> Node;
         };
 
-        /**
-         * For both types and traits
-         *
-         * Int | Float | IsNumeric | ...
-         */
-        struct Sum final : detail::NodeBase {
-            Sum(Vec<Node> types, Location coords);
+        struct GenericArguments final : detail::NodeBase {
+            GenericArguments(Vec<Node> args, Location location);
 
-            [[nodiscard]] auto type(szt index) const -> Node;
+            [[nodiscard]] auto size() const noexcept -> szt;
         };
 
-        /**
-         * For traits only.
-         *
-         * IsNumeric & IsFundamental & ...
-         */
-        struct Product final : detail::NodeBase {
-            Product(Vec<Node> types, Location coords);
+        struct Generic final : detail::NodeBase {
+            Generic(Node type, Node args, Location location);
+        };
 
-            [[nodiscard]] auto type(szt index) const -> Node;
+        struct Binary final : detail::NodeBase {
+            Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location);
+
+            [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
+                return m_op;
+            }
+
+        private:
+            lexeme::Lexeme m_op;
         };
     }
 
     namespace decl {
         struct Identifier final : detail::NodeBase {
-            Identifier(b8 constant, Str name, Node type, Location coords);
-
-            [[nodiscard]] auto constant() const noexcept -> b8 {
-                return m_constant;
-            }
+            Identifier(Str name, Node type, Location location);
 
             [[nodiscard]] auto name() const noexcept -> Str const& {
                 return m_name;
             }
 
-            [[nodiscard]] auto type() const noexcept -> Node const&;
-
             [[nodiscard]] auto inferred() const noexcept -> b8;
 
         private:
-            b8 m_constant;
             Str m_name;
         };
 
         struct Tuple final : detail::NodeBase {
-            Tuple(Vec<Node> decls, Location coords);
+            Tuple(Vec<Node> decls, Location location);
 
             [[nodiscard]] auto decl(szt index) const -> Node;
+
+            [[nodiscard]] auto size() const -> szt;
+        };
+
+        struct GenericIdentifier final : detail::NodeBase {
+            GenericIdentifier(Str name, Location location);
+
+            [[nodiscard]] auto name() const noexcept -> StrV {
+                return m_name;
+            }
+
+        private:
+            Str m_name;
+        };
+
+        struct GenericParameters final : detail::NodeBase {
+            GenericParameters(Vec<Node> params, Location location);
 
             [[nodiscard]] auto size() const -> szt;
         };
     }
 
     namespace stmt {
-        struct Let final : detail::NodeBase {
-            Let(Node decl, Node initializer, Location coords);
-
-            [[nodiscard]] auto decl() const noexcept -> Node const&;
-
-            [[nodiscard]] auto initializer() const noexcept -> Node const&;
+        struct Decl final : detail::NodeBase {
+            Decl(Node decl, Node initializer, Location location);
 
             [[nodiscard]] auto defaultInitialized() const -> bool;
         };
 
         struct Return final : detail::NodeBase {
-            Return(Node expr, Location coords);
-
-            [[nodiscard]] auto expr() const noexcept -> Node const&;
+            Return(Node expr, Location location);
         };
 
-        /**
-         * Syntax:
-         *      \code
-         *          "yield" expr? ";"
-         *      \endcode
-         *
-         * Examples:
-         *      \code
-         *          export fn f: (n: Int) -> {
-         *              let x = {
-         *                  yield n * n;
-         *              };
-         *              ...
-         *          }
-         *      \endcode
-         *
-         * Notes:
-         *      - Among all statements, conditional statement is the only
-         *      statement capable of returning a value to its lhs expression.
-         *      Other scope-owner statements, except for a few exceptions such as
-         *      "defer" and "preface", can achieve value semantics by using the
-         *      "yield" statement. Thus, it can be said that "yield" makes the
-         *      language a partially expression-oriented language.
-         *      - Cannot be placed inside a 1st-level scope of a function.
-         *      - Used to exit the current scope and indicate that the value evaluated
-         *      by "expr" will be returned and effectively make the statement owning
-         *      the exited scope an expression returning the value.
-         *      - Unlike "return", "yield" cannot be a scope owner, and it is a syntax
-         *      error if "expr" is neither present nor evaluating to a non-void value.
-         *      - Like "return", "yield" is a pure statement.
-         */
-        struct Yield final : detail::NodeBase {
-            Yield(Node expr, Location coords);
-
-            [[nodiscard]] auto expr() const noexcept -> Node const&;
-        };
-
-        /**
-         * Syntax:
-         *      \code
-         *          "preface" ("{" stmt* "}" | expr ";")
-         *      \endcode
-         *
-         * Examples:
-         *
-         * Notes:
-         *      - There can only be at most one "preface" statement in a
-         *      function's scope, and it must be placed at the beginning of
-         *      the scope.
-         *      - "preface" accepts one statement, which can be a block statement.
-         *      - Like its counter-part, "defer", "preface" is a pure statement
-         *      and can be a scope owner.
-         */
-        struct Preface final : detail::NodeBase {
-            Preface(Node stmt, Location coords);
-
-            [[nodiscard]] auto stmt() const noexcept -> Node const&;
-        };
-
-        /**
-         * Syntax:
-         *      \code
-         *          "defer" ("{" stmt* "}" | expr ";")
-         *      \endcode
-         *
-         * Examples:
-         *
-         * Notes:
-         *      - "defer" accepts one statement, which can be a block statement.
-         *      - Like its counter-part, "preface", "defer" is a pure statement
-         *      and can be a scope owner.
-         */
         struct Defer final : detail::NodeBase {
-            Defer(Node stmt, Location coords);
-
-            [[nodiscard]] auto stmt() const noexcept -> Node const&;
+            Defer(Node stmt, Location location);
         };
 
-        /**
-         *
-         */
         struct MatchCase final : detail::NodeBase {
-            MatchCase(Node value, Node cond, Node stmt, Location coords);
+            MatchCase(Node value, Node cond, Node stmt, Location location);
         };
 
-        /**
-         *
-         */
         struct Match final : detail::NodeBase {
-            Match(Node expr, Vec<Node> cases, Node defaultStmt, Location coords);
+            Match(Node expr, Vec<Node> cases, Node defaultStmt, Location location);
         };
 
 
-        /**
-         *
-         */
         struct Loop final : detail::NodeBase {
-            Loop(Node decl, Node range, Node body, Location coords);
+            Loop(Node decl, Node range, Node body, Location location);
         };
 
-        /**
-         * Syntax:
-         *      \code
-         *          expr "=>" stmt ";"
-         *      \endcode
-         *
-         * Examples:
-         *      \code
-         *          x > 0 => io::println(x);
-         *      \endcode
-         *      \code
-         *          x < 0 => {
-         *              ...
-         *          }
-         *      \endcode
-         *      \code
-         *          x = y > 0 => y * 2;
-         *      \endcode
-         *      \code
-         *          return x == 0 => y;
-         *      \endcode
-         *
-         * Notes:
-         *      - If "stmt" is an expression statement, conditional statement returns
-         *      the yields the value of the expression, thus making it the only default
-         *      value-semantics statement.
-         */
         struct Conditional final : detail::NodeBase {
-            Conditional(Node cond, Node then, Location coords);
+            Conditional(Node cond, Node then, Location location);
         };
 
         struct Block final : detail::NodeBase {
-            Block(Vec<Node> statements, Location coords);
+            Block(Vec<Node> statements, Location location);
 
             [[nodiscard]] auto size() const noexcept -> szt;
         };
 
         struct Assign final : detail::NodeBase {
-            Assign(Node lhs, Node rhs, lexeme::Lexeme op, Location coords);
+            Assign(Node lhs, Node rhs, lexeme::Lexeme op, Location location);
 
             [[nodiscard]] auto op() const noexcept -> lexeme::Lexeme {
                 return m_op;
@@ -440,16 +278,69 @@ namespace tlc::syntax {
         };
 
         struct Expression final : detail::NodeBase {
-            Expression(Node expr, Location coords);
+            Expression(Node expr, Location location);
         };
     }
 
-    namespace global {}
+    namespace global {
+        struct ModuleDecl final : detail::NodeBase {
+            ModuleDecl(Node path, Location location);
+        };
 
-    namespace def {}
+        struct ImportDeclGroup final : detail::NodeBase {
+            ImportDeclGroup(Vec<Node> imports, Location location);
+
+            [[nodiscard]] auto size() const noexcept -> szt;
+        };
+
+        struct ImportDecl final : detail::NodeBase {
+            ImportDecl(Node alias, Node path, Location location);
+        };
+
+        struct FunctionPrototype final : detail::NodeBase {
+            FunctionPrototype(Node genericDecl, Str name, Node paramsDecl,
+                              Node returnsDecl, Location location);
+
+            [[nodiscard]] auto name() const noexcept -> StrV {
+                return m_name;
+            }
+
+        private:
+            Str m_name;
+        };
+
+        struct Function final : detail::NodeBase {
+            Function(lexeme::Lexeme visibility, Node prototype, Node body,
+                     Location location);
+
+            [[nodiscard]] auto visibility() const noexcept
+                -> lexeme::Lexeme const& {
+                return m_visibility;
+            }
+
+        private:
+            lexeme::Lexeme m_visibility;
+        };
+    }
+
+    struct RequiredButMissing final : detail::NodeBase {
+        explicit RequiredButMissing();
+    };
 
     struct TranslationUnit final : detail::NodeBase {
-        // explicit TranslationUnit(Vec<Node> definitions);
+        TranslationUnit(
+            fs::path sourcePath, Node moduleDecl,
+            Node importDeclGroup, Vec<Node> definitions
+        );
+
+        [[nodiscard]] auto sourcePath() const noexcept -> fs::path const& {
+            return m_sourcePath;
+        }
+
+        [[nodiscard]] auto size() const noexcept -> szt;
+
+    private:
+        fs::path m_sourcePath;
     };
 }
 

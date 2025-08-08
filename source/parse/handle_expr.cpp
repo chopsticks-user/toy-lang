@@ -1,5 +1,7 @@
 #include "parse.hpp"
 
+#include "lex/lex.hpp"
+
 namespace tlc::parse {
     auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
@@ -25,26 +27,11 @@ namespace tlc::parse {
             return Unexpected{lhs.error()};
         }
 
-        m_stream.markBacktrack();
+        // m_stream.markBacktrack();
+        auto streamBacktrack = m_stream.scopedBacktrack();
         while (true) {
             if (syntax::isPostfixStart(m_stream.peek().lexeme())) {
-                if (m_stream.match(lexeme::dot)) {
-                    auto field = [this] -> Str {
-                        if (m_stream.match(lexeme::identifier)) {
-                            return m_stream.current().str();
-                        }
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::Access,
-                            .reason = EParseErrorReason::MissingId,
-                        });
-                        return "";
-                    }();
-                    lhs = syntax::expr::Access{
-                        *lhs, std::move(field), *location
-                    };
-                }
-                else if (auto const tuple = handleTupleExpr(); tuple) {
+                if (auto const tuple = handleTupleExpr(); tuple) {
                     lhs = syntax::expr::FnApp{
                         *lhs, *tuple, *location
                     };
@@ -62,7 +49,7 @@ namespace tlc::parse {
                 );
 
                 if (p <= minP) {
-                    m_stream.backtrack();
+                    streamBacktrack();
                     break;
                 }
 
@@ -74,8 +61,6 @@ namespace tlc::parse {
                     };
                 });
             }
-            // todo: ternary
-            else if (m_stream.match(lexeme::qMark)) {}
             else {
                 break;
             }
@@ -86,19 +71,26 @@ namespace tlc::parse {
 
     auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
+        // todo:
+        if (auto const result = handleTryExpr(); result) {
+            return result;
+        }
         if (auto const result = handleSingleTokenLiteral(); result) {
             return result;
         }
+        if (auto const result = handleRecordExpr(); result) {
+            return result;
+        }
         if (auto const result = handleIdentifierLiteral(); result) {
+            return result;
+        }
+        if (auto const result = handleString(); result) {
             return result;
         }
         if (auto const result = handleTupleExpr(); result) {
             return result;
         }
         if (auto const result = handleArrayExpr(); result) {
-            return result;
-        }
-        if (auto const result = handleRecordExpr(); result) {
             return result;
         }
         return defaultError();
@@ -144,13 +136,13 @@ namespace tlc::parse {
 
     auto Parse::handleIdentifierLiteral() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        if (m_stream.match(lexeme::anonymousIdentifier)) {
+        if (m_stream.match(lexeme::anonymous)) {
             return syntax::expr::Identifier{
                 {m_stream.current().str()}, m_stream.current().location()
             };
         }
         return seq(
-            many0(seq(match(lexeme::identifier), match(lexeme::colon2))),
+            many0(seq(match(lexeme::identifier), match(lexeme::dot))),
             match(lexeme::identifier)
         )(m_stream, m_tracker).and_then([this](auto const& tokens)
             -> ParseResult {
@@ -195,7 +187,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::Tuple,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return syntax::Node{};
+                        return syntax::RequiredButMissing{};
                     })
             );
         }
@@ -239,7 +231,7 @@ namespace tlc::parse {
                             .context = EParseErrorContext::Array,
                             .reason = EParseErrorReason::MissingExpr,
                         });
-                        return syntax::Node{};
+                        return syntax::RequiredButMissing{};
                     })
             );
         }
@@ -248,7 +240,7 @@ namespace tlc::parse {
         if (!m_stream.match(lexeme::rightBracket)) {
             collect({
                 .location = m_tracker.current(),
-                .context = EParseErrorContext::Tuple,
+                .context = EParseErrorContext::Array,
                 .reason = EParseErrorReason::MissingEnclosingSymbol,
             });
         }
@@ -258,24 +250,23 @@ namespace tlc::parse {
 
     auto Parse::handleRecordExpr() -> ParseResult { // NOLINT(*-no-recursion)
         TLC_SCOPE_REPORTER();
-        m_stream.markBacktrack();
+        auto streamBacktrack = m_stream.scopedBacktrack();
         auto const location = m_tracker.scopedLocation();
 
-        auto type = handleTypeIdentifier();
-        if (!type || !m_stream.match(lexeme::leftBrace)) {
-            m_stream.backtrack();
+        auto type = handleTypeIdentifier().value_or({});
+        if (!m_stream.match(lexeme::leftBrace)) {
+            streamBacktrack();
             return defaultError();
         }
-
-        Vec<Pair<Str, syntax::Node>> entries;
-
         if (m_stream.match(lexeme::rightBrace)) {
             return syntax::expr::Record{
-                std::move(*type), std::move(entries), *location
+                std::move(type), {}, *location
             };
         }
 
+        Vec<syntax::Node> entries;
         do {
+            auto entryLocation = m_tracker.scopedLocation();
             Str key;
             if (!m_stream.match(lexeme::identifier)) {
                 collect({
@@ -307,7 +298,9 @@ namespace tlc::parse {
                 }
             );
 
-            entries.emplace_back(std::move(key), std::move(value));
+            entries.emplace_back(syntax::expr::RecordEntry{
+                std::move(key), std::move(value), *entryLocation
+            });
         }
         while (m_stream.match(lexeme::comma));
 
@@ -320,7 +313,90 @@ namespace tlc::parse {
         }
 
         return syntax::expr::Record{
-            std::move(*type), std::move(entries), *location
+            std::move(type), std::move(entries), *location
         };
+    }
+
+    auto Parse::handleString() -> ParseResult {
+        TLC_SCOPE_REPORTER();
+        return seq(
+            match(lexeme::stringFragment),
+            many0(seq(
+                match(lexeme::stringPlaceholder),
+                match(lexeme::stringFragment)
+            ))
+        )(m_stream, m_tracker).and_then(
+            [this](auto const& tokens) -> ParseResult {
+                auto location = tokens.front().location();
+
+                if (tokens.size() == 1) {
+                    return syntax::expr::String{
+                        {tokens.front().str()}, {}, location
+                    };
+                }
+
+                // prohibit recursive string interpolation
+                if (m_isSubroutine) {
+                    return error({
+                        .location = m_tracker.current(),
+                        .context = EParseErrorContext::String,
+                        .reason = EParseErrorReason::RestrictedAction,
+                    });
+                }
+
+                Vec<Str> fragments = tokens | rv::enumerate
+                    | rv::filter([](Pair<szt, token::Token> const& entry) {
+                        return (entry.first & 1) == 0;
+                    }) | rv::transform([](Pair<szt, token::Token> const& entry) {
+                        return entry.second.str();
+                    }) | rng::to<Vec<Str>>();
+
+                Vec<syntax::Node> placeholders = tokens | rv::enumerate
+                    | rv::filter([](Pair<szt, token::Token> const& entry) {
+                        return entry.first & 1;
+                    }) | rv::transform([this, location, &tokens](
+                        Pair<szt, token::Token> const& entry) {
+                            std::istringstream iss;
+                            iss.str(entry.second.str());
+                            return *Parse{
+                                m_filepath, lex::Lex::operator()(std::move(iss)),
+                                Location{
+                                    .line = tokens[entry.first].location().line,
+                                    .column = tokens[entry.first].location().column -
+                                    location.column + 1
+                                }
+                            }.handleExpr().or_else([&](auto&& error) -> ParseResult {
+                                collect(error).collect({
+                                    .location = m_tracker.current(),
+                                    .context = EParseErrorContext::String,
+                                    .reason = EParseErrorReason::MissingExpr,
+                                });
+                                return {};
+                            });
+                        }) | rng::to<Vec<syntax::Node>>();
+
+                return syntax::expr::String{
+                    std::move(fragments), std::move(placeholders), location
+                };
+            }
+        );
+    }
+
+    auto Parse::handleTryExpr() -> ParseResult {
+        return match(lexeme::try_)(m_stream, m_tracker).and_then(
+            [this](auto const& tokens) -> ParseResult {
+                return syntax::expr::Try{
+                    *handleExpr().or_else([&](auto&& error) -> ParseResult {
+                        collect(error).collect({
+                            .location = m_tracker.current(),
+                            .context = EParseErrorContext::TryExpr,
+                            .reason = EParseErrorReason::MissingExpr,
+                        });
+                        return syntax::RequiredButMissing{};
+                    }),
+                    tokens.front().location()
+                };
+            }
+        );
     }
 }

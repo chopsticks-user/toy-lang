@@ -5,25 +5,20 @@
 
 namespace tlc::syntax {
     namespace expr {
-        // primary
         struct Integer;
         struct Float;
         struct Boolean;
         struct Identifier;
-        // struct String;
+        struct String;
         struct Array;
         struct Tuple;
-
-        // postfix
+        struct RecordEntry;
+        struct Record;
+        struct Try;
         struct FnApp;
         struct Subscript;
-        struct Access;
-
         struct Prefix;
         struct Binary;
-        // struct Ternary;
-
-        struct Record;
     }
 
     namespace type {
@@ -32,20 +27,21 @@ namespace tlc::syntax {
         struct Tuple;
         struct Function;
         struct Infer;
-        struct Sum;
-        struct Product;
+        struct GenericArguments;
+        struct Generic;
+        struct Binary;
     }
 
     namespace decl {
         struct Identifier;
         struct Tuple;
+        struct GenericIdentifier;
+        struct GenericParameters;
     }
 
     namespace stmt {
-        struct Let;
+        struct Decl;
         struct Return;
-        struct Yield;
-        struct Preface;
         struct Defer;
         struct MatchCase;
         struct Match;
@@ -56,23 +52,37 @@ namespace tlc::syntax {
         struct Expression;
     }
 
-    namespace def {}
+    namespace global {
+        struct ModuleDecl;
+        struct ImportDecl;
+        struct ImportDeclGroup;
+        struct FunctionPrototype;
+        struct Function;
+    }
 
+    using Empty = std::monostate;
+    struct RequiredButMissing;
     struct TranslationUnit;
 
     using Node = Poly<
         expr::Integer, expr::Float, expr::Boolean, expr::Identifier, expr::Array,
-        expr::Tuple, expr::FnApp, expr::Subscript, expr::Access, expr::Prefix,
-        expr::Binary, expr::Record,
+        expr::Tuple, expr::String, expr::FnApp, expr::Subscript, expr::Prefix,
+        expr::Binary, expr::RecordEntry, expr::Record, expr::Try,
 
         type::Identifier, type::Array, type::Tuple, type::Function, type::Infer,
-        decl::Identifier, decl::Tuple,
+        type::GenericArguments, type::Generic, type::Binary,
 
-        stmt::Let, stmt::Return, stmt::Yield, stmt::Preface, stmt::Defer, stmt::Loop,
-        stmt::Match, stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
+        decl::Identifier, decl::Tuple, decl::GenericIdentifier,
+        decl::GenericParameters,
+
+        stmt::Decl, stmt::Return, stmt::Defer, stmt::Loop, stmt::Match,
+        stmt::MatchCase, stmt::Conditional, stmt::Block, stmt::Assign,
         stmt::Expression,
 
-        TranslationUnit
+        global::ModuleDecl, global::ImportDecl, global::FunctionPrototype,
+        global::Function, global::ImportDeclGroup,
+
+        RequiredButMissing, TranslationUnit
     >;
 }
 
