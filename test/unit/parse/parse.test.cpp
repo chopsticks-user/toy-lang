@@ -89,7 +89,7 @@ auto ParseTestFixture::parseAndAssert(
     );
 
     auto const actualErrors =
-        ErrCollector::instance().errors();
+        ErrCollector::instance().exportErrors();
     auto const expectedErrors = params.expectedErrors;
     REQUIRE(actualErrors.size() == expectedErrors.size());
     for (auto i : tlc::rv::iota(0ul, actualErrors.size())) {

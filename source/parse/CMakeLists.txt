@@ -4,8 +4,8 @@ target_sources(
     tlc_parse
     PRIVATE
     parse.hpp parse.cpp
+    context.hpp combinator.hpp
     token_stream.hpp token_stream.cpp
-    combinator.hpp
     location_tracker.hpp location_tracker.cpp
     parse_error.hpp parse_error.cpp
     pretty_printer.hpp pretty_printer.cpp

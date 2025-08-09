@@ -6,15 +6,15 @@
 #include "syntax/syntax.hpp"
 
 #include "parse_error.hpp"
+#include "token_stream.hpp"
+#include "location_tracker.hpp"
+#include "context.hpp"
 #include "ast_printer.hpp"
 #include "pretty_printer.hpp"
-#include "token_stream.hpp"
 #include "combinator.hpp"
-#include "location_tracker.hpp"
 
 namespace tlc::parse {
     class Parse final {
-        using TokenIt = Vec<token::Token>::const_iterator;
         using TError = Error<EParseErrorContext, EParseErrorReason>;
         using TErrorCollector =
         ErrorCollector<EParseErrorContext, EParseErrorReason>;
@@ -27,7 +27,8 @@ namespace tlc::parse {
         Parse(fs::path filepath, Vec<token::Token> tokens)
             : m_filepath{std::move(filepath)},
               m_stream{std::move(tokens)},
-              m_tracker{m_stream}, m_isSubroutine{false} {}
+              m_tracker{m_stream}, m_collector{TErrorCollector::instance()},
+              m_isSubroutine{false} {}
 
         auto operator()() -> syntax::Node;
 
@@ -57,7 +58,8 @@ namespace tlc::parse {
         Parse(fs::path filepath, Vec<token::Token> tokens, Location offset)
             : m_filepath{std::move(filepath)},
               m_stream{std::move(tokens), std::move(offset)},
-              m_tracker{m_stream}, m_isSubroutine{true} {}
+              m_tracker{m_stream}, m_collector{TErrorCollector::instance()},
+              m_isSubroutine{true} {}
 
     private:
         auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
@@ -101,9 +103,6 @@ namespace tlc::parse {
         auto handleTranslationUnit() -> ParseResult;
 
     private:
-        // todo: create a scoped backtrack class handling backtracking both
-        // ErrorCollector and LocationTracker
-
         static auto defaultError() -> ParseResult {
             return Unexpected{TError{}};
         }
@@ -116,30 +115,41 @@ namespace tlc::parse {
         }
 
         auto collect(TError::Params errorParams) const -> TErrorCollector& {
+            // todo: remove this if
+            if (errorParams.reason == EParseErrorReason::NotAnError) {
+                return m_collector;
+            }
             errorParams.filepath = m_filepath;
-            return collect(TError{std::move(errorParams)});
+            errorParams.location = m_tracker.current();
+            return m_collector(TError{std::move(errorParams)});
         }
 
+        // todo: remove this
         auto collect(TError error) const -> TErrorCollector& {
-            static auto& collector = TErrorCollector::instance();
-
             if (error.reason() == EParseErrorReason::NotAnError) {
-                return collector;
+                return m_collector;
             }
 
             error.filepath(m_filepath);
-            return collector.collect(std::move(error));
+            return m_collector(std::move(error));
         }
 
         [[nodiscard]] auto createDefaultVisibility() const -> token::Token {
             return {lexeme::empty, "", m_stream.peek().location()};
         }
 
+        [[nodiscard]] auto context(EParseErrorContext const errorContext)
+            -> Context {
+            return Context{
+                m_filepath, m_stream, m_tracker, m_collector, errorContext
+            };
+        }
+
     private:
         fs::path m_filepath;
         TokenStream m_stream;
         LocationTracker m_tracker;
-        Stack<Location> m_coords{};
+        TErrorCollector& m_collector;
         b8 const m_isSubroutine;
     };
 }

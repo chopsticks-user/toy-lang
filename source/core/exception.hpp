@@ -11,7 +11,9 @@ namespace tlc {
         explicit Exception(Str const& message): std::runtime_error(message) {}
 
         explicit Exception(fs::path filepath, Str message)
-            : std::runtime_error("[" + filepath.string() + " @0:0]" + std::move(message)),
+            : std::runtime_error(
+                  "[" + filepath.string() + " @0:0]" + std::move(message)
+              ),
               m_filepath{std::move(filepath)} {}
 
         Exception(
@@ -80,7 +82,6 @@ namespace tlc {
             Location location;
             EContext context;
             EReason reason;
-            Str info;
         };
 
         Error() = default;
@@ -95,12 +96,12 @@ namespace tlc {
             };
         }
 
-        auto filepath() const noexcept -> fs::path const& {
+        [[nodiscard]] auto filepath() const noexcept -> fs::path const& {
             return m_params.filepath;
         }
 
-        auto filepath(fs::path fp) {
-            return m_params.filepath = std::move(fp);
+        auto filepath(fs::path fp) -> void {
+            m_params.filepath = std::move(fp);
         }
 
         [[nodiscard]] auto context() const -> EContext {
@@ -123,36 +124,51 @@ namespace tlc {
 
     template <typename EContext, typename EReason>
     class ErrorCollector : public Singleton {
-        TLC_CORE_GENERATE_SINGLETON_BODY_PREFIX(ErrorCollector)
+        TLC_CORE_GENERATE_SINGLETON_BODY_PREFIX(ErrorCollector);
+
+        using TError = Error<EContext, EReason>;
 
     public:
-        auto collect(typename Error<EContext, EReason>::Params errorParams)
-            -> ErrorCollector& {
-            m_collected.emplace_back(errorParams);
+        auto collect(typename TError::Params errorParams) -> ErrorCollector& {
+            m_errors.emplace_back(errorParams);
             return *this;
         }
 
-        auto collect(Error<EContext, EReason> error)
+        auto collect(TError error) -> ErrorCollector& {
+            m_errors.push_back(std::move(error));
+            return *this;
+        }
+
+        auto operator()(typename TError::Params errorParams)
             -> ErrorCollector& {
-            m_collected.push_back(std::move(error));
+            m_errors.emplace_back(errorParams);
+            return *this;
+        }
+
+        auto operator()(TError error) -> ErrorCollector& {
+            m_errors.push_back(std::move(error));
+            return *this;
+        }
+
+        auto operator()(Vec<TError> errors) -> ErrorCollector& {
+            m_errors.append_range(std::move(errors));
             return *this;
         }
 
         [[nodiscard]] auto size() const -> szt {
-            return m_collected.size();
+            return m_errors.size();
         }
 
         [[nodiscard]] auto empty() const -> szt {
-            return m_collected.empty();
+            return m_errors.empty();
         }
 
-        [[nodiscard]] auto errors() -> auto {
-            return std::exchange(m_collected, {});
+        [[nodiscard]] auto exportErrors() -> Vec<TError> {
+            return std::exchange(m_errors, {});
         }
 
     private:
-        Vec<Error<EContext, EReason>> m_collected;
-        Stack<szt> m_backtrack;
+        Vec<TError> m_errors;
     };
 }
 

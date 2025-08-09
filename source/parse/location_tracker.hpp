@@ -2,6 +2,7 @@
 #define TLC_PARSE_LOCATION_TRACKER_HPP
 
 #include "core/core.hpp"
+
 #include "token_stream.hpp"
 
 namespace tlc::parse {
