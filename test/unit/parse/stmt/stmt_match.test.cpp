@@ -8,8 +8,8 @@ TEST_CASE_WITH_FIXTURE(
         .source =
         "match x {\n"
         "    5 => y := x * 5;\n"
-        "    when x < 5 => {}\n"
-        "    _ => {}\n"
+        "    when x < 5 => { io.println(x); }\n"
+        "    _ => io.println();\n"
         "}",
 
         .expectedAstPrint =
@@ -28,16 +28,24 @@ TEST_CASE_WITH_FIXTURE(
         "   ├─ expr::Binary [@2:9] with op = '<'\n"
         "      ├─ expr::Identifier [@2:9] with path = 'x'\n"
         "      ├─ expr::Integer [@2:13] with value = 5\n"
-        "   ├─ stmt::Block [@2:18] with size = 0\n"
-        "├─ stmt::Block [@3:9] with size = 0",
+        "   ├─ stmt::Block [@2:18] with size = 1\n"
+        "      ├─ stmt::Expression [@2:20]\n"
+        "         ├─ expr::FnApp [@2:20]\n"
+        "            ├─ expr::Identifier [@2:20] with path = 'io.println'\n"
+        "            ├─ expr::Tuple [@2:30] with size = 1\n"
+        "               ├─ expr::Identifier [@2:31] with path = 'x'\n"
+        "├─ stmt::Expression [@3:9]\n"
+        "   ├─ expr::FnApp [@3:9]\n"
+        "      ├─ expr::Identifier [@3:9] with path = 'io.println'\n"
+        "      ├─ expr::Tuple [@3:19] with size = 0",
 
         .expectedPrettyPrint =
         "match x {\n"
         "    5 when {?} => y := (x * 5);\n"
         "    {?} when (x < 5) => {\n"
-        "}\n"
-        "    _ => {\n"
-        "}\n"
+        "        io.println(x);\n"
+        "    }\n"
+        "    _ => io.println();\n"
         "}",
     });
 }
@@ -93,12 +101,9 @@ TEST_CASE_WITH_FIXTURE(
         .expectedPrettyPrint =
         "match (x, y) {\n"
         "    (_, 5) when {?} => z := (x + y);\n"
-        "    {?} when ((x < 5) && (y > 0)) => {\n"
-        "}\n"
-        "    (10, _) when (y <= 0) => {\n"
-        "}\n"
-        "    _ => {\n"
-        "}\n"
+        "    {?} when ((x < 5) && (y > 0)) => {}\n"
+        "    (10, _) when (y <= 0) => {}\n"
+        "    _ => {}\n"
         "}",
     });
 }

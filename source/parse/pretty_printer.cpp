@@ -152,49 +152,55 @@ namespace tlc::parse {
     auto PrettyPrint::operator()(syntax::stmt::Decl const& node) -> Str {
         auto children = visitChildren(node);
         return std::format(
-            "{} = {};", std::move(children.front()), std::move(children.back())
+            "{}{} = {};",
+            depthPrefix(), std::move(children.front()),
+            std::move(children.back())
         );
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Return const& node) -> Str {
-        return std::format("return {};", visitChildren(node).front());
+        return std::format("{}return {};", depthPrefix(),
+                           visitChildren(node).front());
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Expression const& node) -> Str {
-        return std::format("{};", visitChildren(node).front());
+        return std::format("{}{};", depthPrefix(),
+                           visitChildren(node).front());
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Assign const& node) -> Str {
         auto children = visitChildren(node);
-        return std::format(
-            "{} {} {};",
-            std::move(children.front()), node.op().str(),
-            std::move(children.back())
+        return std::format("{}{} {} {};", depthPrefix(),
+                           std::move(children.front()), node.op().str(),
+                           std::move(children.back())
         );
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Conditional const& node) -> Str {
         auto children = visitChildren(node);
-        return std::format(
-            "{} => {}",
-            std::move(children.front()), std::move(children.back())
-        );
+        return std::format("{}{} => {}", depthPrefix(),
+                           std::move(children.front()),
+                           std::move(children.back()) | rvWithoutIdent);
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Block const& node) -> Str {
         // todo: fix strings appended every scope
+        auto prefix = depthPrefix();
+        ++m_depth;
         auto children = visitChildren(node)
-            | rv::transform([](auto const& s) {
-                return std::format("{}{}", indent, s);
-            })
             | rv::join_with('\n') | rng::to<Str>();
+        --m_depth;
         return children.empty()
-                   ? "{\n}"
-                   : std::format("{{\n{}\n}}", std::move(children));
+                   ? std::format("{}{{}}", prefix)
+                   : std::format(
+                       "{}{{\n{}\n{}}}",
+                       prefix, std::move(children), prefix
+                   );
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Defer const& node) -> Str {
-        return std::format("defer {}", visitChildren(node).front());
+        return std::format("{}defer {}", depthPrefix(),
+                           visitChildren(node).front());
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Loop const& node) -> Str {
@@ -208,26 +214,22 @@ namespace tlc::parse {
 
     auto PrettyPrint::operator()(syntax::stmt::MatchCase const& node) -> Str {
         auto children = visitChildren(node);
-        return std::format(
-            "{} when {} => {}",
-            std::move(children[0]), std::move(children[1]),
-            std::move(children[2])
-        );
+        return std::format("{}{} when {} => {}", depthPrefix(),
+                           std::move(children[0]), std::move(children[1]),
+                           std::move(children[2]) | rvWithoutIdent);
     }
 
     auto PrettyPrint::operator()(syntax::stmt::Match const& node) -> Str {
+        ++m_depth;
         auto children = visitChildren(node);
         auto expr = children.front();
         auto cases = children | rv::as_rvalue | rv::drop(1);
-        cases.back() = std::format("_ => {}", cases.back());
-        return std::format(
-            "match {} {{\n"
-            "{}\n"
-            "}}",
-            std::move(expr), cases | rv::transform([](auto const& s) {
-                return std::format("{}{}", indent, s);
-            }) | rv::join_with('\n') | rng::to<Str>()
-        );
+        cases.back() = std::format("{}_ => {}", depthPrefix(),
+                                   cases.back() | rvWithoutIdent);
+        --m_depth;
+        return std::format("{}match {} {{\n{}\n}}", depthPrefix(),
+                           std::move(expr), cases | rv::join_with('\n')
+                           | rng::to<Str>());
     }
 
     auto PrettyPrint::operator()(syntax::global::ModuleDecl const& node) -> Str {

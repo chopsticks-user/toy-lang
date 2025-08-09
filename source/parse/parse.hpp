@@ -101,6 +101,9 @@ namespace tlc::parse {
         auto handleTranslationUnit() -> ParseResult;
 
     private:
+        // todo: create a scoped backtrack class handling backtracking both
+        // ErrorCollector and LocationTracker
+
         static auto defaultError() -> ParseResult {
             return Unexpected{TError{}};
         }

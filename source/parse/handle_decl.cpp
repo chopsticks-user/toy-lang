@@ -3,8 +3,7 @@
 namespace tlc::parse {
     auto Parse::handleDecl() -> ParseResult {
         TLC_SCOPE_REPORTER();
-        return handleTupleDecl().or_else([this](auto&& error) -> ParseResult {
-            collect(error);
+        return handleTupleDecl().or_else([this](auto&&) -> ParseResult {
             return handleIdentifierDecl();
         });
     }
@@ -36,14 +35,7 @@ namespace tlc::parse {
                         };
                     });
             }
-        ).or_else([this](auto) -> ParseResult {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::IdDecl,
-                .reason = EParseErrorReason::MissingId
-            });
-            return {};
-        });
+        );
     }
 
     auto Parse::handleTupleDecl() -> ParseResult {

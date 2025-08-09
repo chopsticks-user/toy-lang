@@ -27,14 +27,13 @@ TEST_CASE_WITH_FIXTURE(
 ) {
     assertStmt({
         .source =
-        "defer {};",
+        "defer {}",
 
         .expectedAstPrint =
         "stmt::Defer [@0:0]\n"
         "├─ stmt::Block [@0:6] with size = 0",
 
         .expectedPrettyPrint =
-        "defer {\n"
-        "}",
+        "defer {}",
     });
 }

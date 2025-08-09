@@ -52,3 +52,49 @@ TEST_CASE_WITH_FIXTURE(
         "(x == y) => foo.Bar{sum: (x + y), product: (x * y)};",
     });
 }
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse.Stmt.Cond: Correct indentation for the 'then' block",
+    "[Unit][Parse][Stmt]"
+) {
+    assertStmt({
+        .source =
+        "x == y => {"
+        " {(2*x)|> io.println;}\n"
+        "}",
+
+        .expectedAstPrint =
+        "stmt::Conditional [@0:0]\n"
+        "├─ expr::Binary [@0:0] with op = '=='\n"
+        "   ├─ expr::Identifier [@0:0] with path = 'x'\n"
+        "   ├─ expr::Identifier [@0:5] with path = 'y'\n"
+        "├─ stmt::Block [@0:10] with size = 1\n"
+        "   ├─ stmt::Block [@0:12] with size = 1\n"
+        "      ├─ stmt::Expression [@0:13]\n"
+        "         ├─ expr::Binary [@0:13] with op = '|>'\n"
+        "            ├─ expr::Tuple [@0:13] with size = 1\n"
+        "               ├─ expr::Binary [@0:14] with op = '*'\n"
+        "                  ├─ expr::Integer [@0:14] with value = 2\n"
+        "                  ├─ expr::Identifier [@0:16] with path = 'x'\n"
+        "            ├─ expr::Identifier [@0:21] with path = 'io.println'",
+
+        .expectedPrettyPrint =
+        "(x == y) => {\n"
+        "    {\n"
+        "        (((2 * x)) |> io.println);\n"
+        "    }\n"
+        "}",
+
+        // todo: backtracking should also remove collected errors (handleDeclStmt -> handleTupleDecl)
+        .expectedErrors = {
+            {
+                .context = tlc::parse::EParseErrorContext::Tuple,
+                .reason = tlc::parse::EParseErrorReason::MissingDecl
+            },
+            {
+                .context = tlc::parse::EParseErrorContext::Tuple,
+                .reason = tlc::parse::EParseErrorReason::MissingEnclosingSymbol
+            },
+        },
+    });
+}

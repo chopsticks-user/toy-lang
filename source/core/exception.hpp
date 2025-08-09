@@ -152,6 +152,7 @@ namespace tlc {
 
     private:
         Vec<Error<EContext, EReason>> m_collected;
+        Stack<szt> m_backtrack;
     };
 }
 

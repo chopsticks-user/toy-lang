@@ -12,8 +12,7 @@ TEST_CASE_WITH_FIXTURE(
         "stmt::Block [@0:0] with size = 0",
 
         .expectedPrettyPrint =
-        "{\n"
-        "}",
+        "{}",
     });
 }
 
@@ -63,14 +62,12 @@ TEST_CASE_WITH_FIXTURE(
         "   ├─ stmt::Block [@1:1] with size = 0\n"
         "   ├─ stmt::Block [@1:3] with size = 0",
 
-        // .expectedPrettyPrint =
-        // "{\n"
-        // "    {\n"
-        // "        {\n"
-        // "        }\n"
-        // "        {\n"
-        // "        }\n"
-        // "    }\n"
-        // "}",
+        .expectedPrettyPrint =
+        "{\n"
+        "    {\n"
+        "        {}\n"
+        "        {}\n"
+        "    }\n"
+        "}",
     });
 }

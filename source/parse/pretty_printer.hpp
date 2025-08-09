@@ -73,7 +73,12 @@ namespace tlc::parse {
         static constexpr auto rvJoin =
             rv::join | rng::to<Str>();
 
-        auto depthPrefix() const -> StrV {
+        static constexpr auto rvWithoutIdent =
+            rv::drop_while([](auto c) {
+                return c == ' ';
+            }) | rng::to<Str>();
+
+        [[nodiscard]] auto depthPrefix() const -> Str {
             return rv::repeat(indent, m_depth) | rv::join | rng::to<Str>();
         }
 
