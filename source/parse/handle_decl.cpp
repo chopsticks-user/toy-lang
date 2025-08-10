@@ -8,14 +8,14 @@ namespace tlc::parse {
         if (auto idDecl = handleIdentifierDecl(); idDecl) {
             return idDecl;
         }
-        return defaultError();
+        return {};
     }
 
     auto Parse::handleIdentifierDecl() -> ParseResult {
         auto context = enter(Context::IdDecl);
 
         if (!context.stream().match(lexeme::identifier)) {
-            return defaultError();
+            return {};
         }
 
         auto name = context.stream().current().str();
@@ -36,7 +36,7 @@ namespace tlc::parse {
         auto context = enter(Context::TupleDecl);
 
         if (context.backtrackIf(!context.stream().match(lexeme::leftParen))) {
-            return defaultError();
+            return {};
         }
         if (m_stream.match(lexeme::rightParen)) {
             return syntax::decl::Tuple{{}, context.location()};
@@ -60,7 +60,7 @@ namespace tlc::parse {
         auto context = enter(Context::GenericParamsDecl);
 
         if (!context.stream().match(lexeme::less)) {
-            return defaultError();
+            return {};
         }
         if (context.stream().match(lexeme::greater)) {
             return syntax::decl::GenericParameters{{}, context.location()};

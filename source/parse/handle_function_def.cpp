@@ -6,7 +6,7 @@ namespace tlc::parse {
 
         auto prototype = handleFunctionPrototype().value_or({});
         if (syntax::isEmptyNode(prototype)) {
-            return defaultError();
+            return {};
         }
 
         auto body = handleBlockStmt().value_or(syntax::RequiredButMissing{});
@@ -21,7 +21,7 @@ namespace tlc::parse {
         auto context = enter(Context::FunctionPrototype);
 
         if (!context.stream().match(lexeme::fn)) {
-            return defaultError();
+            return {};
         }
 
         auto genericDecl = handleGenericParamsDecl().value_or({});

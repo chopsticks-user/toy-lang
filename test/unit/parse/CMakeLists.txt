@@ -3,7 +3,6 @@ add_executable(tlc::test::unit::parse ALIAS tlc_test_unit_parse)
 target_sources(
     tlc_test_unit_parse PRIVATE
     token_stream.test.cpp
-    combinator.test.cpp
     parse.test.hpp
     parse.test.cpp
 

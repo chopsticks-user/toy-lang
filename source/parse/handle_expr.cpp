@@ -23,7 +23,7 @@ namespace tlc::parse {
             lhs = handlePrimaryExpr();
         }
         if (!lhs) {
-            return Unexpected{lhs.error()};
+            return {};
         }
 
         auto rhsContext = enter(Context::Expr);
@@ -89,7 +89,7 @@ namespace tlc::parse {
         if (auto const result = handleArrayExpr(); result) {
             return result;
         }
-        return defaultError();
+        return {};
     }
 
     auto Parse::handleSingleTokenLiteral() -> ParseResult {
@@ -105,7 +105,7 @@ namespace tlc::parse {
             lexeme::integer10Literal, lexeme::integer16Literal,
             lexeme::floatLiteral, lexeme::true_, lexeme::false_
         )) {
-            return defaultError();
+            return {};
         }
 
         switch (auto token = context.stream().current();
@@ -149,7 +149,7 @@ namespace tlc::parse {
             }
         }
         if (fragments.empty()) {
-            return defaultError();
+            return {};
         }
 
         return syntax::expr::Identifier{
@@ -161,7 +161,7 @@ namespace tlc::parse {
         auto context = enter(Context::TupleExpr);
 
         if (!context.stream().match(lexeme::leftParen)) {
-            return defaultError();
+            return {};
         }
         if (context.stream().match(lexeme::rightParen)) {
             return syntax::expr::Tuple{{}, context.location()};
@@ -185,7 +185,7 @@ namespace tlc::parse {
         auto context = enter(Context::ArrayExpr);
 
         if (!context.stream().match(lexeme::leftBracket)) {
-            return defaultError();
+            return {};
         }
         if (context.stream().match(lexeme::rightBracket)) {
             return syntax::expr::Array{{}, context.location()};
@@ -210,7 +210,7 @@ namespace tlc::parse {
 
         auto type = handleTypeIdentifier().value_or({});
         if (context.backtrackIf(!context.stream().match(lexeme::leftBrace))) {
-            return defaultError();
+            return {};
         }
         if (context.stream().match(lexeme::rightBrace)) {
             return syntax::expr::Record{
@@ -260,7 +260,7 @@ namespace tlc::parse {
         }
 
         if (fragmentStrings.empty()) {
-            return defaultError();
+            return {};
         }
         if (fragmentStrings.size() == 1) {
             return syntax::expr::String{
@@ -298,7 +298,7 @@ namespace tlc::parse {
         auto context = enter(Context::TryExpr);
 
         if (!context.stream().match(lexeme::try_)) {
-            return defaultError();
+            return {};
         }
 
         auto expr = handleExpr().value_or(syntax::RequiredButMissing{});

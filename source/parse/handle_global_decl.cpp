@@ -7,7 +7,7 @@ namespace tlc::parse {
         auto moduleDecl = handleModuleDecl()
             .value_or(syntax::RequiredButMissing{});
         if (context.emitIfNodeEmpty(moduleDecl, Reason::MissingDecl)) {
-            return defaultError();
+            return {};
         }
 
         syntax::Node importGroup;
@@ -52,13 +52,13 @@ namespace tlc::parse {
         auto context = enter(Context::ModuleDecl);
 
         if (!context.stream().match(lexeme::module_)) {
-            return defaultError();
+            return {};
         }
 
         auto path = handleIdentifierLiteral()
             .value_or(syntax::RequiredButMissing{});
         if (context.emitIfNodeEmpty(path, Reason::MissingId)) {
-            return defaultError();
+            return {};
         }
 
         context.emitIfLexemeNotPresent(
@@ -74,7 +74,7 @@ namespace tlc::parse {
         auto context = enter(Context::ImportDecl);
 
         if (!context.stream().match(lexeme::import_)) {
-            return defaultError();
+            return {};
         }
 
         auto path_or_alias = handleIdentifierLiteral()

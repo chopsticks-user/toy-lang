@@ -14,7 +14,7 @@ namespace tlc::parse {
             return handleTypeIdentifier();
         }();
         if (!lhs) {
-            return defaultError();
+            return {};
         }
 
         auto rhsContext = enter(Context::Type);
@@ -85,7 +85,7 @@ namespace tlc::parse {
         }
         if (context.backtrackIf(!context.stream().match(
             lexeme::fundamentalType, lexeme::userDefinedType))) {
-            return defaultError();
+            return {};
         }
 
         fragments.push_back(context.stream().current().str());
@@ -100,7 +100,7 @@ namespace tlc::parse {
         auto context = enter(Context::TupleType);
 
         if (!context.stream().match(lexeme::leftParen)) {
-            return defaultError();
+            return {};
         }
         if (context.stream().match(lexeme::rightParen)) {
             return syntax::type::Tuple{{}, context.location()};
@@ -125,7 +125,7 @@ namespace tlc::parse {
 
         if (context.backtrackIf(!context.stream().match(lexeme::leftBracket) ||
             !context.stream().match(lexeme::leftBracket))) {
-            return defaultError();
+            return {};
         }
 
         auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
@@ -144,7 +144,7 @@ namespace tlc::parse {
         auto context = enter(Context::GenericTypeArguments);
 
         if (!context.stream().match(lexeme::less)) {
-            return defaultError();
+            return {};
         }
 
         Vec<syntax::Node> args;

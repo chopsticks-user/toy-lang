@@ -11,14 +11,13 @@
 #include "context.hpp"
 #include "ast_printer.hpp"
 #include "pretty_printer.hpp"
-#include "combinator.hpp"
 
 namespace tlc::parse {
     class Parse final {
         using TError = Error<EParseErrorContext, EParseErrorReason>;
         using TErrorCollector =
         ErrorCollector<EParseErrorContext, EParseErrorReason>;
-        using ParseResult = Expected<syntax::Node, TError>;
+        using ParseResult = Opt<syntax::Node>;
         using Reason = EParseErrorReason;
 
     public:
@@ -104,10 +103,6 @@ namespace tlc::parse {
         auto handleTranslationUnit() -> ParseResult;
 
     private:
-        static auto defaultError() -> ParseResult {
-            return Unexpected{TError{}};
-        }
-
         [[nodiscard]] auto error(TError::Params params) const
             -> Unexpected<TError> {
             params.filepath = m_filepath;

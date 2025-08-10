@@ -34,7 +34,7 @@ namespace tlc::parse {
         auto decl = handleDecl().value_or({});
         if (syntax::isEmptyNode(decl) ||
             context.backtrackIf(!context.stream().match(lexeme::equal))) {
-            return defaultError();
+            return {};
         }
 
         auto initializer = parseExpr().value_or(syntax::RequiredButMissing{});
@@ -54,7 +54,7 @@ namespace tlc::parse {
         auto context = enter(Context::ReturnStmt);
 
         if (!context.stream().match(lexeme::return_)) {
-            return defaultError();
+            return {};
         }
 
         auto returnExpr = parseExpr().value_or({});
@@ -69,7 +69,7 @@ namespace tlc::parse {
 
         auto prefixExpr = parseExpr().value_or({});
         if (syntax::isEmptyNode(prefixExpr)) {
-            return defaultError();
+            return {};
         }
 
         if (context.stream().match(syntax::isAssignmentOperator)) {
@@ -111,7 +111,7 @@ namespace tlc::parse {
         auto context = enter(Context::LoopStmt);
 
         if (!context.stream().match(lexeme::for_)) {
-            return defaultError();
+            return {};
         }
 
         auto decl = handleDecl().value_or(syntax::RequiredButMissing{});
@@ -134,7 +134,7 @@ namespace tlc::parse {
         auto context = enter(Context::MatchStmt);
 
         if (!context.stream().match(lexeme::match)) {
-            return defaultError();
+            return {};
         }
 
         auto matchExpr = handleExpr().value_or(syntax::RequiredButMissing{});
@@ -198,7 +198,7 @@ namespace tlc::parse {
         auto context = enter(Context::BlockStmt);
 
         if (!context.stream().match(lexeme::leftBrace)) {
-            return defaultError();
+            return {};
         }
 
         Vec<syntax::Node> statements;
@@ -219,7 +219,7 @@ namespace tlc::parse {
         auto context = enter(Context::DeferStmt);
 
         if (!context.stream().match(lexeme::defer)) {
-            return defaultError();
+            return {};
         }
 
         auto stmt = handleStmt().value_or(syntax::RequiredButMissing{});
