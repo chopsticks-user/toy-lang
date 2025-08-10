@@ -15,6 +15,7 @@ TEST_CASE_WITH_FIXTURE(
         "",
 
         .expectedErrors = {
+            {.context = Context::ModuleDecl, .reason = Reason::MissingId},
             {.context = Context::TranslationUnit, .reason = Reason::MissingDecl},
         },
     });

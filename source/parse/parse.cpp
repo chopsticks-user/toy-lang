@@ -6,14 +6,9 @@ namespace tlc::parse {
     }
 
     auto Parse::operator()() -> syntax::Node {
-        return *handleTranslationUnit().or_else(
-            [this](auto&& err) -> ParseResult {
-                collect(err);
-                return syntax::TranslationUnit{
-                    m_filepath, syntax::RequiredButMissing{},
-                    {}, {}
-                };
-            }
-        );
+        return handleTranslationUnit().value_or(syntax::TranslationUnit{
+            m_filepath, syntax::RequiredButMissing{},
+            {}, {}
+        });
     }
 }

@@ -2,37 +2,39 @@
 
 namespace tlc::parse {
     auto Parse::handleTranslationUnit() -> ParseResult {
-        auto moduleDecl = handleModuleDecl();
-        if (!moduleDecl) {
-            return error({
-                .context = EParseErrorContext::TranslationUnit,
-                .reason = EParseErrorReason::MissingDecl,
-            });
+        auto context = enter(Context::TranslationUnit);
+
+        auto moduleDecl = handleModuleDecl()
+            .value_or(syntax::RequiredButMissing{});
+        if (context.emitIfNodeEmpty(moduleDecl, Reason::MissingDecl)) {
+            return defaultError();
         }
 
-        Vec<syntax::Node> imports;
-        Location importGroupLocation = m_tracker.push();
         syntax::Node importGroup;
-        while (m_stream.peek().lexeme() != lexeme::invalid) {
-            auto importDecl = handleImportDecl();
-            if (!importDecl) {
-                m_tracker.pop();
-                break;
+        {
+            auto importGroupContext = enter(Context::ImportDeclGroup);
+
+            Vec<syntax::Node> imports;
+            while (context.stream().peek().lexeme() != lexeme::invalid) {
+                auto importDecl = handleImportDecl();
+                if (!importDecl) {
+                    break;
+                }
+                imports.push_back(std::move(*importDecl));
             }
-            imports.push_back(std::move(*importDecl));
-        }
-        if (!imports.empty()) {
-            importGroup = syntax::global::ImportDeclGroup{
-                std::move(imports), std::move(importGroupLocation)
-            };
+            if (!imports.empty()) {
+                importGroup = syntax::global::ImportDeclGroup{
+                    std::move(imports), importGroupContext.location()
+                };
+            }
         }
 
 
         Vec<syntax::Node> definitions;
-        while (m_stream.peek().lexeme() != lexeme::invalid) {
+        while (context.stream().peek().lexeme() != lexeme::invalid) {
             auto const visibility =
-                m_stream.match(lexeme::pub, lexeme::prv)
-                    ? m_stream.current()
+                context.stream().match(lexeme::pub, lexeme::prv)
+                    ? context.stream().current()
                     : createDefaultVisibility();
 
             if (auto fnDef = handleFunctionDef(visibility); fnDef) {
@@ -41,78 +43,56 @@ namespace tlc::parse {
         }
 
         return syntax::TranslationUnit{
-            m_filepath, std::move(*moduleDecl),
+            context.filepath(), std::move(moduleDecl),
             std::move(importGroup), std::move(definitions)
         };
     }
 
     auto Parse::handleModuleDecl() -> ParseResult {
-        if (!m_stream.match(lexeme::module_)) {
+        auto context = enter(Context::ModuleDecl);
+
+        if (!context.stream().match(lexeme::module_)) {
             return defaultError();
         }
 
-        auto location = m_tracker.current();
-        auto path = handleIdentifierLiteral();
-        if (!path) {
-            collect(path.error());
-            return error({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::ModuleDecl,
-                .reason = EParseErrorReason::MissingId,
-            });
+        auto path = handleIdentifierLiteral()
+            .value_or(syntax::RequiredButMissing{});
+        if (context.emitIfNodeEmpty(path, Reason::MissingId)) {
+            return defaultError();
         }
 
-        if (!m_stream.match(lexeme::semicolon)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::ModuleDecl,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
-        return syntax::global::ModuleDecl{std::move(*path), std::move(location)};
+        context.emitIfLexemeNotPresent(
+            lexeme::semicolon, Reason::MissingEnclosingSymbol
+        );
+        return syntax::global::ModuleDecl{
+            std::move(path), context.location()
+        };
     }
 
 
     auto Parse::handleImportDecl() -> ParseResult {
-        if (!m_stream.match(lexeme::import_)) {
+        auto context = enter(Context::ImportDecl);
+
+        if (!context.stream().match(lexeme::import_)) {
             return defaultError();
         }
 
-        auto location = m_tracker.current();
-        auto path_or_alias = *handleIdentifierLiteral().or_else(
-            [&](auto&& err) -> ParseResult {
-                collect(err).collect({
-                    .location = m_tracker.current(),
-                    .context = EParseErrorContext::ImportDecl,
-                    .reason = EParseErrorReason::MissingId,
-                });
-                return syntax::RequiredButMissing{};
-            }
-        );
+        auto path_or_alias = handleIdentifierLiteral()
+            .value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(path_or_alias, Reason::MissingId);
 
         syntax::Node path;
-        if (m_stream.match(lexeme::equal)) {
-            path = *handleIdentifierLiteral().or_else(
-                [&](auto&& err) -> ParseResult {
-                    collect(err).collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::ImportDecl,
-                        .reason = EParseErrorReason::MissingExpr,
-                    });
-                    return syntax::RequiredButMissing{};
-                }
-            );
+        if (context.stream().match(lexeme::equal)) {
+            path = handleIdentifierLiteral()
+                .value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(path_or_alias, Reason::MissingExpr);
         }
 
-        if (!m_stream.match(lexeme::semicolon)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::ImportDecl,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
+        context.emitIfLexemeNotPresent(
+            lexeme::semicolon, Reason::MissingEnclosingSymbol
+        );
         return syntax::global::ImportDecl{
-            std::move(path_or_alias), std::move(path), std::move(location)
+            std::move(path_or_alias), std::move(path), context.location()
         };
     }
 }

@@ -22,7 +22,7 @@ namespace tlc::parse {
         AssignStmt, ExprStmt, CondStmt, YieldStmt, LoopStmt, MatchStmt,
         MatchCaseStmt, MatchCaseDefaultStmt,
 
-        TranslationUnit, ModuleDecl, ImportDecl, FunctionPrototype, Function,
+        TranslationUnit, ModuleDecl, ImportDeclGroup, ImportDecl, FunctionPrototype, Function,
     };
 
     enum class EParseErrorReason {
