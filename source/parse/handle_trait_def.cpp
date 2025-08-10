@@ -1,7 +1,7 @@
-#include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleTraitDef([[maybe_unused]] token::Token const& visibility) -> ParseResult {
+    auto handleTraitDef([[maybe_unused]] Context context) -> Opt<syntax::Node> {
         return {};
     }
 }

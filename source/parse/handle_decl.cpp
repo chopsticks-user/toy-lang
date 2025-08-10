@@ -1,19 +1,19 @@
-#include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleDecl() -> ParseResult {
-        if (auto tupleDecl = handleTupleDecl(); tupleDecl) {
+    auto handleDecl(Context context) -> Opt<syntax::Node> {
+        if (auto tupleDecl = handleTupleDecl(
+            Context::enter(Context::TupleDecl, context)); tupleDecl) {
             return tupleDecl;
         }
-        if (auto idDecl = handleIdentifierDecl(); idDecl) {
+        if (auto idDecl = handleIdentifierDecl(
+            Context::enter(Context::IdDecl, context)); idDecl) {
             return idDecl;
         }
         return {};
     }
 
-    auto Parse::handleIdentifierDecl() -> ParseResult {
-        auto context = enter(Context::IdDecl);
-
+    auto handleIdentifierDecl(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::identifier)) {
             return {};
         }
@@ -25,26 +25,26 @@ namespace tlc::parse {
             };
         }
 
-        auto type = handleType().value_or(syntax::RequiredButMissing{});
+        auto type = handleType(Context::enter(Context::Type, context))
+            .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(type, Reason::MissingType);
         return syntax::decl::Identifier{
             std::move(name), std::move(type), context.location()
         };
     }
 
-    auto Parse::handleTupleDecl() -> ParseResult {
-        auto context = enter(Context::TupleDecl);
-
+    auto handleTupleDecl(Context context) -> Opt<syntax::Node> {
         if (context.backtrackIf(!context.stream().match(lexeme::leftParen))) {
             return {};
         }
-        if (m_stream.match(lexeme::rightParen)) {
+        if (context.stream().match(lexeme::rightParen)) {
             return syntax::decl::Tuple{{}, context.location()};
         }
 
         Vec<syntax::Node> decls;
         do {
-            auto decl = handleDecl().value_or(syntax::RequiredButMissing{});
+            auto decl = handleDecl(Context::enter(Context::Decl, context))
+                .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(decl, Reason::MissingDecl);
             decls.push_back(std::move(decl));
         }
@@ -56,9 +56,7 @@ namespace tlc::parse {
         return syntax::decl::Tuple{std::move(decls), context.location()};
     }
 
-    auto Parse::handleGenericParamsDecl() -> ParseResult {
-        auto context = enter(Context::GenericParamsDecl);
-
+    auto handleGenericParamsDecl(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::less)) {
             return {};
         }

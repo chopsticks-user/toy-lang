@@ -1,7 +1,8 @@
 #include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleFlagDef([[maybe_unused]] token::Token const& visibility) -> ParseResult {
+    auto handleFlagDef([[maybe_unused]] Context context) -> Opt<syntax::Node> {
         return {};
     }
 }

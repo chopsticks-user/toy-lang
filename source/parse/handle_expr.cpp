@@ -1,42 +1,42 @@
 #include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 #include "lex/lex.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
-        auto lhsContext = enter(Context::Expr);
-        ParseResult lhs;
+    auto handleExpr(Context context) -> Opt<syntax::Node> {
+        Opt<syntax::Node> lhs;
 
-        if (lhsContext.stream().match(syntax::isPrefixOperator)) {
-            lhsContext.to(Context::PrefixExpr);
+        if (context.stream().match(syntax::isPrefixOperator)) {
+            context.to(Context::PrefixExpr);
 
-            auto const op = lhsContext.stream().current().lexeme();
-            lhs = handleExpr(
-                    syntax::opPrecedence(
-                        op, syntax::EOperator::Prefix
-                    ))
-                .and_then([&](auto const& node) -> ParseResult {
-                    return syntax::expr::Prefix{node, op, lhsContext.location()};
+            auto const op = context.stream().current().lexeme();
+            lhs = handleExpr(Context::enter(Context::Expr, context, syntax::opPrecedence(
+                                                op, syntax::EOperator::Prefix)))
+                .and_then([&](auto const& node) -> Opt<syntax::Node> {
+                    return syntax::expr::Prefix{node, op, context.location()};
                 });
         }
         else {
-            lhs = handlePrimaryExpr();
+            lhs = handlePrimaryExpr(Context::enter(Context::PrimaryExpr, context));
         }
         if (!lhs) {
             return {};
         }
 
-        auto rhsContext = enter(Context::Expr);
+        auto rhsContext = Context::enter(Context::Expr, context);
         while (true) {
             if (syntax::isPostfixStart(rhsContext.stream().peek().lexeme())) {
-                if (auto const tuple = handleTupleExpr(); tuple) {
+                if (auto const tuple = handleTupleExpr(
+                    Context::enter(Context::TupleExpr, context)); tuple) {
                     lhs = syntax::expr::FnApp{
-                        *lhs, *tuple, lhsContext.location()
+                        *lhs, *tuple, context.location()
                     };
                 }
-                else if (auto const array = handleArrayExpr(); array) {
+                else if (auto const array = handleArrayExpr(
+                    Context::enter(Context::ArrayExpr, context)); array) {
                     lhs = syntax::expr::Subscript{
-                        *lhs, *array, lhsContext.location()
+                        *lhs, *array, context.location()
                     };
                 }
             }
@@ -47,16 +47,17 @@ namespace tlc::parse {
                 auto const p = syntax::opPrecedence(
                     op, syntax::EOperator::Binary
                 );
-                if (rhsContext.backtrackIf(p <= minP)) {
+                if (rhsContext.backtrackIf(p <= context.minPrecedence())) {
                     break;
                 }
 
                 auto rhs = handleExpr(
-                    syntax::isLeftAssociative(op) ? p + 1 : p
+                    Context::enter(Context::Expr,
+                                   context, syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
                 // rhsContext.emitIfNodeEmpty(rhs, EParseErrorReason::MissingExpr);
                 lhs = syntax::expr::Binary{
-                    *lhs, std::move(rhs), op, lhsContext.location()
+                    *lhs, std::move(rhs), op, context.location()
                 };
             }
             else {
@@ -67,38 +68,43 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        if (auto const result = handleTryExpr(); result) {
+    auto handlePrimaryExpr(Context context) -> Opt<syntax::Node> {
+        if (auto const result = handleTryExpr(
+            Context::enter(Context::TryExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleSingleTokenLiteral(); result) {
+        if (auto const result = handleSingleTokenLiteral(
+            Context::enter(Context::LiteralExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleRecordExpr(); result) {
+        if (auto const result = handleRecordExpr(
+            Context::enter(Context::RecordExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleIdentifierLiteral(); result) {
+        if (auto const result = handleIdentifierLiteral(
+            Context::enter(Context::IdentifierExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleString(); result) {
+        if (auto const result = handleString(
+            Context::enter(Context::StringExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleTupleExpr(); result) {
+        if (auto const result = handleTupleExpr(
+            Context::enter(Context::TupleExpr, context)); result) {
             return result;
         }
-        if (auto const result = handleArrayExpr(); result) {
+        if (auto const result = handleArrayExpr(
+            Context::enter(Context::ArrayExpr, context)); result) {
             return result;
         }
         return {};
     }
 
-    auto Parse::handleSingleTokenLiteral() -> ParseResult {
+    auto handleSingleTokenLiteral(Context context) -> Opt<syntax::Node> {
         static const HashMap<lexeme::Lexeme, i32> baseTable = {
             {lexeme::integer2Literal, 2}, {lexeme::integer8Literal, 8},
             {lexeme::integer10Literal, 10}, {lexeme::integer16Literal, 16},
         };
-
-        auto context = enter(Context::LiteralExpr);
 
         if (!context.stream().match(
             lexeme::integer2Literal, lexeme::integer8Literal,
@@ -132,9 +138,7 @@ namespace tlc::parse {
         }
     }
 
-    auto Parse::handleIdentifierLiteral() -> ParseResult {
-        auto context = enter(Context::IdentifierExpr);
-
+    auto handleIdentifierLiteral(Context context) -> Opt<syntax::Node> {
         if (context.stream().match(lexeme::anonymous)) {
             return syntax::expr::Identifier{
                 {context.stream().current().str()}, context.location()
@@ -157,9 +161,7 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleTupleExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        auto context = enter(Context::TupleExpr);
-
+    auto handleTupleExpr(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::leftParen)) {
             return {};
         }
@@ -169,7 +171,8 @@ namespace tlc::parse {
 
         Vec<syntax::Node> elements;
         do {
-            auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+            auto expr = handleExpr(Context::enter(Context::Expr, context))
+                .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(expr, Reason::MissingExpr);
             elements.push_back(std::move(expr));
         }
@@ -181,9 +184,7 @@ namespace tlc::parse {
         return syntax::expr::Tuple{std::move(elements), context.location()};
     }
 
-    auto Parse::handleArrayExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        auto context = enter(Context::ArrayExpr);
-
+    auto handleArrayExpr(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::leftBracket)) {
             return {};
         }
@@ -193,7 +194,8 @@ namespace tlc::parse {
 
         Vec<syntax::Node> elements;
         do {
-            auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+            auto expr = handleExpr(Context::enter(Context::Expr, context))
+                .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(expr, Reason::MissingExpr);
             elements.push_back(std::move(expr));
         }
@@ -205,10 +207,9 @@ namespace tlc::parse {
         return syntax::expr::Array{std::move(elements), context.location()};
     }
 
-    auto Parse::handleRecordExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        auto context = enter(Context::RecordExpr);
-
-        auto type = handleTypeIdentifier().value_or({});
+    auto handleRecordExpr(Context context) -> Opt<syntax::Node> {
+        auto type = handleTypeIdentifier(Context::enter(Context::RecordExpr, context))
+            .value_or({});
         if (context.backtrackIf(!context.stream().match(lexeme::leftBrace))) {
             return {};
         }
@@ -220,7 +221,7 @@ namespace tlc::parse {
 
         Vec<syntax::Node> entries;
         do {
-            auto entryContext = enter(Context::RecordEntryExpr);
+            auto entryContext = Context::enter(Context::RecordEntryExpr, context);
             entryContext.emitIfLexemeNotPresent(
                 lexeme::identifier, Reason::MissingId
             );
@@ -229,7 +230,8 @@ namespace tlc::parse {
             entryContext.emitIfLexemeNotPresent(
                 lexeme::colon, Reason::MissingSymbol
             );
-            auto value = handleExpr().value_or(syntax::RequiredButMissing{});
+            auto value = handleExpr(Context::enter(Context::Expr, context))
+                .value_or(syntax::RequiredButMissing{});
             entryContext.emitIfNodeEmpty(value, Reason::MissingExpr);
 
             entries.emplace_back(syntax::expr::RecordEntry{
@@ -246,9 +248,7 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleString() -> ParseResult {
-        auto context = enter(Context::StringExpr);
-
+    auto handleString(Context context) -> Opt<syntax::Node> {
         Vec<Str> fragmentStrings;
         Vec<token::Token> placeholderTokens;
         while (context.stream().match(lexeme::stringFragment)) {
@@ -269,21 +269,24 @@ namespace tlc::parse {
         }
 
         // prohibit recursive string interpolation
-        context.emitIf(m_isSubroutine, Reason::RestrictedAction);
+        context.emitIf(context.isSubroutine(), Reason::RestrictedAction);
 
         Vec<syntax::Node> placeholders = placeholderTokens | rv::transform(
             [&context](token::Token const& token) {
                 std::istringstream iss;
                 iss.str(token.str());
 
-                auto expr = Parse{
+                auto parse = Parse{
                     context.filepath(), lex::Lex::operator()(std::move(iss)),
                     Location{
                         .line = token.location().line,
                         .column = token.location().column -
                         context.location().column + 1
                     }
-                }.handleExpr().value_or(syntax::RequiredButMissing{});
+                };
+                auto expr = handleExpr(
+                    parse.globalContext(Context::Expr)
+                ).value_or(syntax::RequiredButMissing{});
                 context.emitIfNodeEmpty(expr, Reason::MissingExpr);
                 return expr;
             }) | rng::to<Vec<syntax::Node>>();
@@ -294,14 +297,13 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleTryExpr() -> ParseResult {
-        auto context = enter(Context::TryExpr);
-
+    auto handleTryExpr(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::try_)) {
             return {};
         }
 
-        auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+        auto expr = handleExpr(Context::enter(Context::Expr, context))
+            .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(expr, Reason::MissingExpr);
         return syntax::expr::Try{std::move(expr), context.location()};
     }

@@ -14,132 +14,40 @@
 
 namespace tlc::parse {
     class Parse final {
-        using TError = Error<EParseErrorContext, EParseErrorReason>;
-        using TErrorCollector =
-        ErrorCollector<EParseErrorContext, EParseErrorReason>;
-        using ParseResult = Opt<syntax::Node>;
-        using Reason = EParseErrorReason;
+        using TErrorCollector = ErrorCollector<EParseErrorContext, Reason>;
 
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens)
             -> syntax::Node;
 
-        Parse(fs::path filepath, Vec<token::Token> tokens)
+        constexpr Parse(fs::path filepath, Vec<token::Token> tokens)
             : m_filepath{std::move(filepath)},
               m_stream{std::move(tokens)},
               m_tracker{m_stream}, m_collector{TErrorCollector::instance()},
               m_isSubroutine{false} {}
 
-        auto operator()() -> syntax::Node;
-
-#ifdef TLC_CONFIG_BUILD_TESTS
-        auto parseType() -> ParseResult {
-            return handleType();
-        }
-
-        auto parseExpr() -> ParseResult {
-            return handleExpr();
-        }
-
-        auto parseStmt() -> ParseResult {
-            return handleStmt();
-        }
-
-        auto parseDecl() -> ParseResult {
-            return handleDecl();
-        }
-
-        auto parseGenericParamsDecl() -> ParseResult {
-            return handleGenericParamsDecl();
-        }
-#endif
-
-    private:
-        Parse(fs::path filepath, Vec<token::Token> tokens, Location offset)
+        constexpr Parse(fs::path filepath, Vec<token::Token> tokens, Location offset)
             : m_filepath{std::move(filepath)},
               m_stream{std::move(tokens), std::move(offset)},
               m_tracker{m_stream}, m_collector{TErrorCollector::instance()},
               m_isSubroutine{true} {}
 
-    private:
-        auto handleExpr(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handlePrimaryExpr() -> ParseResult;
-        auto handleRecordExpr() -> ParseResult;
-        auto handleTupleExpr() -> ParseResult;
-        auto handleArrayExpr() -> ParseResult;
-        auto handleSingleTokenLiteral() -> ParseResult;
-        auto handleIdentifierLiteral() -> ParseResult;
-        auto handleString() -> ParseResult;
-        auto handleTryExpr() -> ParseResult;
+        auto operator()() -> syntax::Node;
 
-        auto handleType(syntax::OpPrecedence minP = 0) -> ParseResult;
-        auto handleTypeIdentifier() -> ParseResult;
-        auto handleTypeTuple() -> ParseResult;
-        auto handleTypeInfer() -> ParseResult;
-        auto handleGenericArguments() -> ParseResult;
-
-        auto handleDecl() -> ParseResult;
-        auto handleIdentifierDecl() -> ParseResult;
-        auto handleTupleDecl() -> ParseResult;
-        auto handleGenericParamsDecl() -> ParseResult;
-
-        auto handleStmt() -> ParseResult;
-        auto handleDeclStmt() -> ParseResult;
-        auto handleReturnStmt() -> ParseResult;
-        auto handleDeferStmt() -> ParseResult;
-        auto handleExprPrefixedStmt() -> ParseResult;
-        auto handleLoopStmt() -> ParseResult;
-        auto handleMatchStmt() -> ParseResult;
-        auto handleBlockStmt() -> ParseResult;
-
-        auto handleFunctionDef(token::Token const& visibility) -> ParseResult;
-        auto handleFunctionPrototype() -> ParseResult;
-        auto handleTypeDef(token::Token const& visibility) -> ParseResult;
-        auto handleEnumDef(token::Token const& visibility) -> ParseResult;
-        auto handleTraitDef(token::Token const& visibility) -> ParseResult;
-        auto handleFlagDef(token::Token const& visibility) -> ParseResult;
-        auto handleModuleDecl() -> ParseResult;
-        auto handleImportDecl() -> ParseResult;
-        auto handleTranslationUnit() -> ParseResult;
-
-    private:
-        [[nodiscard]] auto error(TError::Params params) const
-            -> Unexpected<TError> {
-            params.filepath = m_filepath;
-            params.location = m_tracker.current();
-            return Unexpected<TError>{std::move(params)};
+        constexpr auto globalContext(EParseErrorContext const eContext) -> Context {
+            return Context::global(
+                m_filepath, m_stream, m_tracker, m_collector,
+                eContext, m_isSubroutine
+            );
         }
 
-        auto collect(TError::Params errorParams) const -> TErrorCollector& {
-            // todo: remove this if
-            if (errorParams.reason == EParseErrorReason::NotAnError) {
-                return m_collector;
-            }
-            errorParams.filepath = m_filepath;
-            errorParams.location = m_tracker.current();
-            return m_collector(TError{std::move(errorParams)});
-        }
-
-        // todo: remove this
-        auto collect(TError error) const -> TErrorCollector& {
-            if (error.reason() == EParseErrorReason::NotAnError) {
-                return m_collector;
-            }
-
-            error.filepath(m_filepath);
-            return m_collector(std::move(error));
-        }
-
-        [[nodiscard]] auto createDefaultVisibility() const -> token::Token {
-            return {lexeme::empty, "", m_stream.peek().location()};
-        }
-
-        [[nodiscard]] auto enter(EParseErrorContext const errorContext)
-            -> Context {
-            return Context{
-                m_filepath, m_stream, m_tracker, m_collector, errorContext
-            };
-        }
+#ifdef TLC_CONFIG_BUILD_TESTS
+        auto parseType() -> Opt<syntax::Node>;
+        auto parseExpr() -> Opt<syntax::Node>;
+        auto parseStmt() -> Opt<syntax::Node>;
+        auto parseDecl() -> Opt<syntax::Node>;
+        auto parseGenericParamsDecl() -> Opt<syntax::Node>;
+#endif
 
     private:
         fs::path m_filepath;

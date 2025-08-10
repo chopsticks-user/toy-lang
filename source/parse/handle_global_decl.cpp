@@ -1,10 +1,9 @@
-#include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleTranslationUnit() -> ParseResult {
-        auto context = enter(Context::TranslationUnit);
-
-        auto moduleDecl = handleModuleDecl()
+    auto handleTranslationUnit(Context context) -> Opt<syntax::Node> {
+        auto moduleDecl =
+            handleModuleDecl(Context::enter(Context::ModuleDecl, context))
             .value_or(syntax::RequiredButMissing{});
         if (context.emitIfNodeEmpty(moduleDecl, Reason::MissingDecl)) {
             return {};
@@ -12,11 +11,12 @@ namespace tlc::parse {
 
         syntax::Node importGroup;
         {
-            auto importGroupContext = enter(Context::ImportDeclGroup);
+            auto importGroupContext = Context::enter(Context::ImportDeclGroup, context);
 
             Vec<syntax::Node> imports;
             while (context.stream().peek().lexeme() != lexeme::invalid) {
-                auto importDecl = handleImportDecl();
+                auto importDecl = handleImportDecl(
+                    Context::enter(Context::ImportDecl, context));
                 if (!importDecl) {
                     break;
                 }
@@ -32,12 +32,14 @@ namespace tlc::parse {
 
         Vec<syntax::Node> definitions;
         while (context.stream().peek().lexeme() != lexeme::invalid) {
-            auto const visibility =
-                context.stream().match(lexeme::pub, lexeme::prv)
-                    ? context.stream().current()
-                    : createDefaultVisibility();
+            Opt<token::Token> visibility;
+            if (context.stream().match(lexeme::pub, lexeme::prv)) {
+                visibility = context.stream().current();
+            }
 
-            if (auto fnDef = handleFunctionDef(visibility); fnDef) {
+            if (auto fnDef = handleFunctionDef(
+                Context::enter(Context::Function, context,
+                               {}, std::move(visibility))); fnDef) {
                 definitions.push_back(std::move(*fnDef));
             }
         }
@@ -48,14 +50,13 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleModuleDecl() -> ParseResult {
-        auto context = enter(Context::ModuleDecl);
-
+    auto handleModuleDecl(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::module_)) {
             return {};
         }
 
-        auto path = handleIdentifierLiteral()
+        auto path = handleIdentifierLiteral(
+                Context::enter(Context::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
         if (context.emitIfNodeEmpty(path, Reason::MissingId)) {
             return {};
@@ -70,20 +71,20 @@ namespace tlc::parse {
     }
 
 
-    auto Parse::handleImportDecl() -> ParseResult {
-        auto context = enter(Context::ImportDecl);
-
+    auto handleImportDecl(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::import_)) {
             return {};
         }
 
-        auto path_or_alias = handleIdentifierLiteral()
+        auto path_or_alias =
+            handleIdentifierLiteral(Context::enter(Context::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(path_or_alias, Reason::MissingId);
 
         syntax::Node path;
         if (context.stream().match(lexeme::equal)) {
-            path = handleIdentifierLiteral()
+            path = handleIdentifierLiteral(
+                    Context::enter(Context::LiteralExpr, context))
                 .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(path_or_alias, Reason::MissingExpr);
         }

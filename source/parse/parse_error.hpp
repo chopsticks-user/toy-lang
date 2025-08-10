@@ -16,13 +16,14 @@ namespace tlc::parse {
         Type, FunctionType, TypeIdentifier, TupleType, TypeInfer,
         BinaryTypeExpr, GenericTypeArguments,
 
-        IdDecl, TupleDecl, GenericParamsDecl,
+        Decl, IdDecl, TupleDecl, GenericParamsDecl,
 
         DeclStmt, ReturnStmt, Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt,
         AssignStmt, ExprStmt, CondStmt, YieldStmt, LoopStmt, MatchStmt,
         MatchCaseStmt, MatchCaseDefaultStmt,
 
-        TranslationUnit, ModuleDecl, ImportDeclGroup, ImportDecl, FunctionPrototype, Function,
+        TranslationUnit, ModuleDecl, ImportDeclGroup, ImportDecl,
+        FunctionPrototype, Function,
     };
 
     enum class EParseErrorReason {
@@ -30,6 +31,8 @@ namespace tlc::parse {
         MissingExpr, MissingType, MissingId, MissingDecl, MissingStmt,
         MissingBody, RestrictedAction, Unknown,
     };
+
+    using Reason = EParseErrorReason;
 }
 
 #endif // TLC_PARSE_ERROR_HPP

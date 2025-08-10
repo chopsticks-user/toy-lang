@@ -84,17 +84,5 @@ TEST_CASE_WITH_FIXTURE(
         "        (((2 * x)) |> io.println);\n"
         "    }\n"
         "}",
-
-        // todo: backtracking should also remove collected errors (handleDeclStmt -> handleTupleDecl)
-        .expectedErrors = {
-            {
-                .context = tlc::parse::EParseErrorContext::TupleDecl,
-                .reason = tlc::parse::EParseErrorReason::MissingDecl
-            },
-            {
-                .context = tlc::parse::EParseErrorContext::TupleDecl,
-                .reason = tlc::parse::EParseErrorReason::MissingEnclosingSymbol
-            },
-        },
     });
 }

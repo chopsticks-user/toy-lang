@@ -1,30 +1,30 @@
-#include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleFunctionDef(token::Token const& visibility) -> ParseResult {
-        auto context = enter(Context::Function);
-
-        auto prototype = handleFunctionPrototype().value_or({});
+    auto handleFunctionDef(Context context) -> Opt<syntax::Node> {
+        auto prototype = handleFunctionPrototype(
+                Context::enter(Context::FunctionPrototype, context))
+            .value_or({});
         if (syntax::isEmptyNode(prototype)) {
             return {};
         }
 
-        auto body = handleBlockStmt().value_or(syntax::RequiredButMissing{});
+        auto body = handleBlockStmt(Context::enter(Context::BlockStmt, context))
+            .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(body, Reason::MissingBody);
         return syntax::global::Function{
-            visibility.lexeme(), std::move(prototype),
-            std::move(body), visibility.location()
+            context.visibility().lexeme(), std::move(prototype),
+            std::move(body), context.visibility().location()
         };
     }
 
-    auto Parse::handleFunctionPrototype() -> ParseResult {
-        auto context = enter(Context::FunctionPrototype);
-
+    auto handleFunctionPrototype(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::fn)) {
             return {};
         }
 
-        auto genericDecl = handleGenericParamsDecl().value_or({});
+        auto genericDecl = handleGenericParamsDecl(
+            Context::enter(Context::GenericParamsDecl, context)).value_or({});
         Str name;
         if (!context.emitIfLexemeNotPresent(
             lexeme::identifier, Reason::MissingId)) {
@@ -32,13 +32,14 @@ namespace tlc::parse {
         }
         context.emitIfLexemeNotPresent(lexeme::colon, Reason::MissingDecl);
 
-        auto paramsDecl = handleTupleDecl()
+        auto paramsDecl = handleTupleDecl(Context::enter(Context::TupleDecl, context))
             .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(paramsDecl, Reason::MissingDecl);
         context.emitIfLexemeNotPresent(
             lexeme::minusGreater, Reason::MissingSymbol
         );
-        auto returnsDecl = handleTupleDecl().value_or({});
+        auto returnsDecl = handleTupleDecl(Context::enter(Context::TupleDecl, context))
+            .value_or({});
 
         return syntax::global::FunctionPrototype{
             std::move(genericDecl), std::move(name), std::move(paramsDecl),

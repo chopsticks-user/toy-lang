@@ -1,45 +1,48 @@
-#include "parse.hpp"
+#include "parse_unit_fwd.hpp"
 
 namespace tlc::parse {
-    auto Parse::handleType(syntax::OpPrecedence const minP) -> ParseResult {
-        auto lhsContext = enter(Context::Type);
-
-        auto lhs = [this] {
-            if (auto infer = handleTypeInfer(); infer) {
+    auto handleType(Context context) -> Opt<syntax::Node> {
+        auto lhs = [&context] {
+            if (auto infer = handleTypeInfer(
+                Context::enter(Context::TypeInfer, context)); infer) {
                 return infer;
             }
-            if (auto tuple = handleTypeTuple(); tuple) {
+            if (auto tuple = handleTypeTuple(
+                Context::enter(Context::TupleType, context)); tuple) {
                 return tuple;
             }
-            return handleTypeIdentifier();
+            return handleTypeIdentifier(
+                Context::enter(Context::TypeIdentifier, context));
         }();
         if (!lhs) {
             return {};
         }
 
-        auto rhsContext = enter(Context::Type);
+        auto rhsContext = Context::enter(Context::Type, context);
         while (true) {
-            if (auto array = handleArrayExpr(); array) {
+            if (auto array = handleArrayExpr(
+                Context::enter(Context::ArrayExpr, context)); array) {
                 lhs = syntax::type::Array{
-                    *lhs, std::move(*array), lhsContext.location()
+                    *lhs, std::move(*array), context.location()
                 };
                 continue;
             }
-            if (auto genericArgs = handleGenericArguments(); genericArgs) {
+            if (auto genericArgs = handleGenericArguments(
+                Context::enter(Context::GenericTypeArguments, context)); genericArgs) {
                 lhs = syntax::type::Generic{
-                    *lhs, std::move(*genericArgs), lhsContext.location()
+                    *lhs, std::move(*genericArgs), context.location()
                 };
                 continue;
             }
             if (rhsContext.stream().match(lexeme::minusGreater)) {
                 rhsContext.to(Context::FunctionType);
 
-                auto fnResultType = handleType()
+                auto fnResultType = handleType(Context::enter(Context::Type, context))
                     .value_or(syntax::RequiredButMissing{});
                 rhsContext.emitIfNodeEmpty(fnResultType, Reason::MissingType);
 
                 lhs = syntax::type::Function{
-                    *lhs, std::move(fnResultType), lhsContext.location()
+                    *lhs, std::move(fnResultType), context.location()
                 };
                 continue;
             }
@@ -51,17 +54,18 @@ namespace tlc::parse {
                     op, syntax::EOperator::Binary
                 );
 
-                if (rhsContext.backtrackIf(p <= minP)) {
+                if (rhsContext.backtrackIf(p <= context.minPrecedence())) {
                     break;
                 }
 
                 auto rhs = handleType(
-                    syntax::isLeftAssociative(op) ? p + 1 : p
+                    Context::enter(Context::Type, context,
+                                   syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
                 rhsContext.emitIfNodeEmpty(rhs, Reason::MissingType);
 
                 lhs = syntax::type::Binary{
-                    *lhs, op, std::move(rhs), lhsContext.location()
+                    *lhs, op, std::move(rhs), context.location()
                 };
                 continue;
             }
@@ -71,9 +75,7 @@ namespace tlc::parse {
         return lhs;
     }
 
-    auto Parse::handleTypeIdentifier() -> ParseResult {
-        auto context = enter(Context::TypeIdentifier);
-
+    auto handleTypeIdentifier(Context context) -> Opt<syntax::Node> {
         auto const constant = !context.stream().match(lexeme::dollar);
 
         Vec<Str> fragments;
@@ -96,9 +98,7 @@ namespace tlc::parse {
         };
     }
 
-    auto Parse::handleTypeTuple() -> ParseResult {
-        auto context = enter(Context::TupleType);
-
+    auto handleTypeTuple(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::leftParen)) {
             return {};
         }
@@ -108,7 +108,8 @@ namespace tlc::parse {
 
         Vec<syntax::Node> types;
         do {
-            auto type = handleType().value_or(syntax::RequiredButMissing{});
+            auto type = handleType(Context::enter(Context::Type, context))
+                .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(type, Reason::MissingType);
             types.push_back(std::move(type));
         }
@@ -120,15 +121,14 @@ namespace tlc::parse {
         return syntax::type::Tuple{std::move(types), context.location()};
     }
 
-    auto Parse::handleTypeInfer() -> ParseResult {
-        auto context = enter(Context::TypeInfer);
-
+    auto handleTypeInfer(Context context) -> Opt<syntax::Node> {
         if (context.backtrackIf(!context.stream().match(lexeme::leftBracket) ||
             !context.stream().match(lexeme::leftBracket))) {
             return {};
         }
 
-        auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+        auto expr = handleExpr(Context::enter(Context::Expr, context))
+            .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeEmpty(expr, Reason::MissingExpr);
 
         context.emitIfLexemeNotPresent(
@@ -140,16 +140,15 @@ namespace tlc::parse {
         return syntax::type::Infer{std::move(expr), context.location()};
     }
 
-    auto Parse::handleGenericArguments() -> ParseResult {
-        auto context = enter(Context::GenericTypeArguments);
-
+    auto handleGenericArguments(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::less)) {
             return {};
         }
 
         Vec<syntax::Node> args;
         do {
-            auto type = handleType().value_or(syntax::RequiredButMissing{});
+            auto type = handleType(Context::enter(Context::Type, context))
+                .value_or(syntax::RequiredButMissing{});
             context.emitIfNodeEmpty(type, Reason::MissingType);
             args.push_back(std::move(type));
         }
