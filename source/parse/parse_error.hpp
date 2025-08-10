@@ -7,12 +7,22 @@
 
 namespace tlc::parse {
     enum class EParseErrorContext {
-        Unknown, Tuple, Array, Access, TypeInfer, Record, String,
-        IdDecl, TupleDecl, Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt,
+        Unknown,
+
+        LiteralExpr, IdentifierExpr, TupleExpr, ArrayExpr, RecordExpr,
+        RecordEntryExpr, TryExpr, Expr, PrefixExpr, PrimaryExpr, BinaryExpr,
+        StringExpr,
+
+        Type, FunctionType, TypeIdentifier, TupleType, TypeInfer,
+        BinaryTypeExpr, GenericTypeArguments,
+
+        IdDecl, TupleDecl, GenericParamsDecl,
+
+        DeclStmt, ReturnStmt, Stmt, LetStmt, BlockStmt, PrefaceStmt, DeferStmt,
         AssignStmt, ExprStmt, CondStmt, YieldStmt, LoopStmt, MatchStmt,
-        MatchCaseStmt, MatchCaseDefaultStmt, GenericTypeArguments, BinaryTypeExpr,
-        TryExpr, GenericParamsDecl, TranslationUnit, ModuleDecl, ImportDecl,
-        FunctionPrototype, Function
+        MatchCaseStmt, MatchCaseDefaultStmt,
+
+        TranslationUnit, ModuleDecl, ImportDecl, FunctionPrototype, Function,
     };
 
     enum class EParseErrorReason {

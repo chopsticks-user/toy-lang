@@ -4,20 +4,19 @@
 
 namespace tlc::parse {
     auto Parse::handleExpr(syntax::OpPrecedence const minP) -> ParseResult { // NOLINT(*-no-recursion)
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
+        auto lhsContext = enter(Context::Expr);
         ParseResult lhs;
 
-        // todo: consider requiring parenthesis around each prefix expressions
-        // to avoid ambiguity
-        if (m_stream.match(syntax::isPrefixOperator)) {
-            auto const op = m_stream.current().lexeme();
+        if (lhsContext.stream().match(syntax::isPrefixOperator)) {
+            lhsContext.to(Context::PrefixExpr);
+
+            auto const op = lhsContext.stream().current().lexeme();
             lhs = handleExpr(
                     syntax::opPrecedence(
                         op, syntax::EOperator::Prefix
                     ))
                 .and_then([&](auto const& node) -> ParseResult {
-                    return syntax::expr::Prefix{node, op, *location};
+                    return syntax::expr::Prefix{node, op, lhsContext.location()};
                 });
         }
         else {
@@ -27,39 +26,38 @@ namespace tlc::parse {
             return Unexpected{lhs.error()};
         }
 
-        // m_stream.markBacktrack();
-        auto streamBacktrack = m_stream.scopedBacktrack();
+        auto rhsContext = enter(Context::Expr);
         while (true) {
-            if (syntax::isPostfixStart(m_stream.peek().lexeme())) {
+            if (syntax::isPostfixStart(rhsContext.stream().peek().lexeme())) {
                 if (auto const tuple = handleTupleExpr(); tuple) {
                     lhs = syntax::expr::FnApp{
-                        *lhs, *tuple, *location
+                        *lhs, *tuple, lhsContext.location()
                     };
                 }
                 else if (auto const array = handleArrayExpr(); array) {
                     lhs = syntax::expr::Subscript{
-                        *lhs, *array, *location
+                        *lhs, *array, lhsContext.location()
                     };
                 }
             }
-            else if (m_stream.match(syntax::isBinaryOperator)) {
-                auto const op = m_stream.current().lexeme();
+            else if (rhsContext.stream().match(syntax::isBinaryOperator)) {
+                rhsContext.to(Context::BinaryExpr);
+
+                auto const op = rhsContext.stream().current().lexeme();
                 auto const p = syntax::opPrecedence(
                     op, syntax::EOperator::Binary
                 );
-
-                if (p <= minP) {
-                    streamBacktrack();
+                if (rhsContext.backtrackIf(p <= minP)) {
                     break;
                 }
 
-                lhs = handleExpr(
+                auto rhs = handleExpr(
                     syntax::isLeftAssociative(op) ? p + 1 : p
-                ).and_then([&](auto const& rhs) -> ParseResult {
-                    return syntax::expr::Binary{
-                        *lhs, rhs, op, *location
-                    };
-                });
+                ).value_or(syntax::RequiredButMissing{});
+                // rhsContext.emitIfNodeEmpty(rhs, EParseErrorReason::MissingExpr);
+                lhs = syntax::expr::Binary{
+                    *lhs, std::move(rhs), op, lhsContext.location()
+                };
             }
             else {
                 break;
@@ -70,8 +68,6 @@ namespace tlc::parse {
     }
 
     auto Parse::handlePrimaryExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        TLC_SCOPE_REPORTER();
-        // todo:
         if (auto const result = handleTryExpr(); result) {
             return result;
         }
@@ -97,306 +93,216 @@ namespace tlc::parse {
     }
 
     auto Parse::handleSingleTokenLiteral() -> ParseResult {
-        TLC_SCOPE_REPORTER();
         static const HashMap<lexeme::Lexeme, i32> baseTable = {
             {lexeme::integer2Literal, 2}, {lexeme::integer8Literal, 8},
             {lexeme::integer10Literal, 10}, {lexeme::integer16Literal, 16},
         };
 
-        return match(
+        auto context = enter(Context::LiteralExpr);
+
+        if (!context.stream().match(
             lexeme::integer2Literal, lexeme::integer8Literal,
             lexeme::integer10Literal, lexeme::integer16Literal,
             lexeme::floatLiteral, lexeme::true_, lexeme::false_
-        )(m_stream, m_tracker).and_then(
-            [this](const auto& tokens)
-            -> ParseResult {
-                auto location = tokens.front().location();
-                switch (tokens.front().lexeme().type()) {
-                case lexeme::Lexeme::FloatLiteral:
-                    return syntax::expr::Float{
-                        std::stod(tokens.front().str()), location
-                    };
-                case lexeme::Lexeme::True:
-                case lexeme::Lexeme::False:
-                    return syntax::expr::Boolean{
-                        tokens.front().lexeme() == lexeme::true_, location
-                    };
-                default:
-                    return syntax::expr::Integer{
-                        std::stoll(
-                            tokens.front().str(), nullptr,
-                            baseTable.at(tokens.front().lexeme())
-                        ),
-                        location
-                    };
-                }
-            }
-        );
+        )) {
+            return defaultError();
+        }
+
+        switch (auto token = context.stream().current();
+            token.lexeme().type()) {
+        case lexeme::Lexeme::FloatLiteral:
+            return syntax::expr::Float{
+                std::stod(token.str()),
+                context.location()
+            };
+        case lexeme::Lexeme::True:
+        case lexeme::Lexeme::False:
+            return syntax::expr::Boolean{
+                token.lexeme() == lexeme::true_,
+                context.location()
+            };
+        default:
+            return syntax::expr::Integer{
+                std::stoll(
+                    token.str(), nullptr,
+                    baseTable.at(token.lexeme())
+                ),
+                context.location()
+            };
+        }
     }
 
     auto Parse::handleIdentifierLiteral() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        if (m_stream.match(lexeme::anonymous)) {
+        auto context = enter(Context::IdentifierExpr);
+
+        if (context.stream().match(lexeme::anonymous)) {
             return syntax::expr::Identifier{
-                {m_stream.current().str()}, m_stream.current().location()
+                {context.stream().current().str()}, context.location()
             };
         }
-        return seq(
-            many0(seq(match(lexeme::identifier), match(lexeme::dot))),
-            match(lexeme::identifier)
-        )(m_stream, m_tracker).and_then([this](auto const& tokens)
-            -> ParseResult {
-                auto path = tokens
-                    | rv::take(tokens.size() - 1)
-                    | rv::filter([](auto&& token) {
-                        return token.lexeme() == lexeme::identifier;
-                    })
-                    | rv::transform([](auto&& token) { return token.str(); })
-                    | rng::to<Vec<Str>>();
-                path.push_back(Str{tokens.back().str()});
-                return syntax::expr::Identifier{
-                    std::move(path), tokens.front().location()
-                };
+
+        Vec<Str> fragments;
+        while (context.stream().match(lexeme::identifier)) {
+            fragments.push_back(context.stream().current().str());
+            if (!context.stream().match(lexeme::dot)) {
+                break;
             }
-        );
+        }
+        if (fragments.empty()) {
+            return defaultError();
+        }
+
+        return syntax::expr::Identifier{
+            std::move(fragments), context.location()
+        };
     }
 
     auto Parse::handleTupleExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
-        if (!m_stream.match(lexeme::leftParen)) {
+        auto context = enter(Context::TupleExpr);
+
+        if (!context.stream().match(lexeme::leftParen)) {
             return defaultError();
         }
-        if (m_stream.match(lexeme::rightParen)) {
-            return syntax::expr::Tuple{{}, *location};
+        if (context.stream().match(lexeme::rightParen)) {
+            return syntax::expr::Tuple{{}, context.location()};
         }
 
         Vec<syntax::Node> elements;
         do {
-            /**
-             * (x,y,z,) -> error, the ',' after 'z' expects another expr
-             * (,x,y,z) -> error, the ',' before 'x' expects another expr
-             * (,x,y,z,) -> error
-             * (Int,x,y) -> error, "Int" is not an expr
-             *
-             */
-            elements.push_back(*handleExpr().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error).collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::Tuple,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return syntax::RequiredButMissing{};
-                    })
-            );
+            auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+            elements.push_back(std::move(expr));
         }
-        while (m_stream.match(lexeme::comma));
+        while (context.stream().match(lexeme::comma));
 
-        if (!m_stream.match(lexeme::rightParen)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::Tuple,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
-
-        return syntax::expr::Tuple{std::move(elements), *location};
+        context.emitIfLexemeNotPresent(
+            lexeme::rightParen, Reason::MissingEnclosingSymbol
+        );
+        return syntax::expr::Tuple{std::move(elements), context.location()};
     }
 
     auto Parse::handleArrayExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
-        if (!m_stream.match(lexeme::leftBracket)) {
+        auto context = enter(Context::ArrayExpr);
+
+        if (!context.stream().match(lexeme::leftBracket)) {
             return defaultError();
         }
-        if (m_stream.match(lexeme::rightBracket)) {
-            return syntax::expr::Array{{}, *location};
+        if (context.stream().match(lexeme::rightBracket)) {
+            return syntax::expr::Array{{}, context.location()};
         }
 
         Vec<syntax::Node> elements;
         do {
-            /**
-             * [x,y,z,] -> error, the ',' after 'z' expects another expr
-             * [,x,y,z] -> error, the ',' before 'x' expects another expr
-             * [,x,y,z,] -> error
-             * [Int,x,y] -> error, "Int" is not an expr
-             *
-             */
-            elements.push_back(*handleExpr().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::Array,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return syntax::RequiredButMissing{};
-                    })
-            );
+            auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+            elements.push_back(std::move(expr));
         }
-        while (m_stream.match(lexeme::comma));
+        while (context.stream().match(lexeme::comma));
 
-        if (!m_stream.match(lexeme::rightBracket)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::Array,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
-
-        return syntax::expr::Array{std::move(elements), *location};
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+        );
+        return syntax::expr::Array{std::move(elements), context.location()};
     }
 
     auto Parse::handleRecordExpr() -> ParseResult { // NOLINT(*-no-recursion)
-        TLC_SCOPE_REPORTER();
-        auto streamBacktrack = m_stream.scopedBacktrack();
-        auto const location = m_tracker.scopedLocation();
+        auto context = enter(Context::RecordExpr);
 
         auto type = handleTypeIdentifier().value_or({});
-        if (!m_stream.match(lexeme::leftBrace)) {
-            streamBacktrack();
+        if (context.backtrackIf(!context.stream().match(lexeme::leftBrace))) {
             return defaultError();
         }
-        if (m_stream.match(lexeme::rightBrace)) {
+        if (context.stream().match(lexeme::rightBrace)) {
             return syntax::expr::Record{
-                std::move(type), {}, *location
+                std::move(type), {}, context.location()
             };
         }
 
         Vec<syntax::Node> entries;
         do {
-            auto entryLocation = m_tracker.scopedLocation();
-            Str key;
-            if (!m_stream.match(lexeme::identifier)) {
-                collect({
-                    .location = m_tracker.current(),
-                    .context = EParseErrorContext::Record,
-                    .reason = EParseErrorReason::MissingId,
-                });
-            }
-            else {
-                key = m_stream.current().str();
-            }
-
-            if (!m_stream.match(lexeme::colon)) {
-                collect({
-                    .location = m_tracker.current(),
-                    .context = EParseErrorContext::Record,
-                    .reason = EParseErrorReason::MissingSymbol,
-                });
-            }
-
-            syntax::Node value = *handleExpr().or_else(
-                [this](auto&& error) -> ParseResult {
-                    collect(error).collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Record,
-                        .reason = EParseErrorReason::MissingExpr,
-                    });
-                    return {};
-                }
+            auto entryContext = enter(Context::RecordEntryExpr);
+            entryContext.emitIfLexemeNotPresent(
+                lexeme::identifier, Reason::MissingId
             );
+            Str key = context.stream().current().str();
+
+            entryContext.emitIfLexemeNotPresent(
+                lexeme::colon, Reason::MissingSymbol
+            );
+            auto value = handleExpr().value_or(syntax::RequiredButMissing{});
+            entryContext.emitIfNodeEmpty(value, Reason::MissingExpr);
 
             entries.emplace_back(syntax::expr::RecordEntry{
-                std::move(key), std::move(value), *entryLocation
+                std::move(key), std::move(value), entryContext.location()
             });
         }
-        while (m_stream.match(lexeme::comma));
+        while (context.stream().match(lexeme::comma));
 
-        if (!m_stream.match(lexeme::rightBrace)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::Record,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
-
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBrace, Reason::MissingEnclosingSymbol
+        );
         return syntax::expr::Record{
-            std::move(type), std::move(entries), *location
+            std::move(type), std::move(entries), context.location()
         };
     }
 
     auto Parse::handleString() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return seq(
-            match(lexeme::stringFragment),
-            many0(seq(
-                match(lexeme::stringPlaceholder),
-                match(lexeme::stringFragment)
-            ))
-        )(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
+        auto context = enter(Context::StringExpr);
 
-                if (tokens.size() == 1) {
-                    return syntax::expr::String{
-                        {tokens.front().str()}, {}, location
-                    };
-                }
-
-                // prohibit recursive string interpolation
-                if (m_isSubroutine) {
-                    return error({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::String,
-                        .reason = EParseErrorReason::RestrictedAction,
-                    });
-                }
-
-                Vec<Str> fragments = tokens | rv::enumerate
-                    | rv::filter([](Pair<szt, token::Token> const& entry) {
-                        return (entry.first & 1) == 0;
-                    }) | rv::transform([](Pair<szt, token::Token> const& entry) {
-                        return entry.second.str();
-                    }) | rng::to<Vec<Str>>();
-
-                Vec<syntax::Node> placeholders = tokens | rv::enumerate
-                    | rv::filter([](Pair<szt, token::Token> const& entry) {
-                        return entry.first & 1;
-                    }) | rv::transform([this, location, &tokens](
-                        Pair<szt, token::Token> const& entry) {
-                            std::istringstream iss;
-                            iss.str(entry.second.str());
-                            return *Parse{
-                                m_filepath, lex::Lex::operator()(std::move(iss)),
-                                Location{
-                                    .line = tokens[entry.first].location().line,
-                                    .column = tokens[entry.first].location().column -
-                                    location.column + 1
-                                }
-                            }.handleExpr().or_else([&](auto&& error) -> ParseResult {
-                                collect(error).collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::String,
-                                    .reason = EParseErrorReason::MissingExpr,
-                                });
-                                return {};
-                            });
-                        }) | rng::to<Vec<syntax::Node>>();
-
-                return syntax::expr::String{
-                    std::move(fragments), std::move(placeholders), location
-                };
+        Vec<Str> fragmentStrings;
+        Vec<token::Token> placeholderTokens;
+        while (context.stream().match(lexeme::stringFragment)) {
+            fragmentStrings.push_back(context.stream().current().str());
+            if (!context.stream().match(lexeme::stringPlaceholder)) {
+                break;
             }
-        );
+            placeholderTokens.push_back(context.stream().current());
+        }
+
+        if (fragmentStrings.empty()) {
+            return defaultError();
+        }
+        if (fragmentStrings.size() == 1) {
+            return syntax::expr::String{
+                {fragmentStrings.front()}, {}, context.location()
+            };
+        }
+
+        // prohibit recursive string interpolation
+        context.emitIf(m_isSubroutine, Reason::RestrictedAction);
+
+        Vec<syntax::Node> placeholders = placeholderTokens | rv::transform(
+            [&context](token::Token const& token) {
+                std::istringstream iss;
+                iss.str(token.str());
+
+                auto expr = Parse{
+                    context.filepath(), lex::Lex::operator()(std::move(iss)),
+                    Location{
+                        .line = token.location().line,
+                        .column = token.location().column -
+                        context.location().column + 1
+                    }
+                }.handleExpr().value_or(syntax::RequiredButMissing{});
+                context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+                return expr;
+            }) | rng::to<Vec<syntax::Node>>();
+
+        return syntax::expr::String{
+            std::move(fragmentStrings), std::move(placeholders),
+            context.location()
+        };
     }
 
     auto Parse::handleTryExpr() -> ParseResult {
-        return match(lexeme::try_)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                return syntax::expr::Try{
-                    *handleExpr().or_else([&](auto&& error) -> ParseResult {
-                        collect(error).collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::TryExpr,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return syntax::RequiredButMissing{};
-                    }),
-                    tokens.front().location()
-                };
-            }
-        );
+        auto context = enter(Context::TryExpr);
+
+        if (!context.stream().match(lexeme::try_)) {
+            return defaultError();
+        }
+
+        auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+        return syntax::expr::Try{std::move(expr), context.location()};
     }
 }

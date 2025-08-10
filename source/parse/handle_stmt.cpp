@@ -2,7 +2,6 @@
 
 namespace tlc::parse {
     auto Parse::handleStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
         if (auto returnStmt = handleReturnStmt(); returnStmt) {
             return returnStmt;
         }
@@ -30,339 +29,201 @@ namespace tlc::parse {
     }
 
     auto Parse::handleDeclStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
-        auto backtrack = m_stream.scopedBacktrack();
-        return handleDecl().and_then(
-            [&](syntax::Node&& decl) -> ParseResult {
-                if (!m_stream.match(lexeme::equal)) {
-                    backtrack();
-                    return defaultError();
-                }
+        auto context = enter(Context::DeclStmt);
 
-                auto initializer = *parseExpr()
-                    .or_else([this](auto&& error) -> ParseResult {
-                        collect(error).collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::Stmt,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return syntax::RequiredButMissing{};
-                    });
+        auto decl = handleDecl().value_or({});
+        if (syntax::isEmptyNode(decl) ||
+            context.backtrackIf(!context.stream().match(lexeme::equal))) {
+            return defaultError();
+        }
 
-                if (!m_stream.match(lexeme::semicolon)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Stmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-                return syntax::stmt::Decl{
-                    std::move(decl), std::move(initializer), *location
-                };
-            }
+        auto initializer = parseExpr().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(
+            initializer, Reason::MissingExpr
         );
+
+        context.emitIfLexemeNotPresent(
+            lexeme::semicolon, Reason::MissingEnclosingSymbol
+        );
+        return syntax::stmt::Decl{
+            std::move(decl), std::move(initializer), context.location()
+        };
     }
 
     auto Parse::handleReturnStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::return_)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
+        auto context = enter(Context::ReturnStmt);
 
-                auto returnStmt = syntax::stmt::Return{
-                    *parseExpr().or_else([this](auto&& error) -> ParseResult {
-                        collect(error);
-                        return {};
-                    }),
-                    location,
-                };
+        if (!context.stream().match(lexeme::return_)) {
+            return defaultError();
+        }
 
-                if (!m_stream.match(lexeme::semicolon)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Stmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                return returnStmt;
-            }
+        auto returnExpr = parseExpr().value_or({});
+        context.emitIfLexemeNotPresent(
+            lexeme::semicolon, Reason::MissingEnclosingSymbol
         );
+        return syntax::stmt::Return{std::move(returnExpr), context.location()};
     }
 
     auto Parse::handleExprPrefixedStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
+        auto context = enter(Context::ExprStmt);
 
-        return handleExpr().and_then([&](auto&& expr)
-            -> ParseResult {
-                if (m_stream.match(syntax::isAssignmentOperator)) {
-                    auto const op = m_stream.current().lexeme();
-                    expr = syntax::stmt::Assign{
-                        expr, *handleExpr().or_else(
-                            [this](auto&& error) -> ParseResult {
-                                collect(error);
-                                collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::AssignStmt,
-                                    .reason = EParseErrorReason::MissingExpr,
-                                });
-                                return {};
-                            }
-                        ),
-                        op, *location
-                    };
-                }
-                else if (m_stream.match(lexeme::equalGreater)) {
-                    return syntax::stmt::Conditional{
-                        expr, *handleStmt().or_else(
-                            [&](auto&& error) -> ParseResult {
-                                collect(error);
-                                collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::CondStmt,
-                                    .reason = EParseErrorReason::MissingStmt,
-                                });
-                                return {};
-                            }
-                        ),
-                        *location
-                    };
-                }
-                else {
-                    expr = syntax::stmt::Expression{expr, *location};
-                }
+        auto prefixExpr = parseExpr().value_or({});
+        if (syntax::isEmptyNode(prefixExpr)) {
+            return defaultError();
+        }
 
-                if (!m_stream.match(lexeme::semicolon)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Stmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-                return expr;
-            });
+        if (context.stream().match(syntax::isAssignmentOperator)) {
+            context.to(Context::AssignStmt);
+
+            auto op = context.stream().current().lexeme();
+            auto expr = handleExpr()
+                .value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+
+            context.emitIfLexemeNotPresent(
+                lexeme::semicolon, Reason::MissingEnclosingSymbol
+            );
+            return syntax::stmt::Assign{
+                std::move(prefixExpr), std::move(expr),
+                std::move(op), context.location()
+            };
+        }
+
+        if (context.stream().match(lexeme::equalGreater)) {
+            context.to(Context::CondStmt);
+
+            auto thenStmt = handleStmt()
+                .value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(thenStmt, Reason::MissingStmt);
+
+            return syntax::stmt::Conditional{
+                std::move(prefixExpr), std::move(thenStmt), context.location()
+            };
+        }
+
+        context.emitIfLexemeNotPresent(
+            lexeme::semicolon, Reason::MissingEnclosingSymbol
+        );
+        return syntax::stmt::Expression{std::move(prefixExpr), context.location()};
     }
 
     auto Parse::handleLoopStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::for_)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-                auto decl = *handleDecl().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::LoopStmt,
-                            .reason = EParseErrorReason::MissingDecl,
-                        });
-                        return {};
-                    }
-                );
-                if (!m_stream.match(lexeme::in)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::LoopStmt,
-                        .reason = EParseErrorReason::MissingKeyword,
-                    });
-                }
-                auto range = *handleExpr().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::LoopStmt,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return {};
-                    }
-                );
-                auto body = *handleBlockStmt().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::LoopStmt,
-                            .reason = EParseErrorReason::MissingStmt,
-                        });
-                        return {};
-                    }
-                );
-                return syntax::stmt::Loop{
-                    std::move(decl), std::move(range),
-                    std::move(body), location
-                };
-            }
-        );
+        auto context = enter(Context::LoopStmt);
+
+        if (!context.stream().match(lexeme::for_)) {
+            return defaultError();
+        }
+
+        auto decl = handleDecl().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(decl, Reason::MissingDecl);
+        context.emitIfLexemeNotPresent(lexeme::in, Reason::MissingKeyword);
+
+        auto range = handleExpr().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(range, Reason::MissingExpr);
+
+        auto body = handleBlockStmt().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(range, Reason::MissingStmt);
+
+        return syntax::stmt::Loop{
+            std::move(decl), std::move(range),
+            std::move(body), context.location()
+        };
     }
 
     auto Parse::handleMatchStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::match)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-                auto expr = *handleExpr().or_else(
-                    [this](auto&& error) -> ParseResult {
-                        collect(error);
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::MatchStmt,
-                            .reason = EParseErrorReason::MissingExpr,
-                        });
-                        return {};
-                    }
+        auto context = enter(Context::MatchStmt);
+
+        if (!context.stream().match(lexeme::match)) {
+            return defaultError();
+        }
+
+        auto matchExpr = handleExpr().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(matchExpr, Reason::MissingExpr);
+
+        if (context.emitIfLexemeNotPresent(
+            lexeme::leftBrace, Reason::MissingBody)) {
+            return syntax::stmt::Match{
+                std::move(matchExpr), {}, {}, context.location()
+            };
+        }
+
+        context.to(Context::MatchCaseStmt);
+        Vec<syntax::Node> cases;
+        syntax::Node defaultStmt; // only the last default statement is considered
+        while (context.stream().peek().lexeme() != lexeme::rightBrace) {
+            if (context.stream().match(lexeme::anonymous)) {
+                context.to(Context::MatchCaseDefaultStmt);
+                context.emitIfLexemeNotPresent(
+                    lexeme::equalGreater, Reason::MissingSymbol
                 );
 
-                Vec<syntax::Node> cases;
-                syntax::Node defaultStmt; // only the last default statement is considered
-                if (!m_stream.match(lexeme::leftBrace)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::MatchStmt,
-                        .reason = EParseErrorReason::MissingBody,
-                    });
-                    return syntax::stmt::Match{
-                        std::move(expr), {}, {}, location
-                    };
-                }
-                while (!m_stream.match(lexeme::rightBrace)) {
-                    if (m_stream.match(lexeme::anonymous)) {
-                        if (!m_stream.match(lexeme::equalGreater)) {
-                            collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::MatchCaseDefaultStmt,
-                                .reason = EParseErrorReason::MissingSymbol,
-                            });
-                        }
-                        defaultStmt = *handleStmt().or_else(
-                            [this](auto&& error) -> ParseResult {
-                                collect(error);
-                                collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::MatchCaseDefaultStmt,
-                                    .reason = EParseErrorReason::MissingStmt,
-                                });
-                                return {};
-                            }
-                        );
-                        continue;
-                    }
-
-                    auto caseCoords = m_stream.peek().location();
-                    auto value = *handleExpr().or_else(
-                        [this](auto&& error) -> ParseResult {
-                            collect(error);
-                            return {};
-                        }
-                    );
-                    auto cond =
-                        match(lexeme::when)(m_stream, m_tracker)
-                        .and_then(
-                            [this](auto&&) -> ParseResult {
-                                return handleExpr().or_else(
-                                    [this](auto&& error) -> ParseResult {
-                                        collect(error);
-                                        collect({
-                                            .location = m_tracker.current(),
-                                            .context = EParseErrorContext::MatchCaseStmt,
-                                            .reason = EParseErrorReason::MissingExpr,
-                                        });
-                                        return {};
-                                    });
-                            }
-                        ).value_or({});
-                    if (!m_stream.match(lexeme::equalGreater)) {
-                        collect({
-                            .location = m_tracker.current(),
-                            .context = EParseErrorContext::MatchCaseStmt,
-                            .reason = EParseErrorReason::MissingSymbol,
-                        });
-                    }
-                    auto stmt = *handleStmt().or_else(
-                        [this](auto&& error) -> ParseResult {
-                            collect(error);
-                            collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::MatchCaseStmt,
-                                .reason = EParseErrorReason::MissingStmt,
-                            });
-                            return {};
-                        });
-                    cases.emplace_back(syntax::stmt::MatchCase{
-                        std::move(value), std::move(cond),
-                        std::move(stmt), std::move(caseCoords)
-                    });
-                }
-
-                if (m_stream.current().lexeme() != lexeme::rightBrace) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::MatchStmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-                return syntax::stmt::Match{
-                    std::move(expr), std::move(cases), std::move(defaultStmt),
-                    location
-                };
+                defaultStmt = handleStmt()
+                    .value_or(syntax::RequiredButMissing{});
+                context.emitIfNodeEmpty(defaultStmt, Reason::MissingStmt);
+                continue;
             }
+
+            auto caseCoords = context.stream().peek().location();
+            auto value = handleExpr().value_or({});
+
+            syntax::Node cond;
+            if (context.stream().match(lexeme::when)) {
+                cond = handleExpr().value_or(syntax::RequiredButMissing{});
+                context.emitIfNodeEmpty(cond, Reason::MissingExpr);
+            }
+
+            context.emitIfLexemeNotPresent(
+                lexeme::equalGreater, Reason::MissingSymbol
+            );
+            auto stmt = handleStmt().value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(stmt, Reason::MissingStmt);
+
+            cases.emplace_back(syntax::stmt::MatchCase{
+                std::move(value), std::move(cond),
+                std::move(stmt), std::move(caseCoords)
+            });
+        }
+
+        context.to(Context::MatchStmt);
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBrace, Reason::MissingEnclosingSymbol
         );
+        return syntax::stmt::Match{
+            std::move(matchExpr), std::move(cases),
+            std::move(defaultStmt), context.location()
+        };
     }
 
     auto Parse::handleBlockStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::leftBrace)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
+        auto context = enter(Context::BlockStmt);
 
-                Vec<syntax::Node> statements;
-                while (!m_stream.match(lexeme::rightBrace)) {
-                    statements.push_back(*parseStmt()
-                        .or_else([this](auto&& error) -> ParseResult {
-                            collect(error);
-                            collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::BlockStmt,
-                                .reason = EParseErrorReason::MissingStmt,
-                            });
-                            return {};
-                        })
-                    );
-                }
+        if (!context.stream().match(lexeme::leftBrace)) {
+            return defaultError();
+        }
 
-                if (m_stream.current().lexeme() != lexeme::rightBrace) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::BlockStmt,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
+        Vec<syntax::Node> statements;
+        while (context.stream().peek().lexeme() != lexeme::rightBrace) {
+            auto stmt = handleStmt()
+                .value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(stmt, Reason::MissingStmt);
+            statements.push_back(std::move(stmt));
+        }
 
-                return syntax::stmt::Block{std::move(statements), location};
-            }
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBrace, Reason::MissingEnclosingSymbol
         );
+        return syntax::stmt::Block{std::move(statements), context.location()};
     }
 
     auto Parse::handleDeferStmt() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::defer)(m_stream, m_tracker)
-            .and_then([this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-                return syntax::stmt::Defer{
-                    *handleStmt().or_else(
-                        [this, &location](auto&& error) -> ParseResult {
-                            collect(error);
-                            collect({
-                                .location = m_tracker.current(),
-                                .context = EParseErrorContext::DeferStmt,
-                                .reason = EParseErrorReason::MissingStmt,
-                            });
-                            return {};
-                        }),
-                    location
-                };
-            });
+        auto context = enter(Context::DeferStmt);
+
+        if (!context.stream().match(lexeme::defer)) {
+            return defaultError();
+        }
+
+        auto stmt = handleStmt().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(stmt, Reason::MissingStmt);
+        return syntax::stmt::Defer{std::move(stmt), context.location()};
     }
 }

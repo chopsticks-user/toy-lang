@@ -2,8 +2,8 @@
 
 namespace tlc::parse {
     auto Parse::handleType(syntax::OpPrecedence const minP) -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        auto const location = m_tracker.scopedLocation();
+        auto lhsContext = enter(Context::Type);
+
         auto lhs = [this] {
             if (auto infer = handleTypeInfer(); infer) {
                 return infer;
@@ -17,50 +17,52 @@ namespace tlc::parse {
             return defaultError();
         }
 
-        auto streamBacktrack = m_stream.scopedBacktrack();
+        auto rhsContext = enter(Context::Type);
         while (true) {
             if (auto array = handleArrayExpr(); array) {
                 lhs = syntax::type::Array{
-                    *lhs, std::move(*array), *location
+                    *lhs, std::move(*array), lhsContext.location()
                 };
                 continue;
             }
             if (auto genericArgs = handleGenericArguments(); genericArgs) {
                 lhs = syntax::type::Generic{
-                    *lhs, std::move(*genericArgs), *location
+                    *lhs, std::move(*genericArgs), lhsContext.location()
                 };
                 continue;
             }
-            if (m_stream.match(lexeme::minusGreater)) {
+            if (rhsContext.stream().match(lexeme::minusGreater)) {
+                rhsContext.to(Context::FunctionType);
+
                 auto fnResultType = handleType()
-                    .or_else([this]([[maybe_unused]] auto&& error)
-                        -> ParseResult {
-                            collect(error);
-                            return {};
-                        });
+                    .value_or(syntax::RequiredButMissing{});
+                rhsContext.emitIfNodeEmpty(fnResultType, Reason::MissingType);
+
                 lhs = syntax::type::Function{
-                    *lhs, std::move(*fnResultType), *location
+                    *lhs, std::move(fnResultType), lhsContext.location()
                 };
                 continue;
             }
-            if (m_stream.match(syntax::isBinaryTypeOperator)) {
-                auto const op = m_stream.current().lexeme();
+            if (rhsContext.stream().match(syntax::isBinaryTypeOperator)) {
+                rhsContext.to(Context::BinaryTypeExpr);
+
+                auto const op = rhsContext.stream().current().lexeme();
                 auto const p = syntax::opPrecedence(
                     op, syntax::EOperator::Binary
                 );
 
-                if (p <= minP) {
-                    streamBacktrack();
+                if (rhsContext.backtrackIf(p <= minP)) {
                     break;
                 }
 
-                lhs = handleType(
+                auto rhs = handleType(
                     syntax::isLeftAssociative(op) ? p + 1 : p
-                ).and_then([&](auto const& rhs) -> ParseResult {
-                    return syntax::type::Binary{
-                        *lhs, op, rhs, *location
-                    };
-                });
+                ).value_or(syntax::RequiredButMissing{});
+                rhsContext.emitIfNodeEmpty(rhs, Reason::MissingType);
+
+                lhs = syntax::type::Binary{
+                    *lhs, op, std::move(rhs), lhsContext.location()
+                };
                 continue;
             }
             break;
@@ -70,127 +72,94 @@ namespace tlc::parse {
     }
 
     auto Parse::handleTypeIdentifier() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        auto const constant = !m_stream.match(lexeme::dollar);
-        auto const location = m_tracker.current();
-        return seq(
-            many0(seq(match(lexeme::identifier), match(lexeme::dot))),
-            match(lexeme::fundamentalType, lexeme::userDefinedType)
-        )(m_stream, m_tracker).and_then(
-            [&](auto const& tokens) -> ParseResult {
-                auto path = tokens
-                    | rv::take(tokens.size() - 1)
-                    | rv::filter([](auto&& token) {
-                        return token.lexeme() == lexeme::identifier;
-                    })
-                    | rv::transform([](auto&& token) { return token.str(); })
-                    | rng::to<Vec<Str>>();
-                path.push_back(Str{tokens.back().str()});
-                return syntax::type::Identifier{
-                    constant, std::move(path),
-                    m_stream.current().lexeme() == lexeme::fundamentalType,
-                    constant ? tokens.front().location() : location
-                };
+        auto context = enter(Context::TypeIdentifier);
+
+        auto const constant = !context.stream().match(lexeme::dollar);
+
+        Vec<Str> fragments;
+        while (context.stream().match(lexeme::identifier)) {
+            fragments.push_back(context.stream().current().str());
+            if (!context.stream().match(lexeme::dot)) {
+                break;
             }
-        );
-    }
-
-    auto Parse::handleTypeTuple() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return match(lexeme::leftParen)(m_stream, m_tracker).and_then(
-            [this](auto const& tokens) -> ParseResult {
-                auto location = tokens.front().location();
-                Vec<syntax::Node> types;
-
-                if (m_stream.match(lexeme::rightParen)) {
-                    return syntax::type::Tuple{
-                        std::move(types), std::move(location)
-                    };
-                }
-
-                do {
-                    types.push_back(*handleType().or_else(
-                            [this](auto&& error) -> ParseResult {
-                                collect(error).collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::Tuple,
-                                    .reason = EParseErrorReason::MissingType,
-                                });
-                                return {};
-                            }
-                        )
-                    );
-                }
-                while (m_stream.match(lexeme::comma));
-
-                if (!m_stream.match(lexeme::rightParen)) {
-                    collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::Tuple,
-                        .reason = EParseErrorReason::MissingEnclosingSymbol,
-                    });
-                }
-
-                return syntax::type::Tuple{std::move(types), location};
-            }
-        );
-    }
-
-    auto Parse::handleTypeInfer() -> ParseResult {
-        TLC_SCOPE_REPORTER();
-        return seq(match(lexeme::leftBracket), match(lexeme::leftBracket))
-            (m_stream, m_tracker).and_then(
-                [this](auto const& tokens) -> ParseResult {
-                    return handleExpr().and_then(
-                        [this, &tokens](auto const& expr) -> ParseResult {
-                            if (!seq(match(lexeme::rightBracket),
-                                     match(lexeme::rightBracket))
-                                (m_stream, m_tracker)) {
-                                collect({
-                                    .location = m_tracker.current(),
-                                    .context = EParseErrorContext::TypeInfer,
-                                    .reason = EParseErrorReason::MissingEnclosingSymbol,
-                                });
-                            }
-                            return syntax::type::Infer{
-                                expr, tokens.front().location()
-                            };
-                        }
-                    );
-                }
-            );
-    }
-
-    auto Parse::handleGenericArguments() -> ParseResult {
-        if (!m_stream.match(lexeme::less)) {
+        }
+        if (context.backtrackIf(!context.stream().match(
+            lexeme::fundamentalType, lexeme::userDefinedType))) {
             return defaultError();
         }
 
-        auto location = m_tracker.current();
+        fragments.push_back(context.stream().current().str());
+        return syntax::type::Identifier{
+            constant, std::move(fragments),
+            context.stream().current().lexeme() == lexeme::fundamentalType,
+            context.location()
+        };
+    }
+
+    auto Parse::handleTypeTuple() -> ParseResult {
+        auto context = enter(Context::TupleType);
+
+        if (!context.stream().match(lexeme::leftParen)) {
+            return defaultError();
+        }
+        if (context.stream().match(lexeme::rightParen)) {
+            return syntax::type::Tuple{{}, context.location()};
+        }
+
+        Vec<syntax::Node> types;
+        do {
+            auto type = handleType().value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(type, Reason::MissingType);
+            types.push_back(std::move(type));
+        }
+        while (context.stream().match(lexeme::comma));
+
+        context.emitIfLexemeNotPresent(
+            lexeme::rightParen, Reason::MissingEnclosingSymbol
+        );
+        return syntax::type::Tuple{std::move(types), context.location()};
+    }
+
+    auto Parse::handleTypeInfer() -> ParseResult {
+        auto context = enter(Context::TypeInfer);
+
+        if (context.backtrackIf(!context.stream().match(lexeme::leftBracket) ||
+            !context.stream().match(lexeme::leftBracket))) {
+            return defaultError();
+        }
+
+        auto expr = handleExpr().value_or(syntax::RequiredButMissing{});
+        context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+        );
+        context.emitIfLexemeNotPresent(
+            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+        );
+        return syntax::type::Infer{std::move(expr), context.location()};
+    }
+
+    auto Parse::handleGenericArguments() -> ParseResult {
+        auto context = enter(Context::GenericTypeArguments);
+
+        if (!context.stream().match(lexeme::less)) {
+            return defaultError();
+        }
+
         Vec<syntax::Node> args;
         do {
-            args.push_back(*handleType().or_else(
-                [this](auto&& error) -> ParseResult {
-                    collect(error).collect({
-                        .location = m_tracker.current(),
-                        .context = EParseErrorContext::GenericTypeArguments,
-                        .reason = EParseErrorReason::MissingType,
-                    });
-                    return {};
-                }
-            ));
+            auto type = handleType().value_or(syntax::RequiredButMissing{});
+            context.emitIfNodeEmpty(type, Reason::MissingType);
+            args.push_back(std::move(type));
         }
-        while (m_stream.match(lexeme::comma));
+        while (context.stream().match(lexeme::comma));
 
-        if (!m_stream.match(lexeme::greater)) {
-            collect({
-                .location = m_tracker.current(),
-                .context = EParseErrorContext::GenericTypeArguments,
-                .reason = EParseErrorReason::MissingEnclosingSymbol,
-            });
-        }
+        context.emitIfLexemeNotPresent(
+            lexeme::greater, Reason::MissingEnclosingSymbol
+        );
         return syntax::type::GenericArguments{
-            std::move(args), std::move(location)
+            std::move(args), context.location()
         };
     }
 }

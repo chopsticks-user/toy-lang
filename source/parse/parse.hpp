@@ -19,6 +19,7 @@ namespace tlc::parse {
         using TErrorCollector =
         ErrorCollector<EParseErrorContext, EParseErrorReason>;
         using ParseResult = Expected<syntax::Node, TError>;
+        using Reason = EParseErrorReason;
 
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens)
@@ -138,7 +139,7 @@ namespace tlc::parse {
             return {lexeme::empty, "", m_stream.peek().location()};
         }
 
-        [[nodiscard]] auto context(EParseErrorContext const errorContext)
+        [[nodiscard]] auto enter(EParseErrorContext const errorContext)
             -> Context {
             return Context{
                 m_filepath, m_stream, m_tracker, m_collector, errorContext

@@ -88,11 +88,11 @@ TEST_CASE_WITH_FIXTURE(
         // todo: backtracking should also remove collected errors (handleDeclStmt -> handleTupleDecl)
         .expectedErrors = {
             {
-                .context = tlc::parse::EParseErrorContext::Tuple,
+                .context = tlc::parse::EParseErrorContext::TupleDecl,
                 .reason = tlc::parse::EParseErrorReason::MissingDecl
             },
             {
-                .context = tlc::parse::EParseErrorContext::Tuple,
+                .context = tlc::parse::EParseErrorContext::TupleDecl,
                 .reason = tlc::parse::EParseErrorReason::MissingEnclosingSymbol
             },
         },

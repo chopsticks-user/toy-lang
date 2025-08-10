@@ -89,7 +89,7 @@ TEST_CASE_WITH_FIXTURE(
         "├─ expr::Identifier [@0:4] with path = 'x'",
 
         .expectedErrors = {
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
         },
     });
 }
@@ -111,11 +111,11 @@ TEST_CASE_WITH_FIXTURE(
         "├─ (required)",
 
         .expectedErrors = {
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
         },
     });
 }
@@ -135,7 +135,7 @@ TEST_CASE_WITH_FIXTURE(
         "├─ expr::Identifier [@0:7] with path = 'x'",
 
         .expectedErrors = {
-            {.context = Context::Tuple, .reason = Reason::MissingEnclosingSymbol},
+            {.context = Context::TupleExpr, .reason = Reason::MissingEnclosingSymbol},
         },
     });
 }
@@ -155,8 +155,8 @@ TEST_CASE_WITH_FIXTURE(
         "├─ expr::Identifier [@0:4] with path = 'x'",
 
         .expectedErrors = {
-            {.context = Context::Tuple, .reason = Reason::MissingExpr},
-            {.context = Context::Tuple, .reason = Reason::MissingEnclosingSymbol},
+            {.context = Context::TupleExpr, .reason = Reason::MissingExpr},
+            {.context = Context::TupleExpr, .reason = Reason::MissingEnclosingSymbol},
         },
     });
 }

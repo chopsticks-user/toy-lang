@@ -18,7 +18,7 @@ TEST_CASE_WITH_FIXTURE(
         "x: {?} = {!};",
 
         .expectedErrors = {
-            {.context = Context::Stmt, .reason = Reason::MissingExpr},
+            {.context = Context::DeclStmt, .reason = Reason::MissingExpr},
         },
     });
 }

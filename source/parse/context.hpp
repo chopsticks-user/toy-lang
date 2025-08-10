@@ -13,6 +13,8 @@ namespace tlc::parse {
         using TErrorCollector = ErrorCollector<EParseErrorContext, EParseErrorReason>;
 
     public:
+        using enum EParseErrorContext;
+
         constexpr Context(fs::path const& filepath,
                           TokenStream& tokenStream,
                           LocationTracker& locationTracker,
@@ -22,9 +24,9 @@ namespace tlc::parse {
               m_tokenStream{tokenStream},
               m_locationTracker{locationTracker},
               m_errorCollector{errorCollector},
-              m_errorContext{errorContext} {
+              m_errorContext{errorContext},
+              m_location{tokenStream.peek().location()} {
             m_tokenStream.markBacktrack();
-            m_locationTracker.push();
         }
 
         constexpr ~Context() {
@@ -32,7 +34,7 @@ namespace tlc::parse {
                 m_tokenStream.removeBacktrack();
                 m_errorCollector(std::move(m_errors));
             }
-            m_locationTracker.pop();
+            // m_locationTracker.pop();
         }
 
         constexpr auto backtrack() -> void {
@@ -44,6 +46,14 @@ namespace tlc::parse {
             m_errors.clear();
         }
 
+        constexpr auto backtrackIf(b8 const cond) -> b8 {
+            if (cond) {
+                backtrack();
+                return true;
+            }
+            return false;
+        }
+
         constexpr auto emit(EParseErrorReason const reason) -> void {
             m_errors.emplace_back(TError::Params{
                 .filepath = m_filepath,
@@ -53,8 +63,53 @@ namespace tlc::parse {
             });
         }
 
+        constexpr auto emitIf(
+            b8 const cond, EParseErrorReason const reason
+        ) -> b8 {
+            if (cond) {
+                emit(reason);
+                return true;
+            }
+            return false;
+        }
+
+        constexpr auto emitIfNodeEmpty(
+            syntax::Node const& node,
+            EParseErrorReason const reason
+        ) -> b8 {
+            if (syntax::isEmptyNode(node) ||
+                syntax::matchAstType<syntax::RequiredButMissing>(node)) {
+                emit(reason);
+                return true;
+            }
+            return false;
+        }
+
+        constexpr auto emitIfLexemeNotPresent(
+            lexeme::Lexeme const& lexeme_,
+            EParseErrorReason const reason
+        ) -> b8 {
+            if (!m_tokenStream.match(lexeme_)) {
+                emit(reason);
+                return true;
+            }
+            return false;
+        }
+
         constexpr auto location() const -> Location {
-            return m_locationTracker.top();
+            return m_location;
+        }
+
+        constexpr auto stream() const -> TokenStream& {
+            return m_tokenStream;
+        }
+
+        constexpr auto to(EParseErrorContext const context) -> void {
+            m_errorContext = context;
+        }
+
+        constexpr auto filepath() const noexcept -> fs::path const& {
+            return m_filepath;
         }
 
     private:
@@ -62,10 +117,11 @@ namespace tlc::parse {
         TokenStream& m_tokenStream;
         LocationTracker& m_locationTracker;
         TErrorCollector& m_errorCollector;
-        EParseErrorContext const m_errorContext;
+        EParseErrorContext m_errorContext;
 
         b8 m_backtracked{false};
         Vec<TError> m_errors{};
+        Location const m_location;
     };
 }
 
