@@ -1,5 +1,5 @@
-#ifndef  TLC_SYNTAX_VISITOR_HPP
-#define  TLC_SYNTAX_VISITOR_HPP
+#ifndef TLC_SYNTAX_VISITOR_HPP
+#define TLC_SYNTAX_VISITOR_HPP
 
 #include "core/core.hpp"
 #include "forward.hpp"

@@ -17,7 +17,7 @@ TEST_CASE_WITH_FIXTURE(
 }
 
 TEST_CASE_WITH_FIXTURE(
-    "Parse::Array: 1 argument",
+    "Parse::Array: 1 element",
     "[Unit][Parse][Expr]"
 ) {
     assertExpr({
@@ -34,7 +34,7 @@ TEST_CASE_WITH_FIXTURE(
 }
 
 TEST_CASE_WITH_FIXTURE(
-    "Parse::Array: 3 arguments",
+    "Parse::Array: 3 elements",
     "[Unit][Parse][Expr]"
 ) {
     assertExpr({
@@ -121,7 +121,7 @@ TEST_CASE_WITH_FIXTURE(
 }
 
 TEST_CASE_WITH_FIXTURE(
-    "Parse::Array: Missing the enclosing parenthesis",
+    "Parse::Array: Missing the enclosing bracket",
     "[Unit][Parse][Expr]"
 ) {
     assertExpr({
@@ -141,7 +141,7 @@ TEST_CASE_WITH_FIXTURE(
 }
 
 TEST_CASE_WITH_FIXTURE(
-    "Parse::Array: Missing an argument and the enclosing parenthesis",
+    "Parse::Array: Missing an argument and the enclosing bracket",
     "[Unit][Parse][Expr]"
 ) {
     assertExpr({
@@ -162,7 +162,7 @@ TEST_CASE_WITH_FIXTURE(
 }
 
 TEST_CASE_WITH_FIXTURE(
-    "Parse::Array: Not a tuple if missing the opening parenthesis",
+    "Parse::Array: Not an array if missing the opening bracket",
     "[Unit][Parse][Expr]"
 ) {
     assertExpr({

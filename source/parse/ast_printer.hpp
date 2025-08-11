@@ -1,5 +1,5 @@
-#ifndef  TLC_SYNTAX_AST_PRINTER_HPP
-#define  TLC_SYNTAX_AST_PRINTER_HPP
+#ifndef TLC_SYNTAX_AST_PRINTER_HPP
+#define TLC_SYNTAX_AST_PRINTER_HPP
 
 #include "core/core.hpp"
 #include "syntax/syntax.hpp"

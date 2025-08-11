@@ -1,6 +1,3 @@
-add_subdirectory(core)
-add_subdirectory(token)
 add_subdirectory(lex)
-add_subdirectory(syntax)
 add_subdirectory(parse)
-add_subdirectory(static)
+#add_subdirectory(static)

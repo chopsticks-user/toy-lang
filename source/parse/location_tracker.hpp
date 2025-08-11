@@ -13,8 +13,6 @@ namespace tlc::parse {
         explicit LocationTracker(TokenStream const& stream)
             : m_stream{stream} {}
 
-        auto scopedLocation() noexcept -> ScopedLocation;
-
         auto push() -> Location {
             auto const next = m_stream.peek().location();
             m_locations.push(m_stream.peek().location());
@@ -42,33 +40,6 @@ namespace tlc::parse {
         TokenStream const& m_stream;
         Stack<Location> m_locations{};
     };
-
-    class ScopedLocation {
-    public:
-        explicit ScopedLocation(LocationTracker& tracker) noexcept
-            : m_tracker{tracker}, m_location{tracker.push()} {}
-
-        ~ScopedLocation() noexcept {
-            m_tracker.pop();
-        }
-
-        ScopedLocation(ScopedLocation&&) = delete;
-        ScopedLocation& operator=(ScopedLocation&&) = delete;
-        ScopedLocation(ScopedLocation const&) = delete;
-        ScopedLocation& operator=(ScopedLocation const&) = delete;
-
-        auto operator*() const noexcept -> Location {
-            return m_location;
-        }
-
-    private:
-        LocationTracker& m_tracker;
-        Location m_location;
-    };
-
-    inline auto LocationTracker::scopedLocation() noexcept -> ScopedLocation {
-        return ScopedLocation{*this};
-    }
 }
 
 

@@ -33,4 +33,4 @@ namespace tlc::config {
     constexpr auto versionLLVM = TLC_CONFIG_VERSION_LLVM;
 }
 
-#endif // TLC_CORE_CONFIG_HPP
+#endif

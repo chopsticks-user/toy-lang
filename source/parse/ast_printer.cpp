@@ -1,7 +1,7 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "ast_printer.hpp"
 
-#include <format>
+// #include <format>
 
 namespace tlc::parse {
     auto ASTPrinter::operator()(syntax::expr::Integer const& node) -> Str {

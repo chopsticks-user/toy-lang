@@ -14,9 +14,15 @@ namespace tlc::syntax::detail {
 
         [[nodiscard]] auto childAt(szt index) const -> Node const&;
 
+        [[nodiscard]] auto childAt(szt index) -> Node&;
+
         [[nodiscard]] auto firstChild() const -> Node const&;
 
+        [[nodiscard]] auto firstChild() -> Node&;
+
         [[nodiscard]] auto lastChild() const -> Node const&;
+
+        [[nodiscard]] auto lastChild() -> Node&;
 
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
@@ -30,12 +36,6 @@ namespace tlc::syntax::detail {
 
     protected:
         NodeBase(Vec<Node> children, Location coords) noexcept;
-
-        auto childAt(szt index) -> Node&;
-
-        auto firstChild() -> Node&;
-
-        auto lastChild() -> Node&;
 
     private:
         Vec<Node> m_children;

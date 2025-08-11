@@ -1,6 +1,8 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "pretty_printer.hpp"
 
+// #include <format>
+
 namespace tlc::parse {
     auto PrettyPrint::operator()(syntax::expr::Integer const& node) -> Str {
         return std::format("{}", node.value());

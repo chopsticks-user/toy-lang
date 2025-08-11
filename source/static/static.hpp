@@ -3,7 +3,7 @@
 
 #include "core/core.hpp"
 
-namespace tlc::stat1c {
+namespace tlc::static_ {
     class Static {
     public:
     private:

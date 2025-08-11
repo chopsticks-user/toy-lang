@@ -1,3 +1,4 @@
+// ReSharper disable CppDFAUnreachableFunctionCall
 #ifndef TLC_PARSE_CONTEXT_HPP
 #define TLC_PARSE_CONTEXT_HPP
 
@@ -63,6 +64,7 @@ namespace tlc::parse {
         }
 
     public:
+        // ReSharper disable once CppNonExplicitConvertingConstructor
         constexpr Context(Params&& params)
             : m_filepath{params.filepath},
               m_tokenStream{params.tokenStream},

@@ -3,6 +3,6 @@
 
 #include "core/core.hpp"
 
-namespace tlc::stat1c {}
+namespace tlc::static_ {}
 
 #endif // TLC_STATIC_ERROR_COLLECTOR_HPP
