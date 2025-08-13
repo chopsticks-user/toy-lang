@@ -1,10 +1,9 @@
 export module lex;
 
-import :util;
-import :text_stream;
+export import :util;
+export import :text_stream;
 import token;
 import lexeme;
-#include "core/core.hpp"
 
 namespace tlc::lex {
     export class Lex final {

@@ -1,10 +1,9 @@
-#ifndef  TLC_CORE_SINGLETON_HPP
-#define  TLC_CORE_SINGLETON_HPP
+export module core:singleton;
 
-#include "type.hpp"
-#include "concept.hpp"
+import :fwd;
+import :concept_;
 
-namespace tlc {
+export namespace tlc {
     template <typename T>
     concept IsSingleton =
         !IsExternallyConstructible<RemoveAllQualifiers<T>> &&
@@ -38,5 +37,3 @@ namespace tlc {
         Singleton() = default;
     };
 }
-
-#endif // TLC_CORE_SINGLETON_HPP

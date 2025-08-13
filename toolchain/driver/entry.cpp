@@ -1,8 +1,7 @@
-import parse;
+import tlc;
+import core;
 
 int protected_main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
-    TLC_SCOPE_REPORTER();
-    TLC_LOG(tlc::ELogLevel::Warning, "This is a warning");
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     return EXIT_SUCCESS;
 }

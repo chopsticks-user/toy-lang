@@ -1,7 +1,7 @@
 export module syntax:nodes;
 
 import lexeme;
-#include "core/core.hpp"
+import core;
 
 export namespace tlc::syntax {
     namespace expr {

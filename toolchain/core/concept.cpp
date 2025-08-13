@@ -1,9 +1,8 @@
-#ifndef TLC_CORE_CONCEPT_HPP
-#define TLC_CORE_CONCEPT_HPP
+export module core:concept_;
 
-#include <concepts>
+import :fwd;
 
-namespace tlc {
+export namespace tlc {
     template <typename Derived, typename Base>
     concept IsChildOf = std::derived_from<Derived, Base> &&
         !std::same_as<Derived, Base>;
@@ -36,5 +35,3 @@ namespace tlc {
     template <typename T>
     using RemoveAllQualifiers = std::remove_cvref_t<std::remove_pointer_t<T>>;
 };
-
-#endif // TLC_CORE_CONCEPT_HPP

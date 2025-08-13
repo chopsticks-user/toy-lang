@@ -1,6 +1,6 @@
 export module lexeme;
 
-#include "core/core.hpp"
+import core;
 
 namespace tlc::lexeme {
     export class Lexeme final {

@@ -1,12 +1,8 @@
-#ifndef TLC_CORE_FILE_HPP
-#define TLC_CORE_FILE_HPP
+export module core:utility;
 
-#include "type.hpp"
-#include "config.hpp"
+import :fwd;
 
-namespace tlc {
-    namespace fs = std::filesystem;
-
+export namespace tlc {
     class FileReader final {
     public:
         FileReader() = default;
@@ -148,15 +144,13 @@ namespace tlc {
     };
 
 
-#ifdef TLC_CONFIG_BUILD_DEBUG
-#define TLC_LOG(level, message) \
-    log(level, message)
-#define TLC_SCOPE_REPORTER() \
-    tlc::ScopeReporter tlc_scope_reporter_##__LINE__{}
-#else
-#define TLC_LOG(level, message)
-#define TLC_SCOPE_REPORTER()
-#endif
+    // #ifdef TLC_CONFIG_BUILD_DEBUG
+    // #define TLC_LOG(level, message) \
+    //     log(level, message)
+    // #define TLC_SCOPE_REPORTER() \
+    //     tlc::ScopeReporter tlc_scope_reporter_##__LINE__{}
+    // #else
+    // #define TLC_LOG(level, message)
+    // #define TLC_SCOPE_REPORTER()
+    // #endif
 };
-
-#endif // TLC_CORE_FILE_HPP

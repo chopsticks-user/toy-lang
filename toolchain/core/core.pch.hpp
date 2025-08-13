@@ -1,9 +1,62 @@
-#ifndef TLC_CORE_TYPE_HPP
-#define TLC_CORE_TYPE_HPP
+#ifndef TLC_CORE_PCH_HPP
+#define TLC_CORE_PCH_HPP
 
-#include "std.pch.hpp"
+// fundamental types
+#include <cfloat>
+#include <cstdint>
+
+// containers
+#include <vector>
+#include <string>
+#include <array>
+#include <span>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <map>
+#include <set>
+#include <queue>
+#include <stack>
+
+// misc
+#include <variant>
+#include <optional>
+#include <any>
+#include <numeric>
+#include <sstream>
+#include <memory>
+#include <functional>
+#include <expected>
+#include <concepts>
+#include <ranges>
+#include <execution>
+#include <mutex>
+#include <fstream>
+#include <filesystem>
+#include <source_location>
+#include <print>
+#include <chrono>
+#include <locale>
+#include <concepts>
+#include <type_traits>
 
 namespace tlc {
+    namespace fs {
+        using namespace std::filesystem;
+    }
+
+    namespace chrono {
+        using namespace std::chrono;
+    }
+
+    namespace rng {
+        using namespace std::ranges;
+    }
+
+    namespace rv {
+        using namespace std::ranges::views;
+    }
+
     using i64 = std::int64_t;
     using i32 = std::int32_t;
     using i16 = std::int16_t;
@@ -85,4 +138,4 @@ namespace tlc {
     using Fn = std::function<S>;
 }
 
-#endif // TLC_CORE_TYPE_HPP
+#endif // TLC_CORE_PCH_HPP

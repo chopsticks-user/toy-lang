@@ -1,8 +1,8 @@
 export module parse:error;
 
-#include "core/core.hpp"
+import core;
 
-namespace tlc {
+export namespace tlc {
     namespace parse {
         enum class EParseErrorContext {
             Unknown,

@@ -1,6 +1,7 @@
 export module token;
 
 import lexeme;
+import core;
 
 namespace tlc::token {
     export class Token final {

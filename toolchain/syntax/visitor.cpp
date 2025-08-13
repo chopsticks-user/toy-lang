@@ -1,7 +1,7 @@
 export module syntax:visitor;
 
 import :nodes;
-#include "core/core.hpp"
+import core;
 
 export namespace tlc::syntax {
     /**

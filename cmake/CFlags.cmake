@@ -9,6 +9,9 @@ endif ()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+cmake_policy(SET CMP0155 NEW)
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(gcc_like_cxx_flags -pedantic;-Wall;-Wextra;-Wshadow;-Wconversion;
     -Wunreachable-code;-Wno-missing-field-initializers;)

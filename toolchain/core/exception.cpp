@@ -1,14 +1,13 @@
-#ifndef TLC_CORE_EXCEPTION_HPP
-#define TLC_CORE_EXCEPTION_HPP
+export module core:exception;
 
-#include "type.hpp"
-#include "singleton.hpp"
-#include "utility.hpp"
+import :fwd;
+import :utility;
+import :singleton;
 
-namespace tlc {
+export namespace tlc {
     class Exception : public std::runtime_error {
     public:
-        explicit Exception(Str const& message): std::runtime_error(message) {}
+        explicit Exception(Str const& message) : std::runtime_error(message) {}
 
         explicit Exception(fs::path filepath, Str message)
             : std::runtime_error(
@@ -18,10 +17,10 @@ namespace tlc {
 
         Exception(
             fs::path filepath, u64 const line, u64 const column, Str message
-        ): std::runtime_error(
-               "[" + filepath.string() + " @" + std::to_string(line) + ":" +
-               std::to_string(column) + "] " + std::move(message)
-           ), m_filepath(std::move(filepath)), m_line(line), m_column(column) {}
+        ) : std::runtime_error(
+                "[" + filepath.string() + " @" + std::to_string(line) + ":" +
+                std::to_string(column) + "] " + std::move(message)
+            ), m_filepath(std::move(filepath)), m_line(line), m_column(column) {}
 
         [[nodiscard]] auto filepath() const -> fs::path {
             return m_filepath;
@@ -50,7 +49,7 @@ namespace tlc {
         InternalException(
             fs::path filepath, u64 const line, u64 const column,
             Str message
-        ): Exception{
+        ) : Exception{
             std::move(filepath), line, column, "Internal error: " + std::move(message)
         } {}
     };
@@ -60,7 +59,7 @@ namespace tlc {
         CompileException(
             fs::path filepath, u64 const line, u64 const column,
             Str message, Str code
-        ): Exception{
+        ) : Exception{
             std::move(filepath), line, column, std::move(message) + "\n"
             + std::move(code)
         } {}
@@ -171,5 +170,3 @@ namespace tlc {
         Vec<TError> m_errors;
     };
 }
-
-#endif // TLC_CORE_EXCEPTION_HPP

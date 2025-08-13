@@ -1,10 +1,9 @@
-#ifndef TLC_CORE_MIXIN_HPP
-#define TLC_CORE_MIXIN_HPP
+export module core:mixin;
 
-#include "type.hpp"
-#include "concept.hpp"
+import :fwd;
+import :concept_;
 
-namespace tlc {
+export namespace tlc {
     template <typename T>
     class MoveOnly {
     public:
@@ -69,5 +68,3 @@ namespace tlc {
     //     }
     // };
 }
-
-#endif // TLC_CORE_MIXIN_HPP

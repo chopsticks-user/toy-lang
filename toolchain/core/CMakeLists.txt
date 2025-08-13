@@ -9,17 +9,27 @@ if (${TLC_BUILD_TESTS})
   add_compile_definitions(TLC_CONFIG_BUILD_TESTS)
 endif ()
 
-add_library(tlc_core INTERFACE)
+add_library(tlc_core SHARED)
 add_library(tlc::core ALIAS tlc_core)
 target_sources(
-    tlc_core INTERFACE
-    core.hpp platform.hpp type.hpp utility.hpp range.hpp
-    exception.hpp concept.hpp visitor.hpp singleton.hpp config.in.hpp
-    mixin.hpp std.pch.hpp
+    tlc_core
+    PUBLIC FILE_SET CXX_MODULES FILES
+    core.cppm
+    core.fwd.cpp
+    platform.cpp
+    utility.cpp
+    range.cpp
+    exception.cpp
+    concept.cpp
+    visitor.cpp
+    singleton.cpp
+    mixin.cpp
+    config.cpp
 )
 target_precompile_headers(
     tlc_core
-    INTERFACE "core.hpp"
+    PUBLIC
+    core.pch.hpp
 )
 target_include_directories(
     tlc_core

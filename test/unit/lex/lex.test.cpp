@@ -1,8 +1,8 @@
+import lex;
+import lexeme;
+import token;
+
 #include <catch2/catch_test_macros.hpp>
-
-#include "lex/lex.cppm"
-
-// todo: test cases for lexing errors
 
 class LexTestFixture {
 protected:
@@ -49,6 +49,7 @@ foo Bar    Float
     assertTokenAt(3, tlc::lexeme::module_, "module", 3, 4);
 }
 
+// todo
 TEST_CASE_WITH_FIXTURE("Lex: Comments", "[Lex]") {}
 
 TEST_CASE_WITH_FIXTURE("Lex: Identifiers and keywords", "[Lex]") {

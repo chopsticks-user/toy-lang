@@ -12,22 +12,19 @@ target_sources(
 )
 target_include_directories(
     tlc_driver PRIVATE
-    ${LLVM_INCLUDE_DIRS}
+    #    ${LLVM_INCLUDE_DIRS}
 )
 target_link_libraries(
     tlc_driver
-    PUBLIC tlc::core
+    PUBLIC
+    tlc::core tlc::token tlc::syntax tlc::lex tlc::parse tlc::static
     #    PRIVATE ${llvm_libs}
 )
 
 add_executable(tlc_entry entry.cpp)
 add_executable(tlc::entry ALIAS tlc_entry)
-target_link_libraries(
-    tlc_entry
-    PUBLIC
-    tlc::core tlc::token tlc::syntax
-    tlc::lex tlc::driver tlc::static
-)
+add_executable(tlc ALIAS tlc_entry)
+target_link_libraries(tlc_entry PRIVATE tlc::driver)
 set_target_properties(
     tlc_entry PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}

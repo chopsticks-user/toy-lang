@@ -1,10 +1,9 @@
-#ifndef  TLC_CORE_VISITOR_HPP
-#define  TLC_CORE_VISITOR_HPP
+export module core:visitor;
 
-#include "type.hpp"
+import :fwd;
 
 namespace tlc {
-    template <typename TVisitable, typename TReturn = void>
+    export template <typename TVisitable, typename TReturn = void>
         requires std::is_default_constructible_v<TReturn> || std::same_as<TReturn, void>
     class Visitor {
     public:
@@ -38,5 +37,3 @@ namespace tlc {
         return std::visit(TVisitor{}, std::forward<typename TVisitor::Visitable>(visitable));
     }
 }
-
-#endif // TLC_CORE_VISITOR_HPP

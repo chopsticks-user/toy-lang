@@ -1,5 +1,7 @@
 export module lex:util;
 
+import core;
+
 namespace tlc::lex {
     constexpr auto isDigit(char const c) -> bool {
         return !(c < '0' || c > '9');

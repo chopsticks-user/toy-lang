@@ -3,7 +3,7 @@ export module post_parsing:tuple_normalizer;
 import syntax;
 
 namespace tlc::static_ {
-    class TupleNormalizer final :
+    export class TupleNormalizer final :
         public syntax::SyntaxTreeVisitor<Opt<syntax::Node>> {
     public:
         using SyntaxTreeVisitor::operator();

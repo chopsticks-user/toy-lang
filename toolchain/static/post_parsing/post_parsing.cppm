@@ -1,3 +1,3 @@
 export module post_parsing;
 
-import :tuple_normalizer;
+export import :tuple_normalizer;

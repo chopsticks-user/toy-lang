@@ -1,14 +1,9 @@
-#ifndef TLC_CORE_RANGE_HPP
-#define TLC_CORE_RANGE_HPP
+export module core:range;
 
-#include "type.hpp"
+import :fwd;
 
-namespace tlc {
-    namespace rng = std::ranges;
-
+export namespace tlc {
     namespace rv {
-        using namespace std::ranges::views;
-
         namespace detail {
             template <typename R>
             class ConcatView : public std::ranges::view_interface<ConcatView<R>> {
@@ -57,6 +52,6 @@ namespace tlc {
             std::forward<R1>(r1), std::forward<R2>(r2)
         );
     }
-}
 
-#endif // TLC_CORE_RANGE_HPP
+    namespace rng {}
+}

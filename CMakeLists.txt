@@ -6,8 +6,8 @@ include(cmake/CFlags.cmake)
 include(cmake/Options.cmake)
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/toolchain/core/config.in.hpp
-    ${CMAKE_SOURCE_DIR}/toolchain/core/config.hpp
+    ${CMAKE_SOURCE_DIR}/toolchain/core/config.in.cpp
+    ${CMAKE_SOURCE_DIR}/toolchain/core/config.cpp
 )
 
 add_subdirectory(third_party)

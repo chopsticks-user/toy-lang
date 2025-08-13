@@ -1,6 +1,7 @@
 export module parse:tracker;
 
 import :stream;
+import core;
 
 namespace tlc::parse {
     export class LocationTracker final {

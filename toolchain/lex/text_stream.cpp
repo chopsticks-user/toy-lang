@@ -1,8 +1,9 @@
 export module lex:text_stream;
-#include "core/core.hpp"
+
+import core;
 
 namespace tlc::lex {
-    class TextStream {
+    export class TextStream {
         // todo: dynamic tabsize
         static constexpr szt tabSize = 4;
 

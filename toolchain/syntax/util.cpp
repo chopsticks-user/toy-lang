@@ -2,7 +2,7 @@ export module syntax:util;
 
 import :nodes;
 import lexeme;
-#include "core/core.hpp"
+import core;
 
 namespace tlc::syntax {
     export {
