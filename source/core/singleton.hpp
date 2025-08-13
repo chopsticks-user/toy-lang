@@ -4,8 +4,6 @@
 #include "type.hpp"
 #include "concept.hpp"
 
-#include <mutex>
-
 namespace tlc {
     template <typename T>
     concept IsSingleton =

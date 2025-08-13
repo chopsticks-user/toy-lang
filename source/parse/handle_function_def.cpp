@@ -5,13 +5,13 @@ namespace tlc::parse {
         auto prototype = handleFunctionPrototype(
                 Context::enter(Context::FunctionPrototype, context))
             .value_or({});
-        if (syntax::isEmptyNode(prototype)) {
+        if (syntax::empty(prototype)) {
             return {};
         }
 
         auto body = handleBlockStmt(Context::enter(Context::BlockStmt, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(body, Reason::MissingBody);
+        context.emitIfNodeMissing(body, Reason::MissingBody);
         return syntax::global::Function{
             context.visibility().lexeme(), std::move(prototype),
             std::move(body), context.visibility().location()
@@ -34,7 +34,7 @@ namespace tlc::parse {
 
         auto paramsDecl = handleTupleDecl(Context::enter(Context::TupleDecl, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(paramsDecl, Reason::MissingDecl);
+        context.emitIfNodeMissing(paramsDecl, Reason::MissingDecl);
         context.emitIfLexemeNotPresent(
             lexeme::minusGreater, Reason::MissingSymbol
         );

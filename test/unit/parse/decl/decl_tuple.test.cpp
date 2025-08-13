@@ -62,3 +62,26 @@ TEST_CASE_WITH_FIXTURE(
         "(x: Int, y: $Float, (z: {?}, t: {?}))",
     });
 }
+
+TEST_CASE_WITH_FIXTURE(
+    "Parse.Decl.Tuple: Colon without preceding identifier",
+    "[Unit][Parse][Decl]"
+) {
+    // assertDecl({
+    //     .source =
+    //     "(: Int, x: Float)",
+    //
+    //     .expectedAstPrint =
+    //     "decl::Tuple [@0:0] with size = 1\n"
+    //     "├─ (required)\n"
+    //     "├─ decl::Identifier [@0:0] with name = 'x'\n"
+    //     "   ├─ type::Identifier [@0:3] with (const, fund, path) = (true, true, 'Float')",
+    //
+    //     .expectedPrettyPrint =
+    //     "({!}, x: Float)",
+    //
+    //     .expectedErrors = {
+    //         {.context = Context::IdDecl, .reason = Reason::MissingType},
+    //     },
+    // });
+}

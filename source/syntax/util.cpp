@@ -1,5 +1,4 @@
 #include "util.hpp"
-#include "nodes.hpp"
 
 #ifdef TLC_CONFIG_BUILD_TESTS
 #define TLC_STATIC_IF_NOT_BUILD_TESTS
@@ -8,10 +7,6 @@
 #endif // TLC_CONFIG_BUILD_TESTS
 
 namespace tlc::syntax {
-    auto isEmptyNode(Node const& node) -> bool {
-        return std::holds_alternative<std::monostate>(node);
-    }
-
     // todo: check C operator precedence
     TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashMap<lexeme::Lexeme, OpPrecedence>

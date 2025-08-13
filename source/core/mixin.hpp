@@ -53,21 +53,21 @@ namespace tlc {
         }
     };
 
-    template <typename T>
-    class Copyable {
-    public:
-        Copyable() noexcept = default;
-        ~Copyable() noexcept = default;
-        Copyable(Copyable&&) noexcept = default;
-        Copyable(Copyable const&) noexcept = default;
-        Copyable& operator=(Copyable&&) noexcept = default;
-        Copyable& operator=(Copyable const&) noexcept = default;
-
-    private:
-        static constexpr auto staticEnforce() noexcept -> void {
-            static_assert(IsCopyable<T>);
-        }
-    };
+    // template <typename T>
+    // class Copyable {
+    // public:
+    //     Copyable() noexcept = default;
+    //     ~Copyable() noexcept = default;
+    //     Copyable(Copyable&&) noexcept = default;
+    //     Copyable(Copyable const&) noexcept = default;
+    //     Copyable& operator=(Copyable&&) noexcept = default;
+    //     Copyable& operator=(Copyable const&) noexcept = default;
+    //
+    // private:
+    //     static constexpr auto staticEnforce() noexcept -> void {
+    //         static_assert(IsCopyable<T>);
+    //     }
+    // };
 }
 
 #endif // TLC_CORE_MIXIN_HPP

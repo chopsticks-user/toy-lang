@@ -1,5 +1,5 @@
-#ifndef  TLC_CORE_CONCEPT_HPP
-#define  TLC_CORE_CONCEPT_HPP
+#ifndef TLC_CORE_CONCEPT_HPP
+#define TLC_CORE_CONCEPT_HPP
 
 #include <concepts>
 

@@ -6,9 +6,7 @@ target_sources(
     text_stream.test.cpp
 )
 target_link_libraries(
-    tlc_test_unit_lex PRIVATE
-    Catch2::Catch2WithMain
-    tlc::lex
-    tlc::token
+    tlc_test_unit_lex
+    PRIVATE Catch2::Catch2WithMain tlc::lex tlc::token
 )
 add_test(NAME tlc_test_unit_lex COMMAND tlc_test_unit_lex)

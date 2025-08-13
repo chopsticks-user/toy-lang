@@ -11,7 +11,9 @@
 namespace tlc::parse {
     class Context final {
         using TError = Error<EParseErrorContext, EParseErrorReason>;
-        using TErrorCollector = ErrorCollector<EParseErrorContext, EParseErrorReason>;
+        using TErrorCollector = ErrorCollector<
+            EParseErrorContext, EParseErrorReason
+        >;
 
     public:
         using enum EParseErrorContext;
@@ -23,7 +25,7 @@ namespace tlc::parse {
             TErrorCollector& errorCollector;
             EParseErrorContext const errorContext;
             b8 const isSubroutine = false;
-            Opt<std::reference_wrapper<Context>> parent = {};
+            Context* parent = nullptr;
             Opt<syntax::OpPrecedence> minPrecedence = {};
             Opt<token::Token> visibility = {};
         };
@@ -57,7 +59,7 @@ namespace tlc::parse {
                 .errorCollector = parent.collector(),
                 .errorContext = eContext,
                 .isSubroutine = parent.isSubroutine(),
-                .parent = parent,
+                .parent = &parent,
                 .minPrecedence = std::move(minPrecedence),
                 .visibility = std::move(visibility),
             };
@@ -89,18 +91,11 @@ namespace tlc::parse {
             if (!m_backtracked) {
                 m_tokenStream.removeBacktrack();
                 if (m_parent) {
-                    m_parent->get().appendErrors(std::move(m_errors));
+                    m_parent->appendErrors(std::move(m_errors));
                 }
                 else {
                     m_errorCollector(std::move(m_errors));
                 }
-                // m_parent.and_then([this](std::reference_wrapper<Context>&& parent) -> Opt<b8> {
-                //     parent.get().appendErrors(std::move(m_errors));
-                //     return {};
-                // }).or_else([this]-> Opt<b8> {
-                //     m_errorCollector(std::move(m_errors));
-                //     return {};
-                // });
             }
         }
 
@@ -140,27 +135,26 @@ namespace tlc::parse {
             return false;
         }
 
+        constexpr auto emitIfNodeMissing(
+            syntax::Node const& node,
+            EParseErrorReason const reason
+        ) -> b8 {
+            return emitIf(syntax::match<syntax::RequiredButMissing>(node),
+                          reason);
+        }
+
         constexpr auto emitIfNodeEmpty(
             syntax::Node const& node,
             EParseErrorReason const reason
         ) -> b8 {
-            if (syntax::isEmptyNode(node) ||
-                syntax::matchAstType<syntax::RequiredButMissing>(node)) {
-                emit(reason);
-                return true;
-            }
-            return false;
+            return emitIf(syntax::empty(node), reason);
         }
 
         constexpr auto emitIfLexemeNotPresent(
             lexeme::Lexeme const& lexeme_,
             EParseErrorReason const reason
         ) -> b8 {
-            if (!m_tokenStream.match(lexeme_)) {
-                emit(reason);
-                return true;
-            }
-            return false;
+            return emitIf(!m_tokenStream.match(lexeme_), reason);
         }
 
         [[nodiscard]] constexpr auto location() const -> Location {
@@ -203,6 +197,12 @@ namespace tlc::parse {
             return m_isSubroutine;
         }
 
+        // constexpr auto parent() const -> Context& {
+        //     return *m_parent;
+        // }
+
+        auto synchronize() -> void;
+
     private:
         fs::path const& m_filepath;
         TokenStream& m_tokenStream;
@@ -210,7 +210,7 @@ namespace tlc::parse {
         TErrorCollector& m_errorCollector;
         EParseErrorContext m_errorContext;
         b8 const m_isSubroutine;
-        Opt<std::reference_wrapper<Context>> m_parent;
+        Context* m_parent;
         syntax::OpPrecedence m_minPrecedence;
         token::Token m_visibility;
 

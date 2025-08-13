@@ -14,7 +14,7 @@ namespace tlc::parse {
     }
 
     auto handleIdentifierDecl(Context context) -> Opt<syntax::Node> {
-        if (!context.stream().match(lexeme::identifier)) {
+        if (!context.stream().match(lexeme::identifier, lexeme::anonymous)) {
             return {};
         }
 
@@ -27,7 +27,7 @@ namespace tlc::parse {
 
         auto type = handleType(Context::enter(Context::Type, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(type, Reason::MissingType);
+        context.emitIfNodeMissing(type, Reason::MissingType);
         return syntax::decl::Identifier{
             std::move(name), std::move(type), context.location()
         };
@@ -45,7 +45,7 @@ namespace tlc::parse {
         do {
             auto decl = handleDecl(Context::enter(Context::Decl, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(decl, Reason::MissingDecl);
+            context.emitIfNodeMissing(decl, Reason::MissingDecl);
             decls.push_back(std::move(decl));
         }
         while (context.stream().match(lexeme::comma));
@@ -56,6 +56,13 @@ namespace tlc::parse {
         return syntax::decl::Tuple{std::move(decls), context.location()};
     }
 
+    /**
+     * Panic:
+     *      - in-pace synchronize until '>'
+     *
+     * @param context
+     * @return
+     */
     auto handleGenericParamsDecl(Context context) -> Opt<syntax::Node> {
         if (!context.stream().match(lexeme::less)) {
             return {};

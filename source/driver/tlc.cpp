@@ -3,6 +3,7 @@
 #include "parse/parse.hpp"
 #include "syntax/syntax.hpp"
 #include "token/token.hpp"
+#include "static/static.hpp"
 
 #include <print>
 #include <iostream>
@@ -20,7 +21,8 @@ int main(int argc, char** argv) {
     }
     catch (std::exception& e) {
         std::print(stderr, "{}\n", e.what());
-    } catch (...) {
+    }
+    catch (...) {
         std::print(stderr, "Uncaught exception\n");
     }
     return EXIT_FAILURE;

@@ -1,8 +1,7 @@
 #ifndef TLC_CORE_RANGE_HPP
 #define TLC_CORE_RANGE_HPP
 
-#include <ranges>
-#include <execution>
+#include "type.hpp"
 
 namespace tlc {
     namespace rng = std::ranges;

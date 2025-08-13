@@ -3,10 +3,19 @@
 
 #include "core/core.hpp"
 #include "token/token.hpp"
+
 #include "base.hpp"
+#include "forward.hpp"
+#include "nodes.hpp"
 
 namespace tlc::syntax {
-    auto isEmptyNode(Node const& node) -> bool;
+    constexpr auto empty(Node const& node) -> bool {
+        return std::holds_alternative<std::monostate>(node);
+    }
+
+    constexpr auto missing(Node const& node) -> bool {
+        return std::holds_alternative<RequiredButMissing>(node);
+    }
 
     template <typename T>
     concept IsStrictlyASTNode =
@@ -16,14 +25,9 @@ namespace tlc::syntax {
     template <typename T>
     concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
 
-    // template<typename T, typename... U>
-    // concept MatchASTNode = IsStrictlyASTNode<T> &&
-    //                        (IsStrictlyASTNode<U> && ...) &&
-    //                        (std::same_as<T, U> || ...)
-    //                        || std::same_as<Node, T>;
-
     template <IsASTNode TNode>
-    auto astCast(Node const& node, Str const& filepath = "") -> TNode {
+    constexpr auto cast(Node const& node, StrV const filepath = "")
+        -> TNode {
         if constexpr (std::same_as<TNode, Node>) {
             return node;
         }
@@ -37,7 +41,7 @@ namespace tlc::syntax {
     }
 
     template <std::derived_from<detail::NodeBase>... TNode>
-    auto matchAstType(Node const& node) -> bool {
+    constexpr auto match(Node const& node) -> bool {
         return (std::holds_alternative<TNode>(node) || ...);
     }
 
@@ -62,6 +66,29 @@ namespace tlc::syntax {
     auto opPrecedence(lexeme::Lexeme const& lexeme, EOperator opType) -> OpPrecedence;
     auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> bool;
     auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> bool;
+
+    class NodeWrapper {
+    public:
+        constexpr NodeWrapper() = default;
+
+        explicit constexpr NodeWrapper(Node node) noexcept
+            : m_node{std::move(node)} {}
+
+        explicit constexpr operator bool() const noexcept {
+            return empty();
+        }
+
+        constexpr auto empty() const noexcept -> bool {
+            return std::holds_alternative<std::monostate>(m_node);
+        }
+
+        constexpr auto missing() const noexcept -> bool {
+            return std::holds_alternative<RequiredButMissing>(m_node);
+        }
+
+    private:
+        Node m_node;
+    };
 }
 
 #endif // TLC_SYNTAX_UTIL_HPP

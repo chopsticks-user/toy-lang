@@ -148,7 +148,7 @@ namespace tlc::syntax {
 
 
         auto Identifier::inferred() const noexcept -> b8 {
-            return isEmptyNode(firstChild());
+            return empty(firstChild());
         }
 
         Tuple::Tuple(Vec<Node> decls, Location const location)
@@ -178,7 +178,7 @@ namespace tlc::syntax {
         : NodeBase{{std::move(decl), std::move(initializer)}, location} {}
 
     auto stmt::Decl::defaultInitialized() const -> bool {
-        return isEmptyNode(lastChild());
+        return empty(lastChild());
     }
 
     stmt::Return::Return(Node expr, Location const location)

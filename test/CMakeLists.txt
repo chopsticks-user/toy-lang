@@ -13,7 +13,6 @@ add_compile_definitions(
     TLC_TMP_FILE_DIR="../../tmp"
 )
 
-add_subdirectory(utility)
 add_subdirectory(unit)
 add_subdirectory(performance)
 add_subdirectory(integration)

@@ -173,7 +173,7 @@ namespace tlc::parse {
         do {
             auto expr = handleExpr(Context::enter(Context::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+            context.emitIfNodeMissing(expr, Reason::MissingExpr);
             elements.push_back(std::move(expr));
         }
         while (context.stream().match(lexeme::comma));
@@ -196,7 +196,7 @@ namespace tlc::parse {
         do {
             auto expr = handleExpr(Context::enter(Context::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+            context.emitIfNodeMissing(expr, Reason::MissingExpr);
             elements.push_back(std::move(expr));
         }
         while (context.stream().match(lexeme::comma));
@@ -208,8 +208,9 @@ namespace tlc::parse {
     }
 
     auto handleRecordExpr(Context context) -> Opt<syntax::Node> {
-        auto type = handleTypeIdentifier(Context::enter(Context::RecordExpr, context))
-            .value_or({});
+        auto type = handleTypeIdentifier(
+            Context::enter(Context::RecordExpr, context)
+        ).value_or({});
         if (context.backtrackIf(!context.stream().match(lexeme::leftBrace))) {
             return {};
         }
@@ -232,7 +233,7 @@ namespace tlc::parse {
             );
             auto value = handleExpr(Context::enter(Context::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            entryContext.emitIfNodeEmpty(value, Reason::MissingExpr);
+            entryContext.emitIfNodeMissing(value, Reason::MissingExpr);
 
             entries.emplace_back(syntax::expr::RecordEntry{
                 std::move(key), std::move(value), entryContext.location()
@@ -287,7 +288,7 @@ namespace tlc::parse {
                 auto expr = handleExpr(
                     parse.globalContext(Context::Expr)
                 ).value_or(syntax::RequiredButMissing{});
-                context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+                context.emitIfNodeMissing(expr, Reason::MissingExpr);
                 return expr;
             }) | rng::to<Vec<syntax::Node>>();
 
@@ -304,7 +305,7 @@ namespace tlc::parse {
 
         auto expr = handleExpr(Context::enter(Context::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+        context.emitIfNodeMissing(expr, Reason::MissingExpr);
         return syntax::expr::Try{std::move(expr), context.location()};
     }
 }

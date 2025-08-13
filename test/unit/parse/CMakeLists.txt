@@ -48,11 +48,11 @@ target_sources(
     global/global_flag.test.cpp
 )
 target_link_libraries(
-    tlc_test_unit_parse PRIVATE
-    Catch2::Catch2WithMain tlc::lex tlc::parse
+    tlc_test_unit_parse
+    PRIVATE Catch2::Catch2WithMain tlc::lex tlc::parse
 )
 target_include_directories(
-    tlc_test_unit_parse PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    tlc_test_unit_parse
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 add_test(NAME tlc_test_unit_parse COMMAND tlc_test_unit_parse)

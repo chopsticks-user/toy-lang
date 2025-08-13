@@ -1,32 +1,7 @@
 #ifndef TLC_CORE_TYPE_HPP
 #define TLC_CORE_TYPE_HPP
 
-// fundamental types
-#include <cfloat>
-#include <cstdint>
-
-// containers
-#include <vector>
-#include <string>
-#include <array>
-#include <span>
-#include <string_view>
-#include <unordered_map>
-#include <unordered_set>
-#include <map>
-#include <set>
-#include <queue>
-#include <stack>
-
-// misc
-#include <variant>
-#include <optional>
-#include <any>
-#include <numeric>
-#include <sstream>
-#include <memory>
-#include <functional>
-#include <expected>
+#include "std.pch.hpp"
 
 namespace tlc {
     using i64 = std::int64_t;
@@ -85,8 +60,8 @@ namespace tlc {
     template <typename K, typename T>
     using HashMap = std::unordered_map<K, T>;
 
-    template <typename K, typename T>
-    using TreeMap = std::map<K, T>;
+    // template <typename K, typename T>
+    // using TreeMap = std::map<K, T>;
 
     template <typename T>
     using HashSet = std::unordered_set<T>;

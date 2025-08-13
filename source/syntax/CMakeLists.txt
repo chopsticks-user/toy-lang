@@ -9,4 +9,7 @@ target_sources(
     nodes.hpp nodes.cpp
     util.hpp util.cpp
 )
-target_link_libraries(tlc_syntax PUBLIC tlc::core tlc::token)
+target_link_libraries(
+    tlc_syntax
+    PUBLIC tlc::core tlc::token
+)

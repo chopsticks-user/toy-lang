@@ -39,7 +39,7 @@ namespace tlc::parse {
 
                 auto fnResultType = handleType(Context::enter(Context::Type, context))
                     .value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeEmpty(fnResultType, Reason::MissingType);
+                rhsContext.emitIfNodeMissing(fnResultType, Reason::MissingType);
 
                 lhs = syntax::type::Function{
                     *lhs, std::move(fnResultType), context.location()
@@ -62,7 +62,7 @@ namespace tlc::parse {
                     Context::enter(Context::Type, context,
                                    syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeEmpty(rhs, Reason::MissingType);
+                rhsContext.emitIfNodeMissing(rhs, Reason::MissingType);
 
                 lhs = syntax::type::Binary{
                     *lhs, op, std::move(rhs), context.location()
@@ -110,7 +110,7 @@ namespace tlc::parse {
         do {
             auto type = handleType(Context::enter(Context::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(type, Reason::MissingType);
+            context.emitIfNodeMissing(type, Reason::MissingType);
             types.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));
@@ -129,7 +129,7 @@ namespace tlc::parse {
 
         auto expr = handleExpr(Context::enter(Context::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(expr, Reason::MissingExpr);
+        context.emitIfNodeMissing(expr, Reason::MissingExpr);
 
         context.emitIfLexemeNotPresent(
             lexeme::rightBracket, Reason::MissingEnclosingSymbol
@@ -149,7 +149,7 @@ namespace tlc::parse {
         do {
             auto type = handleType(Context::enter(Context::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(type, Reason::MissingType);
+            context.emitIfNodeMissing(type, Reason::MissingType);
             args.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));

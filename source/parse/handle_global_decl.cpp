@@ -5,7 +5,7 @@ namespace tlc::parse {
         auto moduleDecl =
             handleModuleDecl(Context::enter(Context::ModuleDecl, context))
             .value_or(syntax::RequiredButMissing{});
-        if (context.emitIfNodeEmpty(moduleDecl, Reason::MissingDecl)) {
+        if (context.emitIfNodeMissing(moduleDecl, Reason::MissingDecl)) {
             return {};
         }
 
@@ -58,7 +58,7 @@ namespace tlc::parse {
         auto path = handleIdentifierLiteral(
                 Context::enter(Context::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
-        if (context.emitIfNodeEmpty(path, Reason::MissingId)) {
+        if (context.emitIfNodeMissing(path, Reason::MissingId)) {
             return {};
         }
 
@@ -79,14 +79,14 @@ namespace tlc::parse {
         auto path_or_alias =
             handleIdentifierLiteral(Context::enter(Context::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeEmpty(path_or_alias, Reason::MissingId);
+        context.emitIfNodeMissing(path_or_alias, Reason::MissingId);
 
         syntax::Node path;
         if (context.stream().match(lexeme::equal)) {
             path = handleIdentifierLiteral(
                     Context::enter(Context::LiteralExpr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeEmpty(path_or_alias, Reason::MissingExpr);
+            context.emitIfNodeMissing(path_or_alias, Reason::MissingExpr);
         }
 
         context.emitIfLexemeNotPresent(

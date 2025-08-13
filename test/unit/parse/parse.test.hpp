@@ -2,7 +2,6 @@
 #define TLC_TEST_UNIT_PARSE_TEST_HPP
 
 #include <catch2/catch_test_macros.hpp>
-#include <source_location>
 
 #include "parse/parse.hpp"
 
@@ -59,12 +58,6 @@ protected:
     ) -> void;
 
 private:
-    template <IsASTNode T>
-    static auto cast(Node const& node) -> T {
-        REQUIRE(matchAstType<T>(node));
-        return astCast<T>(node);
-    }
-
     static auto parseAndAssert(
         AssertParams params, Node (*fn)(tlc::parse::Parse)
     ) -> void;

@@ -22,8 +22,8 @@ target_sources(
     tlc.cpp
 )
 target_link_libraries(
-    tlc PRIVATE
-    tlc::core tlc::token tlc::lex tlc::syntax tlc::driver
+    tlc
+    PRIVATE tlc::core tlc::token tlc::lex tlc::syntax tlc::driver
 )
 set_target_properties(
     tlc PROPERTIES

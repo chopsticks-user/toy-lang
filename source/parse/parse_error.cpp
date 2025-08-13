@@ -1,5 +1,3 @@
-// ReSharper disable CppIncompleteSwitchStatement
-// ReSharper disable CppDefaultCaseNotHandledInSwitchStatement
 #include "parse_error.hpp"
 
 namespace tlc {

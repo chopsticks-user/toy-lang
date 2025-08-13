@@ -3,11 +3,8 @@
 
 #include "core/core.hpp"
 
-namespace tlc::static_ {
-    class Static {
-    public:
-    private:
-    };
-}
+#include "post_parsing/tuple_normalizer.hpp"
+
+namespace tlc::static_ {}
 
 #endif // TLC_STATIC_HPP
