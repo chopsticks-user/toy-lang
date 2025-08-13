@@ -2,8 +2,8 @@
 #define TLC_PARSE_ERROR_HPP
 
 #include "core/core.hpp"
-#include "syntax/syntax.hpp"
-#include "lex/lex.hpp"
+#include "syntax/syntax.cpp"
+#include "lex/lex.cpp"
 
 namespace tlc::parse {
     enum class EParseErrorContext {

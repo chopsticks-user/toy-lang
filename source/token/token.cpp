@@ -1,11 +1,9 @@
-#ifndef TLC_TOKEN_IMPL_HPP
-#define TLC_TOKEN_IMPL_HPP
+export module token;
 
-#include "core/core.hpp"
-#include "lexeme.hpp"
+import lexeme;
 
 namespace tlc::token {
-    class Token final {
+    export class Token final {
     public:
         constexpr Token(lexeme::Lexeme type, StrV const str,
                         Location const location)
@@ -39,6 +37,12 @@ namespace tlc::token {
         Str m_str;
         Location m_location;
     };
-}
 
-#endif // TLC_TOKEN_IMPL_HPP
+    export using TokenizedBuffer = Vec<Token>;
+
+    // todo:
+    // class TokenizedBuffer {
+    // public:
+    // private:
+    // };
+}

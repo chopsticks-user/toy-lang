@@ -1,7 +1,7 @@
 #ifndef TLC_PARSE_STREAM_HPP
 #define TLC_PARSE_STREAM_HPP
 
-#include "token/token.hpp"
+#include "token/token.cpp"
 #include "core/core.hpp"
 
 namespace tlc::parse {

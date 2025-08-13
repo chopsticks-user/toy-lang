@@ -1,7 +1,4 @@
-#ifndef TLC_LEX_UTIL_HPP
-#define TLC_LEX_UTIL_HPP
-
-#include "core/core.hpp"
+export module lex:util;
 
 namespace tlc::lex {
     constexpr auto isDigit(char const c) -> bool {
@@ -64,5 +61,3 @@ namespace tlc::lex {
         return c == '"';
     }
 }
-
-#endif // TLC_LEX_UTIL_HPP

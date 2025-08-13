@@ -1,8 +1,9 @@
 #ifndef  TLC_SYNTAX_UTIL_HPP
 #define  TLC_SYNTAX_UTIL_HPP
 
+import lexeme;
+
 #include "core/core.hpp"
-#include "token/token.hpp"
 
 #include "base.hpp"
 #include "forward.hpp"

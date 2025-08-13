@@ -1,5 +1,6 @@
 #include "util.hpp"
 
+
 #ifdef TLC_CONFIG_BUILD_TESTS
 #define TLC_STATIC_IF_NOT_BUILD_TESTS
 #else

@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "lex/text_stream.hpp"
+#include "lex/text_stream.cpp"
 
 class TextStreamTestFixture {
 protected:

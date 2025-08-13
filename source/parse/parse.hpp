@@ -2,8 +2,8 @@
 #define TLC_PARSE_HPP
 
 #include "core/core.hpp"
-#include "token/token.hpp"
-#include "syntax/syntax.hpp"
+#include "token/token.cpp"
+#include "syntax/syntax.cpp"
 
 #include "parse_error.hpp"
 #include "token_stream.hpp"

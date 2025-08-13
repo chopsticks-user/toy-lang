@@ -1,7 +1,7 @@
 #include "parse.hpp"
 #include "parse_unit_fwd.hpp"
 
-#include "lex/lex.hpp"
+#include "lex/lex.cpp"
 
 namespace tlc::parse {
     auto handleExpr(Context context) -> Opt<syntax::Node> {

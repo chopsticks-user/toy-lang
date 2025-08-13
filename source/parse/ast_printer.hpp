@@ -2,7 +2,7 @@
 #define TLC_SYNTAX_AST_PRINTER_HPP
 
 #include "core/core.hpp"
-#include "syntax/syntax.hpp"
+#include "syntax/syntax.cpp"
 
 namespace tlc::parse {
     class ASTPrinter final : public syntax::SyntaxTreeVisitor<Str> {

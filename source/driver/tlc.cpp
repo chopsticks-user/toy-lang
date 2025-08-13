@@ -1,8 +1,8 @@
 #include "driver/driver.hpp"
-#include "lex/lex.hpp"
+#include "lex/lex.cpp"
 #include "parse/parse.hpp"
-#include "syntax/syntax.hpp"
-#include "token/token.hpp"
+#include "syntax/syntax.cpp"
+#include "token/token.cpp"
 #include "static/static.hpp"
 
 #include <print>
