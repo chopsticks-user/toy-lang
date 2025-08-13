@@ -1,15 +1,57 @@
-#include "util.hpp"
+export module syntax:util;
 
-
-#ifdef TLC_CONFIG_BUILD_TESTS
-#define TLC_STATIC_IF_NOT_BUILD_TESTS
-#else
-#define TLC_STATIC_IF_NOT_BUILD_TESTS static
-#endif // TLC_CONFIG_BUILD_TESTS
+import :nodes;
+import lexeme;
+#include "core/core.hpp"
 
 namespace tlc::syntax {
+    export {
+        constexpr auto empty(Node const& node) -> bool {
+            return std::holds_alternative<std::monostate>(node);
+        }
+
+        constexpr auto missing(Node const& node) -> bool {
+            return std::holds_alternative<RequiredButMissing>(node);
+        }
+
+        template <typename T>
+        concept IsStrictlyASTNode =
+            std::derived_from<T, detail::NodeBase> &&
+            !std::same_as<detail::NodeBase, T>;
+
+        template <typename T>
+        concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
+
+        template <IsASTNode TNode>
+        constexpr auto cast(Node const& node, StrV const filepath = "")
+            -> TNode {
+            if constexpr (std::same_as<TNode, Node>) {
+                return node;
+            }
+
+            if (!std::holds_alternative<TNode>(node)) {
+                throw filepath.empty()
+                          ? InternalException(filepath, "invalid AST-node cast")
+                          : InternalException("invalid AST-node cast");
+            }
+            return std::get<TNode>(node);
+        }
+
+        template <std::derived_from<detail::NodeBase>... TNode>
+        constexpr auto match(Node const& node) -> bool {
+            return (std::holds_alternative<TNode>(node) || ...);
+        }
+    }
+
+    export {
+        using OpPrecedence = szt;
+
+        enum class EOperator {
+            Prefix, Postfix, Binary, Ternary
+        };
+    }
+
     // todo: check C operator precedence
-    TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashMap<lexeme::Lexeme, OpPrecedence>
     prefixOpPrecedenceTable = {
         {lexeme::exclaim, 40},
@@ -21,7 +63,6 @@ namespace tlc::syntax {
         {lexeme::ampersand, 46},
     };
 
-    TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashMap<lexeme::Lexeme, OpPrecedence>
     binaryOpPrecedenceTable = {
         {lexeme::bar2, 10},
@@ -52,7 +93,6 @@ namespace tlc::syntax {
         lexeme::barGreater,
     };
 
-    TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashSet<lexeme::Lexeme> leftAssociativeOps = {
         lexeme::bar2, lexeme::ampersand2, lexeme::bar, lexeme::hat,
         lexeme::ampersand, lexeme::exclaimEqual, lexeme::equal2,
@@ -62,7 +102,6 @@ namespace tlc::syntax {
         lexeme::barGreater, lexeme::dot2,
     };
 
-    TLC_STATIC_IF_NOT_BUILD_TESTS
     const HashSet<lexeme::Lexeme> assignmentOps = {
         lexeme::plusEqual, lexeme::minusEqual, lexeme::starEqual,
         lexeme::fwdSlashEqual, lexeme::percentEqual, lexeme::star2Equal,
@@ -70,41 +109,66 @@ namespace tlc::syntax {
         lexeme::less2Equal, lexeme::greater2Equal, lexeme::colonEqual,
     };
 
-    auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
-        return prefixOpPrecedenceTable.contains(lexeme);
-    }
-
-    static const HashSet postfixStart = {
+    const HashSet postfixStart = {
         lexeme::leftParen, lexeme::leftBracket,
     };
 
-    auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
-        return postfixStart.contains(lexeme);
-    }
+    export {
+        constexpr auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
+            return prefixOpPrecedenceTable.contains(lexeme);
+        }
 
-    auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
-        return binaryOpPrecedenceTable.contains(lexeme);
-    }
+        constexpr auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
+            return postfixStart.contains(lexeme);
+        }
 
-    auto isBinaryTypeOperator(lexeme::Lexeme const& lexeme) -> bool {
-        return binaryTypeOpTable.contains(lexeme);
-    }
+        constexpr auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
+            return binaryOpPrecedenceTable.contains(lexeme);
+        }
 
-    auto opPrecedence(
-        lexeme::Lexeme const& lexeme, EOperator const opType
-    ) -> OpPrecedence {
-        switch (opType) {
-        case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
-        case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
-        default: return 0;
+        constexpr auto isBinaryTypeOperator(lexeme::Lexeme const& lexeme) -> bool {
+            return binaryTypeOpTable.contains(lexeme);
+        }
+
+        constexpr auto opPrecedence(
+            lexeme::Lexeme const& lexeme, EOperator const opType
+        ) -> OpPrecedence {
+            switch (opType) {
+            case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
+            case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
+            default: return 0;
+            }
+        }
+
+        constexpr auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
+            return leftAssociativeOps.contains(lexeme);
+        }
+
+        constexpr auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
+            return assignmentOps.contains(lexeme);
         }
     }
 
-    auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
-        return leftAssociativeOps.contains(lexeme);
-    }
-
-    auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
-        return assignmentOps.contains(lexeme);
-    }
+    // class NodeWrapper {
+    // public:
+    //     constexpr NodeWrapper() = default;
+    //
+    //     explicit constexpr NodeWrapper(Node node) noexcept
+    //         : m_node{std::move(node)} {}
+    //
+    //     explicit constexpr operator bool() const noexcept {
+    //         return empty();
+    //     }
+    //
+    //     constexpr auto empty() const noexcept -> bool {
+    //         return std::holds_alternative<std::monostate>(m_node);
+    //     }
+    //
+    //     constexpr auto missing() const noexcept -> bool {
+    //         return std::holds_alternative<RequiredButMissing>(m_node);
+    //     }
+    //
+    // private:
+    //     Node m_node;
+    // };
 }

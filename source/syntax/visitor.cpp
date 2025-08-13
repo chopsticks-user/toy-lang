@@ -1,10 +1,9 @@
-#ifndef TLC_SYNTAX_VISITOR_HPP
-#define TLC_SYNTAX_VISITOR_HPP
+export module syntax:visitor;
 
+import :nodes;
 #include "core/core.hpp"
-#include "forward.hpp"
 
-namespace tlc::syntax {
+export namespace tlc::syntax {
     /**
      * Derived classes' operator() overloads must not be marked as 'const'
      * @tparam TReturn
@@ -37,5 +36,3 @@ namespace tlc::syntax {
         }
     };
 }
-
-#endif // TLC_SYNTAX_VISITOR_HPP
