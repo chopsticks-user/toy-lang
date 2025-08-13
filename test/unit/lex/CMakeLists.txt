@@ -5,6 +5,10 @@ target_sources(
     lex.test.cpp
     text_stream.test.cpp
 )
+target_precompile_headers(
+    tlc_test_unit_lex
+    PRIVATE <catch2/catch_test_macros.hpp>
+)
 target_link_libraries(
     tlc_test_unit_lex
     PRIVATE Catch2::Catch2WithMain tlc::lex tlc::token

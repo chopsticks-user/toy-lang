@@ -47,6 +47,13 @@ target_sources(
     global/global_enum.test.cpp
     global/global_flag.test.cpp
 )
+target_precompile_headers(
+    tlc_test_unit_parse
+    PRIVATE
+    <catch2/catch_test_macros.hpp>
+    <catch2/generators/catch_generators.hpp>
+    <catch2/generators/catch_generators_range.hpp>
+)
 target_link_libraries(
     tlc_test_unit_parse
     PRIVATE Catch2::Catch2WithMain tlc::lex tlc::parse
