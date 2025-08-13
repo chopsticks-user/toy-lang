@@ -1,4 +1,6 @@
-#include "parse_unit_fwd.hpp"
+export module parse:handle_function_def;
+
+import :unit_fwd;
 
 namespace tlc::parse {
     auto handleFunctionDef(Context context) -> Opt<syntax::Node> {

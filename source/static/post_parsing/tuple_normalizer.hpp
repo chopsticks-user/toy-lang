@@ -2,7 +2,7 @@
 #define TLC_STATIC_POST_PARSING_TUPLE_NORMALIZER_HPP
 
 #include "core/core.hpp"
-#include "syntax/syntax.cpp"
+#include "syntax/syntax.cppm"
 
 namespace tlc::static_ {
     class TupleNormalizer final :

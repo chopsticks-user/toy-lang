@@ -3,7 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "parse/parse.hpp"
+#include "parse/parse_impl.cpp"
 
 using namespace tlc::syntax;
 using Context = tlc::parse::EParseErrorContext;

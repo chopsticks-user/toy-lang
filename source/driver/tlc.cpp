@@ -1,7 +1,7 @@
 #include "driver/driver.hpp"
-#include "lex/lex.cpp"
-#include "parse/parse.hpp"
-#include "syntax/syntax.cpp"
+#include "lex/lex.cppm"
+#include "parse/parse_impl.cpp"
+#include "syntax/syntax.cppm"
 #include "token/token.cpp"
 #include "static/static.hpp"
 

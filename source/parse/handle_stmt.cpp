@@ -1,4 +1,6 @@
-#include "parse_unit_fwd.hpp"
+export module parse:handle_stmt;
+
+import :unit_fwd;
 
 namespace tlc::parse {
     auto handleStmt(Context context) -> Opt<syntax::Node> {

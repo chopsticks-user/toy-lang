@@ -3,7 +3,7 @@ add_library(tlc::lex ALIAS tlc_lex)
 target_sources(
     tlc_lex
     PUBLIC FILE_SET CXX_MODULES FILES
-    lex.cpp
+    lex.cppm
     text_stream.cpp
     util.cpp
 )

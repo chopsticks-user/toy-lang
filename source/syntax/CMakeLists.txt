@@ -3,7 +3,7 @@ add_library(tlc::syntax ALIAS tlc_syntax)
 target_sources(
     tlc_syntax
     PUBLIC FILE_SET CXX_MODULES FILES
-    syntax.cpp
+    syntax.cppm
     visitor.cpp
     nodes.cpp
     util.cpp

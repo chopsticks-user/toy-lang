@@ -1,4 +1,6 @@
-#include "parse_unit_fwd.hpp"
+export module parse:handle_type;
+
+import :unit_fwd;
 
 namespace tlc::parse {
     auto handleType(Context context) -> Opt<syntax::Node> {

@@ -1,14 +1,16 @@
-#include "parse.hpp"
-#include "parse_unit_fwd.hpp"
+export module parse:handle_expr;
 
-#include "lex/lex.cpp"
+import :unit_fwd;
+import :impl;
+import lex;
+import token;
 
 namespace tlc::parse {
     auto handleExpr(Context context) -> Opt<syntax::Node> {
         Opt<syntax::Node> lhs;
 
         if (context.stream().match(syntax::isPrefixOperator)) {
-            context.to(Context::PrefixExpr);
+            // context.to(Context::PrefixExpr);
 
             auto const op = context.stream().current().lexeme();
             lhs = handleExpr(Context::enter(Context::Expr, context, syntax::opPrecedence(

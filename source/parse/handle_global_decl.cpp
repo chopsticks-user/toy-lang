@@ -1,4 +1,7 @@
-#include "parse_unit_fwd.hpp"
+export module parse:handle_global_decl;
+
+import :unit_fwd;
+import token;
 
 namespace tlc::parse {
     auto handleTranslationUnit(Context context) -> Opt<syntax::Node> {

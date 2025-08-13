@@ -1,8 +1,9 @@
-#ifndef TLC_PARSE_UNIT_FWD_HPP
-#define TLC_PARSE_UNIT_FWD_HPP
+export module parse:unit_fwd;
 
-#include "context.hpp"
-#include "parse_error.hpp"
+export import lexeme;
+export import syntax;
+export import :error;
+export import :context;
 
 namespace tlc::parse {
     auto handleExpr(Context context) -> Opt<syntax::Node>;
@@ -45,5 +46,3 @@ namespace tlc::parse {
     auto handleImportDecl(Context context) -> Opt<syntax::Node>;
     auto handleTranslationUnit(Context context) -> Opt<syntax::Node>;
 }
-
-#endif // TLC_PARSE_UNIT_FWD_HPP

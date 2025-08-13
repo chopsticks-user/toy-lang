@@ -2,14 +2,16 @@ add_library(tlc_parse SHARED)
 add_library(tlc::parse ALIAS tlc_parse)
 target_sources(
     tlc_parse
-    PRIVATE
-    parse.hpp parse.cpp
-    context.hpp
-    token_stream.hpp token_stream.cpp
-    location_tracker.hpp location_tracker.cpp
-    parse_error.hpp parse_error.cpp
-    pretty_printer.hpp pretty_printer.cpp
-    ast_printer.hpp ast_printer.cpp
+    PUBLIC FILE_SET CXX_MODULES FILES
+    parse.cppm
+    parse_impl.cpp
+    context.cpp
+    token_stream.cpp
+    location_tracker.cpp
+    parse_error.cpp
+    pretty_printer.cpp
+    ast_printer.cpp
+    parse_unit.fwd.cpp
     handle_expr.cpp
     handle_type.cpp
     handle_stmt.cpp
@@ -23,5 +25,5 @@ target_sources(
 )
 target_link_libraries(
     tlc_parse
-    PUBLIC tlc::core tlc::token tlc::syntax
+    PUBLIC tlc::core tlc::lex tlc::token tlc::syntax
 )
