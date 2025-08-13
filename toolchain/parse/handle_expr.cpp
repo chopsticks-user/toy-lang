@@ -10,7 +10,7 @@ namespace tlc::parse {
         Opt<syntax::Node> lhs;
 
         if (context.stream().match(syntax::isPrefixOperator)) {
-            // context.to(Context::PrefixExpr);
+            context.to(Context::PrefixExpr);
 
             auto const op = context.stream().current().lexeme();
             lhs = handleExpr(Context::enter(Context::Expr, context, syntax::opPrecedence(

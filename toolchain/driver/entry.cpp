@@ -1,12 +1,4 @@
-#include "driver/driver.hpp"
-#include "lex/lex.cppm"
-#include "parse/parse_impl.cpp"
-#include "syntax/syntax.cppm"
-#include "token/token.cpp"
-#include "static/static.hpp"
-
-#include <print>
-#include <iostream>
+import parse;
 
 int protected_main([[maybe_unused]] int argc, [[maybe_unused]] char** argv) {
     TLC_SCOPE_REPORTER();

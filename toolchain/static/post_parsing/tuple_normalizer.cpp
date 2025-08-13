@@ -1,8 +1,6 @@
-#ifndef TLC_STATIC_POST_PARSING_TUPLE_NORMALIZER_HPP
-#define TLC_STATIC_POST_PARSING_TUPLE_NORMALIZER_HPP
+export module post_parsing:tuple_normalizer;
 
-#include "core/core.hpp"
-#include "syntax/syntax.cppm"
+import syntax;
 
 namespace tlc::static_ {
     class TupleNormalizer final :
@@ -28,5 +26,3 @@ namespace tlc::static_ {
         b8 m_hasOuterTupleExpr = false;
     };
 }
-
-#endif // TLC_STATIC_POST_PARSING_TUPLE_NORMALIZER_HPP

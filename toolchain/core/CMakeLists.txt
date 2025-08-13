@@ -23,7 +23,7 @@ target_precompile_headers(
 )
 target_include_directories(
     tlc_core
-    INTERFACE ${PROJECT_SOURCE_DIR}/source
+    INTERFACE ${PROJECT_SOURCE_DIR}/toolchain
 )
 target_link_libraries(
     tlc_core
