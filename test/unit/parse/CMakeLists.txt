@@ -1,11 +1,11 @@
 add_executable(tlc_test_unit_parse)
 add_executable(tlc::test::unit::parse ALIAS tlc_test_unit_parse)
 target_sources(
-    tlc_test_unit_parse PRIVATE
-    token_stream.test.cpp
-    parse.test.hpp
-    parse.test.cpp
+    tlc_test_unit_parse
+    #    PRIVATE FILE_SET CXX_MODULES FILES
 
+    PRIVATE
+    parse.test.hpp
     expr/expr_literal.test.cpp
     expr/expr_id.test.cpp
     expr/expr_tuple.test.cpp
@@ -47,13 +47,11 @@ target_sources(
     global/global_enum.test.cpp
     global/global_flag.test.cpp
 )
-target_precompile_headers(
-    tlc_test_unit_parse
-    PRIVATE
-    <catch2/catch_test_macros.hpp>
-    <catch2/generators/catch_generators.hpp>
-    <catch2/generators/catch_generators_range.hpp>
-)
+#target_precompile_headers(
+#    tlc_test_unit_parse
+#    PRIVATE
+#    <catch2/catch_test_macros.hpp>
+#)
 target_link_libraries(
     tlc_test_unit_parse
     PRIVATE Catch2::Catch2WithMain tlc::lex tlc::parse

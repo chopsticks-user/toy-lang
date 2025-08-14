@@ -24,7 +24,6 @@ target_sources(
     visitor.cpp
     singleton.cpp
     mixin.cpp
-    config.cpp
 )
 target_precompile_headers(
     tlc_core

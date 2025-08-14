@@ -4,52 +4,48 @@ import :nodes;
 import lexeme;
 import core;
 
-namespace tlc::syntax {
-    export {
-        constexpr auto empty(Node const& node) -> bool {
-            return std::holds_alternative<std::monostate>(node);
-        }
-
-        constexpr auto missing(Node const& node) -> bool {
-            return std::holds_alternative<RequiredButMissing>(node);
-        }
-
-        template <typename T>
-        concept IsStrictlyASTNode =
-            std::derived_from<T, detail::NodeBase> &&
-            !std::same_as<detail::NodeBase, T>;
-
-        template <typename T>
-        concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
-
-        template <IsASTNode TNode>
-        constexpr auto cast(Node const& node, StrV const filepath = "")
-            -> TNode {
-            if constexpr (std::same_as<TNode, Node>) {
-                return node;
-            }
-
-            if (!std::holds_alternative<TNode>(node)) {
-                throw filepath.empty()
-                          ? InternalException(filepath, "invalid AST-node cast")
-                          : InternalException("invalid AST-node cast");
-            }
-            return std::get<TNode>(node);
-        }
-
-        template <std::derived_from<detail::NodeBase>... TNode>
-        constexpr auto match(Node const& node) -> bool {
-            return (std::holds_alternative<TNode>(node) || ...);
-        }
+export namespace tlc::syntax {
+    constexpr auto empty(Node const& node) -> bool {
+        return std::holds_alternative<std::monostate>(node);
     }
 
-    export {
-        using OpPrecedence = szt;
-
-        enum class EOperator {
-            Prefix, Postfix, Binary, Ternary
-        };
+    constexpr auto missing(Node const& node) -> bool {
+        return std::holds_alternative<RequiredButMissing>(node);
     }
+
+    template <typename T>
+    concept IsStrictlyASTNode =
+        std::derived_from<T, detail::NodeBase> &&
+        !std::same_as<detail::NodeBase, T>;
+
+    template <typename T>
+    concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
+
+    template <IsASTNode TNode>
+    constexpr auto cast(Node const& node, StrV const filepath = "")
+        -> TNode {
+        if constexpr (std::same_as<TNode, Node>) {
+            return node;
+        }
+
+        if (!std::holds_alternative<TNode>(node)) {
+            throw filepath.empty()
+                      ? InternalException(filepath, "invalid AST-node cast")
+                      : InternalException("invalid AST-node cast");
+        }
+        return std::get<TNode>(node);
+    }
+
+    template <std::derived_from<detail::NodeBase>... TNode>
+    constexpr auto match(Node const& node) -> bool {
+        return (std::holds_alternative<TNode>(node) || ...);
+    }
+
+    using OpPrecedence = szt;
+
+    enum class EOperator {
+        Prefix, Postfix, Binary, Ternary
+    };
 
     // todo: check C operator precedence
     const HashMap<lexeme::Lexeme, OpPrecedence>
@@ -113,40 +109,39 @@ namespace tlc::syntax {
         lexeme::leftParen, lexeme::leftBracket,
     };
 
-    export {
-        constexpr auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
-            return prefixOpPrecedenceTable.contains(lexeme);
-        }
 
-        constexpr auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
-            return postfixStart.contains(lexeme);
-        }
+    constexpr auto isPrefixOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return prefixOpPrecedenceTable.contains(lexeme);
+    }
 
-        constexpr auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
-            return binaryOpPrecedenceTable.contains(lexeme);
-        }
+    constexpr auto isPostfixStart(lexeme::Lexeme const& lexeme) -> bool {
+        return postfixStart.contains(lexeme);
+    }
 
-        constexpr auto isBinaryTypeOperator(lexeme::Lexeme const& lexeme) -> bool {
-            return binaryTypeOpTable.contains(lexeme);
-        }
+    constexpr auto isBinaryOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryOpPrecedenceTable.contains(lexeme);
+    }
 
-        constexpr auto opPrecedence(
-            lexeme::Lexeme const& lexeme, EOperator const opType
-        ) -> OpPrecedence {
-            switch (opType) {
-            case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
-            case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
-            default: return 0;
-            }
-        }
+    constexpr auto isBinaryTypeOperator(lexeme::Lexeme const& lexeme) -> bool {
+        return binaryTypeOpTable.contains(lexeme);
+    }
 
-        constexpr auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
-            return leftAssociativeOps.contains(lexeme);
+    constexpr auto opPrecedence(
+        lexeme::Lexeme const& lexeme, EOperator const opType
+    ) -> OpPrecedence {
+        switch (opType) {
+        case EOperator::Prefix: return prefixOpPrecedenceTable.at(lexeme);
+        case EOperator::Binary: return binaryOpPrecedenceTable.at(lexeme);
+        default: return 0;
         }
+    }
 
-        constexpr auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
-            return assignmentOps.contains(lexeme);
-        }
+    constexpr auto isLeftAssociative(lexeme::Lexeme const& lexeme) -> b8 {
+        return leftAssociativeOps.contains(lexeme);
+    }
+
+    constexpr auto isAssignmentOperator(lexeme::Lexeme const& lexeme) -> b8 {
+        return assignmentOps.contains(lexeme);
     }
 
     // class NodeWrapper {

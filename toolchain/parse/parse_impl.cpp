@@ -51,7 +51,6 @@ namespace tlc::parse {
             );
         }
 
-#ifdef TLC_CONFIG_BUILD_TESTS
         constexpr auto parseType() -> Opt<syntax::Node> {
             auto parent = globalContext(Context::Unknown);
             return handleType(Context::enter(Context::Type, parent));
@@ -77,7 +76,6 @@ namespace tlc::parse {
             return handleGenericParamsDecl(
                 Context::enter(Context::GenericParamsDecl, parent));
         }
-#endif
 
     private:
         fs::path m_filepath;
