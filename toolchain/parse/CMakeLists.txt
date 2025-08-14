@@ -5,7 +5,7 @@ target_sources(
     PRIVATE
     parse.hpp parse.cpp
     context.hpp context.cpp
-    token_stream.hpp token_stream.cpp
+    token_stream.hpp
     location_tracker.hpp location_tracker.cpp
     parse_error.hpp parse_error.cpp
     pretty_printer.hpp pretty_printer.cpp

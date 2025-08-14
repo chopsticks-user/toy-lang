@@ -27,13 +27,17 @@ namespace tlc::parse {
 
         auto type = handleType(Context::enter(EContext::Type, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(type, EReason::MissingType);
+        context.emitIfNodeMissing(type, EReason::MissingTypeExpr);
         return syntax::decl::Identifier{
             std::move(name), std::move(type), context.location()
         };
     }
 
     auto handleTupleDecl(Context context) -> Opt<syntax::Node> {
+        static const SynchronizingSet synchronizingSet = {
+            lexeme::comma, lexeme::rightParen
+        };
+
         if (!context.stream().match(lexeme::leftParen)) {
             return {};
         }
@@ -43,9 +47,12 @@ namespace tlc::parse {
 
         Vec<syntax::Node> decls;
         do {
-            auto decl = handleDecl(Context::enter(EContext::Decl, context))
-                .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(decl, EReason::MissingDecl);
+            auto decl = handleIdentifierDecl(
+                Context::enter(EContext::IdDecl, context)
+            ).value_or(syntax::RequiredButMissing{});
+            if (context.emitIfNodeMissing(decl, EReason::MissingDecl)) {
+                context.synchronize(synchronizingSet);
+            }
             decls.push_back(std::move(decl));
         }
         while (context.stream().match(lexeme::comma));
@@ -56,14 +63,11 @@ namespace tlc::parse {
         return syntax::decl::Tuple{std::move(decls), context.location()};
     }
 
-    /**
-     * Panic:
-     *      - in-pace synchronize until '>'
-     *
-     * @param context
-     * @return
-     */
     auto handleGenericParamsDecl(Context context) -> Opt<syntax::Node> {
+        static const SynchronizingSet synchronizingSet = {
+            lexeme::comma, lexeme::greater
+        };
+
         if (!context.stream().match(lexeme::less)) {
             return {};
         }
@@ -74,7 +78,7 @@ namespace tlc::parse {
         Vec<syntax::Node> types;
         do {
             if (!context.emitIfLexemeNotPresent(
-                lexeme::userDefinedType, EReason::MissingId
+                lexeme::userDefinedType, EReason::MissingTypeId
             )) {
                 auto token = context.stream().current();
                 types.emplace_back(syntax::decl::GenericIdentifier{
@@ -82,6 +86,7 @@ namespace tlc::parse {
                 });
             }
             else {
+                context.synchronize(synchronizingSet);
                 types.emplace_back(syntax::RequiredButMissing{});
             }
         }

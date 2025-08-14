@@ -39,7 +39,7 @@ namespace tlc::parse {
 
                 auto fnResultType = handleType(Context::enter(EContext::Type, context))
                     .value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeMissing(fnResultType, EReason::MissingType);
+                rhsContext.emitIfNodeMissing(fnResultType, EReason::MissingTypeExpr);
 
                 lhs = syntax::type::Function{
                     *lhs, std::move(fnResultType), context.location()
@@ -62,7 +62,7 @@ namespace tlc::parse {
                     Context::enter(EContext::Type, context,
                                    syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeMissing(rhs, EReason::MissingType);
+                rhsContext.emitIfNodeMissing(rhs, EReason::MissingTypeExpr);
 
                 lhs = syntax::type::Binary{
                     *lhs, op, std::move(rhs), context.location()
@@ -110,7 +110,7 @@ namespace tlc::parse {
         do {
             auto type = handleType(Context::enter(EContext::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(type, EReason::MissingType);
+            context.emitIfNodeMissing(type, EReason::MissingTypeExpr);
             types.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));
@@ -149,7 +149,7 @@ namespace tlc::parse {
         do {
             auto type = handleType(Context::enter(EContext::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(type, EReason::MissingType);
+            context.emitIfNodeMissing(type, EReason::MissingTypeExpr);
             args.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));

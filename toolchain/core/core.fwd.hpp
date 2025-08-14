@@ -110,6 +110,9 @@ namespace tlc {
 
     template <typename S>
     using Fn = std::function<S>;
+
+    template <typename T>
+    using Ref = std::reference_wrapper<T>;
 }
 
 #endif //TLC_CORE_FWD_HPP

@@ -1,16 +1,14 @@
 #include "context.hpp"
 
 namespace tlc::parse {
-    using EContext = EContext;
-
-    static HashMap<EContext, HashMap<EContext, HashSet<lexeme::Lexeme>>> const
-    contextSensitiveFollowSet{
-        {
-            EContext::IdDecl, {
-                {EContext::TupleDecl, {lexeme::comma, lexeme::rightParen}}
-            }
-        },
-    };
+    // static HashMap<EContext, HashMap<EContext, HashSet<lexeme::Lexeme>>> const
+    // contextSensitiveFollowSet{
+    //     {
+    //         EContext::TupleDecl, {
+    //             {EContext::IdDecl, {lexeme::comma, lexeme::rightParen}}
+    //         }
+    //     },
+    // };
 
     // HashMap<EContext, HashSet<lexeme::Lexeme>> const
     // contextSensitiveStartSet{
@@ -31,14 +29,18 @@ namespace tlc::parse {
     //     },
     // };
 
-    auto Context::synchronize() -> void {
-        // if (auto const currentIt = contextSensitiveFollowSet.find(m_errorContext);
-        //     currentIt != contextSensitiveFollowSet.end()) {
-        //     if (auto const parentIt = currentIt->second.find(m_errorContext);
-        //         parentIt != currentIt->second.end()) {
-        //         while (m_tokenStream.done())
-        //         return;
-        //     }
-        // }
-    }
+    // auto Context::synchronize(EContext const childContext) const -> void {
+    //     if (auto const currentIt = contextSensitiveFollowSet.find(m_errorContext);
+    //         currentIt != contextSensitiveFollowSet.end()) {
+    //         if (auto const parentIt = currentIt->second.find(childContext);
+    //             parentIt != currentIt->second.end()) {
+    //             auto const& terminals = parentIt->second;
+    //             while (!(m_tokenStream.done() ||
+    //                 terminals.contains(m_tokenStream.peek().lexeme()))) {
+    //                 // todo: save dropped tokens
+    //                 m_tokenStream.advance();
+    //             }
+    //         }
+    //     }
+    // }
 }

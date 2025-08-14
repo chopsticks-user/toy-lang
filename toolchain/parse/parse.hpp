@@ -47,6 +47,7 @@ namespace tlc::parse {
         auto parseStmt() -> Opt<syntax::Node>;
         auto parseDecl() -> Opt<syntax::Node>;
         auto parseGenericParamsDecl() -> Opt<syntax::Node>;
+        constexpr auto finished() const -> b8 { return m_stream.done(); }
 #endif
 
     private:

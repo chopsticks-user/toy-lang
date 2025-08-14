@@ -9,6 +9,8 @@
 #include "location_tracker.hpp"
 
 namespace tlc::parse {
+    using SynchronizingSet = HashSet<lexeme::Lexeme>;
+
     class Context final {
         using TError = Error<EContext, EReason>;
         using TErrorCollector = ErrorCollector<
@@ -33,7 +35,7 @@ namespace tlc::parse {
             LocationTracker& locationTracker, TErrorCollector& errorCollector,
             EContext const errorContext,
             b8 const isSubroutine
-        ) -> Context {
+        ) noexcept -> Context {
             return Params{
                 .filepath = filepath,
                 .tokenStream = tokenStream,
@@ -49,7 +51,7 @@ namespace tlc::parse {
             Context& parent,
             Opt<syntax::OpPrecedence> minPrecedence = {},
             Opt<token::Token> visibility = {}
-        ) -> Context {
+        ) noexcept -> Context {
             return Params{
                 .filepath = parent.filepath(),
                 .tokenStream = parent.stream(),
@@ -65,7 +67,7 @@ namespace tlc::parse {
 
     public:
         // ReSharper disable once CppNonExplicitConvertingConstructor
-        constexpr Context(Params&& params)
+        constexpr Context(Params&& params) noexcept
             : m_filepath{params.filepath},
               m_tokenStream{params.tokenStream},
               m_locationTracker{params.locationTracker},
@@ -85,6 +87,7 @@ namespace tlc::parse {
             m_tokenStream.markBacktrack();
         }
 
+        // todo: noexcept
         constexpr ~Context() {
             if (!m_backtracked) {
                 m_tokenStream.removeBacktrack();
@@ -155,15 +158,15 @@ namespace tlc::parse {
             return emitIf(!m_tokenStream.match(lexeme_), reason);
         }
 
-        [[nodiscard]] constexpr auto location() const -> Location {
+        [[nodiscard]] constexpr auto location() const noexcept -> Location {
             return m_location;
         }
 
-        [[nodiscard]] constexpr auto stream() const -> TokenStream& {
+        [[nodiscard]] constexpr auto stream() const noexcept -> TokenStream& {
             return m_tokenStream;
         }
 
-        constexpr auto to(EContext const context) -> void {
+        constexpr auto to(EContext const context) noexcept -> void {
             m_errorContext = context;
         }
 
@@ -175,31 +178,42 @@ namespace tlc::parse {
             m_errors.append_range(std::move(errors));
         }
 
-        constexpr auto minPrecedence() const -> syntax::OpPrecedence {
+        constexpr auto minPrecedence() const noexcept -> syntax::OpPrecedence {
             return m_minPrecedence;
         }
 
-        constexpr auto visibility() const -> token::Token const& {
+        constexpr auto visibility() const noexcept -> token::Token const& {
             return m_visibility;
         }
 
-        constexpr auto tracker() const -> LocationTracker& {
+        constexpr auto tracker() const noexcept -> LocationTracker& {
             return m_locationTracker;
         }
 
-        constexpr auto collector() const -> TErrorCollector& {
+        constexpr auto collector() const noexcept -> TErrorCollector& {
             return m_errorCollector;
         }
 
-        constexpr auto isSubroutine() const -> b8 {
+        constexpr auto isSubroutine() const noexcept -> b8 {
             return m_isSubroutine;
         }
 
-        // constexpr auto parent() const -> Context& {
-        //     return *m_parent;
-        // }
+        constexpr auto synchronize(
+            SynchronizingSet const& synchronizingSet
+        ) const -> void {
+            if (synchronizingSet.empty()) {
+                return;
+            }
+            while (!(m_tokenStream.done() ||
+                synchronizingSet.contains(m_tokenStream.peek().lexeme()))) {
+                // todo: save dropped tokens
+                m_tokenStream.advance();
+            }
+        }
 
-        auto synchronize() -> void;
+        constexpr auto hasParent() const noexcept -> b8 {
+            return m_parent != nullptr;
+        }
 
     private:
         fs::path const& m_filepath;

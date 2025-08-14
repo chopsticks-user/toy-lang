@@ -28,8 +28,8 @@ namespace tlc::parse {
 
     enum class EReason {
         NotAnError, MissingSymbol, MissingKeyword, MissingEnclosingSymbol,
-        MissingExpr, MissingType, MissingId, MissingDecl, MissingStmt,
-        MissingBody, RestrictedAction, Unknown,
+        MissingExpr, MissingTypeExpr, MissingTypeId, MissingId, MissingDecl,
+        MissingStmt, MissingBody, RestrictedAction, Unknown,
     };
 }
 

@@ -99,7 +99,7 @@ TEST_CASE_WITH_FIXTURE(
         "x: {!}",
 
         .expectedErrors = {
-            {.context = Context::IdDecl, .reason = Reason::MissingType},
+            {.context = Context::IdDecl, .reason = Reason::MissingTypeExpr},
         },
     });
 }

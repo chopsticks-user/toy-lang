@@ -26,6 +26,7 @@ auto ParseTestFixture::assertDecl(AssertParams params, SLoc const location) -> v
     INFO(std::format("{}:{}", location.file_name(), location.line()));
     parseAndAssert(std::move(params), [](tlc::parse::Parse parse) {
         auto result = parse.parseDecl();
+        REQUIRE(parse.finished());
         REQUIRE(result);
         return *result;
     });
