@@ -12,7 +12,7 @@ namespace tlc::parse {
                 .tokenStream = m_stream,
                 .locationTracker = m_tracker,
                 .errorCollector = m_collector,
-                .errorContext = Context::TranslationUnit,
+                .errorContext = EContext::TranslationUnit,
             })
             .value_or(syntax::TranslationUnit{
                 m_filepath, syntax::RequiredButMissing{},
@@ -22,29 +22,29 @@ namespace tlc::parse {
 
 #ifdef TLC_CONFIG_BUILD_TESTS
     auto Parse::parseType() -> Opt<syntax::Node> {
-        auto parent = globalContext(Context::Unknown);
-        return handleType(Context::enter(Context::Type, parent));
+        auto parent = globalContext(EContext::Unknown);
+        return handleType(Context::enter(EContext::Type, parent));
     }
 
     auto Parse::parseExpr() -> Opt<syntax::Node> {
-        auto parent = globalContext(Context::Unknown);
-        return handleExpr(Context::enter(Context::Expr, parent));
+        auto parent = globalContext(EContext::Unknown);
+        return handleExpr(Context::enter(EContext::Expr, parent));
     }
 
     auto Parse::parseStmt() -> Opt<syntax::Node> {
-        auto parent = globalContext(Context::Unknown);
-        return handleStmt(Context::enter(Context::Stmt, parent));
+        auto parent = globalContext(EContext::Unknown);
+        return handleStmt(Context::enter(EContext::Stmt, parent));
     }
 
     auto Parse::parseDecl() -> Opt<syntax::Node> {
-        auto parent = globalContext(Context::Unknown);
-        return handleDecl(Context::enter(Context::Decl, parent));
+        auto parent = globalContext(EContext::Unknown);
+        return handleDecl(Context::enter(EContext::Decl, parent));
     }
 
     auto Parse::parseGenericParamsDecl() -> Opt<syntax::Node> {
-        auto parent = globalContext(Context::Unknown);
+        auto parent = globalContext(EContext::Unknown);
         return handleGenericParamsDecl(
-            Context::enter(Context::GenericParamsDecl, parent));
+            Context::enter(EContext::GenericParamsDecl, parent));
     }
 #endif
 }

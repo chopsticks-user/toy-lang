@@ -2,10 +2,10 @@
 
 namespace tlc {
     template <>
-    auto Error<parse::EParseErrorContext, parse::EParseErrorReason>::
+    auto Error<parse::EContext, parse::EReason>::
     message() const -> Str {
-        using parse::EParseErrorContext;
-        using parse::EParseErrorReason;
+        using parse::EContext;
+        using parse::EReason;
         return "";
     }
 }

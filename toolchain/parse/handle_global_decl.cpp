@@ -3,20 +3,20 @@
 namespace tlc::parse {
     auto handleTranslationUnit(Context context) -> Opt<syntax::Node> {
         auto moduleDecl =
-            handleModuleDecl(Context::enter(Context::ModuleDecl, context))
+            handleModuleDecl(Context::enter(EContext::ModuleDecl, context))
             .value_or(syntax::RequiredButMissing{});
-        if (context.emitIfNodeMissing(moduleDecl, Reason::MissingDecl)) {
+        if (context.emitIfNodeMissing(moduleDecl, EReason::MissingDecl)) {
             return {};
         }
 
         syntax::Node importGroup;
         {
-            auto importGroupContext = Context::enter(Context::ImportDeclGroup, context);
+            auto importGroupContext = Context::enter(EContext::ImportDeclGroup, context);
 
             Vec<syntax::Node> imports;
-            while (context.stream().peek().lexeme() != lexeme::invalid) {
+            while (!context.stream().done()) {
                 auto importDecl = handleImportDecl(
-                    Context::enter(Context::ImportDecl, context));
+                    Context::enter(EContext::ImportDecl, context));
                 if (!importDecl) {
                     break;
                 }
@@ -38,7 +38,7 @@ namespace tlc::parse {
             }
 
             if (auto fnDef = handleFunctionDef(
-                Context::enter(Context::Function, context,
+                Context::enter(EContext::Function, context,
                                {}, std::move(visibility))); fnDef) {
                 definitions.push_back(std::move(*fnDef));
             }
@@ -56,14 +56,14 @@ namespace tlc::parse {
         }
 
         auto path = handleIdentifierLiteral(
-                Context::enter(Context::LiteralExpr, context))
+                Context::enter(EContext::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
-        if (context.emitIfNodeMissing(path, Reason::MissingId)) {
+        if (context.emitIfNodeMissing(path, EReason::MissingId)) {
             return {};
         }
 
         context.emitIfLexemeNotPresent(
-            lexeme::semicolon, Reason::MissingEnclosingSymbol
+            lexeme::semicolon, EReason::MissingEnclosingSymbol
         );
         return syntax::global::ModuleDecl{
             std::move(path), context.location()
@@ -77,20 +77,20 @@ namespace tlc::parse {
         }
 
         auto path_or_alias =
-            handleIdentifierLiteral(Context::enter(Context::LiteralExpr, context))
+            handleIdentifierLiteral(Context::enter(EContext::LiteralExpr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(path_or_alias, Reason::MissingId);
+        context.emitIfNodeMissing(path_or_alias, EReason::MissingId);
 
         syntax::Node path;
         if (context.stream().match(lexeme::equal)) {
             path = handleIdentifierLiteral(
-                    Context::enter(Context::LiteralExpr, context))
+                    Context::enter(EContext::LiteralExpr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(path_or_alias, Reason::MissingExpr);
+            context.emitIfNodeMissing(path_or_alias, EReason::MissingExpr);
         }
 
         context.emitIfLexemeNotPresent(
-            lexeme::semicolon, Reason::MissingEnclosingSymbol
+            lexeme::semicolon, EReason::MissingEnclosingSymbol
         );
         return syntax::global::ImportDecl{
             std::move(path_or_alias), std::move(path), context.location()

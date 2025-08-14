@@ -6,7 +6,7 @@
 #include "lex/lex.hpp"
 
 namespace tlc::parse {
-    enum class EParseErrorContext {
+    enum class EContext {
         Unknown,
 
         LiteralExpr, IdentifierExpr, TupleExpr, ArrayExpr, RecordExpr,
@@ -26,13 +26,11 @@ namespace tlc::parse {
         FunctionPrototype, Function,
     };
 
-    enum class EParseErrorReason {
+    enum class EReason {
         NotAnError, MissingSymbol, MissingKeyword, MissingEnclosingSymbol,
         MissingExpr, MissingType, MissingId, MissingDecl, MissingStmt,
         MissingBody, RestrictedAction, Unknown,
     };
-
-    using Reason = EParseErrorReason;
 }
 
 #endif // TLC_PARSE_ERROR_HPP

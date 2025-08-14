@@ -5,13 +5,14 @@
 #include "core/core.hpp"
 
 namespace tlc::parse {
+    // todo: 'invalid' should be replaced. Insert an empty token at the end
     class TokenStream final {
     public:
         using MatchFn = bool (*)(lexeme::Lexeme const&);
         using TokenIt = token::TokenizedBuffer::const_iterator;
 
     public:
-        explicit TokenStream(token::TokenizedBuffer tokens, Opt<Location> offset = {})
+        explicit constexpr TokenStream(token::TokenizedBuffer tokens, Opt<Location> offset = {})
             : m_tokens{
                   offset
                       ? tokens | rv::transform([offset](token::Token const& token) {
@@ -26,44 +27,82 @@ namespace tlc::parse {
               },
               m_tokenIt{m_tokens.begin()} {}
 
-        auto match(std::same_as<lexeme::Lexeme> auto... types) -> bool {
+        constexpr auto match(std::same_as<lexeme::Lexeme> auto... types) -> bool {
             auto const tokenType = peek().lexeme();
-            if (done() || ((tokenType != types) && ...)) {
+            if (itDone() || ((tokenType != types) && ...)) {
                 return false;
             }
             advance();
             return true;
         }
 
-        auto match(MatchFn cond) -> bool;
+        constexpr auto match(MatchFn const cond) -> bool {
+            if (itDone() || !cond(peek().lexeme())) {
+                return false;
+            }
+            advance();
+            return true;
+        }
 
-        auto advance() -> void;
+        constexpr auto advance() -> void {
+            if (!m_started) {
+                m_started = true;
+                return;
+            }
+            ++m_tokenIt;
+        }
 
-        [[nodiscard]] auto peek() const -> token::Token;
+        [[nodiscard]] constexpr auto peek() const -> token::Token {
+            if (!m_started) {
+                return *m_tokenIt;
+            }
+            if (auto const nextIt = std::next(m_tokenIt);
+                nextIt != m_tokens.end()) {
+                return *nextIt;
+            }
+            return makeInvalidToken();
+        }
 
-        auto markBacktrack() -> void {
+        constexpr auto markBacktrack() -> void {
             m_backtrack.push({m_tokenIt, m_started});
         }
 
-        auto removeBacktrack() noexcept -> void {
+        constexpr auto removeBacktrack() noexcept -> void {
             if (m_backtrack.empty()) {
                 return;
             }
             m_backtrack.pop();
         }
 
-        auto backtrack() -> void;
+        constexpr auto backtrack() -> void {
+            if (m_backtrack.empty()) {
+                return;
+            }
+            auto [it, started] = m_backtrack.top();
+            m_tokenIt = it;
+            m_started = started;
+            m_backtrack.pop();
+        }
 
-        [[nodiscard]] auto current() const -> token::Token;
+        [[nodiscard]] constexpr auto current() const -> token::Token {
+            if (itDone() || !m_started) {
+                return makeInvalidToken();
+            }
+            return *m_tokenIt;
+        }
 
-        [[nodiscard]] auto done() const -> b8 {
+        [[nodiscard]] constexpr auto done() const -> b8 {
             // todo:
-            return m_started && m_tokenIt == m_tokens.end();
+            return m_started && peek().lexeme() == lexeme::invalid;
         }
 
     private:
-        static auto makeInvalidToken() -> token::Token {
+        static constexpr auto makeInvalidToken() -> token::Token {
             return {lexeme::invalid, "", {0, 0}};
+        }
+
+        constexpr auto itDone() const -> b8 {
+            return m_started && m_tokenIt == m_tokens.end();
         }
 
         struct BacktrackStates {

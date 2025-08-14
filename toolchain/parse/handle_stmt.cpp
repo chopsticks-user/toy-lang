@@ -3,31 +3,31 @@
 namespace tlc::parse {
     auto handleStmt(Context context) -> Opt<syntax::Node> {
         if (auto returnStmt = handleReturnStmt(
-            Context::enter(Context::ReturnStmt, context)); returnStmt) {
+            Context::enter(EContext::ReturnStmt, context)); returnStmt) {
             return returnStmt;
         }
         if (auto deferStmt = handleDeferStmt(
-            Context::enter(Context::DeferStmt, context)); deferStmt) {
+            Context::enter(EContext::DeferStmt, context)); deferStmt) {
             return deferStmt;
         }
         if (auto blockStmt = handleBlockStmt(
-            Context::enter(Context::BlockStmt, context)); blockStmt) {
+            Context::enter(EContext::BlockStmt, context)); blockStmt) {
             return blockStmt;
         }
         if (auto matchStmt = handleMatchStmt(
-            Context::enter(Context::MatchStmt, context)); matchStmt) {
+            Context::enter(EContext::MatchStmt, context)); matchStmt) {
             return matchStmt;
         }
         if (auto loopStmt = handleLoopStmt(
-            Context::enter(Context::LoopStmt, context)); loopStmt) {
+            Context::enter(EContext::LoopStmt, context)); loopStmt) {
             return loopStmt;
         }
         if (auto declStmt = handleDeclStmt(
-            Context::enter(Context::DeclStmt, context)); declStmt) {
+            Context::enter(EContext::DeclStmt, context)); declStmt) {
             return declStmt;
         }
         if (auto exprStmt = handleExprPrefixedStmt(
-            Context::enter(Context::ExprStmt, context)); exprStmt) {
+            Context::enter(EContext::ExprStmt, context)); exprStmt) {
             return exprStmt;
         }
 
@@ -36,20 +36,21 @@ namespace tlc::parse {
     }
 
     auto handleDeclStmt(Context context) -> Opt<syntax::Node> {
-        auto decl = handleDecl(Context::enter(Context::Decl, context)).value_or({});
+        auto decl = handleDecl(Context::enter(EContext::Decl, context))
+            .value_or({});
         if (syntax::empty(decl) ||
             context.backtrackIf(!context.stream().match(lexeme::equal))) {
             return {};
         }
 
-        auto initializer = handleExpr(Context::enter(Context::Expr, context))
+        auto initializer = handleExpr(Context::enter(EContext::Expr, context))
             .value_or(syntax::RequiredButMissing{});
         context.emitIfNodeMissing(
-            initializer, Reason::MissingExpr
+            initializer, EReason::MissingExpr
         );
 
         context.emitIfLexemeNotPresent(
-            lexeme::semicolon, Reason::MissingEnclosingSymbol
+            lexeme::semicolon, EReason::MissingEnclosingSymbol
         );
         return syntax::stmt::Decl{
             std::move(decl), std::move(initializer), context.location()
@@ -61,31 +62,31 @@ namespace tlc::parse {
             return {};
         }
 
-        auto returnExpr = handleExpr(Context::enter(Context::Expr, context))
+        auto returnExpr = handleExpr(Context::enter(EContext::Expr, context))
             .value_or({});
         context.emitIfLexemeNotPresent(
-            lexeme::semicolon, Reason::MissingEnclosingSymbol
+            lexeme::semicolon, EReason::MissingEnclosingSymbol
         );
         return syntax::stmt::Return{std::move(returnExpr), context.location()};
     }
 
     auto handleExprPrefixedStmt(Context context) -> Opt<syntax::Node> {
-        auto prefixExpr = handleExpr(Context::enter(Context::Expr, context))
+        auto prefixExpr = handleExpr(Context::enter(EContext::Expr, context))
             .value_or({});
         if (syntax::empty(prefixExpr)) {
             return {};
         }
 
         if (context.stream().match(syntax::isAssignmentOperator)) {
-            context.to(Context::AssignStmt);
+            context.to(EContext::AssignStmt);
 
             auto op = context.stream().current().lexeme();
-            auto expr = handleExpr(Context::enter(Context::Expr, context))
+            auto expr = handleExpr(Context::enter(EContext::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(expr, Reason::MissingExpr);
+            context.emitIfNodeMissing(expr, EReason::MissingExpr);
 
             context.emitIfLexemeNotPresent(
-                lexeme::semicolon, Reason::MissingEnclosingSymbol
+                lexeme::semicolon, EReason::MissingEnclosingSymbol
             );
             return syntax::stmt::Assign{
                 std::move(prefixExpr), std::move(expr),
@@ -94,11 +95,11 @@ namespace tlc::parse {
         }
 
         if (context.stream().match(lexeme::equalGreater)) {
-            context.to(Context::CondStmt);
+            context.to(EContext::CondStmt);
 
-            auto thenStmt = handleStmt(Context::enter(Context::Stmt, context))
+            auto thenStmt = handleStmt(Context::enter(EContext::Stmt, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(thenStmt, Reason::MissingStmt);
+            context.emitIfNodeMissing(thenStmt, EReason::MissingStmt);
 
             return syntax::stmt::Conditional{
                 std::move(prefixExpr), std::move(thenStmt), context.location()
@@ -106,7 +107,7 @@ namespace tlc::parse {
         }
 
         context.emitIfLexemeNotPresent(
-            lexeme::semicolon, Reason::MissingEnclosingSymbol
+            lexeme::semicolon, EReason::MissingEnclosingSymbol
         );
         return syntax::stmt::Expression{std::move(prefixExpr), context.location()};
     }
@@ -116,18 +117,18 @@ namespace tlc::parse {
             return {};
         }
 
-        auto decl = handleDecl(Context::enter(Context::Decl, context))
+        auto decl = handleDecl(Context::enter(EContext::Decl, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(decl, Reason::MissingDecl);
-        context.emitIfLexemeNotPresent(lexeme::in, Reason::MissingKeyword);
+        context.emitIfNodeMissing(decl, EReason::MissingDecl);
+        context.emitIfLexemeNotPresent(lexeme::in, EReason::MissingKeyword);
 
-        auto range = handleExpr(Context::enter(Context::Expr, context))
+        auto range = handleExpr(Context::enter(EContext::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(range, Reason::MissingExpr);
+        context.emitIfNodeMissing(range, EReason::MissingExpr);
 
-        auto body = handleBlockStmt(Context::enter(Context::BlockStmt, context))
+        auto body = handleBlockStmt(Context::enter(EContext::BlockStmt, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(range, Reason::MissingStmt);
+        context.emitIfNodeMissing(range, EReason::MissingStmt);
 
         return syntax::stmt::Loop{
             std::move(decl), std::move(range),
@@ -140,50 +141,50 @@ namespace tlc::parse {
             return {};
         }
 
-        auto matchExpr = handleExpr(Context::enter(Context::Expr, context))
+        auto matchExpr = handleExpr(Context::enter(EContext::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(matchExpr, Reason::MissingExpr);
+        context.emitIfNodeMissing(matchExpr, EReason::MissingExpr);
 
         if (context.emitIfLexemeNotPresent(
-            lexeme::leftBrace, Reason::MissingBody)) {
+            lexeme::leftBrace, EReason::MissingBody)) {
             return syntax::stmt::Match{
                 std::move(matchExpr), {}, {}, context.location()
             };
         }
 
-        context.to(Context::MatchCaseStmt);
+        context.to(EContext::MatchCaseStmt);
         Vec<syntax::Node> cases;
         syntax::Node defaultStmt; // only the last default statement is considered
         while (context.stream().peek().lexeme() != lexeme::rightBrace) {
             if (context.stream().match(lexeme::anonymous)) {
-                context.to(Context::MatchCaseDefaultStmt);
+                context.to(EContext::MatchCaseDefaultStmt);
                 context.emitIfLexemeNotPresent(
-                    lexeme::equalGreater, Reason::MissingSymbol
+                    lexeme::equalGreater, EReason::MissingSymbol
                 );
 
-                defaultStmt = handleStmt(Context::enter(Context::Stmt, context))
+                defaultStmt = handleStmt(Context::enter(EContext::Stmt, context))
                     .value_or(syntax::RequiredButMissing{});
-                context.emitIfNodeMissing(defaultStmt, Reason::MissingStmt);
+                context.emitIfNodeMissing(defaultStmt, EReason::MissingStmt);
                 continue;
             }
 
             auto caseCoords = context.stream().peek().location();
-            auto value = handleExpr(Context::enter(Context::Expr, context))
+            auto value = handleExpr(Context::enter(EContext::Expr, context))
                 .value_or({});
 
             syntax::Node cond;
             if (context.stream().match(lexeme::when)) {
-                cond = handleExpr(Context::enter(Context::Expr, context))
+                cond = handleExpr(Context::enter(EContext::Expr, context))
                     .value_or(syntax::RequiredButMissing{});
-                context.emitIfNodeMissing(cond, Reason::MissingExpr);
+                context.emitIfNodeMissing(cond, EReason::MissingExpr);
             }
 
             context.emitIfLexemeNotPresent(
-                lexeme::equalGreater, Reason::MissingSymbol
+                lexeme::equalGreater, EReason::MissingSymbol
             );
-            auto stmt = handleStmt(Context::enter(Context::Stmt, context))
+            auto stmt = handleStmt(Context::enter(EContext::Stmt, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(stmt, Reason::MissingStmt);
+            context.emitIfNodeMissing(stmt, EReason::MissingStmt);
 
             cases.emplace_back(syntax::stmt::MatchCase{
                 std::move(value), std::move(cond),
@@ -191,9 +192,9 @@ namespace tlc::parse {
             });
         }
 
-        context.to(Context::MatchStmt);
+        context.to(EContext::MatchStmt);
         context.emitIfLexemeNotPresent(
-            lexeme::rightBrace, Reason::MissingEnclosingSymbol
+            lexeme::rightBrace, EReason::MissingEnclosingSymbol
         );
         return syntax::stmt::Match{
             std::move(matchExpr), std::move(cases),
@@ -208,14 +209,14 @@ namespace tlc::parse {
 
         Vec<syntax::Node> statements;
         while (context.stream().peek().lexeme() != lexeme::rightBrace) {
-            auto stmt = handleStmt(Context::enter(Context::Stmt, context))
+            auto stmt = handleStmt(Context::enter(EContext::Stmt, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(stmt, Reason::MissingStmt);
+            context.emitIfNodeMissing(stmt, EReason::MissingStmt);
             statements.push_back(std::move(stmt));
         }
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightBrace, Reason::MissingEnclosingSymbol
+            lexeme::rightBrace, EReason::MissingEnclosingSymbol
         );
         return syntax::stmt::Block{std::move(statements), context.location()};
     }
@@ -225,9 +226,9 @@ namespace tlc::parse {
             return {};
         }
 
-        auto stmt = handleStmt(Context::enter(Context::Stmt, context))
+        auto stmt = handleStmt(Context::enter(EContext::Stmt, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(stmt, Reason::MissingStmt);
+        context.emitIfNodeMissing(stmt, EReason::MissingStmt);
         return syntax::stmt::Defer{std::move(stmt), context.location()};
     }
 }

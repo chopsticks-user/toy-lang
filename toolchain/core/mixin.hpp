@@ -8,7 +8,10 @@ namespace tlc {
     template <typename T>
     class MoveOnly {
     public:
-        MoveOnly() noexcept { staticEnforce(); }
+        MoveOnly() noexcept {
+            staticEnforce();
+        }
+
         ~MoveOnly() noexcept = default;
         MoveOnly(MoveOnly&&) noexcept = default;
         MoveOnly(MoveOnly const&) noexcept = delete;

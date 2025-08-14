@@ -8,40 +8,40 @@ namespace tlc::parse {
         Opt<syntax::Node> lhs;
 
         if (context.stream().match(syntax::isPrefixOperator)) {
-            context.to(Context::PrefixExpr);
+            context.to(EContext::PrefixExpr);
 
             auto const op = context.stream().current().lexeme();
-            lhs = handleExpr(Context::enter(Context::Expr, context, syntax::opPrecedence(
+            lhs = handleExpr(Context::enter(EContext::Expr, context, syntax::opPrecedence(
                                                 op, syntax::EOperator::Prefix)))
                 .and_then([&](auto const& node) -> Opt<syntax::Node> {
                     return syntax::expr::Prefix{node, op, context.location()};
                 });
         }
         else {
-            lhs = handlePrimaryExpr(Context::enter(Context::PrimaryExpr, context));
+            lhs = handlePrimaryExpr(Context::enter(EContext::PrimaryExpr, context));
         }
         if (!lhs) {
             return {};
         }
 
-        auto rhsContext = Context::enter(Context::Expr, context);
+        auto rhsContext = Context::enter(EContext::Expr, context);
         while (true) {
             if (syntax::isPostfixStart(rhsContext.stream().peek().lexeme())) {
                 if (auto const tuple = handleTupleExpr(
-                    Context::enter(Context::TupleExpr, context)); tuple) {
+                    Context::enter(EContext::TupleExpr, context)); tuple) {
                     lhs = syntax::expr::FnApp{
                         *lhs, *tuple, context.location()
                     };
                 }
                 else if (auto const array = handleArrayExpr(
-                    Context::enter(Context::ArrayExpr, context)); array) {
+                    Context::enter(EContext::ArrayExpr, context)); array) {
                     lhs = syntax::expr::Subscript{
                         *lhs, *array, context.location()
                     };
                 }
             }
             else if (rhsContext.stream().match(syntax::isBinaryOperator)) {
-                rhsContext.to(Context::BinaryExpr);
+                rhsContext.to(EContext::BinaryExpr);
 
                 auto const op = rhsContext.stream().current().lexeme();
                 auto const p = syntax::opPrecedence(
@@ -52,7 +52,7 @@ namespace tlc::parse {
                 }
 
                 auto rhs = handleExpr(
-                    Context::enter(Context::Expr,
+                    Context::enter(EContext::Expr,
                                    context, syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
                 // rhsContext.emitIfNodeEmpty(rhs, EParseErrorReason::MissingExpr);
@@ -70,31 +70,31 @@ namespace tlc::parse {
 
     auto handlePrimaryExpr(Context context) -> Opt<syntax::Node> {
         if (auto const result = handleTryExpr(
-            Context::enter(Context::TryExpr, context)); result) {
+            Context::enter(EContext::TryExpr, context)); result) {
             return result;
         }
         if (auto const result = handleSingleTokenLiteral(
-            Context::enter(Context::LiteralExpr, context)); result) {
+            Context::enter(EContext::LiteralExpr, context)); result) {
             return result;
         }
         if (auto const result = handleRecordExpr(
-            Context::enter(Context::RecordExpr, context)); result) {
+            Context::enter(EContext::RecordExpr, context)); result) {
             return result;
         }
         if (auto const result = handleIdentifierLiteral(
-            Context::enter(Context::IdentifierExpr, context)); result) {
+            Context::enter(EContext::IdentifierExpr, context)); result) {
             return result;
         }
         if (auto const result = handleString(
-            Context::enter(Context::StringExpr, context)); result) {
+            Context::enter(EContext::StringExpr, context)); result) {
             return result;
         }
         if (auto const result = handleTupleExpr(
-            Context::enter(Context::TupleExpr, context)); result) {
+            Context::enter(EContext::TupleExpr, context)); result) {
             return result;
         }
         if (auto const result = handleArrayExpr(
-            Context::enter(Context::ArrayExpr, context)); result) {
+            Context::enter(EContext::ArrayExpr, context)); result) {
             return result;
         }
         return {};
@@ -171,15 +171,15 @@ namespace tlc::parse {
 
         Vec<syntax::Node> elements;
         do {
-            auto expr = handleExpr(Context::enter(Context::Expr, context))
+            auto expr = handleExpr(Context::enter(EContext::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(expr, Reason::MissingExpr);
+            context.emitIfNodeMissing(expr, EReason::MissingExpr);
             elements.push_back(std::move(expr));
         }
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightParen, Reason::MissingEnclosingSymbol
+            lexeme::rightParen, EReason::MissingEnclosingSymbol
         );
         return syntax::expr::Tuple{std::move(elements), context.location()};
     }
@@ -194,22 +194,22 @@ namespace tlc::parse {
 
         Vec<syntax::Node> elements;
         do {
-            auto expr = handleExpr(Context::enter(Context::Expr, context))
+            auto expr = handleExpr(Context::enter(EContext::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(expr, Reason::MissingExpr);
+            context.emitIfNodeMissing(expr, EReason::MissingExpr);
             elements.push_back(std::move(expr));
         }
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+            lexeme::rightBracket, EReason::MissingEnclosingSymbol
         );
         return syntax::expr::Array{std::move(elements), context.location()};
     }
 
     auto handleRecordExpr(Context context) -> Opt<syntax::Node> {
         auto type = handleTypeIdentifier(
-            Context::enter(Context::RecordExpr, context)
+            Context::enter(EContext::RecordExpr, context)
         ).value_or({});
         if (context.backtrackIf(!context.stream().match(lexeme::leftBrace))) {
             return {};
@@ -222,18 +222,18 @@ namespace tlc::parse {
 
         Vec<syntax::Node> entries;
         do {
-            auto entryContext = Context::enter(Context::RecordEntryExpr, context);
+            auto entryContext = Context::enter(EContext::RecordEntryExpr, context);
             entryContext.emitIfLexemeNotPresent(
-                lexeme::identifier, Reason::MissingId
+                lexeme::identifier, EReason::MissingId
             );
             Str key = context.stream().current().str();
 
             entryContext.emitIfLexemeNotPresent(
-                lexeme::colon, Reason::MissingSymbol
+                lexeme::colon, EReason::MissingSymbol
             );
-            auto value = handleExpr(Context::enter(Context::Expr, context))
+            auto value = handleExpr(Context::enter(EContext::Expr, context))
                 .value_or(syntax::RequiredButMissing{});
-            entryContext.emitIfNodeMissing(value, Reason::MissingExpr);
+            entryContext.emitIfNodeMissing(value, EReason::MissingExpr);
 
             entries.emplace_back(syntax::expr::RecordEntry{
                 std::move(key), std::move(value), entryContext.location()
@@ -242,7 +242,7 @@ namespace tlc::parse {
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightBrace, Reason::MissingEnclosingSymbol
+            lexeme::rightBrace, EReason::MissingEnclosingSymbol
         );
         return syntax::expr::Record{
             std::move(type), std::move(entries), context.location()
@@ -270,7 +270,7 @@ namespace tlc::parse {
         }
 
         // prohibit recursive string interpolation
-        context.emitIf(context.isSubroutine(), Reason::RestrictedAction);
+        context.emitIf(context.isSubroutine(), EReason::RestrictedAction);
 
         Vec<syntax::Node> placeholders = placeholderTokens | rv::transform(
             [&context](token::Token const& token) {
@@ -286,9 +286,9 @@ namespace tlc::parse {
                     }
                 };
                 auto expr = handleExpr(
-                    parse.globalContext(Context::Expr)
+                    parse.globalContext(EContext::Expr)
                 ).value_or(syntax::RequiredButMissing{});
-                context.emitIfNodeMissing(expr, Reason::MissingExpr);
+                context.emitIfNodeMissing(expr, EReason::MissingExpr);
                 return expr;
             }) | rng::to<Vec<syntax::Node>>();
 
@@ -303,9 +303,9 @@ namespace tlc::parse {
             return {};
         }
 
-        auto expr = handleExpr(Context::enter(Context::Expr, context))
+        auto expr = handleExpr(Context::enter(EContext::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(expr, Reason::MissingExpr);
+        context.emitIfNodeMissing(expr, EReason::MissingExpr);
         return syntax::expr::Try{std::move(expr), context.location()};
     }
 }

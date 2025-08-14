@@ -4,7 +4,7 @@ target_sources(
     tlc_parse
     PRIVATE
     parse.hpp parse.cpp
-    context.hpp
+    context.hpp context.cpp
     token_stream.hpp token_stream.cpp
     location_tracker.hpp location_tracker.cpp
     parse_error.hpp parse_error.cpp

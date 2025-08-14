@@ -4,42 +4,42 @@ namespace tlc::parse {
     auto handleType(Context context) -> Opt<syntax::Node> {
         auto lhs = [&context] {
             if (auto infer = handleTypeInfer(
-                Context::enter(Context::TypeInfer, context)); infer) {
+                Context::enter(EContext::TypeInfer, context)); infer) {
                 return infer;
             }
             if (auto tuple = handleTypeTuple(
-                Context::enter(Context::TupleType, context)); tuple) {
+                Context::enter(EContext::TupleType, context)); tuple) {
                 return tuple;
             }
             return handleTypeIdentifier(
-                Context::enter(Context::TypeIdentifier, context));
+                Context::enter(EContext::TypeIdentifier, context));
         }();
         if (!lhs) {
             return {};
         }
 
-        auto rhsContext = Context::enter(Context::Type, context);
+        auto rhsContext = Context::enter(EContext::Type, context);
         while (true) {
             if (auto array = handleArrayExpr(
-                Context::enter(Context::ArrayExpr, context)); array) {
+                Context::enter(EContext::ArrayExpr, context)); array) {
                 lhs = syntax::type::Array{
                     *lhs, std::move(*array), context.location()
                 };
                 continue;
             }
             if (auto genericArgs = handleGenericArguments(
-                Context::enter(Context::GenericTypeArguments, context)); genericArgs) {
+                Context::enter(EContext::GenericTypeArguments, context)); genericArgs) {
                 lhs = syntax::type::Generic{
                     *lhs, std::move(*genericArgs), context.location()
                 };
                 continue;
             }
             if (rhsContext.stream().match(lexeme::minusGreater)) {
-                rhsContext.to(Context::FunctionType);
+                rhsContext.to(EContext::FunctionType);
 
-                auto fnResultType = handleType(Context::enter(Context::Type, context))
+                auto fnResultType = handleType(Context::enter(EContext::Type, context))
                     .value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeMissing(fnResultType, Reason::MissingType);
+                rhsContext.emitIfNodeMissing(fnResultType, EReason::MissingType);
 
                 lhs = syntax::type::Function{
                     *lhs, std::move(fnResultType), context.location()
@@ -47,7 +47,7 @@ namespace tlc::parse {
                 continue;
             }
             if (rhsContext.stream().match(syntax::isBinaryTypeOperator)) {
-                rhsContext.to(Context::BinaryTypeExpr);
+                rhsContext.to(EContext::BinaryTypeExpr);
 
                 auto const op = rhsContext.stream().current().lexeme();
                 auto const p = syntax::opPrecedence(
@@ -59,10 +59,10 @@ namespace tlc::parse {
                 }
 
                 auto rhs = handleType(
-                    Context::enter(Context::Type, context,
+                    Context::enter(EContext::Type, context,
                                    syntax::isLeftAssociative(op) ? p + 1 : p)
                 ).value_or(syntax::RequiredButMissing{});
-                rhsContext.emitIfNodeMissing(rhs, Reason::MissingType);
+                rhsContext.emitIfNodeMissing(rhs, EReason::MissingType);
 
                 lhs = syntax::type::Binary{
                     *lhs, op, std::move(rhs), context.location()
@@ -108,15 +108,15 @@ namespace tlc::parse {
 
         Vec<syntax::Node> types;
         do {
-            auto type = handleType(Context::enter(Context::Type, context))
+            auto type = handleType(Context::enter(EContext::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(type, Reason::MissingType);
+            context.emitIfNodeMissing(type, EReason::MissingType);
             types.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightParen, Reason::MissingEnclosingSymbol
+            lexeme::rightParen, EReason::MissingEnclosingSymbol
         );
         return syntax::type::Tuple{std::move(types), context.location()};
     }
@@ -127,15 +127,15 @@ namespace tlc::parse {
             return {};
         }
 
-        auto expr = handleExpr(Context::enter(Context::Expr, context))
+        auto expr = handleExpr(Context::enter(EContext::Expr, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(expr, Reason::MissingExpr);
+        context.emitIfNodeMissing(expr, EReason::MissingExpr);
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+            lexeme::rightBracket, EReason::MissingEnclosingSymbol
         );
         context.emitIfLexemeNotPresent(
-            lexeme::rightBracket, Reason::MissingEnclosingSymbol
+            lexeme::rightBracket, EReason::MissingEnclosingSymbol
         );
         return syntax::type::Infer{std::move(expr), context.location()};
     }
@@ -147,15 +147,15 @@ namespace tlc::parse {
 
         Vec<syntax::Node> args;
         do {
-            auto type = handleType(Context::enter(Context::Type, context))
+            auto type = handleType(Context::enter(EContext::Type, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(type, Reason::MissingType);
+            context.emitIfNodeMissing(type, EReason::MissingType);
             args.push_back(std::move(type));
         }
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::greater, Reason::MissingEnclosingSymbol
+            lexeme::greater, EReason::MissingEnclosingSymbol
         );
         return syntax::type::GenericArguments{
             std::move(args), context.location()

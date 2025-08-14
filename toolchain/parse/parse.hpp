@@ -14,7 +14,7 @@
 
 namespace tlc::parse {
     class Parse final {
-        using TErrorCollector = ErrorCollector<EParseErrorContext, Reason>;
+        using TErrorCollector = ErrorCollector<EContext, EReason>;
 
     public:
         static auto operator()(fs::path filepath, Vec<token::Token> tokens)
@@ -34,7 +34,7 @@ namespace tlc::parse {
 
         auto operator()() -> syntax::Node;
 
-        constexpr auto globalContext(EParseErrorContext const eContext) -> Context {
+        constexpr auto globalContext(EContext const eContext) -> Context {
             return Context::global(
                 m_filepath, m_stream, m_tracker, m_collector,
                 eContext, m_isSubroutine

@@ -6,8 +6,8 @@
 #include "parse/parse.hpp"
 
 using namespace tlc::syntax;
-using Context = tlc::parse::EParseErrorContext;
-using Reason = tlc::parse::EParseErrorReason;
+using Context = tlc::parse::EContext;
+using Reason = tlc::parse::EReason;
 
 class ParseTestFixture {
 protected:

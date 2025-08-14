@@ -10,20 +10,18 @@
 
 namespace tlc::parse {
     class Context final {
-        using TError = Error<EParseErrorContext, EParseErrorReason>;
+        using TError = Error<EContext, EReason>;
         using TErrorCollector = ErrorCollector<
-            EParseErrorContext, EParseErrorReason
+            EContext, EReason
         >;
 
     public:
-        using enum EParseErrorContext;
-
         struct Params final {
             fs::path const& filepath;
             TokenStream& tokenStream;
             LocationTracker& locationTracker;
             TErrorCollector& errorCollector;
-            EParseErrorContext const errorContext;
+            EContext const errorContext;
             b8 const isSubroutine = false;
             Context* parent = nullptr;
             Opt<syntax::OpPrecedence> minPrecedence = {};
@@ -33,7 +31,7 @@ namespace tlc::parse {
         static constexpr auto global(
             fs::path const& filepath, TokenStream& tokenStream,
             LocationTracker& locationTracker, TErrorCollector& errorCollector,
-            EParseErrorContext const errorContext,
+            EContext const errorContext,
             b8 const isSubroutine
         ) -> Context {
             return Params{
@@ -47,7 +45,7 @@ namespace tlc::parse {
         }
 
         static constexpr auto enter(
-            EParseErrorContext const eContext,
+            EContext const eContext,
             Context& parent,
             Opt<syntax::OpPrecedence> minPrecedence = {},
             Opt<token::Token> visibility = {}
@@ -116,7 +114,7 @@ namespace tlc::parse {
             return false;
         }
 
-        constexpr auto emit(EParseErrorReason const reason) -> void {
+        constexpr auto emit(EReason const reason) -> void {
             m_errors.emplace_back(TError::Params{
                 .filepath = m_filepath,
                 .location = m_locationTracker.current(),
@@ -126,7 +124,7 @@ namespace tlc::parse {
         }
 
         constexpr auto emitIf(
-            b8 const cond, EParseErrorReason const reason
+            b8 const cond, EReason const reason
         ) -> b8 {
             if (cond) {
                 emit(reason);
@@ -137,7 +135,7 @@ namespace tlc::parse {
 
         constexpr auto emitIfNodeMissing(
             syntax::Node const& node,
-            EParseErrorReason const reason
+            EReason const reason
         ) -> b8 {
             return emitIf(syntax::match<syntax::RequiredButMissing>(node),
                           reason);
@@ -145,14 +143,14 @@ namespace tlc::parse {
 
         constexpr auto emitIfNodeEmpty(
             syntax::Node const& node,
-            EParseErrorReason const reason
+            EReason const reason
         ) -> b8 {
             return emitIf(syntax::empty(node), reason);
         }
 
         constexpr auto emitIfLexemeNotPresent(
             lexeme::Lexeme const& lexeme_,
-            EParseErrorReason const reason
+            EReason const reason
         ) -> b8 {
             return emitIf(!m_tokenStream.match(lexeme_), reason);
         }
@@ -165,7 +163,7 @@ namespace tlc::parse {
             return m_tokenStream;
         }
 
-        constexpr auto to(EParseErrorContext const context) -> void {
+        constexpr auto to(EContext const context) -> void {
             m_errorContext = context;
         }
 
@@ -208,7 +206,7 @@ namespace tlc::parse {
         TokenStream& m_tokenStream;
         LocationTracker& m_locationTracker;
         TErrorCollector& m_errorCollector;
-        EParseErrorContext m_errorContext;
+        EContext m_errorContext;
         b8 const m_isSubroutine;
         Context* m_parent;
         syntax::OpPrecedence m_minPrecedence;

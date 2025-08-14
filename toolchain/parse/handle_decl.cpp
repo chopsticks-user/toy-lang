@@ -3,11 +3,11 @@
 namespace tlc::parse {
     auto handleDecl(Context context) -> Opt<syntax::Node> {
         if (auto tupleDecl = handleTupleDecl(
-            Context::enter(Context::TupleDecl, context)); tupleDecl) {
+            Context::enter(EContext::TupleDecl, context)); tupleDecl) {
             return tupleDecl;
         }
         if (auto idDecl = handleIdentifierDecl(
-            Context::enter(Context::IdDecl, context)); idDecl) {
+            Context::enter(EContext::IdDecl, context)); idDecl) {
             return idDecl;
         }
         return {};
@@ -25,16 +25,16 @@ namespace tlc::parse {
             };
         }
 
-        auto type = handleType(Context::enter(Context::Type, context))
+        auto type = handleType(Context::enter(EContext::Type, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(type, Reason::MissingType);
+        context.emitIfNodeMissing(type, EReason::MissingType);
         return syntax::decl::Identifier{
             std::move(name), std::move(type), context.location()
         };
     }
 
     auto handleTupleDecl(Context context) -> Opt<syntax::Node> {
-        if (context.backtrackIf(!context.stream().match(lexeme::leftParen))) {
+        if (!context.stream().match(lexeme::leftParen)) {
             return {};
         }
         if (context.stream().match(lexeme::rightParen)) {
@@ -43,15 +43,15 @@ namespace tlc::parse {
 
         Vec<syntax::Node> decls;
         do {
-            auto decl = handleDecl(Context::enter(Context::Decl, context))
+            auto decl = handleDecl(Context::enter(EContext::Decl, context))
                 .value_or(syntax::RequiredButMissing{});
-            context.emitIfNodeMissing(decl, Reason::MissingDecl);
+            context.emitIfNodeMissing(decl, EReason::MissingDecl);
             decls.push_back(std::move(decl));
         }
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::rightParen, Reason::MissingEnclosingSymbol
+            lexeme::rightParen, EReason::MissingEnclosingSymbol
         );
         return syntax::decl::Tuple{std::move(decls), context.location()};
     }
@@ -74,7 +74,7 @@ namespace tlc::parse {
         Vec<syntax::Node> types;
         do {
             if (!context.emitIfLexemeNotPresent(
-                lexeme::userDefinedType, Reason::MissingId
+                lexeme::userDefinedType, EReason::MissingId
             )) {
                 auto token = context.stream().current();
                 types.emplace_back(syntax::decl::GenericIdentifier{
@@ -88,7 +88,7 @@ namespace tlc::parse {
         while (context.stream().match(lexeme::comma));
 
         context.emitIfLexemeNotPresent(
-            lexeme::greater, Reason::MissingEnclosingSymbol
+            lexeme::greater, EReason::MissingEnclosingSymbol
         );
         return syntax::decl::GenericParameters{
             std::move(types), context.location()

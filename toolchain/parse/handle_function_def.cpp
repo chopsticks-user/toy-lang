@@ -3,15 +3,15 @@
 namespace tlc::parse {
     auto handleFunctionDef(Context context) -> Opt<syntax::Node> {
         auto prototype = handleFunctionPrototype(
-                Context::enter(Context::FunctionPrototype, context))
+                Context::enter(EContext::FunctionPrototype, context))
             .value_or({});
         if (syntax::empty(prototype)) {
             return {};
         }
 
-        auto body = handleBlockStmt(Context::enter(Context::BlockStmt, context))
+        auto body = handleBlockStmt(Context::enter(EContext::BlockStmt, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(body, Reason::MissingBody);
+        context.emitIfNodeMissing(body, EReason::MissingBody);
         return syntax::global::Function{
             context.visibility().lexeme(), std::move(prototype),
             std::move(body), context.visibility().location()
@@ -24,21 +24,21 @@ namespace tlc::parse {
         }
 
         auto genericDecl = handleGenericParamsDecl(
-            Context::enter(Context::GenericParamsDecl, context)).value_or({});
+            Context::enter(EContext::GenericParamsDecl, context)).value_or({});
         Str name;
         if (!context.emitIfLexemeNotPresent(
-            lexeme::identifier, Reason::MissingId)) {
+            lexeme::identifier, EReason::MissingId)) {
             name = context.stream().current().str();
         }
-        context.emitIfLexemeNotPresent(lexeme::colon, Reason::MissingDecl);
+        context.emitIfLexemeNotPresent(lexeme::colon, EReason::MissingDecl);
 
-        auto paramsDecl = handleTupleDecl(Context::enter(Context::TupleDecl, context))
+        auto paramsDecl = handleTupleDecl(Context::enter(EContext::TupleDecl, context))
             .value_or(syntax::RequiredButMissing{});
-        context.emitIfNodeMissing(paramsDecl, Reason::MissingDecl);
+        context.emitIfNodeMissing(paramsDecl, EReason::MissingDecl);
         context.emitIfLexemeNotPresent(
-            lexeme::minusGreater, Reason::MissingSymbol
+            lexeme::minusGreater, EReason::MissingSymbol
         );
-        auto returnsDecl = handleTupleDecl(Context::enter(Context::TupleDecl, context))
+        auto returnsDecl = handleTupleDecl(Context::enter(EContext::TupleDecl, context))
             .value_or({});
 
         return syntax::global::FunctionPrototype{
