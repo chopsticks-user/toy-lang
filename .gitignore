@@ -78,4 +78,4 @@ gen
 dump
 
 # Generated hpp/cpp
-source/core/config.hpp
+toolchain/core/config.hpp

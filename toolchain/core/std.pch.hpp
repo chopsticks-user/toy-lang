@@ -37,5 +37,7 @@
 #include <print>
 #include <chrono>
 #include <locale>
+#include <concepts>
+#include <type_traits>
 
 #endif // TLC_CORE_STD_PCH_HPP

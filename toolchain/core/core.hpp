@@ -2,8 +2,6 @@
 #define TLC_CORE_HPP
 
 #include "exception.hpp"
-#include "platform.hpp"
-#include "type.hpp"
 #include "concept.hpp"
 #include "utility.hpp"
 #include "visitor.hpp"

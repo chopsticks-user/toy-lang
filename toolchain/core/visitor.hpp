@@ -1,7 +1,7 @@
 #ifndef  TLC_CORE_VISITOR_HPP
 #define  TLC_CORE_VISITOR_HPP
 
-#include "type.hpp"
+#include "core.fwd.hpp"
 
 namespace tlc {
     template <typename TVisitable, typename TReturn = void>

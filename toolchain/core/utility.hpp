@@ -1,7 +1,7 @@
 #ifndef TLC_CORE_FILE_HPP
 #define TLC_CORE_FILE_HPP
 
-#include "type.hpp"
+#include "core.fwd.hpp"
 #include "config.hpp"
 
 namespace tlc {

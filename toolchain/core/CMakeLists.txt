@@ -13,17 +13,16 @@ add_library(tlc_core INTERFACE)
 add_library(tlc::core ALIAS tlc_core)
 target_sources(
     tlc_core INTERFACE
-    core.hpp platform.hpp type.hpp utility.hpp range.hpp
-    exception.hpp concept.hpp visitor.hpp singleton.hpp config.in.hpp
-    mixin.hpp std.pch.hpp
+    core.hpp utility.hpp range.hpp exception.hpp concept.hpp visitor.hpp
+    singleton.hpp mixin.hpp std.pch.hpp core.fwd.hpp
 )
 target_precompile_headers(
     tlc_core
-    INTERFACE "core.hpp"
+    INTERFACE "std.pch.hpp"
 )
 target_include_directories(
     tlc_core
-    INTERFACE ${PROJECT_SOURCE_DIR}/source
+    INTERFACE ${PROJECT_SOURCE_DIR}/toolchain
 )
 target_link_libraries(
     tlc_core

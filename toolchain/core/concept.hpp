@@ -1,7 +1,7 @@
 #ifndef TLC_CORE_CONCEPT_HPP
 #define TLC_CORE_CONCEPT_HPP
 
-#include <concepts>
+#include "core.fwd.hpp"
 
 namespace tlc {
     template <typename Derived, typename Base>

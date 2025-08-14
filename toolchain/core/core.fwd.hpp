@@ -1,9 +1,36 @@
-#ifndef TLC_CORE_TYPE_HPP
-#define TLC_CORE_TYPE_HPP
+#ifndef TLC_CORE_FWD_HPP
+#define TLC_CORE_FWD_HPP
 
+#include "config.hpp"
 #include "std.pch.hpp"
 
+// todo: platform
+
 namespace tlc {
+    namespace config {
+#ifdef TLC_CONFIG_BUILD_EXAMPLES
+        constexpr auto buildExamples = true;
+#elif
+        constexpr auto buildExamples = false;
+#endif
+
+#ifdef TLC_CONFIG_BUILD_TESTS
+        constexpr auto buildTests = true;
+#else
+        constexpr auto buildTests = false;
+#endif
+
+#if defined(TLC_CONFIG_BUILD_DEBUG) && defined(TLC_CONFIG_ENABLE_LOGGING)
+        constexpr auto debugging = true;
+#else
+        constexpr auto debugging = false;
+#endif
+
+        constexpr auto versionMajor = TLC_CONFIG_VERSION_MAJOR;
+        constexpr auto versionMinor = TLC_CONFIG_VERSION_MINOR;
+        constexpr auto versionLLVM = TLC_CONFIG_VERSION_LLVM;
+    }
+
     using i64 = std::int64_t;
     using i32 = std::int32_t;
     using i16 = std::int16_t;
@@ -60,8 +87,8 @@ namespace tlc {
     template <typename K, typename T>
     using HashMap = std::unordered_map<K, T>;
 
-    // template <typename K, typename T>
-    // using TreeMap = std::map<K, T>;
+    template <typename K, typename T>
+    using TreeMap = std::map<K, T>;
 
     template <typename T>
     using HashSet = std::unordered_set<T>;
@@ -85,4 +112,4 @@ namespace tlc {
     using Fn = std::function<S>;
 }
 
-#endif // TLC_CORE_TYPE_HPP
+#endif //TLC_CORE_FWD_HPP

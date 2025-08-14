@@ -1,7 +1,7 @@
 #ifndef  TLC_CORE_SINGLETON_HPP
 #define  TLC_CORE_SINGLETON_HPP
 
-#include "type.hpp"
+#include "core.fwd.hpp"
 #include "concept.hpp"
 
 namespace tlc {

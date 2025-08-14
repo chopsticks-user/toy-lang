@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 4.0.0)
 project(tlc VERSION 0.0 LANGUAGES C CXX)
 
 include(FetchContent)
@@ -6,12 +6,12 @@ include(cmake/CFlags.cmake)
 include(cmake/Options.cmake)
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/source/core/config.in.hpp
-    ${CMAKE_SOURCE_DIR}/source/core/config.hpp
-    #    @ONLY
+    ${CMAKE_SOURCE_DIR}/toolchain/core/config.in.hpp
+    ${CMAKE_SOURCE_DIR}/toolchain/core/config.hpp
 )
 
-add_subdirectory(source)
+add_subdirectory(third_party)
+add_subdirectory(toolchain)
 
 if (${TLC_CONFIG_BUILD_TESTS})
   message(STATUS "Enable building tests")
