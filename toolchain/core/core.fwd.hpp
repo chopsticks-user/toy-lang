@@ -100,7 +100,7 @@ namespace tlc {
     using Pair = std::pair<F, S>;
 
     template <typename... T>
-    using Tpl = std::tuple<T...>;
+    using Tuple = std::tuple<T...>;
 
     template <typename T, typename E>
     using Expected = std::expected<T, E>;

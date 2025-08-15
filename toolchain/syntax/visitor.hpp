@@ -10,29 +10,33 @@ namespace tlc::syntax {
      * Derived classes' operator() overloads must not be marked as 'const'
      * @tparam TReturn
      */
-    template <typename TReturn = void>
+    template <IsNonVoid TReturn>
     class SyntaxTreeVisitor : public Visitor<Node, TReturn> {
-    public:
-        SyntaxTreeVisitor() = default;
-
     protected:
+        SyntaxTreeVisitor() = default;
         using Visitor<Node, TReturn>::operator();
 
         // todo: prefix, infix, suffix
         template <typename S, IsASTNode N>
         constexpr auto visitChildren(this S&& self, N const& node) -> auto {
-            if constexpr (std::is_void_v<TReturn>) {
-                rng::for_each(node.children(), [&self](Node const& child) {
-                    child.visit(std::forward<S>(self));
-                });
-            }
-            else {
-                return node.children()
-                    | rv::transform([&self](Node const& child) {
-                        return child.visit(std::forward<S>(self));
-                    })
-                    | rng::to<Vec<TReturn>>();
-            }
+            return node.children()
+                | rv::transform([&self](Node const& child) {
+                    return child.visit(std::forward<S>(self));
+                })
+                | rng::to<Vec<TReturn>>();
+        }
+    };
+
+    class SyntaxTreeMutator : public Visitor<Node> {
+    protected:
+        SyntaxTreeMutator() = default;
+        using Visitor::operator();
+
+        template <typename S, IsASTNode N>
+        constexpr auto visitChildren(this S&& self, N& node) -> void {
+            rng::for_each(node.children(), [&self](Node& child) {
+                child.visit(std::forward<S>(self), std::variant<Node>{});
+            });
         }
     };
 }
