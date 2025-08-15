@@ -18,12 +18,10 @@ namespace tlc::syntax {
     }
 
     template <typename T>
-    concept IsStrictlyASTNode =
-        std::derived_from<T, detail::NodeBase> &&
-        !std::same_as<detail::NodeBase, T>;
-
-    template <typename T>
-    concept IsASTNode = IsStrictlyASTNode<T> || std::same_as<Node, T>;
+    concept IsASTNode =
+        IsIdentityType<T> &&
+        std::convertible_to<T, Node> &&
+        IsChildOf<T, detail::NodeBase>;
 
     template <IsASTNode TNode>
     constexpr auto cast(Node const& node, StrV const filepath = "")
@@ -40,7 +38,7 @@ namespace tlc::syntax {
         return std::get<TNode>(node);
     }
 
-    template <std::derived_from<detail::NodeBase>... TNode>
+    template <IsASTNode... TNode>
     constexpr auto match(Node const& node) -> bool {
         return (std::holds_alternative<TNode>(node) || ...);
     }

@@ -35,6 +35,9 @@ namespace tlc {
 
     template <typename T>
     using RemoveAllQualifiers = std::remove_cvref_t<std::remove_pointer_t<T>>;
+
+    template <typename T>
+    concept IsIdentityType = std::is_same_v<RemoveAllQualifiers<T>, T>;
 };
 
 #endif // TLC_CORE_CONCEPT_HPP

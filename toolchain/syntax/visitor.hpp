@@ -3,6 +3,7 @@
 
 #include "core/core.hpp"
 #include "forward.hpp"
+#include "util.hpp"
 
 namespace tlc::syntax {
     /**
@@ -18,21 +19,19 @@ namespace tlc::syntax {
         using Visitor<Node, TReturn>::operator();
 
         // todo: prefix, infix, suffix
-        template <typename S, typename N>
-            requires(std::convertible_to<N, Node> && std::is_invocable_v<S, Node>)
-        auto visitChildren(this S&& self, N const& node) -> auto {
+        template <typename S, IsASTNode N>
+        constexpr auto visitChildren(this S&& self, N const& node) -> auto {
             if constexpr (std::is_void_v<TReturn>) {
-                rng::for_each(node.children(), [&self](auto const& child) {
-                    std::visit(self, child);
+                rng::for_each(node.children(), [&self](Node const& child) {
+                    child.visit(std::forward<S>(self));
                 });
             }
             else {
-                auto accumulatedResult = node.children()
-                    | rv::transform([&self](auto const& child) {
-                        return std::visit(self, child);
+                return node.children()
+                    | rv::transform([&self](Node const& child) {
+                        return child.visit(std::forward<S>(self));
                     })
                     | rng::to<Vec<TReturn>>();
-                return accumulatedResult;
             }
         }
     };
