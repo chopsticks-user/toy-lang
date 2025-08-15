@@ -1,9 +1,7 @@
 #ifndef TLC_STATIC_HPP
 #define TLC_STATIC_HPP
 
-#include "core/core.hpp"
-
-#include "post_parsing/tuple_normalizer.hpp"
+#include "post_parsing/tuple_reducer.hpp"
 
 namespace tlc::static_ {}
 

@@ -20,7 +20,11 @@ namespace tlc::syntax {
     template <typename T>
     concept IsASTNode =
         IsIdentityType<T> &&
-        std::convertible_to<T, Node> &&
+        std::convertible_to<T, Node>;
+
+    template <typename T>
+    concept IsNonTerminalASTNode =
+        IsASTNode<T> &&
         IsChildOf<T, detail::NodeBase>;
 
     template <IsASTNode TNode>

@@ -39,15 +39,15 @@ namespace tlc::syntax {
 
         Subscript::Subscript(
             Node collection, Node subscript, Location const location
-        ): NodeBase{
+        ) : NodeBase{
             {std::move(collection), std::move(subscript)},
             location
         } {}
 
         Prefix::Prefix(
             Node operand, lexeme::Lexeme op, Location const location
-        ): NodeBase{{std::move(operand)}, location},
-           m_op{std::move(op)} {}
+        ) : NodeBase{{std::move(operand)}, location},
+            m_op{std::move(op)} {}
 
         Binary::Binary(
             Node lhs, Node rhs, lexeme::Lexeme op, Location const location
@@ -90,12 +90,12 @@ namespace tlc::syntax {
         Identifier::Identifier(
             b8 const constant, Vec<Str> path, b8 const fundamental,
             Location const location
-        ): NodeBase{{}, location}, IdentifierBase{std::move(path)},
-           m_fundamental{fundamental}, m_constant{constant} {}
+        ) : NodeBase{{}, location}, IdentifierBase{std::move(path)},
+            m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
             Node type, Node sizes, Location const location
-        ): NodeBase{
+        ) : NodeBase{
             [&] {
                 Vec<Node> nodes;
                 nodes.reserve(2);
@@ -229,8 +229,8 @@ namespace tlc::syntax {
 
     stmt::Assign::Assign(
         Node lhs, Node rhs, lexeme::Lexeme op, Location const location
-    ): NodeBase{{std::move(lhs), std::move(rhs)}, location},
-       m_op{std::move(op)} {}
+    ) : NodeBase{{std::move(lhs), std::move(rhs)}, location},
+        m_op{std::move(op)} {}
 
     stmt::Expression::Expression(Node expr, Location const location)
         : NodeBase{{std::move(expr)}, location} {}
@@ -252,23 +252,20 @@ namespace tlc::syntax {
     global::FunctionPrototype::FunctionPrototype(
         Node genericDecl, Str name, Node paramsDecl,
         Node returnsDecl, Location const location
-    ): NodeBase{
-           {
-               std::move(genericDecl), std::move(paramsDecl),
-               std::move(returnsDecl)
-           },
-           location
-       },
-       m_name{std::move(name)} {}
+    ) : NodeBase{
+            {
+                std::move(genericDecl), std::move(paramsDecl),
+                std::move(returnsDecl)
+            },
+            location
+        },
+        m_name{std::move(name)} {}
 
     global::Function::Function(
         lexeme::Lexeme visibility, Node prototype, Node body,
         Location const location
-    ): NodeBase{{std::move(prototype), std::move(body)}, location},
-       m_visibility{std::move(visibility)} {}
-
-    RequiredButMissing::RequiredButMissing()
-        : NodeBase{{}, {}} {}
+    ) : NodeBase{{std::move(prototype), std::move(body)}, location},
+        m_visibility{std::move(visibility)} {}
 
     TranslationUnit::TranslationUnit(
         fs::path sourcePath, Node moduleDecl,

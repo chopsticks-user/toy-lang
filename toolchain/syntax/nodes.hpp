@@ -323,9 +323,11 @@ namespace tlc::syntax {
         };
     }
 
-    struct RequiredButMissing final : detail::NodeBase {
-        explicit RequiredButMissing();
+    struct RequiredButMissing final {
+        constexpr RequiredButMissing() = default;
     };
+
+    using Empty = std::monostate;
 
     struct TranslationUnit final : detail::NodeBase {
         TranslationUnit(

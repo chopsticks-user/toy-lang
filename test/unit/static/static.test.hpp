@@ -17,13 +17,14 @@ class StaticTestFixture {
 
 protected:
     struct TransformerAssertionParams {
-        void (*transformer)(tlc::syntax::Node&);
+        void (*mutator)(tlc::syntax::Node&);
         tlc::Str source;
+        tlc::Opt<tlc::Str> expectedPrettyPrint;
         tlc::Opt<tlc::Str> expectedAstPrint;
     };
 
 protected:
-    static auto assertTransformerResult(
+    static auto assertMutatorResult(
         TransformerAssertionParams params, SLoc location = SLoc::current()
     ) -> void;
 

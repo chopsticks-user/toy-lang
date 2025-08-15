@@ -10,7 +10,7 @@ namespace tlc {
     public:
         using Visitable = TVisitable;
 
-        auto operator()(std::convertible_to<TVisitable> auto const&)
+        constexpr auto operator()(std::convertible_to<TVisitable> auto const&)
             -> auto {
             if constexpr (!std::is_void_v<TReturn>) {
                 return TReturn{};
@@ -18,7 +18,7 @@ namespace tlc {
         }
 
     protected:
-        Visitor() = default;
+        constexpr Visitor() = default;
     };
 
     template <typename T>

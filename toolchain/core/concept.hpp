@@ -5,11 +5,12 @@
 
 namespace tlc {
     template <typename T>
-    using RemoveAllQualifiers = std::remove_cvref_t<std::remove_pointer_t<T>>;
+    using RemoveAllQualifiers = std::remove_cvref_t<T>;
 
     template <typename Derived, typename Base>
-    concept IsChildOf = std::derived_from<Derived, Base> &&
-        !std::same_as<Derived, Base>;
+    concept IsChildOf =
+        std::derived_from<RemoveAllQualifiers<Derived>, Base> &&
+        !std::same_as<RemoveAllQualifiers<Derived>, Base>;
 
     template <typename T, typename... Expected>
     concept IdentidyMatchesAnyOf =
@@ -42,6 +43,10 @@ namespace tlc {
 
     template <typename T>
     concept IsNonVoid = !std::same_as<T, void>;
+
+    template <typename T>
+    concept DefaultInitializable =
+        std::default_initializable<RemoveAllQualifiers<T>>;
 }
 
 #endif // TLC_CORE_CONCEPT_HPP

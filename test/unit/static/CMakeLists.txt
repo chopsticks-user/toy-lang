@@ -3,6 +3,8 @@ add_executable(tlc::test::unit::static ALIAS tlc_test_unit_static)
 target_sources(
     tlc_test_unit_static PRIVATE
     static.test.hpp static.test.cpp
+
+    post_parsing/tuple_reducer.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_static PRIVATE

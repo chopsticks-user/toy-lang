@@ -3,6 +3,8 @@ add_library(tlc::static ALIAS tlc_static)
 target_sources(
     tlc_static PRIVATE
     static.hpp error_collector.hpp error_collector.cpp
+
+    post_parsing/tuple_reducer.hpp
 )
 target_link_libraries(
     tlc_static

@@ -26,6 +26,10 @@ namespace tlc::syntax::detail {
 
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
+        [[nodiscard]] auto location() const noexcept -> Location {
+            return m_location;
+        }
+
         [[nodiscard]] auto line() const noexcept -> szt {
             return m_location.line;
         }
