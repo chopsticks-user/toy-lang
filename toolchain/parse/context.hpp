@@ -3,6 +3,7 @@
 #define TLC_PARSE_CONTEXT_HPP
 
 #include "core/core.hpp"
+#include "syntax/syntax.hpp"
 
 #include "parse_error.hpp"
 #include "token_stream.hpp"

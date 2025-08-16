@@ -1,4 +1,5 @@
 #include "parse.test.hpp"
+#include "lex/lex.hpp"
 
 auto ParseTestFixture::assertExpr(
     AssertParams params, SLoc const location
@@ -100,21 +101,3 @@ auto ParseTestFixture::parseAndAssert(
         REQUIRE(actualErrors[i].reason() == expectedErrors[i].reason);
     }
 }
-
-// auto ParseTestFixture::assertTranslationUnit(
-//     tlc::Str source, tlc::Str expected, SLoc location
-// ) -> void {
-//     INFO(std::format("{}:{}", location.file_name(), location.line()));
-//     std::istringstream iss;
-//     iss.str(std::move(source));
-//
-//     auto result = tlc::parse::Parse{
-//         filepath, tlc::lex::Lex::operator()(std::move(iss))
-//     }();
-//     REQUIRE(matchAstType<TranslationUnit>(result));
-//     REQUIRE(astCast<TranslationUnit>(result).sourcePath()
-//         == filepath);
-//
-//     auto const actual = tlc::parse::ASTPrinter::operator()(std::move(result));
-//     REQUIRE(actual == expected);
-// }

@@ -12,18 +12,20 @@ namespace tlc::syntax {
         constexpr SyntaxTreeVisitor() = default;
 
         constexpr auto operator()(
-            this IsChildOf<SyntaxTreeVisitor> auto&&, IsNode auto const&
+            this IsCanonicallyChildOf<SyntaxTreeVisitor> auto&&,
+            IsNode auto const&
         ) -> TReturn {
             return {};
         }
 
         [[nodiscard]] constexpr auto visitChildren(
-            this IsChildOf<SyntaxTreeVisitor> auto&& self,
+            this IsCanonicallyChildOf<SyntaxTreeVisitor> auto&& self,
             IsInternalNode auto const& node
         ) -> Vec<TReturn> {
             return node.children()
                 | rv::transform([&](Node const& child) {
-                    return std::visit(std::forward<decltype(self)>(self), child);
+                    return std::visit(std::forward<decltype(self)>(self),
+                                      child);
                 })
                 | rng::to<Vec<TReturn>>();
         }
@@ -34,16 +36,18 @@ namespace tlc::syntax {
         constexpr SyntaxTreeMutator() = default;
 
         constexpr auto operator()(
-            this IsChildOf<SyntaxTreeMutator> auto&& self,
+            this IsCanonicallyChildOf<SyntaxTreeMutator> auto&& self,
             [[maybe_unused]] IsNode auto& ref, Node&
         ) -> void {
-            if constexpr (IsChildOf<decltype(ref), detail::InternalNodeBase>) {
+            if constexpr (
+                IsCanonicallyChildOf<decltype(ref), detail::InternalNodeBase>
+            ) {
                 std::forward<decltype(self)>(self).visitChildren(ref);
             }
         }
 
         constexpr auto visitChildren(
-            this IsChildOf<SyntaxTreeMutator> auto&& self,
+            this IsCanonicallyChildOf<SyntaxTreeMutator> auto&& self,
             IsInternalNode auto& node
         ) -> void {
             rng::for_each(

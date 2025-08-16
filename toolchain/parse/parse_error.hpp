@@ -1,9 +1,5 @@
-#ifndef TLC_PARSE_ERROR_HPP
-#define TLC_PARSE_ERROR_HPP
-
-#include "core/core.hpp"
-#include "syntax/syntax.hpp"
-#include "lex/lex.hpp"
+#ifndef TLC_PARSE_STATIC_ERROR_HPP
+#define TLC_PARSE_STATIC_ERROR_HPP
 
 namespace tlc::parse {
     enum class EContext {
@@ -33,4 +29,4 @@ namespace tlc::parse {
     };
 }
 
-#endif // TLC_PARSE_ERROR_HPP
+#endif // TLC_PARSE_STATIC_ERROR_HPP

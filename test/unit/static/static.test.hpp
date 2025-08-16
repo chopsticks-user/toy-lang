@@ -1,10 +1,10 @@
 #ifndef TLC_TEST_UNIT_STATIC_TEST_HPP
 #define TLC_TEST_UNIT_STATIC_TEST_HPP
 
+#include "syntax/syntax.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include <source_location>
-
-#include "parse/parse.hpp"
 
 #define TEST_CASE_WITH_FIXTURE(...) \
     TEST_CASE_METHOD(StaticTestFixture, __VA_ARGS__)

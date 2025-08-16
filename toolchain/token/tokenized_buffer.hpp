@@ -2,7 +2,7 @@
 #define TLC_TOKEN_TOKENIZED_BUFFER_HPP
 
 #include "core/core.hpp"
-#include "token_impl.hpp"
+#include "token.impl.hpp"
 
 namespace tlc::token {
     using TokenizedBuffer = Vec<Token>;

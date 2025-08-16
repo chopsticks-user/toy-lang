@@ -3,7 +3,7 @@ add_library(tlc::token ALIAS tlc_token)
 target_sources(
     tlc_token PRIVATE
     token.hpp
-    token_impl.hpp token_impl.cpp
+    token.impl.hpp token.impl.cpp
     lexeme.hpp lexeme.cpp
     tokenized_buffer.hpp tokenized_buffer.cpp
 )

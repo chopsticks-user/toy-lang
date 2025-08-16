@@ -1,4 +1,5 @@
 #include "parse_error.hpp"
+#include "core/core.hpp"
 
 namespace tlc {
     template <>

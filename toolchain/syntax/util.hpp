@@ -16,11 +16,11 @@ namespace tlc::syntax {
 
         template <typename T>
         concept IsInternalCandidate =
-            IsChildOf<T, InternalNodeBase>;
+            IsCanonicallyChildOf<T, InternalNodeBase>;
 
         template <typename T>
         concept IsTerminalCandidate =
-            IsChildOf<T, TerminalNodeBase> or
+            IsCanonicallyChildOf<T, TerminalNodeBase> or
             MatchesAnyOf<T, std::monostate, RequiredButMissing>;
     }
 

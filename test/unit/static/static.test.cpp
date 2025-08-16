@@ -1,5 +1,8 @@
 #include "static.test.hpp"
 
+#include "lex/lex.hpp"
+#include "parse/parse.hpp"
+
 auto StaticTestFixture::assertMutatorResult(
     TransformerAssertionParams params, SLoc const location
 ) -> void {

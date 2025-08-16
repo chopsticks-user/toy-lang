@@ -14,9 +14,14 @@ namespace tlc {
     concept IsNonVoid = !std::same_as<CanonicalTypeOf<T>, void>;
 
     template <typename Derived, typename Base>
-    concept IsChildOf =
+    concept IsCanonicallyChildOf =
         std::derived_from<CanonicalTypeOf<Derived>, Base> &&
         !std::same_as<CanonicalTypeOf<Derived>, Base>;
+
+    template <typename Derived, typename Base>
+    concept IsChildOf =
+        std::derived_from<Derived, Base> &&
+        !std::same_as<Derived, Base>;
 
     template <typename T, typename... Expected>
     concept MatchesAnyOf =

@@ -10,20 +10,21 @@ namespace tlc::static_ {
         constexpr TupleDiagnostic() = default;
         using SyntaxTreeVisitor::operator();
 
-        static constexpr auto operator()(syntax::Node const& node) -> void {
+        [[nodiscard]] static constexpr auto operator()(syntax::Node const& node)
+            -> Vec<syntax::Node> {
             node.visit(TupleDiagnostic{});
+            return {};
         }
 
     public:
-        constexpr auto operator()(
-            syntax::IsInternalNode auto const& node
-        ) -> b8 {
+        constexpr auto operator()(syntax::IsInternalNode auto const& node)
+            -> b8 {
             auto hasInnerTuples = rng::any_of(visitChildren(node),
                                               std::identity{});
-            if constexpr (CanonicallyMatchesAnyOf<decltype(node),
-                                                  syntax::expr::Tuple,
-                                                  syntax::type::Tuple,
-                                                  syntax::decl::Tuple>) {
+            if constexpr (CanonicallyMatchesAnyOf<
+                decltype(node),
+                syntax::expr::Tuple, syntax::type::Tuple, syntax::decl::Tuple
+            >) {
                 if (hasInnerTuples) {
                     // todo: collect error
                 }
@@ -32,9 +33,8 @@ namespace tlc::static_ {
             return hasInnerTuples;
         }
 
-        constexpr auto operator()(syntax::IsTerminalNode auto const&) -> b8 {
-            return false;
-        }
+        // private:
+        //     Vec<Error<>>
     };
 }
 
