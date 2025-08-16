@@ -2,8 +2,10 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax::detail {
-    InternalNodeBase::InternalNodeBase(Vec<Node> children, Location coords) noexcept
-        : m_children(std::move(children)), m_location(std::move(coords)) {}
+    InternalNodeBase::InternalNodeBase(
+        Vec<Node> children, Location location
+    ) : NodeBase{std::move(location)},
+        m_children{std::move(children)} {}
 
     auto InternalNodeBase::children() const noexcept -> Span<Node const> {
         return m_children;

@@ -9,6 +9,34 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax {
+    namespace detail {
+        template <typename T>
+        concept IsCanonicalAndConvertibleToNode =
+            IsCanonical<T> and std::convertible_to<T, Node>;
+
+        template <typename T>
+        concept IsInternalCandidate =
+            IsChildOf<T, InternalNodeBase>;
+
+        template <typename T>
+        concept IsTerminalCandidate =
+            IsChildOf<T, TerminalNodeBase> or
+            MatchesAnyOf<T, std::monostate, RequiredButMissing>;
+    }
+
+    template <typename T>
+    concept IsNode =
+        detail::IsCanonicalAndConvertibleToNode<T> and
+        detail::IsInternalCandidate<T> != detail::IsTerminalCandidate<T>;
+
+    template <typename T>
+    concept IsInternalNode =
+        IsNode<T> and detail::IsInternalCandidate<T>;
+
+    template <typename T>
+    concept IsTerminalNode =
+        IsNode<T> and detail::IsTerminalCandidate<T>;
+
     constexpr auto empty(Node const& node) -> bool {
         return std::holds_alternative<std::monostate>(node);
     }
@@ -16,18 +44,6 @@ namespace tlc::syntax {
     constexpr auto missing(Node const& node) -> bool {
         return std::holds_alternative<RequiredButMissing>(node);
     }
-
-    template <typename T>
-    concept IsNode =
-        IsCanonical<T> && std::convertible_to<T, Node>;
-
-    template <typename T>
-    concept IsInternalNode =
-        IsNode<T> && IsChildOf<T, detail::InternalNodeBase>;
-
-    template <typename T>
-    concept IsTerminalNode =
-        IsNode<T> && !IsChildOf<T, detail::InternalNodeBase>;
 
     template <IsNode TNode>
     constexpr auto cast(Node const& node, StrV const filepath = "")
@@ -37,9 +53,10 @@ namespace tlc::syntax {
         }
 
         if (!std::holds_alternative<TNode>(node)) {
-            throw filepath.empty()
-                      ? InternalException(filepath, "invalid AST-node cast")
-                      : InternalException("invalid AST-node cast");
+            exitOnInternalError(
+                std::format("invalid AST-node cast where filepath = {}",
+                            filepath)
+            );
         }
         return std::get<TNode>(node);
     }

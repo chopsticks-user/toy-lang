@@ -7,7 +7,7 @@
 
 namespace tlc::syntax {
     namespace expr {
-        struct Integer final : detail::InternalNodeBase {
+        struct Integer final : detail::TerminalNodeBase {
             Integer(i64 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> i64 {
@@ -18,7 +18,7 @@ namespace tlc::syntax {
             i64 m_value;
         };
 
-        struct Float final : detail::InternalNodeBase {
+        struct Float final : detail::TerminalNodeBase {
             Float(f64 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> double {
@@ -29,7 +29,7 @@ namespace tlc::syntax {
             f64 m_value;
         };
 
-        struct Boolean final : detail::InternalNodeBase {
+        struct Boolean final : detail::TerminalNodeBase {
             Boolean(b8 value, Location location);
 
             [[nodiscard]] auto value() const noexcept -> b8 {
@@ -40,7 +40,7 @@ namespace tlc::syntax {
             b8 m_value;
         };
 
-        struct Identifier : detail::InternalNodeBase, detail::IdentifierBase {
+        struct Identifier : detail::TerminalNodeBase, detail::IdentifierBase {
             Identifier(Vec<Str> path, Location location);
         };
 
@@ -128,7 +128,7 @@ namespace tlc::syntax {
     }
 
     namespace type {
-        struct Identifier : detail::InternalNodeBase, detail::IdentifierBase {
+        struct Identifier : detail::TerminalNodeBase, detail::IdentifierBase {
             Identifier(
                 b8 constant, Vec<Str> path, b8 fundamental, Location location
             );
@@ -210,7 +210,7 @@ namespace tlc::syntax {
             [[nodiscard]] auto size() const -> szt;
         };
 
-        struct GenericIdentifier final : detail::InternalNodeBase {
+        struct GenericIdentifier final : detail::TerminalNodeBase {
             GenericIdentifier(Str name, Location location);
 
             [[nodiscard]] auto name() const noexcept -> StrV {

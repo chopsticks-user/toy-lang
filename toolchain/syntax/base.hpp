@@ -6,27 +6,35 @@
 #include "token/token.hpp"
 
 namespace tlc::syntax::detail {
-    // class NodeBase {
-    //     [[nodiscard]] auto location() const noexcept -> Location {
-    //         return m_location;
-    //     }
-    //
-    //     [[nodiscard]] auto line() const noexcept -> szt {
-    //         return m_location.line;
-    //     }
-    //
-    //     [[nodiscard]] auto column() const noexcept -> szt {
-    //         return m_location.column;
-    //     }
-    //
-    // protected:
-    //     explicit NodeBase(Location coords) noexcept;
-    //
-    // protected:
-    //     Location m_location;
-    // };
+    class NodeBase {
+    public:
+        [[nodiscard]] constexpr auto location() const noexcept -> Location {
+            return m_location;
+        }
 
-    class InternalNodeBase {
+        [[nodiscard]] constexpr auto line() const noexcept -> szt {
+            return m_location.line;
+        }
+
+        [[nodiscard]] constexpr auto column() const noexcept -> szt {
+            return m_location.column;
+        }
+
+    protected:
+        explicit constexpr NodeBase(Location location) noexcept
+            : m_location{std::move(location)} {}
+
+    private:
+        Location m_location;
+    };
+
+    class TerminalNodeBase : public NodeBase {
+    protected:
+        explicit constexpr TerminalNodeBase(Location location) noexcept
+            : NodeBase{std::move(location)} {}
+    };
+
+    class InternalNodeBase : public NodeBase {
     public:
         [[nodiscard]] auto children() const noexcept -> Span<Node const>;
 
@@ -46,24 +54,11 @@ namespace tlc::syntax::detail {
 
         [[nodiscard]] auto nChildren() const noexcept -> szt;
 
-        [[nodiscard]] auto location() const noexcept -> Location {
-            return m_location;
-        }
-
-        [[nodiscard]] auto line() const noexcept -> szt {
-            return m_location.line;
-        }
-
-        [[nodiscard]] auto column() const noexcept -> szt {
-            return m_location.column;
-        }
-
     protected:
-        InternalNodeBase(Vec<Node> children, Location coords) noexcept;
+        InternalNodeBase(Vec<Node> children, Location location);
 
     private:
         Vec<Node> m_children;
-        Location m_location;
     };
 
     class IdentifierBase {

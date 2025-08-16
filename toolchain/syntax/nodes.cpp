@@ -4,17 +4,17 @@
 namespace tlc::syntax {
     namespace expr {
         Integer::Integer(i64 const value, Location const location)
-            : InternalNodeBase{{}, location}, m_value{value} {}
+            : TerminalNodeBase{location}, m_value{value} {}
 
         Float::Float(f64 const value, Location const location)
-            : InternalNodeBase{{}, location}, m_value{value} {}
+            : TerminalNodeBase{location}, m_value{value} {}
 
         Boolean::Boolean(b8 const value, Location const location)
-            : InternalNodeBase{{}, location}, m_value{value} {}
+            : TerminalNodeBase{location}, m_value{value} {}
 
         Identifier::Identifier(
             Vec<Str> path, Location const location
-        ) : InternalNodeBase{{}, location},
+        ) : TerminalNodeBase{location},
             IdentifierBase{std::move(path)} {}
 
         Array::Array(Vec<Node> elements, Location const location)
@@ -90,7 +90,7 @@ namespace tlc::syntax {
         Identifier::Identifier(
             b8 const constant, Vec<Str> path, b8 const fundamental,
             Location const location
-        ) : InternalNodeBase{{}, location}, IdentifierBase{std::move(path)},
+        ) : TerminalNodeBase{location}, IdentifierBase{std::move(path)},
             m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
@@ -163,7 +163,7 @@ namespace tlc::syntax {
         }
 
         GenericIdentifier::GenericIdentifier(Str name, Location const location)
-            : InternalNodeBase{{}, location}, m_name{std::move(name)} {}
+            : TerminalNodeBase{location}, m_name{std::move(name)} {}
 
         GenericParameters::GenericParameters(
             Vec<Node> params, Location const location)
