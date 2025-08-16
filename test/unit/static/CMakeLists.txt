@@ -5,6 +5,7 @@ target_sources(
     static.test.hpp static.test.cpp
 
     post_parsing/tuple_reducer.test.cpp
+    post_parsing/tuple_diagnostic.test.cpp
 )
 target_link_libraries(
     tlc_test_unit_static PRIVATE

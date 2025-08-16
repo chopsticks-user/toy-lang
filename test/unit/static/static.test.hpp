@@ -28,8 +28,9 @@ protected:
         TransformerAssertionParams params, SLoc location = SLoc::current()
     ) -> void;
 
-private:
     static auto parse(tlc::Str source) -> tlc::syntax::Node;
+
+private:
 };
 
 #endif // TLC_TEST_UNIT_STATIC_TEST_HPP

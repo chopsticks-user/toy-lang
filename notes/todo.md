@@ -20,7 +20,8 @@
 - ~~Make parsing methods static. In the destructor of each context instance, append
   errors to the instance's parent context instead of calling the global collector~~
 - ~~Type params should be handled by a dedicated parsing method~~
-- Replace Expected in parse with Opt
+- ~~Replace Expected in parse with Opt~~
+- Write test cases for concepts
 - Add test cases to ensure correct operator precedence
 - Add more test cases for lexing and parsing to test ErrorCollector
 - Design trait, class, etc. Complete implementations and test cases

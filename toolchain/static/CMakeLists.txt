@@ -5,6 +5,7 @@ target_sources(
     static.hpp error_collector.hpp error_collector.cpp
 
     post_parsing/tuple_reducer.hpp
+    post_parsing/tuple_diagnostic.hpp
 )
 target_link_libraries(
     tlc_static

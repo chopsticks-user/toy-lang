@@ -7,9 +7,9 @@
 namespace tlc {
     template <typename T>
     concept IsSingleton =
-        !IsExternallyConstructible<RemoveAllQualifiers<T>> &&
-        !IsAssignable<RemoveAllQualifiers<T>> &&
-        std::is_destructible_v<RemoveAllQualifiers<T>>;
+        !IsExternallyConstructible<CanonicalTypeOf<T>> &&
+        !IsAssignable<CanonicalTypeOf<T>> &&
+        std::is_destructible_v<CanonicalTypeOf<T>>;
 
     class Singleton {
     public:
@@ -18,7 +18,7 @@ namespace tlc {
         Singleton& operator=(Singleton&&) = delete;
 
         template <IsSingleton T>
-        static auto instance() -> RemoveAllQualifiers<T>& {
+        static auto instance() -> CanonicalTypeOf<T>& {
             struct Instance : T {
                 Instance() = default;
                 ~Instance() = default;

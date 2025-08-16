@@ -2,42 +2,42 @@
 #include "nodes.hpp"
 
 namespace tlc::syntax::detail {
-    NodeBase::NodeBase(Vec<Node> children, Location coords) noexcept
+    InternalNodeBase::InternalNodeBase(Vec<Node> children, Location coords) noexcept
         : m_children(std::move(children)), m_location(std::move(coords)) {}
 
-    auto NodeBase::children() const noexcept -> Span<Node const> {
+    auto InternalNodeBase::children() const noexcept -> Span<Node const> {
         return m_children;
     }
 
-    auto NodeBase::children() noexcept -> Span<Node> {
+    auto InternalNodeBase::children() noexcept -> Span<Node> {
         return m_children;
     }
 
-    auto NodeBase::childAt(const szt index) const -> const Node& {
+    auto InternalNodeBase::childAt(const szt index) const -> const Node& {
         return m_children.at(index);
     }
 
-    auto NodeBase::firstChild() const -> Node const& {
+    auto InternalNodeBase::firstChild() const -> Node const& {
         return m_children.front();
     }
 
-    auto NodeBase::lastChild() const -> Node const& {
+    auto InternalNodeBase::lastChild() const -> Node const& {
         return m_children.back();
     }
 
-    auto NodeBase::childAt(szt const index) -> Node& {
+    auto InternalNodeBase::childAt(szt const index) -> Node& {
         return m_children.at(index);
     }
 
-    auto NodeBase::firstChild() -> Node& {
+    auto InternalNodeBase::firstChild() -> Node& {
         return m_children.front();
     }
 
-    auto NodeBase::lastChild() -> Node& {
+    auto InternalNodeBase::lastChild() -> Node& {
         return m_children.back();
     }
 
-    auto NodeBase::nChildren() const noexcept -> szt {
+    auto InternalNodeBase::nChildren() const noexcept -> szt {
         return m_children.size();
     }
 

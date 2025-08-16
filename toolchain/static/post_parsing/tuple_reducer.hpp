@@ -16,20 +16,13 @@ namespace tlc::static_ {
         }
 
     public:
-        constexpr auto operator()(syntax::expr::Tuple& ref,
-                                  syntax::Node& node) -> void {
+        constexpr auto operator()(
+            MatchesAnyOf<syntax::expr::Tuple,
+                         syntax::type::Tuple> auto& ref,
+            syntax::Node& node
+        ) -> void {
             visitChildren(ref);
-            if (ref.size() == 1) {
-                node = ref.firstChild();
-            }
-        }
-
-        constexpr auto operator()(syntax::type::Tuple& ref,
-                                  syntax::Node& node) -> void {
-            visitChildren(ref);
-            if (ref.size() == 1) {
-                node = ref.firstChild();
-            }
+            if (ref.size() == 1) { node = ref.firstChild(); }
         }
     };
 }

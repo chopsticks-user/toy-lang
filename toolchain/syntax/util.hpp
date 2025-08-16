@@ -18,16 +18,18 @@ namespace tlc::syntax {
     }
 
     template <typename T>
-    concept IsASTNode =
-        IsIdentityType<T> &&
-        std::convertible_to<T, Node>;
+    concept IsNode =
+        IsCanonical<T> && std::convertible_to<T, Node>;
 
     template <typename T>
-    concept IsNonTerminalASTNode =
-        IsASTNode<T> &&
-        IsChildOf<T, detail::NodeBase>;
+    concept IsInternalNode =
+        IsNode<T> && IsChildOf<T, detail::InternalNodeBase>;
 
-    template <IsASTNode TNode>
+    template <typename T>
+    concept IsTerminalNode =
+        IsNode<T> && !IsChildOf<T, detail::InternalNodeBase>;
+
+    template <IsNode TNode>
     constexpr auto cast(Node const& node, StrV const filepath = "")
         -> TNode {
         if constexpr (std::same_as<TNode, Node>) {
@@ -42,7 +44,7 @@ namespace tlc::syntax {
         return std::get<TNode>(node);
     }
 
-    template <IsASTNode... TNode>
+    template <IsNode... TNode>
     constexpr auto match(Node const& node) -> bool {
         return (std::holds_alternative<TNode>(node) || ...);
     }

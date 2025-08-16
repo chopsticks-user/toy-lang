@@ -13,7 +13,7 @@ class ParseTestFixture {
 protected:
     using FnNode = void (*)(Node const&);
     using FnNodes = void (*)(tlc::Span<Node const>);
-    template <IsASTNode T>
+    template <IsNode T>
     using FnNodeT = void (*)(T const&);
     using Error = tlc::Error<Context, Reason>;
     using ErrorParams = Error::Params;

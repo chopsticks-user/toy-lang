@@ -6,7 +6,27 @@
 #include "token/token.hpp"
 
 namespace tlc::syntax::detail {
-    class NodeBase {
+    // class NodeBase {
+    //     [[nodiscard]] auto location() const noexcept -> Location {
+    //         return m_location;
+    //     }
+    //
+    //     [[nodiscard]] auto line() const noexcept -> szt {
+    //         return m_location.line;
+    //     }
+    //
+    //     [[nodiscard]] auto column() const noexcept -> szt {
+    //         return m_location.column;
+    //     }
+    //
+    // protected:
+    //     explicit NodeBase(Location coords) noexcept;
+    //
+    // protected:
+    //     Location m_location;
+    // };
+
+    class InternalNodeBase {
     public:
         [[nodiscard]] auto children() const noexcept -> Span<Node const>;
 
@@ -39,7 +59,7 @@ namespace tlc::syntax::detail {
         }
 
     protected:
-        NodeBase(Vec<Node> children, Location coords) noexcept;
+        InternalNodeBase(Vec<Node> children, Location coords) noexcept;
 
     private:
         Vec<Node> m_children;

@@ -4,68 +4,68 @@
 namespace tlc::syntax {
     namespace expr {
         Integer::Integer(i64 const value, Location const location)
-            : NodeBase{{}, location}, m_value{value} {}
+            : InternalNodeBase{{}, location}, m_value{value} {}
 
         Float::Float(f64 const value, Location const location)
-            : NodeBase{{}, location}, m_value{value} {}
+            : InternalNodeBase{{}, location}, m_value{value} {}
 
         Boolean::Boolean(b8 const value, Location const location)
-            : NodeBase{{}, location}, m_value{value} {}
+            : InternalNodeBase{{}, location}, m_value{value} {}
 
         Identifier::Identifier(
             Vec<Str> path, Location const location
-        ) : NodeBase{{}, location},
+        ) : InternalNodeBase{{}, location},
             IdentifierBase{std::move(path)} {}
 
         Array::Array(Vec<Node> elements, Location const location)
-            : NodeBase{std::move(elements), location} {}
+            : InternalNodeBase{std::move(elements), location} {}
 
         auto Array::size() const noexcept -> szt {
             return nChildren();
         }
 
         Tuple::Tuple(Vec<Node> elements, Location const location)
-            : NodeBase{std::move(elements), location} {}
+            : InternalNodeBase{std::move(elements), location} {}
 
         auto Tuple::size() const noexcept -> szt {
             return nChildren();
         }
 
         FnApp::FnApp(Node callee, Node args, Location const location)
-            : NodeBase{
+            : InternalNodeBase{
                 {std::move(callee), std::move(args)},
                 location
             } {}
 
         Subscript::Subscript(
             Node collection, Node subscript, Location const location
-        ) : NodeBase{
+        ) : InternalNodeBase{
             {std::move(collection), std::move(subscript)},
             location
         } {}
 
         Prefix::Prefix(
             Node operand, lexeme::Lexeme op, Location const location
-        ) : NodeBase{{std::move(operand)}, location},
+        ) : InternalNodeBase{{std::move(operand)}, location},
             m_op{std::move(op)} {}
 
         Binary::Binary(
             Node lhs, Node rhs, lexeme::Lexeme op, Location const location
-        ) : NodeBase{{std::move(lhs), std::move(rhs)}, location},
+        ) : InternalNodeBase{{std::move(lhs), std::move(rhs)}, location},
             m_op{std::move(op)} {}
 
         String::String(
             Vec<Str> fragments, Vec<Node> placeholders, Location const location
         )
-            : NodeBase{std::move(placeholders), location},
+            : InternalNodeBase{std::move(placeholders), location},
               m_fragments{std::move(fragments)} {}
 
         RecordEntry::RecordEntry(Str key, Node value, Location const location)
-            : NodeBase{{std::move(value)}, location},
+            : InternalNodeBase{{std::move(value)}, location},
               m_key{std::move(key)} {}
 
         Record::Record(Node type, Vec<Node> entries, Location const location)
-            : NodeBase{
+            : InternalNodeBase{
                 {
                     [&] {
                         Vec<Node> nodes;
@@ -83,19 +83,19 @@ namespace tlc::syntax {
         }
 
         Try::Try(Node expr, Location const location)
-            : NodeBase{{std::move(expr)}, location} {}
+            : InternalNodeBase{{std::move(expr)}, location} {}
     }
 
     namespace type {
         Identifier::Identifier(
             b8 const constant, Vec<Str> path, b8 const fundamental,
             Location const location
-        ) : NodeBase{{}, location}, IdentifierBase{std::move(path)},
+        ) : InternalNodeBase{{}, location}, IdentifierBase{std::move(path)},
             m_fundamental{fundamental}, m_constant{constant} {}
 
         Array::Array(
             Node type, Node sizes, Location const location
-        ) : NodeBase{
+        ) : InternalNodeBase{
             [&] {
                 Vec<Node> nodes;
                 nodes.reserve(2);
@@ -107,17 +107,17 @@ namespace tlc::syntax {
         } {}
 
         Tuple::Tuple(Vec<Node> types, Location const location)
-            : NodeBase{std::move(types), location} {}
+            : InternalNodeBase{std::move(types), location} {}
 
         auto Tuple::size() const -> szt {
             return nChildren();
         }
 
         Function::Function(Node args, Node result, Location const location)
-            : NodeBase{{std::move(args), std::move(result)}, location} {}
+            : InternalNodeBase{{std::move(args), std::move(result)}, location} {}
 
         Infer::Infer(Node expr, Location const location)
-            : NodeBase{{std::move(expr)}, location} {}
+            : InternalNodeBase{{std::move(expr)}, location} {}
 
         auto Infer::expr() const noexcept -> Node {
             return firstChild();
@@ -126,24 +126,24 @@ namespace tlc::syntax {
         GenericArguments::GenericArguments(
             Vec<Node> args, Location const location
         )
-            : NodeBase{std::move(args), location} {}
+            : InternalNodeBase{std::move(args), location} {}
 
         auto GenericArguments::size() const noexcept -> szt {
             return nChildren();
         }
 
         Generic::Generic(Node type, Node args, Location const location)
-            : NodeBase{{std::move(type), std::move(args)}, location} {}
+            : InternalNodeBase{{std::move(type), std::move(args)}, location} {}
 
         Binary::Binary(Node lhs, lexeme::Lexeme op, Node rhs, Location location)
-            : NodeBase{{std::move(lhs), std::move(rhs)}, std::move(location)},
+            : InternalNodeBase{{std::move(lhs), std::move(rhs)}, std::move(location)},
               m_op{std::move(op)} {}
     }
 
     namespace decl {
         Identifier::Identifier(
             Str name, Node type, Location const location
-        ) : NodeBase{{std::move(type)}, location},
+        ) : InternalNodeBase{{std::move(type)}, location},
             m_name{std::move(name)} {}
 
 
@@ -152,7 +152,7 @@ namespace tlc::syntax {
         }
 
         Tuple::Tuple(Vec<Node> decls, Location const location)
-            : NodeBase{std::move(decls), location} {}
+            : InternalNodeBase{std::move(decls), location} {}
 
         auto Tuple::decl(szt const index) const -> Node {
             return childAt(index);
@@ -163,11 +163,11 @@ namespace tlc::syntax {
         }
 
         GenericIdentifier::GenericIdentifier(Str name, Location const location)
-            : NodeBase{{}, location}, m_name{std::move(name)} {}
+            : InternalNodeBase{{}, location}, m_name{std::move(name)} {}
 
         GenericParameters::GenericParameters(
             Vec<Node> params, Location const location)
-            : NodeBase{std::move(params), location} {}
+            : InternalNodeBase{std::move(params), location} {}
 
         auto GenericParameters::size() const -> szt {
             return nChildren();
@@ -175,26 +175,26 @@ namespace tlc::syntax {
     }
 
     stmt::Decl::Decl(Node decl, Node initializer, Location const location)
-        : NodeBase{{std::move(decl), std::move(initializer)}, location} {}
+        : InternalNodeBase{{std::move(decl), std::move(initializer)}, location} {}
 
     auto stmt::Decl::defaultInitialized() const -> bool {
         return empty(lastChild());
     }
 
     stmt::Return::Return(Node expr, Location const location)
-        : NodeBase{{std::move(expr)}, location} {}
+        : InternalNodeBase{{std::move(expr)}, location} {}
 
     stmt::Defer::Defer(Node stmt, Location const location)
-        : NodeBase{{std::move(stmt)}, location} {}
+        : InternalNodeBase{{std::move(stmt)}, location} {}
 
     stmt::MatchCase::MatchCase(Node value, Node cond, Node stmt, Location const location)
-        : NodeBase{
+        : InternalNodeBase{
             {std::move(value), std::move(cond), std::move(stmt)},
             location
         } {}
 
     stmt::Match::Match(Node expr, Vec<Node> cases, Node defaultStmt, Location const location)
-        : NodeBase{
+        : InternalNodeBase{
             {
                 [&] {
                     Vec<Node> nodes;
@@ -209,19 +209,19 @@ namespace tlc::syntax {
         } {}
 
     stmt::Loop::Loop(Node decl, Node range, Node body, Location const location)
-        : NodeBase{
+        : InternalNodeBase{
             {std::move(decl), std::move(range), std::move(body)},
             location
         } {}
 
     stmt::Conditional::Conditional(Node cond, Node then, Location const location)
-        : NodeBase{
+        : InternalNodeBase{
             {std::move(cond), std::move(then)},
             location
         } {}
 
     stmt::Block::Block(Vec<Node> statements, Location const location)
-        : NodeBase{std::move(statements), location} {}
+        : InternalNodeBase{std::move(statements), location} {}
 
     auto stmt::Block::size() const noexcept -> szt {
         return nChildren();
@@ -229,30 +229,30 @@ namespace tlc::syntax {
 
     stmt::Assign::Assign(
         Node lhs, Node rhs, lexeme::Lexeme op, Location const location
-    ) : NodeBase{{std::move(lhs), std::move(rhs)}, location},
+    ) : InternalNodeBase{{std::move(lhs), std::move(rhs)}, location},
         m_op{std::move(op)} {}
 
     stmt::Expression::Expression(Node expr, Location const location)
-        : NodeBase{{std::move(expr)}, location} {}
+        : InternalNodeBase{{std::move(expr)}, location} {}
 
     global::ModuleDecl::ModuleDecl(Node path, Location const location)
-        : NodeBase{{std::move(path)}, location} {}
+        : InternalNodeBase{{std::move(path)}, location} {}
 
     global::ImportDeclGroup::ImportDeclGroup(
         Vec<Node> imports, Location location
-    ) : NodeBase{std::move(imports), std::move(location)} {}
+    ) : InternalNodeBase{std::move(imports), std::move(location)} {}
 
     auto global::ImportDeclGroup::size() const noexcept -> szt {
         return nChildren();
     }
 
     global::ImportDecl::ImportDecl(Node alias, Node path, Location const location)
-        : NodeBase{{std::move(alias), std::move(path)}, location} {}
+        : InternalNodeBase{{std::move(alias), std::move(path)}, location} {}
 
     global::FunctionPrototype::FunctionPrototype(
         Node genericDecl, Str name, Node paramsDecl,
         Node returnsDecl, Location const location
-    ) : NodeBase{
+    ) : InternalNodeBase{
             {
                 std::move(genericDecl), std::move(paramsDecl),
                 std::move(returnsDecl)
@@ -264,13 +264,13 @@ namespace tlc::syntax {
     global::Function::Function(
         lexeme::Lexeme visibility, Node prototype, Node body,
         Location const location
-    ) : NodeBase{{std::move(prototype), std::move(body)}, location},
+    ) : InternalNodeBase{{std::move(prototype), std::move(body)}, location},
         m_visibility{std::move(visibility)} {}
 
     TranslationUnit::TranslationUnit(
         fs::path sourcePath, Node moduleDecl,
         Node importDeclGroup, Vec<Node> definitions
-    ) : NodeBase{
+    ) : InternalNodeBase{
             [&] {
                 Vec<Node> nodes;
                 nodes.reserve(2 + definitions.size());

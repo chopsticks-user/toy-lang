@@ -6,22 +6,24 @@
 #include "util.hpp"
 
 namespace tlc::syntax {
-    /**
-     * Derived classes' operator() overloads must not be marked as 'const'
-     * @tparam TReturn
-     */
-    template <IsNonVoid TReturn>
+    template <std::default_initializable TReturn>
     class SyntaxTreeVisitor : public Visitor<Node, TReturn> {
     protected:
         constexpr SyntaxTreeVisitor() = default;
-        using Visitor<Node, TReturn>::operator();
 
-        template <IsChildOf<SyntaxTreeVisitor> S, IsNonTerminalASTNode N>
-        constexpr auto visitChildren(this S&& self, N const& node)
-            -> Vec<TReturn> {
+        constexpr auto operator()(
+            this IsChildOf<SyntaxTreeVisitor> auto&&, IsNode auto const&
+        ) -> TReturn {
+            return {};
+        }
+
+        [[nodiscard]] constexpr auto visitChildren(
+            this IsChildOf<SyntaxTreeVisitor> auto&& self,
+            IsInternalNode auto const& node
+        ) -> Vec<TReturn> {
             return node.children()
-                | rv::transform([&self](Node const& child) {
-                    return child.visit(std::forward<S>(self));
+                | rv::transform([&](Node const& child) {
+                    return std::visit(std::forward<decltype(self)>(self), child);
                 })
                 | rng::to<Vec<TReturn>>();
         }
@@ -31,22 +33,25 @@ namespace tlc::syntax {
     protected:
         constexpr SyntaxTreeMutator() = default;
 
-        template <IsChildOf<SyntaxTreeMutator> S, IsNonTerminalASTNode N>
-        constexpr auto visitChildren(this S&& self, N& node)
-            -> void {
-            rng::for_each(node.children(), [&self](Node& child) {
-                std::visit(std::forward<S>(self),
-                           child, std::variant<Ref<Node>>{child});
-            });
+        constexpr auto operator()(
+            this IsChildOf<SyntaxTreeMutator> auto&& self,
+            [[maybe_unused]] IsNode auto& ref, Node&
+        ) -> void {
+            if constexpr (IsChildOf<decltype(ref), detail::InternalNodeBase>) {
+                std::forward<decltype(self)>(self).visitChildren(ref);
+            }
         }
 
-        template <IsChildOf<SyntaxTreeMutator> S>
-        constexpr auto operator()(
-            this S&& self, [[maybe_unused]] IsASTNode auto& ref, Node&
+        constexpr auto visitChildren(
+            this IsChildOf<SyntaxTreeMutator> auto&& self,
+            IsInternalNode auto& node
         ) -> void {
-            if constexpr (IsChildOf<decltype(ref), detail::NodeBase>) {
-                std::forward<S>(self).visitChildren(ref);
-            }
+            rng::for_each(
+                node.children(), [&](Node& child) {
+                    std::visit(std::forward<decltype(self)>(self),
+                               child, std::variant<Ref<Node>>{child});
+                }
+            );
         }
     };
 }

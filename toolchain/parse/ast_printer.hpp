@@ -15,7 +15,7 @@ namespace tlc::parse {
         using SyntaxTreeVisitor::operator();
 
         static constexpr auto operator()(syntax::Node const& node) -> Str {
-            return std::visit(ASTPrinter{}, node);
+            return node.visit(ASTPrinter{});
         }
 
     public:
